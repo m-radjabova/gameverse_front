@@ -1,5 +1,5 @@
 import { type ChangeEvent } from 'react';
-import useTodos from '../hooks/useTodos';
+import useTodos from '../../hooks/useTodos';
 import { 
   FiCheckSquare, FiSquare, FiFilter,FiChevronLeft, FiChevronRight 
 } from 'react-icons/fi';

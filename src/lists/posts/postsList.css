@@ -1,0 +1,111 @@
+.text-gradient-post {
+          background: linear-gradient(135deg, #6e8efb, #a777e3);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          position: relative;
+          display: inline-block;
+        }
+        
+        .text-gradient-post::after {
+          content: '';
+          position: absolute;
+          bottom: -8px;
+          left: 0;
+          width: 100%;
+          height: 4px;
+          background: linear-gradient(135deg, #6e8efb, #a777e3);
+          border-radius: 2px;
+        }
+        
+        .gradient-btn {
+          background: linear-gradient(135deg, #6e8efb, #a777e3);
+          border: none;
+          transition: all 0.3s ease;
+        }
+        
+        .gradient-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 12px rgba(106, 142, 251, 0.3);
+        }
+        
+        .post-card {
+          transition: all 0.3s ease;
+          border-radius: 12px;
+          overflow: hidden;
+        }
+        
+        .post-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hover-lift:hover {
+          transform: translateY(-5px);
+        }
+        
+        .card-header-image {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: bold;
+        }
+        
+        .category-badge {
+          position: absolute;
+          top: 15px;
+          left: 15px;
+          background: rgba(255, 255, 255, 0.2);
+          backdrop-filter: blur(10px);
+          padding: 5px 12px;
+          border-radius: 20px;
+          font-size: 0.8rem;
+          font-weight: 600;
+        }
+        
+        .user-badge {
+          position: absolute;
+          bottom: 15px;
+          right: 15px;
+          background: rgba(0, 0, 0, 0.4);
+          padding: 5px 12px;
+          border-radius: 20px;
+          font-size: 0.8rem;
+          color: white;
+        }
+        
+        .truncate-title {
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        
+        .post-body {
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          min-height: 72px;
+        }
+        
+        .action-btn {
+          transition: all 0.2s ease;
+        }
+        
+        .action-btn:hover {
+          transform: scale(1.05);
+        }
+        
+        .fade-in {
+          animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        .empty-icon {
+          font-size: 5rem;
+        }

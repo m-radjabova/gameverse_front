@@ -1,9 +1,11 @@
-@import './lists/userList.css';
-@import './lists/postsList.css';
-@import url('https://fonts.googleapis.com/css2?family=Grammond:wght@400;700&display=swap');
+@import './lists/users/userList.css';
+@import './lists/posts/postsList.css';
+@import "./css/DeleteModal.css";
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;700&display=swap');
+@import "tailwindcss";
 
 .content{
-    font-family: "Grammond", serif;
+    font-family: "Rubik", sans-serif;
     margin-top: 20px;
     background-color: #f8f9fa;
     padding: 20px;

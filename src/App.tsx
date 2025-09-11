@@ -1,7 +1,7 @@
 import { useState } from "react";
-import PostsList from "./lists/PostsList"
-import TodosList from "./lists/TodosList"
-import UserList from "./lists/UserList"
+import PostsList from "./lists/posts/PostsList"
+import UserList from "./lists/users/UserList";
+import TodosList from "./lists/todos/TodosList";
 
 function App() {
   const [component, setComponent] = useState<'users' | 'posts' | 'todos'>('users');
