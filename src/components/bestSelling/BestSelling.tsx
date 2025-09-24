@@ -5,8 +5,9 @@ import useContextPro from "../../hooks/useContextPro";
 import type { Product } from "../../types/types";
 
 function BestSelling() {
-    const { products } = useProducts();
-    const { state:{cart}, dispatch } = useContextPro();
+    const { products, selectedCategory, setSelectedCategory} = useProducts();
+    const { state: {cart}, dispatch } = useContextPro();
+
 
     function handleCartToggle(product: Product) {
         const isInCart = cart.some((p) => p.id === product.id);
@@ -25,7 +26,7 @@ function BestSelling() {
                <div className="selling-products-title">
                     <h1>Best Selling</h1>
                </div>
-                <FilterCategories />
+                <FilterCategories selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
                 <div className="best-selling-products">
                     {products.map((product) => (
                         <div key={product.id} className="best-selling-product-card">

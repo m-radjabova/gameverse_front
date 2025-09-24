@@ -10,3 +10,107 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     overflow-y: scroll;
 }
+
+.admin-sidebar {
+    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    box-shadow: 3px 0 10px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 1000;
+}
+
+.sidebar-header {
+    background-color: rgba(226, 26, 67, 0.1);
+    border-bottom: 1px solid rgba(226, 26, 67, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+}
+
+.sidebar-header h4 {
+    color: #E21A43;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.toggle-btn {
+    background-color: #E21A43;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    padding: 0.25rem 0.5rem;
+}
+
+.toggle-btn:hover {
+    background-color: #c0173a;
+    transform: scale(1.05);
+}
+
+.sidebar-nav .nav-link-item {
+    color: #e0e0e0;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+    margin: 2px 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    text-decoration: none;
+}
+
+.sidebar-nav .nav-link-item:hover {
+    background-color: rgba(226, 26, 67, 0.15);
+    color: white;
+    border-left: 3px solid #E21A43;
+    text-decoration: none;
+}
+
+.sidebar-nav .nav-link-item.active {
+    background-color: rgba(226, 26, 67, 0.25);
+    color: white;
+    border-left: 3px solid #E21A43;
+}
+
+.nav-icon {
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+}
+
+.nav-text {
+    font-weight: 500;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-footer {
+    border-top: 1px solid rgba(226, 26, 67, 0.3);
+    background-color: rgba(226, 26, 67, 0.05);
+    margin-top: auto;
+}
+
+.logout-btn {
+    background: transparent;
+    border: none;
+    color: #e0e0e0;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+}
+
+.logout-btn:hover {
+    background-color: rgba(226, 26, 67, 0.2);
+    color: white;
+}
+
+.transition-all {
+    transition: all 0.3s ease;
+}

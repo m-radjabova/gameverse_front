@@ -1,0 +1,42 @@
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-overlay {
+  transition: background 0.3s ease;
+}
+
+.modal-content {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.modal-close-btn {
+  transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  background: #f1f5f9 !important;
+  transform: rotate(90deg);
+}
+
+.modal-close-btn:active {
+  transform: scale(0.95) rotate(90deg);
+}
+
+

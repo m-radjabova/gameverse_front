@@ -1,10 +1,12 @@
 import { FaArrowRight, FaEnvelope, FaLock, FaUser } from "react-icons/fa"
 import { FiShoppingBag } from "react-icons/fi"
 import { type SubmitHandler, useForm } from "react-hook-form"
-import apiClient from "../../apiClient/apiClient"
 import { toast } from "react-toastify"
 import { useNavigate } from "react-router-dom"
 import { Link } from "react-router-dom"
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth"
+import { auth, db } from "../../firebase"
+import { doc, setDoc } from "firebase/firestore"
 
 type RegisterFormInputs = {
   name: string;
@@ -14,33 +16,41 @@ type RegisterFormInputs = {
 };
 
 function Register() {
-    const {register, handleSubmit, formState: { errors }} = useForm<RegisterFormInputs>()
+    const {register, handleSubmit, formState: { errors }, reset} = useForm<RegisterFormInputs>()
     const navigate = useNavigate()
 
-    const onSubmit: SubmitHandler<RegisterFormInputs> = (data) => {
-        const { confirmPassword, ...submitData } = data;
-        if(data.password !== confirmPassword) {
-            return
+    const onSubmit: SubmitHandler<RegisterFormInputs> = async (data) => {
+        const { name, email, password, confirmPassword } = data;
+        if (password !== confirmPassword) {
+        toast.error("Passwords do not match.");
+        return;
         }
-        apiClient.get("/users?email=" + data.email).then(res => {
-            if (res.data.length > 0) {
-                toast.error("Email is already registered.");
-                return;
-            } else {
-                registerUser(submitData);
-            }
-        })
-    };
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            await updateProfile(user, { displayName: name });
+            await setDoc(doc(db, "users", user.uid), {
+                uid: user.uid,
+                name,
+                email,
+                createdAt: new Date(),
+            });
 
-    function registerUser(submitData: Omit<RegisterFormInputs, "confirmPassword">) {
-        apiClient.post("/users", submitData).then(() => {
             toast.success("Registration successful!");
+            reset();
             navigate("/login");
-        }).catch(() => {
-            toast.error("Registration failed. Please try again.");
-        });
-    }
-
+            } catch (error: any) {
+            if (error.code === "auth/email-already-in-use") {
+                toast.error("Email is already registered.");
+            } else if (error.code === "auth/invalid-email") {
+                toast.error("Invalid email address.");
+            } else if (error.code === "auth/weak-password") {
+                toast.error("Password should be at least 6 characters.");
+            } else {
+                toast.error("Registration failed. Please try again.");
+            }
+        }
+    };
     return (
         <div className="signup d-flex justify-content-center align-items-center min-vh-100" style={{ 
             backgroundColor: '#fff8f0',

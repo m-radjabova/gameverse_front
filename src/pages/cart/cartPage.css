@@ -257,7 +257,30 @@
     font-size: 0.9rem;
 }
 
-/* Responsive design */
+.quantity-container{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+}
+
+.quantity {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #E21A43;
+}
+
+.quantity-add {
+    background: rgba(226, 26, 67, 0.1);
+    color: #E21A43;
+    border: 1px solid rgba(226, 26, 67, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
 @media (max-width: 768px) {
     .cart-content {
         grid-template-columns: 1fr;

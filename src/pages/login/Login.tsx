@@ -2,30 +2,59 @@ import { FaEnvelope, FaLock, FaArrowRight } from 'react-icons/fa';
 import { FiShoppingBag } from 'react-icons/fi';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { type FieldValues, useForm } from 'react-hook-form';
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from '../../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 import type { User } from '../../types/types';
-import apiClient from '../../apiClient/apiClient';
 
 const LoginForm = () => {
   const { register, handleSubmit } = useForm();
   const navigate = useNavigate();
 
-  const Login = (data: FieldValues) => {
-    apiClient.get<User[]>(`/users?email=${data.email}`).then((res) => {
-      if (res.data.length > 0) {
-        const user = res.data[0];
-        if(res.data[0].password === data.password){
-          toast.success("Welcome back! 🍔");
-          localStorage.setItem("token", user.id);
-          navigate("/admin");
-        }else{
-          toast.error("Oops! Wrong password");
+  const Login = async (data: FieldValues) => {
+    try {
+      const { user } = await signInWithEmailAndPassword(auth, data.email, data.password);
+      localStorage.setItem("token", user.uid);
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+      if (userDocSnap.exists()) {
+        const currentUser = { id: user.uid, ...userDocSnap.data() } as User;
+        console.log("currentUser", currentUser);
+        
+        if (currentUser?.roles) {
+          localStorage.setItem("role", currentUser.roles.join(","));
+          navigate("/", { replace: true });
+        } else {
+          localStorage.removeItem("role");
         }
-      } else{
-        toast.error("Account not found. Please sign up!");
+      } else {
+        localStorage.removeItem("role");
+        toast.warn("User role topilmadi.");
       }
-    });
+    } catch (error : any) {
+      const code = error?.code as string | undefined;
+      console.log(error)
+      switch (code) {
+        case "auth/user-not-found":
+          toast.error("Account topilmadi. Iltimos, ro'yxatdan o'ting!");
+          break;
+        case "auth/wrong-password":
+        case "auth/invalid-credential":
+          toast.error("Noto'g'ri email yoki parol. Qayta urinib ko'ring.");
+          break;
+        case "auth/invalid-email":
+          toast.error("Email manzili noto'g'ri formatda.");
+          break;
+        case "auth/too-many-requests":
+          toast.error("Juda ko'p urinish. Iltimos, birozdan keyin qayta urinib ko'ring.");
+          break;
+        default:
+          toast.error("Kirishda hatolik yuz berdi. Iltimos, qayta urinib ko'ring.");
+      }
+    }
   };
+
 
   return (
     <div className="login d-flex justify-content-center align-items-center min-vh-100" style={{ 

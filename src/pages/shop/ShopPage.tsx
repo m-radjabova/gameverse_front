@@ -1,13 +1,13 @@
 import Footer from "../../components/footer/Footer";
 import ProductList from "../../components/product/ProductList"
 import useCategories from "../../hooks/useCategories"
-import { FaShopify, FaCoffee } from "react-icons/fa";
+import { FaShopify } from "react-icons/fa";
 import useLoading from "../../hooks/useLoading";
 import IsLoading from "../../components/IsLoading";
 import useProducts from "../../hooks/useProducts";
 
 function ShopPage() {
-    const { selectedCategory, setSelectedCategory} = useProducts();
+    const {products, selectedCategory, setSelectedCategory} = useProducts();
     const { categories } = useCategories();
     const {loading} = useLoading();
 
@@ -41,18 +41,10 @@ function ShopPage() {
                             </li>
                         ))}
                     </ul>
-                    
-                    <div className="category-promo">
-                        <h4>Buy 1 get 1</h4>
-                        <p>Free shipping on orders over $100</p>
-                        <div className="promo-icon">
-                            <FaCoffee />
-                        </div>
-                    </div>
                 </div>
                 
                 <div className="shop-right-content">
-                    <ProductList />
+                    <ProductList products={products} />
                 </div>
             </div>
             <Footer />

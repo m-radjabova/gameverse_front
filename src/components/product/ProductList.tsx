@@ -1,12 +1,15 @@
 import { useNavigate } from "react-router-dom";
-import useProducts from "../../hooks/useProducts";
 import { useState } from "react";
+import type { Product } from "../../types/types";
 
-function ProductList() {
-    const { products } = useProducts();
+type Props = {
+    products: Product[];
+};
+
+function ProductList({ products }: Props) {
     const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
     const navigate = useNavigate();
-
+    
     return (
         <div>
                 <div className="products-list">

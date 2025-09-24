@@ -12,6 +12,8 @@ import NotFound from "./components/NotFound"
 import CartPage from "./pages/cart/CartPage"
 import ShopPage from "./pages/shop/ShopPage"
 import AdminProduct from "./pages/admin/products/AdminProduct"
+import AdminCategories from "./pages/admin/categories/AdminCategories"
+import AdminCarousel from "./pages/admin/carousel/AdminCarousel"
 
 function App() {
   const { loading } = useLoading();
@@ -25,6 +27,7 @@ function App() {
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/cart" element={<CartPage />} />
         </Route>
@@ -43,6 +46,8 @@ function App() {
             }
           >
             <Route path="/admin/products" element={<AdminProduct />} />
+            <Route path="/admin/categories" element={<AdminCategories />} />
+            <Route path="/admin/carousel" element={<AdminCarousel />} />
           </Route>
           <Route path="*" element={<NotFound />} />
       </Routes>

@@ -1,10 +1,11 @@
 import type { Category } from '../../types/types';
 import useCategories from '../../hooks/useCategories';
-import useProducts from '../../hooks/useProducts';
+type Props = {
+  selectedCategory: string;
+  setSelectedCategory: (category: string) => void;
+}
 
-
-function FilterCategories() {
-  const {selectedCategory, setSelectedCategory} = useProducts()
+function FilterCategories({selectedCategory, setSelectedCategory}: Props) {
   const {categories} = useCategories();
 
   console.log("selectedCategory", selectedCategory)
