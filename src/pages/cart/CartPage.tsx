@@ -21,7 +21,7 @@ function CartPage() {
     const totalPrice = cart.reduce((total, item) => total + toNumber(item.price) * toNumber(item.quantity ?? 1), 0);
     const navigate = useNavigate();
 
-     const deleteProduct = (cart : Product) => {
+    const deleteProduct = (cart : Product) => {
         if(cart.quantity === 1) {
             dispatch({ type: 'REMOVE_FROM_CART', payload: cart.id });
         }else{

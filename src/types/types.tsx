@@ -66,3 +66,11 @@ export interface Order {
   notes: string;
   deliveryDate: Date;
 }
+
+export interface Reviews {
+  id?: string;
+  title: string;
+  rating: number;
+  userId: string;
+  createdAt: number;
+}

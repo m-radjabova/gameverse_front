@@ -23,6 +23,7 @@ import AdminDashboard from "./pages/admin/dashboard/AdminDashboard"
 import DeliveryPage from "./pages/delivery/DeliveryPage"
 import HelloAdmin from "./pages/admin/HelloAdmin"
 import Profile from "./components/profile/Profile"
+import ProductDisplay from "./components/product/ProductDisplay"
 
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/home" element={<Home />} />
           <Route path="/shop" element={<ShopPage />} />
+          <Route path="/shop/:id" element={<ProductDisplay />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/cart/order-status" element={<CartStatus />} />

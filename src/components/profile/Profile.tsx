@@ -8,8 +8,10 @@ import { doc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../../firebase";
 import { toast } from "react-toastify";
 import useLoading from "../../hooks/useLoading";
+import useProducts from "../../hooks/useProducts";
 
 function Profile() {
+  const {reviews} = useProducts();
   const { loading } = useLoading();
   const { state: { user, cart } } = useContextPro();
   const [open, setOpen] = useState(false);
@@ -62,6 +64,9 @@ function Profile() {
     }
   };
 
+  const userReviews = reviews.filter(review => review.userId === user?.uid);
+
+
   if (loading) {
     return (
       <div className="admin-carousel">
@@ -98,7 +103,7 @@ function Profile() {
         <div className="profile-stat-card">
           <div className="profile-stat-icon">⭐</div>
           <div className="profile-stat-content">
-            <div className="profile-stat-number">12</div>
+            <div className="profile-stat-number">{userReviews?.length }</div>
             <div className="profile-stat-label">Reviews</div>
           </div>
         </div>

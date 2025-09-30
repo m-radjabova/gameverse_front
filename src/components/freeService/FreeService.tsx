@@ -1,13 +1,16 @@
 import bgfree from "../../assets/freeService.svg";
 import freeDelivery from "../../assets/Free Delivery.svg";
 import group from "../../assets/Group 9.svg";
+import { useNavigate } from "react-router-dom";
+import { FaArrowAltCircleRight } from "react-icons/fa";
 
 function FreeService() {
+  const navigate = useNavigate();
   return (
     <div className="free-service">
       <div className="free-service-container">
         <div className="left-side">
-          <div className="image-container">
+          <div className="free-image-container">
             <img className="bg" src={bgfree} alt="Special offer background" />
             <img 
               className="free-delivery" 
@@ -37,9 +40,9 @@ function FreeService() {
             Enjoy our premium quality fresh beef with free delivery service and 100% quality guarantee
           </p>
           
-          <button className="cta-button">
+          <button onClick={() => navigate("/shop")} className="cta-button">
             Shop Now
-            <span className="button-icon">→</span>
+            <FaArrowAltCircleRight />
           </button>
         </div>
       </div>

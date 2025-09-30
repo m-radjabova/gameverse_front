@@ -1,6 +1,8 @@
 import { useState } from "react";
 import type { Product } from "../../types/types";
 import useContextPro from "./../../hooks/useContextPro";
+import { useNavigate } from "react-router-dom";
+import useProducts from "../../hooks/useProducts";
 
 type Props = {
   products: Product[];
@@ -11,7 +13,9 @@ function ProductList({ products }: Props) {
     state: { cart },
     dispatch,
   } = useContextPro();
+  const {loading} = useProducts();
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   function handleCartToggle(product: Product) {
     const isInCart = cart.some((p) => p.id === product.id);
@@ -22,6 +26,11 @@ function ProductList({ products }: Props) {
       dispatch({ type: "ADD_TO_CART", payload: product });
     }
   }
+
+   if (loading) { return <div className="products-loading">
+                            <div className="loading-spinner">   
+                            </div>
+                        </div>;}
   return (
     <div>
       <div className="products-list">
@@ -33,6 +42,10 @@ function ProductList({ products }: Props) {
               className={`product-card`}
               onMouseEnter={() => setHoveredProduct(product.id)}
               onMouseLeave={() => setHoveredProduct(null)}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/shop/${product.id}`);
+              }}
             >
               <div className="product-image-container">
                 <img src={product.imageUrl} alt={product.name} />

@@ -1,7 +1,16 @@
 import { useState, useEffect, useCallback } from "react"
 import { db } from "../firebase"
-import {collection,doc,getDoc,getDocs,onSnapshot,type QueryDocumentSnapshot,
-  type DocumentData,} from "firebase/firestore"
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  onSnapshot,
+  query,
+  orderBy,
+  type QueryDocumentSnapshot,
+  type DocumentData,
+} from "firebase/firestore"
 import type { Order, OrderProduct, User } from "../types/types"
 
 export const useOrders = () => {
@@ -12,8 +21,11 @@ export const useOrders = () => {
   const subscribeOrders = useCallback(() => {
     setLoading(true)
     setError(null)
-
-    const ordersRef = collection(db, "orders")
+    
+    const ordersRef = query(
+      collection(db, "orders"),
+      orderBy("createdAt", "desc")
+    )
 
     const unsubscribe = onSnapshot(
       ordersRef,
@@ -89,7 +101,6 @@ export const useOrders = () => {
     const unsub = subscribeOrders()
     return () => unsub && unsub()
   }, [subscribeOrders])
-
 
   const getAllOrders = (): Order[] => orders
   const getOrdersByStatus = (status: string): Order[] =>

@@ -95,7 +95,7 @@ function AdminDashboard() {
       <div className="dashboard-stats">
         <div className="stat-card">
           <h3>Total Revenue</h3>
-          <div className="stat-value">{totalPrice} €</div>
+          <div className="stat-value">{totalPrice.toFixed(2)} €</div>
           <div className="stat-trend positive">
             +12% from last month
           </div>
@@ -146,7 +146,7 @@ function AdminDashboard() {
           
           <div className="dash-list-footer">
             <div className="dash-total-price">
-              Total: <strong>{totalPrice} €</strong>
+              Total: <strong>{totalPrice.toFixed(2)} €</strong>
             </div>
           </div>
         </div>

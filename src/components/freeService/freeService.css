@@ -35,13 +35,13 @@
   min-height: 350px;
 }
 
-.image-container {
+.free-image-container {
   position: relative;
   width: 100%;
   height: 100%;
 }
 
-.image-container .bg {
+.free-image-container .bg {
   width: 100%;
   height: auto;
   max-width: 450px;
@@ -49,7 +49,7 @@
   animation: float 6s ease-in-out;
 }
 
-.image-container .free-delivery {
+.free-image-container .free-delivery {
   position: absolute;
   top: -40px;
   left: 165px;
@@ -58,7 +58,7 @@
   animation: bounce 3s ease-in-out infinite;
 }
 
-.image-container .group {
+.free-image-container .group {
   position: absolute;
   bottom: -20px;
   right: 90px;

@@ -21,7 +21,7 @@ function AdminSidebar() {
         { name: "Carousel/Slider", icon: <FaHeart />, path: "/admin/carousel", role: "ADMIN" },
         { name: "Users", icon: <People />, path: "/admin/users", role: "ADMIN" },
         { name: "Orders", icon: <FaBox />, path: "/admin/orders", role: "CHEF" },
-        { name: "Waiter", icon: <SiWine />, path: "/admin/waiter", role: "WAITER" },
+    { name: "Waiter", icon: <SiWine />, path: "/admin/waiter", role: "WAITER" },
     ]
 
     const canAccess = (itemRole: string) => {

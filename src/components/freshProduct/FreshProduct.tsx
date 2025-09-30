@@ -1,13 +1,16 @@
+import { useNavigate } from "react-router-dom";
 import beefImg from "../../assets/beefimg.svg";
 import vector from "../../assets/Vector (2).svg";
+import { FaArrowAltCircleRight } from "react-icons/fa";
 
 function FreshProduct() {
+  const navigate = useNavigate();
   return (
     <div className="fresh-product">
       <div className="fresh-product-container">
         <div className="left-side">
-          <div className="image-wrapper">
-            <img src={beefImg} alt="Fresh beef products" className="product-image" />
+          <div className="fresh-image-wrapper">
+            <img src={beefImg} alt="Fresh beef products" className="fresh-product-image" />
             <div className="floating-badge floating-badge-1">
               <span>Fresh</span>
             </div>
@@ -46,9 +49,9 @@ function FreshProduct() {
             </div>
           </div>
           
-          <button className="cta-button">
+          <button onClick={() => navigate("/delivery")} className="cta-button">
             Find Now
-            <span className="button-arrow">→</span>
+            <FaArrowAltCircleRight />
           </button>
         </div>
       </div>

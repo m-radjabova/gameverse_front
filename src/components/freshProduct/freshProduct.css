@@ -30,12 +30,12 @@
   position: relative;
 }
 
-.image-wrapper {
+.fresh-image-wrapper {
   position: relative;
   max-width: 500px;
 }
 
-.product-image {
+.fresh-product-image {
   width: 100%;
   height: auto;
   filter: drop-shadow(0px 15px 30px rgba(0, 0, 0, 0.15));

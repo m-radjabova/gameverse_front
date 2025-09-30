@@ -20,6 +20,8 @@
 @import "./components/cartStatus/cartStatus.css";
 @import "./pages/admin/dashboard/adminDashboard.css";
 @import "./components/profile/profile.css";
+@import "./components/product//reviews.css";
+@import "./css/reviewForm.css";
 
 @import "./components/blog/blogPage.css";
 @import "tailwindcss";
