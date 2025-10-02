@@ -7,7 +7,7 @@ import { FaArrowAltCircleRight } from "react-icons/fa";
 function FreeService() {
   const navigate = useNavigate();
   return (
-    <div className="free-service">
+    <div className="free-service" data-aos="fade-up">
       <div className="free-service-container">
         <div className="left-side">
           <div className="free-image-container">

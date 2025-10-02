@@ -31,7 +31,7 @@ function AdminDashboard() {
     labels: groupedProducts.map((p) => p.name),
     datasets: [
       {
-        label: "Product Prices (€)",
+        label: "Product Prices ($)",
         data: groupedProducts.map((p) => p.price),
         backgroundColor: "rgba(220, 53, 69, 0.7)",
         borderColor: "rgba(220, 53, 69, 1)",
@@ -87,15 +87,12 @@ function AdminDashboard() {
     <div className="admin-dashboard">
       <div className="dashboard-header">
         <h1>Admin Dashboard</h1>
-        <div className="header-actions">
-          <button className="btn-primary">Generate Report</button>
-        </div>
       </div>
 
       <div className="dashboard-stats">
         <div className="stat-card">
           <h3>Total Revenue</h3>
-          <div className="stat-value">{totalPrice.toFixed(2)} €</div>
+          <div className="stat-value">{totalPrice.toFixed(2)} $</div>
           <div className="stat-trend positive">
             +12% from last month
           </div>
@@ -139,14 +136,14 @@ function AdminDashboard() {
                   <span className="dash-product-name">{product.name}</span>
                   <span className="dash-product-quantity">{product.quantity} units</span>
                 </div>
-                <div className="dash-product-price">{product.price} €</div>
+                <div className="dash-product-price">{product.price} $</div>
               </div>
             ))}
           </div>
           
           <div className="dash-list-footer">
             <div className="dash-total-price">
-              Total: <strong>{totalPrice.toFixed(2)} €</strong>
+              Total: <strong>{totalPrice.toFixed(2)} $</strong>
             </div>
           </div>
         </div>

@@ -1,3 +1,5 @@
+import "leaflet/dist/leaflet.css";
+import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import { useOrders } from "../../hooks/useOrders";
 import {
   FaClock,
@@ -14,6 +16,8 @@ import useContextPro from "../../hooks/useContextPro";
 import { SiWine } from "react-icons/si";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
+import UseModal from "../../hooks/UseModal";
+import RouteMap from "./RouteMap"; 
 
 function WaiterPage() {
   const {
@@ -23,6 +27,11 @@ function WaiterPage() {
   const { orders, loading, getOrdersByStatus } = useOrders();
   const [filterStatus, setFilterStatus] = useState("all");
   const [submittingId, setSubmittingId] = useState<string | null>(null);
+
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOrderLocation, setSelectedOrderLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [driverLocation, setDriverLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   const filteredOrders =
     filterStatus === "all" ? orders : getOrdersByStatus(filterStatus);
@@ -62,6 +71,19 @@ function WaiterPage() {
       setSubmittingId(null);
     }
   };
+
+  const handleShowRoute = (orderLocation: { lat: number; lng: number }) => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((pos) => {
+        setDriverLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setSelectedOrderLocation(orderLocation);
+        setIsModalOpen(true);
+      });
+    } else {
+      alert("Geolocation not supported");
+    }
+  };
+
   return (
     <div className="chef-page">
       <div className="chef-page-header">
@@ -88,6 +110,8 @@ function WaiterPage() {
             <span>order{filteredOrders.length !== 1 ? "s" : ""} pending</span>
           </div>
         </div>
+
+        {/* Filter buttons */}
         <div className="status-filter">
           <button
             className={`filter-btn ${filterStatus === "all" ? "active" : ""}`}
@@ -96,31 +120,26 @@ function WaiterPage() {
             All Orders
           </button>
           <button
-            className={`filter-btn ${
-              filterStatus === "pending" ? "active" : ""
-            }`}
+            className={`filter-btn ${filterStatus === "pending" ? "active" : ""}`}
             onClick={() => setFilterStatus("pending")}
           >
             Pending
           </button>
           <button
-            className={`filter-btn ${
-              filterStatus === "completed" ? "active" : ""
-            }`}
+            className={`filter-btn ${filterStatus === "completed" ? "active" : ""}`}
             onClick={() => setFilterStatus("completed")}
           >
             Completed
           </button>
           <button
-            className={`filter-btn ${
-              filterStatus === "delivered" ? "active" : ""
-            }`}
+            className={`filter-btn ${filterStatus === "delivered" ? "active" : ""}`}
             onClick={() => setFilterStatus("delivered")}
           >
             Delivered
           </button>
         </div>
       </div>
+
       <div className="chef-page-container">
         <div className="chef-page-content">
           {filteredOrders.length === 0 ? (
@@ -140,7 +159,7 @@ function WaiterPage() {
                         <FaUser className="customer-icon" />
                       </div>
                       <div>
-                        <h3>{order.user.name}</h3>
+                        <h3>{order.user?.name}</h3>
                         <span className="order-id">
                           Order #{order.id.slice(-6)}
                         </span>
@@ -150,9 +169,11 @@ function WaiterPage() {
                       {order.status}
                     </div>
                   </div>
-                  <div className="order-details">
+
+                  {/* Order Details */}
+                  <div className="order-status-details p-2">
                     {order.shippingAddress && (
-                      <div className="detail-item">
+                      <div className="status-detail-item">
                         <FaMapMarkerAlt className="detail-icon" />
                         <span className="address-text">
                           {order.shippingAddress}
@@ -160,7 +181,7 @@ function WaiterPage() {
                       </div>
                     )}
                     {order.totalPrice > 0 && (
-                      <div className="detail-item">
+                      <div className="status-detail-item">
                         <FaMoneyBillWave className="detail-icon" />
                         <span>
                           ${order.totalPrice.toFixed(2)} •{" "}
@@ -169,7 +190,7 @@ function WaiterPage() {
                       </div>
                     )}
                     {order.deliveryDate && (
-                      <div className="detail-item">
+                      <div className="status-detail-item">
                         <FaClock className="detail-icon" />
                         <span>
                           {new Date(order.deliveryDate).toLocaleDateString()}
@@ -177,33 +198,39 @@ function WaiterPage() {
                       </div>
                     )}
                     {order.shippingAddress && (
-                      <div className="detail-item">
+                      <div className="status-detail-item">
                         <FaTruck className="detail-icon" />
                         <span>{order.shippingAddress}</span>
                       </div>
                     )}
                     {order.notes && (
-                      <div className="detail-item">
+                      <div className="status-detail-item">
                         <FaCommentAlt className="detail-icon" />
                         <span>{order.notes}</span>
                       </div>
                     )}
 
                     {order.location && (
-                      <div className="detail-item">
+                      <div
+                        className="status-detail-item clickable"
+                        onClick={() => handleShowRoute(order.location)}
+                      >
                         <FaMapMarkerAlt className="detail-icon" />
                         <span>
-                          Lat: {order.location.lat}, Lng: {order.location.lng}
+                          Lat: {order.location.lat}, Lng: {order.location.lng} (View Route)
                         </span>
                       </div>
                     )}
-                    {order.phoneNumber && (
-                      <div className="detail-item">
+
+                    {order.phone && (
+                      <div className="status-detail-item">
                         <FaPhone className="detail-icon" />
-                        <span>{order.phoneNumber}</span>
+                        <span>{order.phone}</span>
                       </div>
                     )}
                   </div>
+
+                  {/* Products */}
                   <div className="order-products">
                     <h4>Order Items ({order.products.length})</h4>
                     <div className="chef-product-cards">
@@ -247,6 +274,8 @@ function WaiterPage() {
                       ))}
                     </div>
                   </div>
+
+                  {/* Actions */}
                   <div className="order-actions">
                     {order.status !== "delivered" && (
                       <button
@@ -266,6 +295,16 @@ function WaiterPage() {
           )}
         </div>
       </div>
+
+      <UseModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} size="xl">
+        {driverLocation && selectedOrderLocation ? (
+          <div style={{ width: "100%", height: "500px" }}>
+            <RouteMap origin={driverLocation} destination={selectedOrderLocation} />
+          </div>
+        ) : (
+          <p>Loading route...</p>
+        )}
+      </UseModal>
     </div>
   );
 }

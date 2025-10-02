@@ -93,7 +93,7 @@ const BlogPage = () => {
   });
 
   return (
-    <div className="blog-page">
+    <div className="blog-page" data-aos="fade-up">
       <section className="blog-hero">
         <div className="container">
           <div className="blog-hero-content">

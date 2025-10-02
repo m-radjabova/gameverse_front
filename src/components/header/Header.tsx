@@ -56,7 +56,7 @@ function Header() {
               <NavLink to="/category" className={({ isActive }) => "header-link" + (isActive ? " active" : "")}>Category</NavLink>
               <NavLink to="/shop" className={({ isActive }) => "header-link" + (isActive ? " active" : "")}>Shop</NavLink>
               <NavLink to="/blog" className={({ isActive }) => "header-link" + (isActive ? " active" : "")}>Blog</NavLink>
-              <NavLink to="/page" className={({ isActive }) => "header-link" + (isActive ? " active" : "")}>Page</NavLink>
+              <NavLink to="/products" className={({ isActive }) => "header-link" + (isActive ? " active" : "")}>Products</NavLink>
             </nav>
         </div>
         <div className="header-right">

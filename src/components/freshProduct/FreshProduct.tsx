@@ -6,7 +6,7 @@ import { FaArrowAltCircleRight } from "react-icons/fa";
 function FreshProduct() {
   const navigate = useNavigate();
   return (
-    <div className="fresh-product">
+    <div className="fresh-product" data-aos="fade-up">
       <div className="fresh-product-container">
         <div className="left-side">
           <div className="fresh-image-wrapper">

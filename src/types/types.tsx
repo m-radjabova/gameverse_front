@@ -65,11 +65,11 @@ export interface Order {
   shippingAddress: string;
   notes: string;
   deliveryDate: string;
-  location?: {  
+  location: {  
     lat: number;
     lng: number;
   };
-  phoneNumber: string;
+  phone: string;
 }
 
 export interface Reviews {

@@ -20,7 +20,7 @@ function BestSelling() {
     }
 
   return (
-    <div className="best-selling">
+    <div className="best-selling" data-aos="fade-up">
         <div className="best-selling-container">
             <div className="best-selling-right text-center">
                <div className="selling-products-title">

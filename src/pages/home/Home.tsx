@@ -8,15 +8,17 @@ import BestSelling from './../../components/bestSelling/BestSelling';
 
 function Home() {
   return (
-    <div className="max-w-[1500px] mx-auto px-4">
+    <>
       <Hero />
-      <Products />
-      <FreeService />
-      <SellingProducts />
-      <FreshProduct />
-      <BestSelling />
-      <MobileApp />
-    </div>
+      <div className="max-w-[1500px] mx-auto px-4">
+        <Products />
+        <FreeService />
+        <SellingProducts />
+        <FreshProduct />
+        <BestSelling />
+        <MobileApp />
+      </div>
+      </>
   )
 }
 

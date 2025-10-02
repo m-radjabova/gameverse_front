@@ -68,7 +68,7 @@ function AdminUsers() {
       <div className="card shadow-soft border-0 rounded-3 overflow-hidden">
         <div className="card-body p-0">
           <div className="table-responsive">
-            <table className="table table-hover table-striped align-middle mb-0">
+            <table className="table table-hover table-striped align-middle mb-0 h-100">
               <thead className="bg-light">
                 <tr>
                   <th className="ps-4 py-3 text-uppercase small fw-bold">

@@ -1,26 +1,31 @@
+import { useNavigate } from "react-router-dom";
 import useContextPro from "../../hooks/useContextPro";
 import { useOrders } from "../../hooks/useOrders";
 import useProducts from "../../hooks/useProducts";
 import useUsers from "../../hooks/useUsers";
+import { FaHome } from "react-icons/fa";
 
 function HelloAdmin() {
     const { state: { user } } = useContextPro();
     const { users } = useUsers();
     const { products } = useProducts();
     const { orders } = useOrders();
+    const navigate = useNavigate();
 
     return (
         <div className="admin-welcome">
-            {/* Background decoration */}
             <div className="admin-welcome-bg-1"></div>
             <div className="admin-welcome-bg-2"></div>
             <div className="admin-welcome-bg-3"></div>
             
             {/* Content */}
             <div className="admin-welcome-content">
-                <h1 className="admin-welcome-title">
-                    Welcome, {user?.name || "Admin"}! 👋
-                </h1>
+                <div className="admin-welcome-title-container">
+                    <h1 className="admin-welcome-title">
+                        Welcome, {user?.name || "Admin"}! 👋 
+                    </h1>
+                    <button className="home-btn" onClick={() => navigate('/')}> <FaHome /> Home Page</button>
+                </div>
                 
                 <div className="admin-welcome-subtitle">
                     {user?.email && (

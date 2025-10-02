@@ -97,3 +97,8 @@
 .modal-close-btn:active {
     transform: scale(0.95) rotate(90deg);
 }
+
+body{
+    overflow-x: hidden !important;
+}
+

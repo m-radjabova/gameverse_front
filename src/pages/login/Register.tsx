@@ -403,7 +403,6 @@ function Register() {
                 <span style={{ position: "relative", zIndex: 2 }}>
                   Register
                 </span>
-                <FaArrowRight />
               </>
             )}
             <FaArrowRight style={{ position: "relative", zIndex: 2 }} />

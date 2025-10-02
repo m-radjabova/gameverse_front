@@ -7,6 +7,7 @@ import { db } from '../../firebase';
 import { getAuth } from 'firebase/auth';
 import type { Product } from '../../types/types';
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 
 function CartPage() {
     const { state: { cart }, dispatch } = useContextPro();
@@ -31,12 +32,20 @@ function CartPage() {
 
     const handleAddOrder = async () => {
         if (cart.length === 0) return;
+
+        const auth = getAuth();
+        const user = auth.currentUser;
+
+        if (!user) {
+            toast.error('You must be logged in to place an order!!');
+            navigate("/sign-up"); 
+            return;
+        }
+
         try {
             setIsSaving(true);
-            const auth = getAuth();
-            const userId = auth.currentUser?.uid || '';
             const orderRef = await addDoc(collection(db, 'orders'), {
-                userId,
+                userId: user.uid,
                 totalPrice: totalPrice,
                 createdAt: new Date(),
                 status: 'pending',
@@ -45,6 +54,7 @@ function CartPage() {
                 notes: '',
                 deliveryDate: ''
             });
+
             for (const item of cart) {
                 const priceNum = Number(item.price) || 0;
                 const qtyNum = Number(item.quantity ?? 1) || 0;
@@ -60,6 +70,7 @@ function CartPage() {
                     createdAt: new Date()
                 });
             }
+
             navigate('/cart/order-status');
             dispatch({ type: 'CLEAR_CART' });
         } catch (e) {
@@ -68,6 +79,7 @@ function CartPage() {
             setIsSaving(false);
         }
     };
+
     return (
         <div className="cart-page">
             <div className="cart-container">

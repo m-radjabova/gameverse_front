@@ -48,7 +48,7 @@ function AdminSidebar() {
         >
             <div className="sidebar-header d-flex justify-content-between align-items-center p-3">
                 {isOpen && (
-                    <h4 onClick={() => navigate("/home")} className="m-0">
+                    <h4 onClick={() => navigate("/admin")} className="m-0">
                         Admin Panel
                     </h4>
                 )}

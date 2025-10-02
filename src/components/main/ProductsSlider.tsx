@@ -31,7 +31,7 @@ function ProductsSlider() {
   };
 
   return (
-    <div className="products-slider-container">
+    <div className="products-slider-container max-w-[1800px] mx-auto ">
       <Slider {...settings}>
         {products.map((product) => (
           <div key={product.id} className="product-slide">

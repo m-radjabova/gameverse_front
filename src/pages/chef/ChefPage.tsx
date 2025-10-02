@@ -32,6 +32,8 @@ function ChefPage() {
         return "status-badge status-pending";
       case "completed":
         return "status-badge status-completed";
+      case "delivered":
+        return "status-badge status-delivered";
       default:
         return "status-badge";
     }
@@ -129,7 +131,7 @@ function ChefPage() {
                         <FaUser className="customer-icon" />
                       </div>
                       <div>
-                        <h3>{order.user.name}</h3>
+                        <h3>{order.user?.name}</h3>
                         <span className="order-id">
                           Order #{order.id.slice(-6)}
                         </span>

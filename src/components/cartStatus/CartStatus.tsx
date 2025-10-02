@@ -14,21 +14,18 @@ import { GiKnifeFork } from "react-icons/gi";
 import useContextPro from "../../hooks/useContextPro";
 
 function CartStatus() {
-  const { orders, getOrdersByStatus, loading } = useOrders();
+  const { orders, loading } = useOrders();
   const {
     state: { user },
   } = useContextPro();
   const [filterStatus, setFilterStatus] = useState("all");
-
-  const filteredOrdersStatus =
-    filterStatus === "all" ? orders : getOrdersByStatus(filterStatus);
-
-  const userOrders = user
-    ? orders.filter((order) => order.userId === user.uid)
+  const filteredOrders = user
+    ? orders.filter(
+        (order) =>
+          order.userId === user.uid &&
+          (filterStatus === "all" || order.status === filterStatus)
+      )
     : [];
-
-  const filteredOrders =
-    filterStatus === "all" ? userOrders : filteredOrdersStatus;
 
   const getStatusBadgeClass = (status: string) => {
     switch (status.toLowerCase()) {
@@ -53,6 +50,7 @@ function CartStatus() {
       </div>
     );
   }
+
   return (
     <div className="cart-page">
       <div className="cart-page-container">
@@ -68,48 +66,37 @@ function CartStatus() {
               <span className="order-number">{filteredOrders.length}</span>
               <span>
                 order{filteredOrders.length !== 1 ? "s" : ""}{" "}
-                {filterStatus === "pending"
-                  ? "pending"
-                  : filterStatus === "completed"
-                  ? "completed"
-                  : ""}
+                {filterStatus !== "all" ? filterStatus : ""}
               </span>
             </div>
             <div className="status-filter">
               <button
-                className={`filter-btn ${
-                  filterStatus === "all" ? "active" : ""
-                }`}
+                className={`filter-btn ${filterStatus === "all" ? "active" : ""}`}
                 onClick={() => setFilterStatus("all")}
               >
                 All Orders
               </button>
               <button
-                className={`filter-btn ${
-                  filterStatus === "pending" ? "active" : ""
-                }`}
+                className={`filter-btn ${filterStatus === "pending" ? "active" : ""}`}
                 onClick={() => setFilterStatus("pending")}
               >
                 Pending
               </button>
               <button
-                className={`filter-btn ${
-                  filterStatus === "completed" ? "active" : ""
-                }`}
+                className={`filter-btn ${filterStatus === "completed" ? "active" : ""}`}
                 onClick={() => setFilterStatus("completed")}
               >
                 Completed
               </button>
               <button
-                className={`filter-btn ${
-                  filterStatus === "delivered" ? "active" : ""
-                }`}
+                className={`filter-btn ${filterStatus === "delivered" ? "active" : ""}`}
                 onClick={() => setFilterStatus("delivered")}
               >
                 Delivered
               </button>
             </div>
           </div>
+
           <div className="order-status">
             <div className="order-status-container">
               <div className="chef-page-content">
@@ -132,8 +119,7 @@ function CartStatus() {
                             <div>
                               <h3>{order.user?.name || "Unknown User"}</h3>
                               <span className="order-id">
-                                Order #
-                                {order.id ? order.id.slice(-6) : "------"}
+                                Order #{order.id ? order.id.slice(-6) : "------"}
                               </span>
                             </div>
                           </div>
@@ -141,13 +127,13 @@ function CartStatus() {
                             {order.status}
                           </div>
                         </div>
+
+                        {/* Order Details */}
                         <div className="order-status-details">
                           {order.shippingAddress && (
                             <div className="status-detail-item">
                               <FaMapMarkerAlt className="detail-icon" />
-                              <span className="address-text">
-                                {order.shippingAddress}
-                              </span>
+                              <span className="address-text">{order.shippingAddress}</span>
                             </div>
                           )}
                           {order.totalPrice > 0 && (
@@ -163,9 +149,7 @@ function CartStatus() {
                             <div className="status-detail-item">
                               <FaClock className="detail-icon" />
                               <span>
-                                {new Date(
-                                  order.deliveryDate
-                                ).toLocaleDateString() || "N/A"}
+                                {new Date(order.deliveryDate).toLocaleDateString() || "N/A"}
                               </span>
                             </div>
                           )}
@@ -181,13 +165,11 @@ function CartStatus() {
                               <span>{order.notes}</span>
                             </div>
                           )}
-
                           {order.location && (
                             <div className="status-detail-item">
                               <FaMapMarkerAlt className="detail-icon" />
                               <span>
-                                Lat: {order.location.lat}, Lng:{" "}
-                                {order.location.lng}
+                                Lat: {order.location.lat}, Lng: {order.location.lng}
                               </span>
                             </div>
                           )}
@@ -199,28 +181,20 @@ function CartStatus() {
                           )}
                         </div>
 
+                        {/* Products */}
                         <div className="stats-order-products">
                           <h4>
                             Order Items (
-                            {Array.isArray(order.products)
-                              ? order.products.length
-                              : 0}
-                            )
+                            {Array.isArray(order.products) ? order.products.length : 0})
                           </h4>
                           <div className="status-product-cards">
                             {Array.isArray(order.products) &&
                               order.products.map((product, index) => (
-                                <div
-                                  className="status-product-card"
-                                  key={index}
-                                >
+                                <div className="status-product-card" key={index}>
                                   <div className="status-product-image-container">
                                     <img
                                       className="status-product-image"
-                                      src={
-                                        product.imageUrl ||
-                                        "/api/placeholder/60/60"
-                                      }
+                                      src={product.imageUrl || "/api/placeholder/60/60"}
                                       alt={product.name}
                                     />
                                   </div>

@@ -5,7 +5,7 @@ import "./MobileApp.css";
 
 function MobileApp() {
   return (
-    <div className="mobile-app">
+    <div className="mobile-app" data-aos="fade-up">
       <div className="mobile-app-container">
         <div className="left-side">
           <h1 className="app-title">

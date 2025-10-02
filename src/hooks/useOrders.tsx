@@ -70,11 +70,11 @@ export const useOrders = () => {
                 totalPrice: orderData.totalPrice || 0,
                 products,
                 createdAt: orderData.createdAt,
-                status: orderData.status || "unknown",
-                paymentMethod: orderData.paymentMethod || "unknown",
-                shippingAddress: orderData.shippingAddress || "unknown",
-                notes: orderData.notes || "unknown",
-                deliveryDate: orderData.deliveryDate || "unknown",
+                status: orderData.status || "",
+                paymentMethod: orderData.paymentMethod || "",
+                shippingAddress: orderData.shippingAddress || "",
+                notes: orderData.notes || "",
+                deliveryDate: orderData.deliveryDate || "",
                 location: orderData.location,
               } as Order
             })
@@ -106,6 +106,7 @@ export const useOrders = () => {
   const getAllOrders = (): Order[] => orders
   const getOrdersByStatus = (status: string): Order[] =>
     orders.filter(order => order.status === status)
+  
   const getOrdersByUser = (userId: string): Order[] =>
     orders.filter(order => order.userId === userId)
 

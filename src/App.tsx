@@ -24,23 +24,36 @@ import DeliveryPage from "./pages/delivery/DeliveryPage"
 import HelloAdmin from "./pages/admin/HelloAdmin"
 import Profile from "./components/profile/Profile"
 import ProductDisplay from "./components/product/ProductDisplay"
-
+import AOS from "aos";
+import "aos/dist/aos.css";
+import { useEffect } from "react"
+import ScrollToTop from "./hooks/ScroolToTop"
+import BestSelling from "./components/bestSelling/BestSelling"
+import Products from "./components/product/Products"
 
 function App() {
   const { loading } = useLoading();
+
+   useEffect(() => {
+    AOS.init({ duration: 2000 });
+    }, []);
 
   if (loading) {
     return <IsLoading />;
   }
 
+
   return (
     <div>
+      <ScrollToTop />
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/home" element={<Home />} />
           <Route path="/shop" element={<ShopPage />} />
+          <Route path="/category" element={<BestSelling />} />
+          <Route path="/products" element={<Products />} />
           <Route path="/shop/:id" element={<ProductDisplay />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/blog" element={<BlogPage />} />

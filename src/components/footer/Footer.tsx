@@ -13,7 +13,7 @@ import payoner from "../../assets/Payment Method.svg";
 
 function Footer() {
   return (
-    <div className="footer">
+    <div className="footer" data-aos="fade-up">
       <div className="footer-container">
         <div className="footer-content">
           <div className="logo-section">
