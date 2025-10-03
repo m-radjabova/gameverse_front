@@ -1,12 +1,21 @@
 import { useEffect, useState } from "react";
-import type {User } from "../types/types";
-import {collection, doc, getDocs, orderBy, query, updateDoc, } from "firebase/firestore";
+import type { User } from "../types/types";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  orderBy,
+  query,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../firebase";
 import { toast } from "react-toastify";
 
 function useUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState(""); 
 
   const q = query(collection(db, "users"), orderBy("createdAt", "asc"));
 
@@ -30,12 +39,11 @@ function useUsers() {
     }
   };
 
+ 
   const updateUserRole = async (userId: string, newRoles: string[]) => {
     try {
       const userRef = doc(db, "users", userId);
-
-      await updateDoc(userRef, { roles: newRoles }); 
-
+      await updateDoc(userRef, { roles: newRoles });
       toast.success("User roles updated!");
       await getUsers();
     } catch (error) {
@@ -44,8 +52,31 @@ function useUsers() {
     }
   };
 
+  const deleteUser = async (userId: string) => {
+    try {
+      await deleteDoc(doc(db, "users", userId));
+      toast.success("User deleted!");
+      setUsers((prev) => prev.filter((u) => u.id !== userId)); 
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      toast.error("Failed to delete user");
+    }
+  };
 
-  return { users, loading, updateUserRole };
+  const filteredUsers = users.filter(
+    (u) =>
+      u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return {
+    users: filteredUsers,
+    loading,
+    updateUserRole,
+    deleteUser,
+    searchTerm,
+    setSearchTerm,
+  };
 }
 
 export default useUsers;

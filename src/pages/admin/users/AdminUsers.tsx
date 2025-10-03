@@ -1,8 +1,9 @@
 import { useState } from "react";
 import Select, { type MultiValue } from "react-select";
-import { FaSave, FaUser } from "react-icons/fa";
+import { FaSave, FaTrash, FaUser } from "react-icons/fa";
 import useUsers from "../../../hooks/useUsers";
 import { customSelectStyles } from "../../../utils";
+import UseModal from "../../../hooks/UseModal";
 
 type RoleOption = {
   value: string;
@@ -10,37 +11,52 @@ type RoleOption = {
 };
 
 function AdminUsers() {
-  const { users, updateUserRole, loading } = useUsers();
+  const {
+    users,
+    updateUserRole,
+    loading,
+    deleteUser,
+    searchTerm,
+    setSearchTerm,
+  } = useUsers();
   const [selectedRoles, setSelectedRoles] = useState<{
     [key: string]: string[];
   }>({});
   const [isSaving, setIsSaving] = useState<{ [key: string]: boolean }>({});
 
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+
   const roleOptions = (): RoleOption[] => [
     { value: "ADMIN", label: "ADMIN" },
     { value: "CHEF", label: "CHEF" },
     { value: "WAITER", label: "WAITER" },
-    { value: "USER", label: "USER" }
+    { value: "USER", label: "USER" },
   ];
-  
+
   const handleRoleChange = (
     userId: string,
     selected: MultiValue<{ value: string; label: string }>
   ) => {
-    const roles = selected.map(
-      (option: { value: string; label: string }) => option.value
-    );
+    const roles = selected.map((option) => option.value);
     setSelectedRoles((prev) => ({ ...prev, [userId]: roles }));
   };
 
   const saveRoleChange = async (userId: string) => {
     const roles = selectedRoles[userId] ?? [];
-
     setIsSaving((prev) => ({ ...prev, [userId]: true }));
     try {
       await updateUserRole(userId, roles);
     } finally {
       setIsSaving((prev) => ({ ...prev, [userId]: false }));
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (deleteTarget) {
+      await deleteUser(deleteTarget);
+      setDeleteTarget(null);
+      setIsOpen(false);
     }
   };
 
@@ -63,6 +79,13 @@ function AdminUsers() {
           User Management
         </h2>
         <p className="text-muted">Manage user roles and permissions</p>
+        <input
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="form-control"
+          placeholder="Search users..."
+          type="search"
+        />
       </div>
 
       <div className="card shadow-soft border-0 rounded-3 overflow-hidden">
@@ -89,7 +112,6 @@ function AdminUsers() {
                 {users.map((user) => {
                   const currentRoles =
                     selectedRoles[user.id] ?? user.roles ?? [];
-
                   return (
                     <tr key={user.id}>
                       <td className="ps-4 py-3">
@@ -109,7 +131,7 @@ function AdminUsers() {
                           </span>
                         )}
                       </td>
-                      <td className="py-3" style={{ minWidth: "220px" }}>
+                      <td className="py-3" style={{ maxWidth: "220px" }}>
                         <Select
                           isMulti
                           options={roleOptions()}
@@ -125,20 +147,32 @@ function AdminUsers() {
                           classNamePrefix="select"
                         />
                       </td>
-                      <td className="pe-4 py-3 text-end">
-                        <button
-                          className="btn btn-success btn-sm rounded-pill px-3"
-                          onClick={() => saveRoleChange(user.id)}
-                          disabled={isSaving[user.id]}
-                        >
-                          {isSaving[user.id] ? (
-                            <span className="spinner-border spinner-border-sm"></span>
-                          ) : (
-                            <>
-                              <FaSave className="me-1" /> Save
-                            </>
-                          )}
-                        </button>
+                      <td className="pe-4 py-3">
+                        <div className="btn-group-vertical w-100" role="group">
+                          <button
+                            className="btn btn-success btn-sm rounded-pill d-flex align-items-center justify-content-center"
+                            onClick={() => saveRoleChange(user.id)}
+                            disabled={isSaving[user.id]}
+                          >
+                            {isSaving[user.id] ? (
+                              <span className="spinner-border spinner-border-sm"></span>
+                            ) : (
+                              <>
+                                <FaSave className="me-1" /> Save
+                              </>
+                            )}
+                          </button>
+
+                          <button
+                            className="btn btn-danger btn-sm rounded-pill d-flex align-items-center justify-content-center mt-2"
+                            onClick={() => {
+                              setDeleteTarget(user.id);
+                              setIsOpen(true);
+                            }}
+                          >
+                            <FaTrash className="me-1" /> Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -147,6 +181,24 @@ function AdminUsers() {
             </table>
           </div>
         </div>
+
+        <UseModal isOpen={isOpen} onClose={() => setIsOpen(false)}>
+          <div className="p-3 text-center">
+            <h5>Are you sure?</h5>
+            <p className="text-muted">This action cannot be undone.</p>
+            <div className="d-flex justify-content-center mt-3">
+              <button
+                className="btn btn-secondary me-2"
+                onClick={() => setIsOpen(false)}
+              >
+                Cancel
+              </button>
+              <button className="btn btn-danger" onClick={confirmDelete}>
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </UseModal>
       </div>
     </div>
   );
