@@ -8,6 +8,9 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from "./layout/AdminLayout"
 import HelloAdmin from "./pages/admin/HelloAdmin"
 import NotFound from './components/NotFound';
+import PostList from "./components/posts/PostList"
+import UserList from "./components/users/UserList"
+import TodoList from "./components/todos/TodoList"
 
 function App() {
 
@@ -17,6 +20,9 @@ function App() {
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/posts" element={<PostList />} />
+          <Route path="/users" element={<UserList />} />
+          <Route path="/todos" element={<TodoList />} />
         </Route>
 
         <Route element={<AuthLayout />}>
