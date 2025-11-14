@@ -9,21 +9,28 @@ import {
   Typography,
   Button,
   Container,
+  Input,
+  Stack,
+  Pagination,
+  CircularProgress,
 } from "@mui/material";
 import type { User } from "../../types/types";
-import { FaEdit, FaMinus, FaTrash } from "react-icons/fa";
-import { Plus } from "react-bootstrap-icons";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import useUsers from "../../hooks/useUsers";
 import UserModal from "./UserForm";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {useState } from "react";
+import { useDebounce } from "../../hooks/useDebounce";
 
 function UserList() {
-  const { users, addUser, updateUser, deleteUser, incrementAge, decrementAge } =
-    useUsers();
   const [open, setOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 400);
+  const [page, setPage] = useState(1);
+
+  const { users, pages, addUser, updateUser, deleteUser, isLoading } = useUsers(
+    { searchTerm: debouncedSearch, page }
+  );
 
   const handleCreateUser = () => {
     setSelectedUser(null);
@@ -49,112 +56,125 @@ function UserList() {
     handleClose();
   };
 
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(event.target.value);
+  };
+
+  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
+  };
+
   return (
     <Container maxWidth="lg">
       <Box
         display="flex"
-        justifyContent="space-between"
+        flexDirection="column"
         alignItems="center"
-        mb={4}
+        mt={4}
         p={2}
       >
-        <Button variant="contained" onClick={() => navigate(-1)}>Back</Button>
-        <Typography variant="h4" component="h1">
-          User Management
-        </Typography>
-        <Button variant="contained" onClick={handleCreateUser} size="large">
-          Create User
-        </Button>
+        <Input
+          sx={{ width: "100%", mb: 2 }}
+          type="search"
+          placeholder="Search users by username..."
+          value={search}
+          onChange={handleSearchChange}
+        />
+        <Box display="flex" justifyContent="space-between" width="100%">
+          <Typography variant="h4" component="h1">
+            User Management
+          </Typography>
+          <Button variant="contained" onClick={handleCreateUser} size="large">
+            Create User
+          </Button>
+        </Box>
       </Box>
-      <Table sx={{ minWidth: 650 }} aria-label="user table">
-        <TableHead>
-          <TableRow>
-            <TableCell>
-              <strong>Name</strong>
-            </TableCell>
-            <TableCell>
-              <strong>Email</strong>
-            </TableCell>
-            <TableCell>
-              <strong>Phone</strong>
-            </TableCell>
-            <TableCell>
-              <strong>Address</strong>
-            </TableCell>
-            <TableCell>
-              <strong>Age</strong>
-            </TableCell>
-            <TableCell>
-              <strong>Actions</strong>
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {users.map((user : User) => (
-            <TableRow
-              key={user.id}
-              sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-            >
-              <TableCell component="th" scope="row">
-                {user.username}
-              </TableCell>
-              <TableCell>{user.email}</TableCell>
-              <TableCell>{user.phone_number}</TableCell>
-              <TableCell>{user.address}</TableCell>
+
+      {isLoading ? (
+        <Box display="flex" justifyContent="center" my={4}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Table sx={{ minWidth: 650 }} aria-label="user table">
+          <TableHead>
+            <TableRow>
               <TableCell>
-                <Box display="flex" alignItems="center" gap={1}>
-                  <IconButton
-                    size="small"
-                    color="primary"
-                    onClick={() => decrementAge(user.id!)}
-                    disabled={user.age <= 1}
-                  >
-                    <FaMinus fontSize="small" />
-                  </IconButton>
-                  <Typography
-                    variant="body1"
-                    sx={{ minWidth: 30, textAlign: "center" }}
-                  >
-                    {user.age}
-                  </Typography>
-                  <IconButton
-                    size="small"
-                    color="primary"
-                    onClick={() => incrementAge(user.id!)}
-                  >
-                    <Plus fontSize="small" />
-                  </IconButton>
-                </Box>
+                <strong>username</strong>
               </TableCell>
               <TableCell>
-                <Box display="flex" gap={1}>
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleEditUser(user)} // Tuzatildi: editUser -> handleEditUser
-                    size="small"
-                  >
-                    <FaEdit />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => deleteUser(user.id!)}
-                    size="small"
-                  >
-                    <FaTrash />
-                  </IconButton>
-                </Box>
+                <strong>email</strong>
+              </TableCell>
+              <TableCell>
+                <strong>address</strong>
+              </TableCell>
+              <TableCell>
+                <strong>actions</strong>
               </TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHead>
+          <TableBody>
+            {users.map((user: User) => (
+              <TableRow
+                key={user.id}
+                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+              >
+                <TableCell component="th" scope="row">
+                  {user.username}
+                </TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>
+                  Street: {user.address.street} - City: {user.address.city}
+                </TableCell>
+                <TableCell>
+                  <Box display="flex" gap={1}>
+                    <IconButton
+                      color="primary"
+                      onClick={() => handleEditUser(user)}
+                      size="small"
+                    >
+                      <FaEdit />
+                    </IconButton>
+                    <IconButton
+                      color="error"
+                      onClick={() => deleteUser(user.id!)}
+                      size="small"
+                    >
+                      <FaTrash />
+                    </IconButton>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+            {users.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={4} align="center">
+                  <Typography variant="body1" color="textSecondary">
+                    {search
+                      ? "No users found matching your search"
+                      : "No users available"}
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      )}
 
-      <UserModal 
-        isOpen={open} 
-        onClose={handleClose} 
-        onSubmit={handleSubmit} 
-        editingUser={selectedUser} 
+      <UserModal
+        isOpen={open}
+        onClose={handleClose}
+        onSubmit={handleSubmit}
+        editingUser={selectedUser}
       />
+
+      <Stack spacing={2} my={4} alignItems="center">
+        <Pagination
+          count={pages}
+          page={page}
+          onChange={handlePageChange}
+          color="primary"
+        />
+      </Stack>
     </Container>
   );
 }

@@ -2,9 +2,10 @@ export interface User {
   id: number;
   username: string;
   email: string;
-  age: number;
-  phone_number: string;
-  address: string;
+  address: {
+    street: string;
+    city: string;
+  };
 }
 
 export interface Post {

@@ -2,60 +2,53 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "../apiClient/apiClient";
 import type { User } from "../types/types";
 
-function useUsers() {
+interface UseUsersProps {
+  searchTerm?: string;
+  page?: number;
+}
+
+function useUsers({ searchTerm = "", page = 1}: UseUsersProps = {}) {
   const queryClient = useQueryClient();
 
-  const { data: users = [], isLoading, error, refetch } = useQuery({
-    queryKey: ["users"],
-    queryFn: async () => {
-      const response = await apiClient.get("/users");
-      return response.data;
-    }
-  });
+ const { data, isLoading, error } = useQuery({
+  queryKey: ["users", searchTerm, page],
+  queryFn: async () => {
+    const params: Record<string, string | number> = { page, limit: 4 };
+    if (searchTerm.trim()) params.username = searchTerm;
+
+    const response = await apiClient.get("/users/", { params });
+    return response.data;
+  }
+});
 
   const addUser = useMutation({
-    mutationFn: (user: User) => apiClient.post("/users", user).then(res => res.data),
+    mutationFn: (user: User) => apiClient.post("/users/", user).then(res => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     }
   });
 
   const updateUser = useMutation({
-    mutationFn: (user: User) => apiClient.put(`/users/${user.id}`, user).then(res => res.data),
+    mutationFn: (user: User) => apiClient.put(`/users/${user.id}/`, user).then(res => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     }
   });
 
   const deleteUser = useMutation({
-    mutationFn: (id: number) => apiClient.delete(`/users/${id}`),
+    mutationFn: (id: number) => apiClient.delete(`/users/${id}/`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     }
   });
 
-  const incrementAge = useMutation({
-    mutationFn: (id: number) => apiClient.patch(`/users/${id}/increment`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-    }
-  })
-
-  const decrementAge = useMutation({
-    mutationFn: (id : number) => apiClient.patch(`/users/${id}/decrement`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-    }
-  })
-
   return {
-    users,
+    users: data?.data || [],
+  total: data?.total || 0,
+  pages: data?.pages || 1,
     isLoading,
     error,
-    refetch,
     addUser: addUser.mutate,
-    incrementAge: incrementAge.mutate,
-    decrementAge: decrementAge.mutate,
     updateUser: updateUser.mutate,
     deleteUser: deleteUser.mutate,
     isAdding: addUser.isPending,

@@ -20,9 +20,10 @@ const UserModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, editingUser }) 
     defaultValues: {
       username: "",
       email: "",
-      phone_number: "",
-      address: "",
-      age: 18,
+      address: {
+        street: "",
+        city: ""
+      },
     },
   });
 
@@ -33,9 +34,10 @@ const UserModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, editingUser }) 
       reset({
         username: "",
         email: "",
-        phone_number: "",
-        address: "",
-        age: 18,
+        address: {
+          street: "",
+          city: ""
+        },
       });
     }
   }, [editingUser, reset, isOpen]); 
@@ -88,58 +90,37 @@ const UserModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, editingUser }) 
         </div>
 
         <div className="form-group">
-          <label htmlFor="phone_number">Phone Number</label>
+          <label htmlFor="street">Street</label>
           <input
             type="text"
-            id="phone_number"
-            placeholder="+998901234567"
-            {...register("phone_number", {
-              required: "Phone number is required",
-              pattern: {
-                value: /^\+998\d{9}$/,
-                message: "Phone number must match +998XXXXXXXXX format"
-              }
-            })}
-          />
-          {errors.phone_number && <span className="error">{errors.phone_number.message}</span>}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="age">Age</label>
-          <input
-            type="number"
-            id="age"
-            placeholder="Enter age"
-            {...register("age", { 
-              required: "Age is required", 
-              min: { 
-                value: 18, 
-                message: "Age must be at least 18" 
-              }, 
-              max: { 
-                value: 100, 
-                message: "Age must be 100 or less" 
-              } 
-            })}
-          />
-          {errors.age && <span className="error">{errors.age.message}</span>}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="address">Address</label>
-          <input
-            type="text"
-            id="address"
-            placeholder="Enter address"
-            {...register("address", { 
-              required: "Address is required",
+            id="street"
+            placeholder="Enter street address"
+            {...register("address.street", { 
+              required: "Street is required",
               minLength: {
-                value: 5,
-                message: "Address must be at least 5 characters"
+                value: 3,
+                message: "Street must be at least 3 characters"
               }
             })}
           />
-          {errors.address && <span className="error">{errors.address.message}</span>}
+          {errors.address?.street && <span className="error">{errors.address.street.message}</span>}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="city">City</label>
+          <input
+            type="text"
+            id="city"
+            placeholder="Enter city"
+            {...register("address.city", { 
+              required: "City is required",
+              minLength: {
+                value: 2,
+                message: "City must be at least 2 characters"
+              }
+            })}
+          />
+          {errors.address?.city && <span className="error">{errors.address.city.message}</span>}
         </div>
 
         <div className="form-actions">
