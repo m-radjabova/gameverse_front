@@ -18,18 +18,30 @@ import type { User } from "../../types/types";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import useUsers from "../../hooks/useUsers";
 import UserModal from "./UserForm";
-import {useState } from "react";
+import { useState, useMemo } from "react";
 import { useDebounce } from "../../hooks/useDebounce";
+import Select from "react-select";
 
 function UserList() {
   const [open, setOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [search, setSearch] = useState("");
+  const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const debouncedSearch = useDebounce(search, 400);
   const [page, setPage] = useState(1);
 
-  const { users, pages, addUser, updateUser, deleteUser, isLoading } = useUsers(
-    { searchTerm: debouncedSearch, page }
+  const { users, pages, addUser, updateUser, deleteUser, isLoading, cities } =
+    useUsers({ searchTerm: debouncedSearch, cities: selectedCities, page });
+
+  const cityOptions = useMemo(
+    () => [
+      { value: "", label: "All Cities" },
+      ...cities.map((city: string) => ({
+        value: city,
+        label: city,
+      })),
+    ],
+    [cities]
   );
 
   const handleCreateUser = () => {
@@ -60,6 +72,8 @@ function UserList() {
     setSearch(event.target.value);
   };
 
+ 
+
   const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
   };
@@ -73,13 +87,31 @@ function UserList() {
         mt={4}
         p={2}
       >
-        <Input
-          sx={{ width: "100%", mb: 2 }}
-          type="search"
-          placeholder="Search users by username..."
-          value={search}
-          onChange={handleSearchChange}
-        />
+        <Box display="flex" gap={2} width="100%" mb={2}>
+          <Input
+            sx={{ flex: 1 }}
+            type="search"
+            placeholder="Search users by username..."
+            value={search}
+            onChange={handleSearchChange}
+          />
+          <Box sx={{ minWidth: 200 }}>
+            <Select
+              isMulti
+              options={cityOptions}
+              value={cityOptions.filter((c) => selectedCities.includes(c.value))}
+              onChange={(selected) => {
+                const values = selected ? selected.map((s) => s.value) : [];
+                setSelectedCities(values);
+                setPage(1);
+              }}
+              placeholder="Select cities..."
+              isClearable
+            />
+
+          </Box>
+        </Box>
+        {/* Header Section */}
         <Box display="flex" justifyContent="space-between" width="100%">
           <Typography variant="h4" component="h1">
             User Management
@@ -105,7 +137,10 @@ function UserList() {
                 <strong>email</strong>
               </TableCell>
               <TableCell>
-                <strong>address</strong>
+                <strong>City</strong>
+              </TableCell>
+              <TableCell>
+                <strong>Street</strong>
               </TableCell>
               <TableCell>
                 <strong>actions</strong>
@@ -122,9 +157,8 @@ function UserList() {
                   {user.username}
                 </TableCell>
                 <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  Street: {user.address.street} - City: {user.address.city}
-                </TableCell>
+                <TableCell>{user.address.city}</TableCell>
+                <TableCell>{user.address.street}</TableCell>
                 <TableCell>
                   <Box display="flex" gap={1}>
                     <IconButton
@@ -147,10 +181,10 @@ function UserList() {
             ))}
             {users.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} align="center">
+                <TableCell colSpan={5} align="center">
                   <Typography variant="body1" color="textSecondary">
-                    {search
-                      ? "No users found matching your search"
+                    {search || selectedCities
+                      ? "No users found matching your filters"
                       : "No users available"}
                   </Typography>
                 </TableCell>
