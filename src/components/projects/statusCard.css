@@ -1,0 +1,262 @@
+.status-card {
+  border-radius: 20px;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.03);
+  position: relative;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.status-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.1), 
+    transparent
+  );
+}
+
+.status-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle at 30% 20%,
+    rgba(255, 255, 255, 0.03) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+.status-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.status-card-content {
+  padding: 2rem;
+  color: white;
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.status-badge {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 600 !important;
+  font-size: 0.75rem !important;
+  margin-bottom: 1.5rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 12px !important;
+  padding: 6px 14px !important;
+  backdrop-filter: blur(10px);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  align-self: flex-start;
+}
+
+.status-card-title {
+  font-weight: 700;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.3;
+  letter-spacing: -0.5px;
+}
+
+.status-card-description {
+  opacity: 0.7;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+  font-size: 0.95rem;
+  color: #cccccc;
+  flex: 1;
+}
+
+.add-task-btn {
+  border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  border-radius: 14px !important;
+  padding: 12px 24px !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px);
+  font-size: 0.9rem !important;
+  letter-spacing: 0.3px;
+  margin-top: auto;
+}
+
+.add-task-btn:hover {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  color: white !important;
+}
+
+.status-card[data-status="TODO"] {
+  background: linear-gradient(
+    135deg, 
+    rgba(127, 140, 141, 0.08) 0%, 
+    rgba(127, 140, 141, 0.02) 50%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+}
+
+.status-card[data-status="INPROGRESS"] {
+  background: linear-gradient(
+    135deg, 
+    rgba(52, 152, 219, 0.08) 0%, 
+    rgba(52, 152, 219, 0.02) 50%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+}
+
+.status-card[data-status="VERIFIED"] {
+  background: linear-gradient(
+    135deg, 
+    rgba(155, 89, 182, 0.08) 0%, 
+    rgba(155, 89, 182, 0.02) 50%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+}
+
+.status-card[data-status="DONE"] {
+  background: linear-gradient(
+    135deg, 
+    rgba(46, 204, 113, 0.08) 0%, 
+    rgba(46, 204, 113, 0.02) 50%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+}
+
+.status-indicator {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  filter: blur(0.5px);
+  z-index: 3;
+}
+
+.status-card[data-status="TODO"] .status-indicator {
+  background: #7f8c8d;
+  box-shadow: 0 0 10px rgba(127, 140, 141, 0.4);
+}
+
+.status-card[data-status="INPROGRESS"] .status-indicator {
+  background: #3498db;
+  box-shadow: 0 0 12px rgba(52, 152, 219, 0.5);
+}
+
+.status-card[data-status="VERIFIED"] .status-indicator {
+  background: #9b59b6;
+  box-shadow: 0 0 12px rgba(155, 89, 182, 0.5);
+}
+
+.status-card[data-status="DONE"] .status-indicator {
+  background: #2ecc71;
+  box-shadow: 0 0 12px rgba(46, 204, 113, 0.5);
+}
+
+/* Subtle border glow effect */
+.status-card[data-status="TODO"] {
+  border-left: 3px solid rgba(127, 140, 141, 0.3);
+}
+
+.status-card[data-status="INPROGRESS"] {
+  border-left: 3px solid rgba(52, 152, 219, 0.3);
+}
+
+.status-card[data-status="VERIFIED"] {
+  border-left: 3px solid rgba(155, 89, 182, 0.3);
+}
+
+.status-card[data-status="DONE"] {
+  border-left: 3px solid rgba(46, 204, 113, 0.3);
+}
+
+/* Badge color adjustments */
+.status-card[data-status="TODO"] .status-badge {
+  border-color: rgba(127, 140, 141, 0.3) !important;
+}
+
+.status-card[data-status="INPROGRESS"] .status-badge {
+  border-color: rgba(52, 152, 219, 0.3) !important;
+}
+
+.status-card[data-status="VERIFIED"] .status-badge {
+  border-color: rgba(155, 89, 182, 0.3) !important;
+}
+
+.status-card[data-status="DONE"] .status-badge {
+  border-color: rgba(46, 204, 113, 0.3) !important;
+}
+
+/* Button hover effects with status colors */
+.status-card[data-status="TODO"] .add-task-btn:hover {
+  border-color: rgba(127, 140, 141, 0.5) !important;
+  background: rgba(127, 140, 141, 0.1) !important;
+}
+
+.status-card[data-status="INPROGRESS"] .add-task-btn:hover {
+  border-color: rgba(52, 152, 219, 0.5) !important;
+  background: rgba(52, 152, 219, 0.1) !important;
+}
+
+.status-card[data-status="VERIFIED"] .add-task-btn:hover {
+  border-color: rgba(155, 89, 182, 0.5) !important;
+  background: rgba(155, 89, 182, 0.1) !important;
+}
+
+.status-card[data-status="DONE"] .add-task-btn:hover {
+  border-color: rgba(46, 204, 113, 0.5) !important;
+  background: rgba(46, 204, 113, 0.1) !important;
+}
+
+@media (max-width: 768px) {
+  .status-card {
+    min-height: 260px;
+  }
+  
+  .status-card-content {
+    padding: 1.5rem;
+  }
+  
+  .status-card-title {
+    font-size: 1.3rem;
+  }
+  
+  .status-card-description {
+    font-size: 0.9rem;
+  }
+}
+

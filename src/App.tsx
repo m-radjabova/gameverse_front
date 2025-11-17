@@ -1,14 +1,17 @@
 import { Route, Routes } from "react-router-dom"
 import Home from "./pages/home/Home"
-import MainLayout from "./layout/MainLayout"
+
+import Projects from "./components/projects/Projects"
+import AdminLayout from "./layout/AdminLayout"
 function App() {
 
 
   return (
     <div>
       <Routes>
-        <Route element={<MainLayout />}>
+        <Route element={<AdminLayout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/projects" element={<Projects />} />
         </Route>
 
         {/* <Route element={<AuthLayout />}>

@@ -1,0 +1,325 @@
+/* Status Modal Styles - Modern Dark Theme */
+.status-modal-drawer .MuiDrawer-paper {
+  background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 50%, #2d2d2d 100%) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.5) !important;
+}
+
+.status-modal-container {
+  width: 420px;
+  height: 100%;
+  padding: 2rem;
+  position: relative;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, rgba(12, 12, 12, 0.95) 0%, rgba(26, 26, 26, 0.95) 100%);
+  backdrop-filter: blur(20px);
+}
+
+.status-modal-close-btn {
+  position: absolute !important;
+  right: 1.5rem;
+  top: 1.5rem;
+  color: rgba(255, 255, 255, 0.7) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  padding: 8px !important;
+  transition: all 0.3s ease !important;
+  backdrop-filter: blur(10px);
+  z-index: 10;
+}
+
+.status-modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  transform: rotate(90deg);
+}
+
+.status-modal-title {
+  color: white;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  text-align: center;
+  font-size: 2.2rem;
+  background: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+  margin-top: 1rem;
+}
+
+.status-modal-subtitle {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 2.5rem;
+  text-align: center;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.status-options-container {
+  margin-bottom: 2.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.create-status-btn {
+  border-radius: 16px !important;
+  padding: 16px 24px !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: 0.5px;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  position: relative;
+  overflow: hidden;
+  border: none !important;
+  margin-top: auto;
+}
+
+.create-status-btn:disabled {
+  opacity: 0.5;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.create-status-btn:not(:disabled):hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+}
+
+.create-status-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s;
+}
+
+.create-status-btn:not(:disabled):hover::before {
+  left: 100%;
+}
+
+/* Modal header decoration */
+.status-modal-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+/* Scrollbar styling for modal */
+.status-options-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.status-options-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.status-options-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 3px;
+}
+
+.status-options-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #8b5cf6, #d946ef);
+}
+
+/* Animation for modal entrance */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.status-modal-drawer .MuiDrawer-paper {
+  animation: slideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .status-modal-container {
+    width: 100vw;
+    padding: 1.5rem;
+  }
+  
+  .status-modal-title {
+    font-size: 1.8rem;
+    margin-top: 0.5rem;
+  }
+  
+  .status-modal-subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+  }
+  
+  .create-status-btn {
+    padding: 14px 20px !important;
+    font-size: 1rem !important;
+  }
+}
+
+/* Backdrop styling */
+.MuiBackdrop-root {
+  background: rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: blur(4px);
+}
+
+.status-options-container {
+  overflow-y: auto;
+  max-height: 60vh;
+  padding-right: 0.5rem;
+}
+
+/* Loading state */
+.status-options-container.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Success state animation */
+.create-status-btn.success {
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%) !important;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(46, 204, 113, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+  }
+}
+
+.status-option {
+  display: flex;
+  align-items: center;
+  margin-top: 1rem;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-radius: 16px;
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.status-option::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  transition: left 0.6s;
+}
+
+.status-option:hover::before {
+  left: 100%;
+}
+
+.status-option.selected {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateX(8px);
+}
+
+.status-option:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateX(4px);
+}
+
+.status-option-radio {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.status-option-radio.Mui-checked {
+  color: inherit !important;
+}
+
+.status-option-content {
+  flex: 1;
+}
+
+.status-option-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.25rem;
+  letter-spacing: 0.3px;
+}
+
+.status-option-subtitle {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-color-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  filter: blur(0.5px);
+}
+
+/* Status-specific styles */
+.status-option[data-status="TODO"] {
+  border-left: 3px solid rgba(127, 140, 141, 0.5);
+}
+
+.status-option[data-status="INPROGRESS"] {
+  border-left: 3px solid rgba(52, 152, 219, 0.5);
+}
+
+.status-option[data-status="VERIFIED"] {
+  border-left: 3px solid rgba(155, 89, 182, 0.5);
+}
+
+.status-option[data-status="DONE"] {
+  border-left: 3px solid rgba(46, 204, 113, 0.5);
+}
+
+.status-option[data-status="TODO"].selected {
+  background: linear-gradient(135deg, rgba(127, 140, 141, 0.1) 0%, rgba(127, 140, 141, 0.05) 100%);
+}
+
+.status-option[data-status="INPROGRESS"].selected {
+  background: linear-gradient(135deg, rgba(52, 152, 219, 0.1) 0%, rgba(52, 152, 219, 0.05) 100%);
+}
+
+.status-option[data-status="VERIFIED"].selected {
+  background: linear-gradient(135deg, rgba(155, 89, 182, 0.1) 0%, rgba(155, 89, 182, 0.05) 100%);
+}
+
+.status-option[data-status="DONE"].selected {
+  background: linear-gradient(135deg, rgba(46, 204, 113, 0.1) 0%, rgba(46, 204, 113, 0.05) 100%);
+}

@@ -1,10 +1,8 @@
-import UserList from "../../components/users/UserList";
 
 function Home() {
-  
   return (
-    <UserList />
-  );
+    <div>Home</div>
+  )
 }
 
-export default Home;
+export default Home
