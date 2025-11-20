@@ -16,7 +16,7 @@ function SubmitButton({ isEditing, startIcon, children }: SubmitButtonProps) {
       size="large"
       startIcon={startIcon}
       sx={{
-        mt: "auto",
+        mb: 2,
         py: 1.5,
         borderRadius: 2,
         fontSize: "1rem",

@@ -63,10 +63,270 @@
   box-shadow: 0 2px 12px rgba(99, 102, 241, 0.5);
 }
 
-.projects-filters{
+.projects-filters {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(25px);
+  padding: 2rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  /* overflow: hidden; */
+  z-index: 1;
 }
+
+.projects-filters::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 70% 30%, rgba(99, 102, 241, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Filter group styles */
+.user-filter,
+.priority-filter,
+.start-date-filter {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  padding-left: 0.25rem;
+}
+
+.filter-label svg {
+  width: 16px;
+  height: 16px;
+  opacity: 0.8;
+}
+
+.react-select-container {
+  width: 100%;
+}
+
+.react-select__control {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  min-height: 48px !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.react-select__control:hover {
+  border-color: rgba(99, 102, 241, 0.4) !important;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15) !important;
+}
+
+.react-select__control--is-focused {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+}
+
+.react-select__value-container {
+  padding: 8px 12px !important;
+}
+
+.react-select__input {
+  color: #ffffff !important;
+}
+
+.react-select__single-value {
+  color: #e2e8f0 !important;
+  font-weight: 500;
+}
+
+.react-select__multi-value {
+  background: rgba(99, 102, 241, 0.2) !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.react-select__multi-value__label {
+  color: #e2e8f0 !important;
+  font-weight: 500;
+  padding: 4px 8px !important;
+}
+
+.react-select__multi-value__remove {
+  background: transparent !important;
+  border-radius: 0 8px 8px 0 !important;
+}
+
+.react-select__multi-value__remove:hover {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #ef4444 !important;
+}
+
+.react-select__menu {
+  background: rgba(30, 41, 59, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
+  overflow: hidden;
+}
+
+.react-select__option {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+  padding: 12px 16px !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-select__option:hover {
+  background: rgba(99, 102, 241, 0.2) !important;
+  color: #ffffff !important;
+}
+
+.react-select__option--is-focused {
+  background: rgba(99, 102, 241, 0.15) !important;
+}
+
+.react-select__option--is-selected {
+  background: rgba(99, 102, 241, 0.3) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.react-select__indicator {
+  color: #94a3b8 !important;
+  padding: 8px !important;
+}
+
+.react-select__indicator:hover {
+  color: #e2e8f0 !important;
+}
+
+.react-select__placeholder {
+  color: #94a3b8 !important;
+}
+
+.react-select__menu-list {
+  padding: 8px !important;
+}
+
+/* Date input custom styles */
+.start-date-filter .MuiFormControl-root {
+  width: 100%;
+}
+
+.start-date-filter .MuiInputBase-root {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.start-date-filter .MuiInputBase-root:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.start-date-filter .MuiInputBase-root.Mui-focused {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.start-date-filter .MuiOutlinedInput-notchedOutline {
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px;
+}
+
+.start-date-filter .MuiInputBase-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(99, 102, 241, 0.4) !important;
+}
+
+.start-date-filter .MuiInputBase-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.start-date-filter .MuiInputBase-input {
+  color: #e2e8f0;
+  padding: 13.5px 14px;
+  font-weight: 500;
+}
+
+.start-date-filter .MuiInputLabel-root {
+  color: #94a3b8;
+  transform: translate(14px, 14px) scale(1);
+}
+
+.start-date-filter .MuiInputLabel-root.Mui-focused {
+  color: #6366f1;
+}
+
+.start-date-filter .MuiInputLabel-shrink {
+  transform: translate(14px, -9px) scale(0.75);
+  background: linear-gradient(135deg, #1e293b, #334155);
+  padding: 0 8px;
+  border-radius: 6px;
+}
+
+/* Clear filters button enhancement */
+.clear-filters-btn {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  color: #ef4444 !important;
+  border-radius: 12px !important;
+  padding: 10px 20px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.clear-filters-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2) !important;
+  border-color: rgba(239, 68, 68, 0.5) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.2);
+}
+
+.clear-filters-btn:disabled {
+  opacity: 0.4;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #94a3b8 !important;
+}
+
+/* Responsive design for filters */
+@media (max-width: 1024px) {
+  .projects-filters {
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1.5rem;
+  }
+  
+  .user-filter,
+  .priority-filter,
+  .start-date-filter {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .projects-filters {
+    padding: 1.25rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+  }
+  
+  .filter-label {
+    font-size: 0.85rem;
+  }
+}
+
 
 .status-grid {
   display: grid;

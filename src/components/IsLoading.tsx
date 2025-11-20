@@ -11,12 +11,9 @@ import {
 const IsLoading: React.FC = () => {
   return (
     <div className="loading-container">
-      {/* Gradient orqa fon */}
       <div className="loading-background"></div>
       
-      {/* Asosiy loading kontenti */}
       <div className="loading-content">
-        {/* Pulsating gradient circle */}
         <div className="pulsating-circle">
           <div className="circle-core">
             <ArrowRepeat className="spinning-icon" />
@@ -26,13 +23,11 @@ const IsLoading: React.FC = () => {
           <div className="pulse-ring ring-3"></div>
         </div>
         
-        {/* Loading matni */}
         <div className="loading-text">
           <h3 className="loading-title">Loading Projects</h3>
           <p className="loading-subtitle">Preparing your workspace...</p>
         </div>
         
-        {/* Progress bar */}
         <div className="progress-container">
           <div className="progress-bar">
             <div className="progress-fill"></div>
@@ -48,7 +43,6 @@ const IsLoading: React.FC = () => {
           </div>
         </div>
         
-        {/* Floating elements */}
         <div className="floating-elements">
           <div className="floating-item item-1">
             <Folder2 className="floating-icon" />
@@ -64,7 +58,6 @@ const IsLoading: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom status */}
         <div className="loading-status">
           <Clock className="status-icon" />
           <span>Loading components...</span>

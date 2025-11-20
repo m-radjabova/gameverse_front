@@ -6,6 +6,7 @@ import AdminLayout from "./layout/AdminLayout"
 import UserList from "./components/users/UserList"
 import useLoading from "./hooks/useLoading"
 import IsLoading from "./components/IsLoading"
+
 function App() {
   const { loading } = useLoading();
 

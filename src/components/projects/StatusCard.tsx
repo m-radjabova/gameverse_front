@@ -5,27 +5,25 @@ import {
 import { FaPlus } from "react-icons/fa";
 import { statusLabels } from "../../utils";
 import { useState } from "react";
-import AddTaskModal, { type StatusType } from "./add_modal/AddTaskModal";
+import AddTaskModal from "./add_modal/AddTaskModal";
 import TaskList from "../tasks/TaskList";
-import useTasks from "../../hooks/useTasks";
+import type { StatusType, Task } from "../../types/types";
 
 interface StatusCardProps {
-  statusName: string; 
+  statusName: StatusType;
+  tasks: Task[];
 }
 
-function StatusCard({ statusName }: StatusCardProps) {
-  const [openAddTask, setOpenAddTask] = useState(false);
+function StatusCard({ statusName, tasks }: StatusCardProps) {
+  const [openAddTask, setOpenAddTask] = useState<boolean>(false);
   
-  const { tasks } = useTasks();
+  const taskList: Task[] = tasks || [];
 
-  const statusGroup = tasks.find((t) => t.status === statusName);
-  const taskList = statusGroup ? statusGroup.tasks : [];
+  const handleOpen = (): void => setOpenAddTask(true);
+  const handleClose = (): void => setOpenAddTask(false);
 
-  const handleOpen = () => setOpenAddTask(true);
-  const handleClose = () => setOpenAddTask(false);
-
-  const getStatusColor = (status: string) => {
-    const statusMap: { [key: string]: string } = {
+  const getStatusColor = (status: string): string => {
+    const statusMap: Record<string, string> = {
       'TODO': 'todo',
       'IN_PROGRESS': 'inprogress',
       'VERIFIED': 'verified', 
@@ -36,7 +34,7 @@ function StatusCard({ statusName }: StatusCardProps) {
     return statusMap[normalizedStatus] || statusMap[status] || 'todo';
   };
 
-  const formatStatusName = (status: string) => {
+  const formatStatusName = (status: string): string => {
     return statusLabels[status] || status.replace(/_/g, ' ');
   };
 
@@ -71,8 +69,11 @@ function StatusCard({ statusName }: StatusCardProps) {
         </div>
       </div>
 
-      <AddTaskModal open={openAddTask} onClose={handleClose} defaultStatus={statusName as StatusType | undefined} />
-
+      <AddTaskModal 
+        open={openAddTask} 
+        onClose={handleClose} 
+        defaultStatus={statusName} 
+      />
     </>
   );
 }
