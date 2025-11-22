@@ -2,8 +2,8 @@ import { Button } from "@mui/material";
 import type { ReactNode } from "react";
 
 interface SubmitButtonProps {
-  isEditing: boolean;
-  startIcon: ReactNode;
+  isEditing?: boolean;
+  startIcon?: ReactNode;
   children: string;
 }
 

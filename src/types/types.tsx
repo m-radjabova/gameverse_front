@@ -9,6 +9,12 @@ export interface ReqUser {
   email: string;
 }
 
+export interface Team {
+  id: number;
+  name: string;
+  members: User[];
+}
+
 export interface ResponseTask{
   status : string;
   tasks : Task[];
@@ -38,24 +44,35 @@ export interface FilterParams {
   assignee_id?: number;
   priority?: string;
   from_date?: string;
+  title?: string;
 }
 
 export interface FilterState {
   assignees: number[];
   priority: string;
   from_date: string;
+  title: string;
 }
 
-// Select option types
 export interface SelectOption {
   value: string;
   label: string;
 }
 
 export interface UserOption extends SelectOption {
-  value: string; // user id string formatda
+  value: string;
 }
 
-// Status types
 export type StatusType = "TODO" | "IN_PROGRESS" | "VERIFIED" | "DONE";
 export type PriorityType = "LOW" | "MEDIUM" | "HIGH";
+
+
+export interface UpdateTaskStatusParams {
+  taskId: number;
+  newStatus: StatusType;
+}
+
+export interface DragEndEvent {
+  active: { id: string };
+  over: { id: string } | null;
+}

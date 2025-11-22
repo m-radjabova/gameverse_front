@@ -6,6 +6,7 @@ interface FilterParams {
   assignee_id?: number;
   priority?: string;
   from_date?: string;
+  title?: string;
 }
 
 function useTasks(filterParams?: FilterParams) {
@@ -23,7 +24,7 @@ function useTasks(filterParams?: FilterParams) {
     queryKey: ["tasks", filterParams],
     queryFn: async () => {
       const params = new URLSearchParams();
-      
+
       if (filterParams?.assignee_id) {
         params.append("assignee_id", filterParams.assignee_id.toString());
       }
@@ -33,13 +34,17 @@ function useTasks(filterParams?: FilterParams) {
       if (filterParams?.from_date) {
         params.append("from_date", filterParams.from_date);
       }
+      if (filterParams?.title) {
+        params.append("title", filterParams.title);
+      }
 
-      const res = await apiClient.get<ResponseTask[]>(`/tasks?${params.toString()}`);
+      const res = await apiClient.get<ResponseTask[]>(
+        `/tasks?${params.toString()}`
+      );
       return res.data;
     },
   });
-
-  // Qolgan mutationlar o'zgarmaydi...
+  
   const { mutate: addTask, isPending: adding } = useMutation({
     mutationFn: async (task: ReqTask) => {
       const res = await apiClient.post("/tasks", task);
@@ -70,12 +75,25 @@ function useTasks(filterParams?: FilterParams) {
     },
   });
 
+  const { mutate: updateTaskStatus } = useMutation({
+    mutationFn: async ({ id, status }: { id: number; status: string }) => {
+      const res = await apiClient.patch(
+        `/tasks/${id}/status?new_status=${status}`
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+  });
+
   return {
     taskStatus,
     tasks,
     addTask,
     updateTask,
     deleteTask,
+    updateTaskStatus,
     loading: {
       adding,
       updating,

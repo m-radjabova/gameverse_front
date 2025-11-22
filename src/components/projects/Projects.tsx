@@ -14,14 +14,21 @@ import type {
   PriorityType,
 } from "../../types/types";
 import { inputStyles } from "../../utils";
-import { Calendar, Flag, People } from "react-bootstrap-icons";
+import { Calendar, Flag, ListTask, People, Search } from "react-bootstrap-icons";
+import { DragDropContainer } from "./DragDropContainer";
+import { SortableContext } from "@dnd-kit/sortable";
+import { verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { useDebounce } from "../../hooks/useDebounce";
 
 function Projects() {
   const [filters, setFilters] = useState<FilterState>({
     assignees: [],
     priority: "ALL",
     from_date: "",
+    title: "",
   });
+  const { users } = useUsers();
+  const debouncedSearch = useDebounce(filters.title, 400);
 
   const filterParams = useMemo((): FilterParams => {
     const params: FilterParams = {};
@@ -38,11 +45,23 @@ function Projects() {
       params.from_date = filters.from_date;
     }
 
-    return params;
-  }, [filters]);
+    if (debouncedSearch) {
+      params.title = debouncedSearch;
+    }
 
-  const { taskStatus, tasks } = useTasks(filterParams);
-  const { users } = useUsers();
+    return params;
+  }, [filters, debouncedSearch]);
+
+  const { taskStatus, tasks, updateTaskStatus } = useTasks(filterParams);
+
+  const handleTaskMove = (activeId: string, overId: string) => {
+    const taskId = parseInt(activeId);
+    const newStatus = overId as StatusType;
+
+    if (taskStatus.includes(newStatus)) {
+      updateTaskStatus({ id: taskId, status: newStatus });
+    }
+  };
 
   const userOptions: UserOption[] =
     users?.map((user: User) => ({
@@ -89,6 +108,7 @@ function Projects() {
       assignees: [],
       priority: "ALL",
       from_date: "",
+      title: "",
     });
   };
 
@@ -97,10 +117,17 @@ function Projects() {
     filters.priority !== "ALL" ||
     filters.from_date !== "";
 
+  const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFilters((prev) => ({
+      ...prev,
+      title: event.target.value,
+    }));
+  };
+
   return (
     <div className="projects-container">
       <div className="projects-header">
-        <h1 className="projects-title">Projects</h1>
+        <h1 className="projects-title"> <ListTask className="project-icon" /> Projects</h1>
         <Button
           variant="outlined"
           onClick={clearFilters}
@@ -112,68 +139,98 @@ function Projects() {
       </div>
 
       <div className="projects-filters">
-        <div className="user-filter">
-          <div className="filter-label">
-            <People size={20} />
-            Team Members
+        <div className="d-flex gap-3 mb-3 flex-wrap">
+          <div className="user-filter">
+            <div className="filter-label">
+              <People size={20} />
+              Team Members
+            </div>
+            <Select<UserOption, true>
+              isMulti
+              options={userOptions}
+              placeholder="Select team members..."
+              className="react-select-container"
+              classNamePrefix="react-select"
+              value={userOptions.filter((option) =>
+                filters.assignees.includes(parseInt(option.value))
+              )}
+              onChange={handleAssigneeChange}
+            />
           </div>
-          <Select<UserOption, true>
-            isMulti
-            options={userOptions}
-            placeholder="Select team members..."
-            className="react-select-container"
-            classNamePrefix="react-select"
-            value={userOptions.filter((option) =>
-              filters.assignees.includes(parseInt(option.value))
-            )}
-            onChange={handleAssigneeChange}
-          />
-        </div>
 
-        <div className="priority-filter">
-          <div className="filter-label">
-            <Flag size={20} />
-            Priority
+          <div className="priority-filter">
+            <div className="filter-label">
+              <Flag size={20} />
+              Priority
+            </div>
+            <Select<SelectOption, false>
+              className="react-select-container"
+              classNamePrefix="react-select"
+              value={
+                priorityOptions.find(
+                  (option) => option.value === filters.priority
+                ) || priorityOptions[0]
+              }
+              options={priorityOptions}
+              onChange={handlePriorityChange}
+            />
           </div>
-          <Select<SelectOption, false>
-            className="react-select-container"
-            classNamePrefix="react-select"
-            value={
-              priorityOptions.find(
-                (option) => option.value === filters.priority
-              ) || priorityOptions[0]
-            }
-            options={priorityOptions}
-            onChange={handlePriorityChange}
-          />
-        </div>
 
-        <div className="start-date-filter">
+          <div className="start-date-filter">
+            <div className="filter-label">
+              <Calendar size={20} />
+              End Date
+            </div>
+            <TextField
+              type="date"
+              value={filters.from_date}
+              onChange={handleDateChange}
+              label=""
+              InputLabelProps={{ shrink: false }}
+              fullWidth
+              sx={inputStyles}
+            />
+          </div>
+        </div>
+        <div className="search-title">
           <div className="filter-label">
-            <Calendar size={20} />
-            From Date
+            <Search size={20} />
+            Search by Title
           </div>
           <TextField
-            type="date"
-            value={filters.from_date}
-            onChange={handleDateChange}
-            label=""
-            InputLabelProps={{ shrink: false }}
+            
+            type="text"
+            value={filters.title}
+            onChange={handleTitleChange}
+            label="Search tasks by title..."
             fullWidth
             sx={inputStyles}
           />
         </div>
       </div>
 
-      <div className="status-grid">
-        {taskStatus.map((statusName: string) => (
-          <StatusCard
-            key={statusName}
-            statusName={statusName as StatusType}
-            tasks={tasks.find((t) => t.status === statusName)?.tasks || []}
-          />
-        ))}
-      </div>
+      <DragDropContainer onDragEnd={handleTaskMove}>
+        <div className="status-grid">
+          {taskStatus.map((statusName: string) => {
+            const statusTasks =
+              tasks.find((t) => t.status === statusName)?.tasks || [];
+            const taskIds = statusTasks.map((task) => task.id.toString());
+
+            return (
+              <SortableContext
+                key={statusName}
+                items={[...taskIds, statusName]}
+                strategy={verticalListSortingStrategy}
+              >
+                <StatusCard
+                  statusName={statusName as StatusType}
+                  tasks={statusTasks}
+                />
+              </SortableContext>
+            );
+          })}
+        </div>
+      </DragDropContainer>
     </div>
   );
 }

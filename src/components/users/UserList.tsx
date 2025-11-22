@@ -66,7 +66,6 @@ const UserList = () => {
 
   const handleConfirmDelete = () => {
     if (userToDelete) {
-      console.log("Deleting user:", userToDelete.id);
       deleteUser(userToDelete.id);
       setDeleteModalOpen(false);
       setUserToDelete(null);
@@ -74,7 +73,6 @@ const UserList = () => {
   };
 
   const onSubmit = (data: FieldValues) => {
-    console.log("Form data:", data);
     
     if (editingUser) {
       updateUser({ 

@@ -3,8 +3,8 @@ import { IoMdCheckmarkCircle, IoMdClose } from "react-icons/io";
 import { FaEdit } from "react-icons/fa";
 
 interface ModalHeaderProps {
-  isEditing: boolean;
-  onClose: () => void;
+  isEditing?: boolean;
+  onClose?: () => void;
   title?: string;
 }
 

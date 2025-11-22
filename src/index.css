@@ -6,5 +6,6 @@
 @import "./components/projects/statusModal.css";
 @import "./components/tasks/taskList.css";
 @import "./components/users/userlist.css";
+@import "./components/teams/teamList.css";
 
 @import "./css/loading.css";

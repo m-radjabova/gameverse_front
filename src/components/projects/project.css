@@ -38,6 +38,9 @@
 }
 
 .projects-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   color: #ffffff;
   font-weight: 800;
   font-size: 3rem;
@@ -56,16 +59,15 @@
   position: absolute;
   bottom: -12px;
   left: 0;
-  width: 80px;
+  width: 120px;
   height: 4px;
   background: linear-gradient(90deg, #6366f1, #8b5cf6, #d946ef);
   border-radius: 4px;
   box-shadow: 0 2px 12px rgba(99, 102, 241, 0.5);
 }
 
+
 .projects-filters {
-  display: flex;
-  gap: 1.5rem;
   margin-bottom: 3rem;
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(25px);

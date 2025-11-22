@@ -1,28 +1,25 @@
-import {
-  Chip,
-  Button
-} from "@mui/material";
+import React, { useState } from 'react';
+import { useDroppable } from '@dnd-kit/core';
+import { Chip, Button } from "@mui/material";
 import { FaPlus } from "react-icons/fa";
 import { statusLabels } from "../../utils";
-import { useState } from "react";
 import AddTaskModal from "./add_modal/AddTaskModal";
 import TaskList from "../tasks/TaskList";
 import type { StatusType, Task } from "../../types/types";
 
-interface StatusCardProps {
+interface DroppableStatusCardProps {
   statusName: StatusType;
   tasks: Task[];
 }
 
-function StatusCard({ statusName, tasks }: StatusCardProps) {
+function StatusCard({ statusName, tasks }: DroppableStatusCardProps) {
   const [openAddTask, setOpenAddTask] = useState<boolean>(false);
   
-  const taskList: Task[] = tasks || [];
+  const { isOver, setNodeRef } = useDroppable({
+    id: statusName,
+  });
 
-  const handleOpen = (): void => setOpenAddTask(true);
-  const handleClose = (): void => setOpenAddTask(false);
-
-  const getStatusColor = (status: string): string => {
+  const getStatusColor = (status: StatusType): string => {
     const statusMap: Record<string, string> = {
       'TODO': 'todo',
       'IN_PROGRESS': 'inprogress',
@@ -38,40 +35,53 @@ function StatusCard({ statusName, tasks }: StatusCardProps) {
     return statusLabels[status] || status.replace(/_/g, ' ');
   };
 
+  const droppableStyle: React.CSSProperties = {
+    opacity: isOver ? 0.8 : 1,
+  };
+
   return (
     <>
       <div 
-        className="status-card" 
+        className={`status-card ${isOver ? 'drag-over' : ''}`} 
         data-status={getStatusColor(statusName)}
+        ref={setNodeRef}
+        style={droppableStyle}
       >
         <div className="status-card-header">
           <div className="status-header-main">
             <div className="status-indicator" />
             <Chip
               className="status-badge"
-              label={`${formatStatusName(statusName)} • ${taskList.length}`}
+              label={`${formatStatusName(statusName)} • ${tasks.length}`}
+              style={{ 
+                backgroundColor: isOver ? '#3b82f6' : undefined,
+                color: isOver ? 'white' : undefined 
+              }}
             />
           </div>
         </div>
 
-        <div className="status-card-content">
-          <TaskList tasks={taskList} />
+        <div className="status-card-content" style={{ height: '100%' }}>
+          <TaskList tasks={tasks} />
           
-          <Button
-            className="add-task-btn"
-            variant="outlined"
-            fullWidth
-            onClick={handleOpen}
-            startIcon={<FaPlus />}
-          >
-            Add Task
-          </Button>
+          <div className="add-task-section" style={{ marginTop: 'auto' }}>
+            <Button
+              className="add-task-btn"
+              variant="outlined"
+              fullWidth
+              onClick={() => setOpenAddTask(true)}
+              startIcon={<FaPlus />}
+              style={{ marginTop: '16px' }}
+            >
+              Add Task
+            </Button>
+          </div>
         </div>
       </div>
 
       <AddTaskModal 
         open={openAddTask} 
-        onClose={handleClose} 
+        onClose={() => setOpenAddTask(false)} 
         defaultStatus={statusName} 
       />
     </>

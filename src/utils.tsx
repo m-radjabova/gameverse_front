@@ -51,8 +51,8 @@ export const formatDate = (dateString: string) => {
 
 
 export const inputStyles = {
+  color: "white !important",
   "& .MuiOutlinedInput-root": {
-    color: "white",
     backgroundColor: "rgba(255,255,255,0.03)",
     borderRadius: 2,
     "& fieldset": {
@@ -66,6 +66,9 @@ export const inputStyles = {
       borderColor: "#6366f1",
       borderWidth: "2px",
     },
+  },
+  ".MuiInputBase-input": {
+    color: "white",
   },
   "& .MuiFormHelperText-root": {
     color: "#ef4444",

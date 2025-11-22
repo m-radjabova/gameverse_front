@@ -6,6 +6,7 @@ import AdminLayout from "./layout/AdminLayout"
 import UserList from "./components/users/UserList"
 import useLoading from "./hooks/useLoading"
 import IsLoading from "./components/IsLoading"
+import TeamList from "./components/teams/TeamList"
 
 function App() {
   const { loading } = useLoading();
@@ -17,10 +18,11 @@ function App() {
   return (
     <div>
       <Routes>
-        <Route element={<AdminLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route index path="/projects" element={<Projects />} />
-          <Route path="/users" element={<UserList />} />
+          <Route element={<AdminLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route index path="/projects" element={<Projects />} />
+            <Route path="/users" element={<UserList />} />
+            <Route path="/teams" element={<TeamList />} />
         </Route>
 
         {/* <Route element={<AuthLayout />}>
