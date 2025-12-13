@@ -1,98 +1,100 @@
+export const getColorName = (colorInput: string): string => {
+  if (!colorInput) return "Unknown";
 
-import { IoMdFlag } from "react-icons/io";
-import type { PriorityType } from "./components/projects/add_modal/AddTaskModal";
+  const color = colorInput.trim().toLowerCase();
 
-export const colors: Record<string, string> = {
-  TODO: "#7f8c8d",
-  INPROGRESS: "#3498db",
-  VERIFIED: "#9b59b6",
-  DONE: "#2ecc71",
-};
+  const colorNames: Record<string, string> = {
+    "#ff0000": "Red",
+    "#00ff00": "Green",
+    "#0000ff": "Blue",
+    "#ffff00": "Yellow",
+    "#ffa500": "Orange",
+    "#800080": "Purple",
+    "#000000": "Black",
+    "#ffffff": "White",
+    "#808080": "Gray",
+    "#a52a2a": "Brown",
+    "#ff4500": "Orange Red",
+    "#008000": "Green",
+    "#000080": "Navy Blue",
+    "#ff69b4": "Hot Pink",
+    "#008080": "Teal",
+    "#ffd700": "Gold",
+    "#c0c0c0": "Silver",
 
-export const statusLabels: Record<string, string> = {
-  TODO: "To Do",
-  INPROGRESS: "In Progress",
-  VERIFIED: "Verified",
-  DONE: "Done",
-};
-
-export const getPriorityIcon = (priority: PriorityType) => {
-  const icons = {
-    HIGH: <IoMdFlag className="text-red-400" />,
-    MEDIUM: <IoMdFlag className="text-yellow-400" />,
-    LOW: <IoMdFlag className="text-green-400" />,
+    red: "Red",
+    green: "Green",
+    blue: "Blue",
+    yellow: "Yellow",
+    orange: "Orange",
+    purple: "Purple",
+    black: "Black",
+    white: "White",
+    gray: "Gray",
+    grey: "Gray",
+    brown: "Brown",
+    pink: "Pink",
+    cyan: "Cyan",
+    magenta: "Magenta",
+    teal: "Teal",
+    navy: "Navy Blue",
+    maroon: "Maroon",
+    olive: "Olive",
+    lime: "Lime",
+    aqua: "Aqua",
+    silver: "Silver",
+    gold: "Gold",
   };
-  return icons[priority] || null;
-};
 
-export const getPriorityColor = (priority: string) => {
-  switch (priority?.toLowerCase()) {
-    case "high":
-      return "priority-high";
-    case "medium":
-      return "priority-medium";
-    case "low":
-      return "priority-low";
-    default:
-      return "priority-default";
+  if (color.startsWith("#")) {
+    return colorNames[color] || colorInput;
   }
+
+  if (/^[0-9a-f]{3}$|^[0-9a-f]{6}$/i.test(color)) {
+    const hexColor = `#${color}`;
+    return colorNames[hexColor] || hexColor;
+  }
+
+  return colorNames[color] || colorInput;
 };
 
-export const formatDate = (dateString: string) => {
-  if (!dateString) return "No date set";
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
+export const formatColorHex = (colorInput: string): string => {
+  if (!colorInput) return "#000000";
 
+  const color = colorInput.trim().toLowerCase();
 
+  if (color.startsWith("#")) {
+    return color;
+  }
 
-export const inputStyles = {
-  color: "white !important",
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "rgba(255,255,255,0.03)",
-    borderRadius: 2,
-    "& fieldset": {
-      borderColor: "rgba(255,255,255,0.1)",
-      borderWidth: "1.5px",
-    },
-    "&:hover fieldset": {
-      borderColor: "rgba(99, 102, 241, 0.5)",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#6366f1",
-      borderWidth: "2px",
-    },
-  },
-  ".MuiInputBase-input": {
-    color: "white",
-  },
-  "& .MuiFormHelperText-root": {
-    color: "#ef4444",
-    marginLeft: 0.5,
-  },
-};
+  // Agar hex raqam bo'lsa (faqat raqamlar va harflar)
+  if (/^[0-9a-f]{3}$|^[0-9a-f]{6}$/i.test(color)) {
+    return `#${color}`;
+  }
+  const cssToHex: Record<string, string> = {
+    red: "#FF0000",
+    green: "#00FF00",
+    blue: "#0000FF",
+    yellow: "#FFFF00",
+    orange: "#FFA500",
+    purple: "#800080",
+    black: "#000000",
+    white: "#FFFFFF",
+    gray: "#808080",
+    grey: "#808080",
+    brown: "#A52A2A",
+    pink: "#FFC0CB",
+    cyan: "#00FFFF",
+    magenta: "#FF00FF",
+    teal: "#008080",
+    navy: "#000080",
+    maroon: "#800000",
+    olive: "#808000",
+    lime: "#00FF00",
+    aqua: "#00FFFF",
+    silver: "#C0C0C0",
+    gold: "#FFD700",
+  };
 
-export const selectStyles = {
-  color: "white",
-  backgroundColor: "rgba(255,255,255,0.03)",
-  borderRadius: 2,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: "rgba(255,255,255,0.1)",
-    borderWidth: "1.5px",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "rgba(99, 102, 241, 0.5)",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#6366f1",
-    borderWidth: "2px",
-  },
-  "& .MuiSelect-icon": {
-    color: "rgba(255,255,255,0.5)",
-  },
-  
+  return cssToHex[color] || "#000000";
 };

@@ -52,3 +52,22 @@ export interface ReqTodo{
   completed: boolean;
   user_id: number;
 }
+
+export interface Details {
+  name: string;
+}
+
+export interface Car {
+  car_id: number;
+  model: string;
+  color: string;
+  year: string;
+  details: Details[];
+}
+
+export interface ReqCar {
+  model: string;
+  color: string;
+  year: string;
+  details: Details[];
+}
