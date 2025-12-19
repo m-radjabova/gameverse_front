@@ -1,21 +1,21 @@
-import { Navigate } from "react-router-dom";
-import useContextPro from "../hooks/useContextPro";
+// import { Navigate } from "react-router-dom";
+// import useContextPro from "../hooks/useContextPro";
 
-interface Props {
-  role: string;
-  children: React.ReactNode;
-}
-function ProtectedRoute({ role, children }: Props) {
+// interface Props {
+//   role: string;
+//   children: React.ReactNode;
+// }
+// function ProtectedRoute({ role, children }: Props) {
 
-  const { state: { user,isLoading } } = useContextPro();
+//   const { state: { user,isLoading } } = useContextPro();
 
-  if (!isLoading && !user?.roles.includes(role)) {
-    return <Navigate to="/" replace />;
-  }
+//   if (!isLoading && !user?.roles.includes(role)) {
+//     return <Navigate to="/" replace />;
+//   }
 
-  return (
-    children
-  )
-}
+//   return (
+//     children
+//   )
+// }
 
-export default ProtectedRoute
+// export default ProtectedRoute

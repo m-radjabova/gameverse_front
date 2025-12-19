@@ -5,7 +5,7 @@ import type { Debt, Debtor, ReqDebt, ReqDebtor } from "../types/types";
 function useDebtor(debtorId?: number) {
   const queryClient = useQueryClient();
   
-  const { data: debtors = [] } = useQuery({
+  const { data: debtors = [], isLoading: debtorsLoading } = useQuery({
     queryKey: ["debtors"],
     queryFn: async () => {
       const res = await apiClient.get<Debtor[]>("/debtor");
@@ -53,28 +53,46 @@ function useDebtor(debtorId?: number) {
     },
   });
 
+
   const debtRepaymentMutate = useMutation({
-    mutationFn: async (payload: ReqDebt) => {
-      const res = await apiClient.put(
-        `/debtor/${debtorId}/repayment`,
-        payload
+      mutationFn: async (amount : number) => {
+        const res = await apiClient.post(
+          `/debtor/${debtorId}/repayment`,
+          { amount }
+        );
+        return res.data;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["debts", debtorId] });
+      },
+    });
+
+  const { data: debtsHistory = [], isLoading: debtsHistoryLoading } = useQuery({
+    queryKey: ["debts-history", debtorId],
+    queryFn: async () => {
+      if (!debtorId) return [];
+      const res = await apiClient.get(
+        `/debtor/${debtorId}/debts-history`
       );
       return res.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["debts", debtorId] });
-    },
+    enabled: !!debtorId,
   });
+
+
   
   return { 
     debtors, 
+    debtorsLoading,
     debtor,
     debts,
     debtorLoading,
     debtsLoading,
     addDebtor: addDebtorMutate.mutate,
     addDebtToDebtor: addDebtToDebtorMutate.mutate,
-    debtRepayment: debtRepaymentMutate.mutate
+    debtRepayment: debtRepaymentMutate.mutate,
+    debtsHistory,
+    debtsHistoryLoading
   };
 }
 

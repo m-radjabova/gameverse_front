@@ -55,3 +55,19 @@ export interface Debt{
 export interface ReqDebt{
   amount: number;
 }
+
+export interface DebtsHistory {
+  debt_id: number;
+      debtor_id: number;
+      date_time: string;
+      amount: number;
+      status: boolean;
+      payments: [
+        {
+          payment_history_id: number;
+          debt_id: number;
+          date_time: string;
+          amount: number;
+        }
+      ];
+}
