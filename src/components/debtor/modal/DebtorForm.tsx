@@ -49,35 +49,6 @@ function DebtorForm({ open, handleClose, onSubmit }: DebtorFormProps) {
     handleClose();
   };
 
-  const validatePhoneNumber = (value: string) => {
-    if (!value) return "Phone number is required";
-    
-    const phonePattern = /^\+998\d{9}$/;
-    const uzbekPattern = /^998\d{9}$/;
-    
-    if (!phonePattern.test(value) && !uzbekPattern.test(value)) {
-      return "Phone number must start with +998 or 998 followed by 9 digits";
-    }
-    
-    return true;
-  };
-
-  const formatPhoneNumber = (value: string): string => {
-    if (!value) return "";
-    
-    const numbers = value.replace(/\D/g, '');
-    
-    if (numbers.startsWith('998') && numbers.length === 12) {
-      return `+${numbers}`;
-    }
-    
-    if (numbers.length === 9) {
-      return `+998${numbers}`;
-    }
-    
-    return value;
-  };
-
   const fullName = watch("full_name");
   const phoneNumber = watch("phone_number");
   const isFormValid = fullName && phoneNumber;
@@ -283,12 +254,9 @@ function DebtorForm({ open, handleClose, onSubmit }: DebtorFormProps) {
                 }}
                 {...register("phone_number", {
                   required: "Phone number is required",
-                  validate: validatePhoneNumber,
-                  onChange: (e) => {
-                    const formatted = formatPhoneNumber(e.target.value);
-                    if (formatted !== e.target.value) {
-                      e.target.value = formatted;
-                    }
+                  pattern: {
+                    value: /^\+998\d{2}\d{3}\d{2}\d{2}$/,
+                    message: "Phone number must match the format +998 XX XXX XX XX",
                   },
                 })}
                 sx={{

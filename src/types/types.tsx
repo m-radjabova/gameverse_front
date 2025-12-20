@@ -1,35 +1,4 @@
 
-export interface Details {
-  name: string;
-}
-
-export interface Car {
-  car_id: number;
-  model: string;
-  color: string;
-  year_purchased: number;
-  details: Details[];
-}
-
-export interface ReqCar {
-  model: string;
-  color: string;
-  year_purchased: number;
-  details: Details[];
-}
-
-
-export interface FilterState {
-  model: string;
-  color: string;
-  year: number;
-}
-
-export interface FilterParams{
-  model?: string;
-  color?: string;
-  year?: number;
-}
 
 
 export interface Debtor {
@@ -50,6 +19,7 @@ export interface Debt{
   date_time: string;
   amount: number;
   status: boolean;
+  remaining: number;
 }
 
 export interface ReqDebt{
@@ -70,4 +40,13 @@ export interface DebtsHistory {
           amount: number;
         }
       ];
+}
+
+
+export interface FilterState {
+  name: string;
+}
+
+export interface FilterParams{
+  name?: string;
 }

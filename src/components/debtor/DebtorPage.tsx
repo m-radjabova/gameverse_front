@@ -30,16 +30,17 @@ import {
   FaExclamationTriangle,
   FaHistory,
   FaChartLine,
+  FaClock,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { formatCurrency, formatDateTime, getInitials, getStatusInfo } from "../../utils";
 import StatisticsCards from "./StatisticsCards";
 import { useState } from "react";
-import DebtForm from "./DebtForm";
-import RepaymentForm from "./RepaymentForm";
+import DebtForm from "./modal/DebtForm";
+import RepaymentForm from "./modal/RepaymentForm";
 import type { ReqDebt } from "../../types/types";
-import PaymentHistoryModal from "./PaymentHistoryModal";
-import AllPaidModal from "./AllPaidModal";
+import PaymentHistoryModal from "./modal/PaymentHistoryModal";
+import AllPaidModal from "./modal/AllPaidModal";
 
 function DebtorPage() {
   const { id } = useParams();
@@ -145,8 +146,7 @@ function DebtorPage() {
   const pendingDebt = debts
     .filter((d) => !d.status)
     .reduce((sum, debt) => sum + (debt.amount || 0), 0);
-  const paidDebt = debts
-    .filter((d) => d.status)
+  const paidDebt = debts.filter((d) => d.status)
     .reduce((sum, debt) => sum + (debt.amount || 0), 0);
 
   const handleAddDebt = (amount: number) => {
@@ -371,7 +371,7 @@ function DebtorPage() {
               <Tooltip title="Return to list" arrow>
                 <IconButton
                   component={Link}
-                  to="/"
+                  to="/debtor"
                   sx={{
                     bgcolor: "rgba(255,255,255,0.25)",
                     color: "white",
@@ -505,6 +505,12 @@ function DebtorPage() {
                         Status
                       </Box>
                     </TableCell>
+                    <TableCell sx={{ fontWeight: "700", color: 'text.primary' }}>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <FaClock size={14} />
+                        Remaining
+                      </Box>
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -570,6 +576,24 @@ function DebtorPage() {
                               boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
                             }}
                           />
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            icon={<FaClock />}
+                            label={formatCurrency(debt.remaining || 0)}
+                            variant="outlined"
+                            sx={{
+                              fontWeight: "700",
+                              color: '#FF9800',
+                              border: '2px solid #FF9800',
+                              height: 36,
+                              fontSize: '0.875rem',
+                              '& .MuiChip-icon': {
+                                color: '#FF9800',
+                                fontSize: '14px',
+                              }
+                            }}
+                      />
                         </TableCell>
                       </TableRow>
                     );

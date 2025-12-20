@@ -34,8 +34,8 @@ import {
   FaFileInvoiceDollar,
   FaCheckCircle,
 } from "react-icons/fa";
-import { formatCurrency, formatDateTime, getStatusColor, getStatusIcon, getStatusText } from "../../utils";
-import type { DebtsHistory } from "../../types/types";
+import { formatCurrency, formatDateTime, getStatusColor, getStatusIcon, getStatusText } from "../../../utils";
+import type { DebtsHistory } from "../../../types/types";
 
 interface Props {
   open: boolean;
