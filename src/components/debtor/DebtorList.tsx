@@ -289,16 +289,7 @@ function DebtorList() {
 
         {/* Statistics Cards */}
         <Box sx={{ p: 4, bgcolor: "#f8f9fc" }}>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: '1fr',
-                sm: 'repeat(2, 1fr)',
-                lg: 'repeat(3, 1fr)',
-              },
-              gap: 3,
-            }}
+          <Box className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             {/* Total Debtors Card */}
             <Card
@@ -468,11 +459,7 @@ function DebtorList() {
       }}
     >
       <CardContent sx={{ p: 3 }}>
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{ mb: 2 }}
+        <Box className="flex items-center justify-between mb-2"
         >
           <Box>
             <Typography
@@ -515,7 +502,6 @@ function DebtorList() {
             </Typography>
           </Box>
           <Box
-            className="icon-wrapper"
             sx={{
               position: 'relative',
               width: 72,

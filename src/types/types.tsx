@@ -48,3 +48,15 @@ export interface FilterState {
 export interface FilterParams{
   name?: string;
 }
+
+export type ResulType = null | {
+  success: boolean;
+  message: string;
+  total_paid: number;
+  remaining_amount: number;
+  processed_debts: Array<{
+    debt_id: number;
+    paid: number;
+    status: "fully_paid" | "partially_paid";
+  }>;
+};

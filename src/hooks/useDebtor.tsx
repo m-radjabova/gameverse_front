@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "../apiClient/apiClient";
 import type { Debt, Debtor, FilterParams, ReqDebt, ReqDebtor } from "../types/types";
+
 interface MutationVariables {
   debtorId: number;
   amount?: number;
@@ -93,6 +94,7 @@ function useDebtor(debtorId?: number, filterParams?: FilterParams) {
     onSettled: (_data, _error, vars : MutationVariables2) => {
       queryClient.invalidateQueries({ queryKey: ["debts", vars.debtorId] });
       queryClient.invalidateQueries({ queryKey: ["debts-history", vars.debtorId] });
+      queryClient.invalidateQueries({ queryKey: ["debtor", vars.debtorId] }); // QO'SHILDI
     },
   });
 
@@ -104,6 +106,7 @@ function useDebtor(debtorId?: number, filterParams?: FilterParams) {
     onSettled: (_data, _error, vars : MutationVariables) => {
       queryClient.invalidateQueries({ queryKey: ["debts", vars.debtorId] });
       queryClient.invalidateQueries({ queryKey: ["debts-history", vars.debtorId] });
+      queryClient.invalidateQueries({ queryKey: ["debtor", vars.debtorId] });
     },
   });
 
@@ -120,6 +123,7 @@ function useDebtor(debtorId?: number, filterParams?: FilterParams) {
       queryClient.invalidateQueries({ queryKey: ["debtor", vars.debtorId] });
     },
   });
+  
   useEffect(() => {
   }, [queryClient]);
 
@@ -137,7 +141,7 @@ function useDebtor(debtorId?: number, filterParams?: FilterParams) {
     addDebtToDebtor: (newDebt: ReqDebt) =>
       addDebtToDebtorMutate.mutate({ debtorId: debtorId as number, newDebt }),
     debtRepayment: (amount: number) =>
-      debtRepaymentMutate.mutate({ debtorId: debtorId as number, amount }),
+      debtRepaymentMutate.mutateAsync({ debtorId: debtorId as number, amount }),
     repaySingleDebt: (debt_id: number, amount: number) =>
       repaySingleDebtMutate.mutate({ debtorId: debtorId as number, debt_id, amount }),
     debtsHistory,

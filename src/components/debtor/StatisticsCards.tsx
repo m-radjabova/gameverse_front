@@ -25,13 +25,7 @@ function StatisticsCards({ formatCurrency, totalDebt, pendingDebt, paidDebt, deb
 
 
   return (
-    <Box sx={{ 
-      display: "grid", 
-      gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "repeat(4, 1fr)" }, 
-      gap: 3, 
-      mb: 4 
-    }}>
-      {/* Total Debt Card */}
+    <Box className="grid grid-cols-4 gap-4 mb-6">
       <Card 
         sx={{ 
           borderRadius: 3,

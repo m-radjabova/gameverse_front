@@ -5,49 +5,33 @@ import {
   Paper,
   Box,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Chip,
   Avatar,
   Button,
   Tooltip,
   LinearProgress,
   IconButton,
-  Divider,
 } from "@mui/material";
 import {
   FaArrowLeft,
-  FaCalendarAlt,
   FaMoneyBillWave,
-  FaReceipt,
   FaUser,
   FaPlus,
   FaPhone,
-  FaExclamationTriangle,
-  FaHistory,
-  FaChartLine,
-  FaClock,
+  FaExclamationTriangle
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import {
-  formatCurrency,
-  formatDateTime,
-  formatPhoneNumber,
-  getInitials,
-  getStatusInfo,
-} from "../../utils";
+import { formatCurrency, formatPhoneNumber, getInitials } from "../../utils";
 import StatisticsCards from "./StatisticsCards";
 import { useState } from "react";
 import DebtForm from "./modal/DebtForm";
 import RepaymentForm from "./modal/RepaymentForm";
-import type { ReqDebt } from "../../types/types";
+import type { ReqDebt, ResulType } from "../../types/types";
 import PaymentHistoryModal from "./modal/PaymentHistoryModal";
 import AllPaidModal from "./modal/AllPaidModal";
 import RepaySingleDebt from "./modal/RepaySingleDebt";
+import DebtRecordTable from "./DebtRecordTable";
+import Result from "./Result";
 
 function DebtorPage() {
   const { id } = useParams();
@@ -61,12 +45,15 @@ function DebtorPage() {
     debtsHistory,
     repaySingleDebt,
   } = useDebtor(Number(id));
+
   const [open, setOpen] = useState(false);
   const [openRepayment, setOpenRepayment] = useState(false);
   const [openHistoryPayment, setOpenHistoryPayment] = useState(false);
   const [openAllPaidModal, setOpenAllPaidModal] = useState(false);
   const [openRepaySingleDebt, setOpenRepaySingleDebt] = useState(false);
   const [selectedDebtId, setSelectedDebtId] = useState<number | null>(null);
+  const [amount, setAmount] = useState("");
+  const [result, setResult] = useState<ResulType>(null);
 
   if (debtorLoading || debtsLoading) {
     return (
@@ -185,8 +172,9 @@ function DebtorPage() {
     addDebtToDebtor(newDebt);
   };
 
-  const handleRepayment = (amount: number) => {
-    debtRepayment(amount);
+  const handleRepayment = async (amount: number) => {
+    const response = await debtRepayment(amount);
+    return response;
   };
 
   const handleRepaymentClick = () => {
@@ -198,11 +186,11 @@ function DebtorPage() {
   };
 
   const handleSingleRepay = (amount: number) => {
-    if (selectedDebtId) {
-      repaySingleDebt(selectedDebtId, amount);
-    }
+    if (!selectedDebtId) return;
+    repaySingleDebt(selectedDebtId, amount);
+    setOpenRepaySingleDebt(false);
   };
-  
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header Section */}
@@ -220,7 +208,6 @@ function DebtorPage() {
             borderColor: "divider",
           }}
         >
-          {/* Decorative Background Elements */}
           <Box
             sx={{
               position: "absolute",
@@ -364,25 +351,6 @@ function DebtorPage() {
                         : "0 6px 16px rgba(0,0,0,0.2)",
                     },
                     transition: "all 0.3s ease",
-                    position: "relative",
-                    overflow: "hidden",
-                    "&::after": allPaid
-                      ? {
-                          content: '""',
-                          position: "absolute",
-                          top: 0,
-                          left: "-100%",
-                          width: "100%",
-                          height: "100%",
-                          background:
-                            "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
-                          animation: "shine 2s infinite",
-                        }
-                      : {},
-                    "@keyframes shine": {
-                      "0%": { left: "-100%" },
-                      "100%": { left: "100%" },
-                    },
                   }}
                 >
                   {allPaid ? "All Paid ✓" : "Repayment"}
@@ -447,340 +415,19 @@ function DebtorPage() {
         debts={debts}
       />
 
+     <Result result={result} setResult={setResult} />
+
       {/* Debt Records Table */}
-      <Paper
-        elevation={0}
-        sx={{
-          borderRadius: 4,
-          overflow: "hidden",
-          border: "1px solid",
-          borderColor: "divider",
-        }}
-      >
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{
-            p: 3,
-            bgcolor: "#fafafa",
-          }}
-        >
-          <Box>
-            <Typography
-              variant="h5"
-              fontWeight="700"
-              display="flex"
-              alignItems="center"
-              gap={1.5}
-              color="text.primary"
-            >
-              <Box
-                sx={{
-                  bgcolor: "#e3f2fd",
-                  color: "#1976d2",
-                  p: 1,
-                  borderRadius: 2,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <FaReceipt size={20} />
-              </Box>
-              Debt Records
-            </Typography>
-            <Typography
-              variant="body2"
-              color="textSecondary"
-              sx={{ mt: 0.5, ml: 5.5 }}
-            >
-              All debt transactions for {debtor.full_name}
-            </Typography>
-          </Box>
-          <Tooltip title="View payment history" arrow>
-            <Button
-              onClick={() => setOpenHistoryPayment(true)}
-              variant="contained"
-              startIcon={<FaHistory />}
-              sx={{
-                bgcolor: "primary.main",
-                color: "white",
-                px: 3,
-                py: 1.25,
-                borderRadius: 2.5,
-                textTransform: "none",
-                fontWeight: "600",
-                fontSize: "0.95rem",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                "&:hover": {
-                  bgcolor: "primary.dark",
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 6px 16px rgba(0,0,0,0.2)",
-                },
-                transition: "all 0.3s ease",
-              }}
-            >
-              Payment History
-            </Button>
-          </Tooltip>
-        </Box>
-
-        <Divider />
-
-        {debts.length > 0 ? (
-          <>
-            <TableContainer>
-              <Table>
-                <TableHead sx={{ bgcolor: "#f8f9fc" }}>
-                  <TableRow>
-                    <TableCell
-                      sx={{
-                        fontWeight: "700",
-                        width: "80px",
-                        color: "text.primary",
-                      }}
-                    >
-                      #
-                    </TableCell>
-                    <TableCell
-                      sx={{ fontWeight: "700", color: "text.primary" }}
-                    >
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <FaCalendarAlt size={14} />
-                        Date & Time
-                      </Box>
-                    </TableCell>
-                    <TableCell
-                      sx={{ fontWeight: "700", color: "text.primary" }}
-                    >
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <FaMoneyBillWave size={14} />
-                        Amount
-                      </Box>
-                    </TableCell>
-                    <TableCell
-                      sx={{ fontWeight: "700", color: "text.primary" }}
-                    >
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <FaChartLine size={14} />
-                        Status
-                      </Box>
-                    </TableCell>
-                    <TableCell
-                      sx={{ fontWeight: "700", color: "text.primary" }}
-                    >
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <FaClock size={14} />
-                        Remaining
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {debts.map((debt, index) => {
-                    const statusInfo = getStatusInfo(debt.status);
-
-                    return (
-                      <TableRow
-                        key={debt.debt_id}
-                        onClick={() => {
-                          setSelectedDebtId(debt.debt_id);
-                          setOpenRepaySingleDebt(true);
-                        }}
-                        sx={{
-                          cursor: "pointer",
-                          transition: "all 0.2s ease",
-                          "&:hover": {
-                            bgcolor: "#f8f9fc",
-                            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                          },
-                          "&:last-child td": { border: 0 },
-                        }}
-                      >
-                        <TableCell>
-                          <Box
-                            sx={{
-                              width: 32,
-                              height: 32,
-                              borderRadius: 2,
-                              bgcolor: "#f5f5f5",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontWeight: 600,
-                              color: "text.secondary",
-                            }}
-                          >
-                            {index + 1}
-                          </Box>
-                        </TableCell>
-                        <TableCell>
-                          <Typography
-                            variant="body1"
-                            fontWeight="600"
-                            color="text.primary"
-                          >
-                            {formatDateTime(debt.date_time)}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={formatCurrency(debt.amount || 0)}
-                            color="primary"
-                            variant="outlined"
-                            sx={{
-                              fontWeight: "700",
-                              fontSize: "0.9rem",
-                              borderWidth: 2,
-                              height: 36,
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            icon={statusInfo.icon}
-                            label={statusInfo.text}
-                            color={statusInfo.color}
-                            variant="filled"
-                            sx={{
-                              fontWeight: "700",
-                              minWidth: "110px",
-                              height: 36,
-                              boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            icon={<FaClock />}
-                            label={formatCurrency(debt.remaining || 0)}
-                            variant="outlined"
-                            sx={{
-                              fontWeight: "700",
-                              color: "#FF9800",
-                              border: "2px solid #FF9800",
-                              height: 36,
-                              fontSize: "0.875rem",
-                              "& .MuiChip-icon": {
-                                color: "#FF9800",
-                                fontSize: "14px",
-                              },
-                            }}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-
-            <Box
-              sx={{
-                p: 3,
-                bgcolor: "#f8f9fc",
-                borderTop: 1,
-                borderColor: "divider",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: 2,
-              }}
-            >
-              <Typography
-                variant="body2"
-                color="textSecondary"
-                fontWeight="500"
-              >
-                Showing{" "}
-                <strong style={{ color: "#1976d2" }}>{debts.length}</strong>{" "}
-                debt record
-                {debts.length !== 1 ? "s" : ""}
-              </Typography>
-              <Box display="flex" gap={2} alignItems="center">
-                <Chip
-                  icon={<FaReceipt style={{ fontSize: "14px" }} />}
-                  label="Total Records"
-                  size="small"
-                  sx={{
-                    bgcolor: "white",
-                    fontWeight: 600,
-                    border: "1px solid",
-                    borderColor: "divider",
-                  }}
-                />
-                <Typography variant="h6" fontWeight="700" color="primary">
-                  {debts.length}
-                </Typography>
-              </Box>
-            </Box>
-          </>
-        ) : (
-          <Box
-            sx={{
-              p: 10,
-              textAlign: "center",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <Box
-              sx={{
-                bgcolor: "#f5f5f5",
-                borderRadius: "50%",
-                width: 120,
-                height: 120,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                mb: 3,
-              }}
-            >
-              <FaReceipt size={56} color="#9e9e9e" />
-            </Box>
-            <Typography
-              variant="h5"
-              fontWeight="600"
-              color="text.primary"
-              sx={{ mb: 1 }}
-            >
-              No debt records found
-            </Typography>
-            <Typography
-              variant="body1"
-              color="textSecondary"
-              sx={{ mb: 4, maxWidth: 400 }}
-            >
-              This debtor has no debt records yet. Add the first debt record to
-              start tracking.
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<FaPlus />}
-              onClick={() => setOpen(true)}
-              sx={{
-                px: 4,
-                py: 1.5,
-                borderRadius: 3,
-                textTransform: "none",
-                fontWeight: 600,
-                fontSize: "1rem",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                "&:hover": {
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 6px 16px rgba(0,0,0,0.2)",
-                },
-                transition: "all 0.3s ease",
-              }}
-            >
-              Add First Debt Record
-            </Button>
-          </Box>
-        )}
-      </Paper>
+      <DebtRecordTable
+        debtor={debtor}
+        debts={debts}
+        setOpen={setOpen}
+        allPaid={allPaid}
+        setOpenHistoryPayment={setOpenHistoryPayment}
+        setOpenRepaySingleDebt={setOpenRepaySingleDebt}
+        setSelectedDebtId={setSelectedDebtId}
+        setOpenAllPaidModal={setOpenAllPaidModal}
+      />
 
       {/* Modals */}
       <DebtForm
@@ -792,6 +439,10 @@ function DebtorPage() {
         open={openRepayment}
         handleClose={handleCloseRepayment}
         onSubmit={handleRepayment}
+        amount={amount}
+        setAmount={setAmount}
+        result={result}
+        setResult={setResult}
       />
       <PaymentHistoryModal
         open={openHistoryPayment}

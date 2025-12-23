@@ -14,7 +14,7 @@ import {
   Divider,
 } from "@mui/material";
 import { useForm } from "react-hook-form";
-import type { ReqDebtor } from "../../types/types";
+import type { ReqDebtor } from "../../../types/types";
 import {
   FaUser,
   FaPhone,
