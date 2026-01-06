@@ -19,17 +19,11 @@ import {
   FaUser,
   FaPhone,
   FaMapMarkerAlt,
-  FaArrowLeft,
-  FaShieldAlt,
-  FaChartLine,
-  FaUsers,
+  FaArrowLeft
 } from "react-icons/fa";
-import { MdPersonAdd, MdCheckCircle } from "react-icons/md";
+import { MdPersonAdd } from "react-icons/md";
 import apiClient from "../../apiClient/apiClient";
 import {
-  FeatureIconWrapper,
-  FeatureItem,
-  FeaturesList,
   FeaturesSidebar,
   FormSection,
   GradientBackground,
@@ -40,6 +34,7 @@ import {
   MainCard,
   StyledTextField,
 } from "./LoginStyle";
+import useImages from "../../hooks/useImages";
 
 function SignUp() {
   const {
@@ -51,6 +46,8 @@ function SignUp() {
   const theme = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const { heroImage, imageLoading } = useImages();
+
 
   const onSubmit = async (data: FieldValues) => {
     setIsLoading(true);
@@ -101,91 +98,32 @@ function SignUp() {
     }
   };
 
-  const features = [
-    {
-      icon: <FaShieldAlt />,
-      title: "Bank-Level Security",
-      description: "Your store data is encrypted and fully protected",
-    },
-    {
-      icon: <FaChartLine />,
-      title: "Advanced Analytics",
-      description: "Track debt trends and customer behavior",
-    },
-    {
-      icon: <FaUsers />,
-      title: "Unlimited Customers",
-      description: "Add unlimited debtors to your store",
-    },
-    {
-      icon: <MdCheckCircle />,
-      title: "Free Forever",
-      description: "No hidden fees, completely free to use",
-    },
-  ];
-
   return (
     <GradientBackground>
       <MainCard>
-        <FeaturesSidebar>
-          <Box>
-            <Typography
-              variant="h3"
-              fontWeight="800"
-              gutterBottom
+        <FeaturesSidebar
+         sx={{
+            flex: 1,
+            position: 'relative',
+            backgroundImage: heroImage 
+              ? `url(${heroImage})`
+              : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            transition: 'background-image 0.5s ease-in-out',
+          }}>
+          {imageLoading && (
+            <Box
               sx={{
-                mb: 4,
-                color: "white",
-                textShadow: "0 2px 10px rgba(0,0,0,0.2)",
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
               }}
             >
-              Join Debt Manager
-            </Typography>
-
-            <Typography
-              variant="h6"
-              sx={{
-                mb: 5,
-                fontWeight: 400,
-                opacity: 0.9,
-                lineHeight: 1.6,
-              }}
-            >
-              Register your store and start managing customer debts
-              professionally. Join thousands of stores already using our
-              platform.
-            </Typography>
-
-            <FeaturesList>
-              {features.map((feature, index) => (
-                <Fade
-                  in
-                  timeout={1000}
-                  key={index}
-                  style={{ transitionDelay: `${index * 100}ms` }}
-                >
-                  <FeatureItem>
-                    <FeatureIconWrapper>{feature.icon}</FeatureIconWrapper>
-                    <Box>
-                      <Typography
-                        variant="subtitle1"
-                        fontWeight="600"
-                        sx={{ mb: 0.5 }}
-                      >
-                        {feature.title}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ opacity: 0.9, fontSize: "0.9rem" }}
-                      >
-                        {feature.description}
-                      </Typography>
-                    </Box>
-                  </FeatureItem>
-                </Fade>
-              ))}
-            </FeaturesList>
-          </Box>
+              <CircularProgress sx={{ color: 'white' }} />
+            </Box>
+          )}
         </FeaturesSidebar>
 
         {/* Right Side - Registration Form */}

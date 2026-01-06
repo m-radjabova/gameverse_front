@@ -16,18 +16,16 @@ import {
 import { 
   FaStore, 
   FaSignInAlt, 
-  FaChartLine, 
-  FaMoneyBillWave, 
-  FaShieldAlt,
-  FaCheckCircle,
-  FaDatabase
+  FaShieldAlt
 } from "react-icons/fa";
-import { FeatureIconWrapper, FeatureItem, FeaturesList, FeaturesSidebar, GradientBackground, GradientButton, GradientText, LoginContainer, LoginFormSection, LogoHeader, MainCard, MainLogo, StyledTextField } from "./LoginStyle";
+import { FeaturesSidebar, GradientBackground, GradientButton, GradientText, LoginContainer, LoginFormSection, LogoHeader, MainCard, MainLogo, StyledTextField } from "./LoginStyle";
+import useImages from "../../hooks/useImages";
 
 
 function LoginPage() {
   const { register, handleSubmit, formState: { errors } } = useForm<FieldValues>();
   const { login, state: { error, isLoading } } = useContextPro();
+  const { heroImage, imageLoading } = useImages();
   const navigate = useNavigate();
   const theme = useTheme();
 
@@ -54,95 +52,33 @@ function LoginPage() {
     }
   };
 
-  const features = [
-    { 
-      icon: <FaMoneyBillWave />, 
-      title: "Real-time Debt Tracking",
-      description: "Monitor customer debts with live updates"
-    },
-    { 
-      icon: <FaChartLine />, 
-      title: "Financial Analytics",
-      description: "Generate insightful debt reports and trends"
-    },
-    { 
-      icon: <FaDatabase />, 
-      title: "Customer Database",
-      description: "Secure management of customer profiles"
-    },
-    { 
-      icon: <FaCheckCircle />, 
-      title: "Payment Reminders",
-      description: "Automated notifications for overdue payments"
-    }
-  ];
-
   return (
     <GradientBackground>
       <LoginContainer>
         <Fade in timeout={800}>
           <MainCard>
-            {/* Left Side - Features */}
-            <FeaturesSidebar>
-              <Box>
-                <Typography 
-                  variant="h3" 
-                  fontWeight="800" 
-                  gutterBottom
-                  sx={{ 
-                    mb: 4,
-                    color: 'white',
-                    textShadow: '0 2px 10px rgba(0,0,0,0.2)'
-                  }}
-                >
-                  Debt Manager
-                </Typography>
-                
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    mb: 5, 
-                    fontWeight: 400,
-                    opacity: 0.9,
-                    lineHeight: 1.6
-                  }}
-                >
-                  Advanced debt management platform designed specifically for retail stores. 
-                  Streamline your collections process and boost financial efficiency.
-                </Typography>
-
-                <FeaturesList>
-                  {features.map((feature, index) => (
-                    <Fade 
-                      in 
-                      timeout={1000} 
-                      key={index}
-                      style={{ transitionDelay: `${index * 100}ms` }}
-                    >
-                      <FeatureItem>
-                        <FeatureIconWrapper>
-                          {feature.icon}
-                        </FeatureIconWrapper>
-                        <Box>
-                          <Typography 
-                            variant="subtitle1" 
-                            fontWeight="600"
-                            sx={{ mb: 0.5 }}
-                          >
-                            {feature.title}
-                          </Typography>
-                          <Typography 
-                            variant="body2" 
-                            sx={{ opacity: 0.9, fontSize: '0.9rem' }}
-                          >
-                            {feature.description}
-                          </Typography>
-                        </Box>
-                      </FeatureItem>
-                    </Fade>
-                  ))}
-                </FeaturesList>
-              </Box>
+            <FeaturesSidebar
+              sx={{
+                  position: 'relative',
+                  backgroundImage: heroImage 
+                    ? `url(${heroImage})`
+                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  transition: 'background-image 0.5s ease-in-out',
+                }}>
+                {imageLoading && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                    }}
+                  >
+                    <CircularProgress sx={{ color: 'white' }} />
+                  </Box>
+                )}
             </FeaturesSidebar>
 
             {/* Right Side - Login Form */}

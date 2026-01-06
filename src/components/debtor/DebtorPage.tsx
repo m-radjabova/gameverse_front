@@ -192,14 +192,14 @@ function DebtorPage() {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Box>
       {/* Header Section */}
       <Box sx={{ mb: 4 }}>
         <Paper
           elevation={0}
           sx={{
-            p: 4,
-            borderRadius: 4,
+            p: 2,
+            // borderRadius: 4,
             background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             color: "white",
             position: "relative",
@@ -461,7 +461,7 @@ function DebtorPage() {
         onSubmit={handleSingleRepay}
         debt_id={selectedDebtId!}
       />
-    </Container>
+    </Box>
   );
 }
 

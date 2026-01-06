@@ -4,16 +4,10 @@ import { FaStore } from 'react-icons/fa';
 
 export const GradientBackground = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
-  background: `linear-gradient(145deg, 
-    ${alpha(theme.palette.primary.dark, 0.07)} 0%, 
-    ${alpha(theme.palette.primary.main, 0.1)} 30%, 
-    ${alpha(theme.palette.secondary.main, 0.08)} 70%, 
-    ${alpha(theme.palette.secondary.dark, 0.06)} 100%
-  )`,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: theme.spacing(4),
+  padding: 0, // padding olib tashlandi
   position: 'relative',
   overflow: 'hidden',
   '&::before': {
@@ -42,19 +36,18 @@ export const GradientBackground = styled(Box)(({ theme }) => ({
 
 export const LoginContainer = styled(Box)(({ theme  }) => ({
   width: '100%',
-  maxWidth: '1400px',
+  height: '100vh', 
   position: 'relative',
   zIndex: 1
 }));
 
 export const MainCard = styled(Paper)(({ theme }) => ({
   display: 'flex',
-  borderRadius: 28,
+  borderRadius: 0, 
   overflow: 'hidden',
-  boxShadow: `
-    0 25px 50px -12px ${alpha(theme.palette.common.black, 0.25)},
-    inset 0 1px 0 ${alpha(theme.palette.common.white, 0.3)}
-  `,
+  width: '100%', 
+  height: '100%',
+  boxShadow: 'none', 
   backgroundColor: theme.palette.background.paper,
   position: 'relative'
 }));
@@ -65,48 +58,16 @@ export const FeaturesSidebar = styled(Box)(({ theme }) => ({
     ${theme.palette.primary.dark} 0%, 
     ${theme.palette.primary.main} 100%
   )`,
-  padding: theme.spacing(5),
+  padding: theme.spacing(6), 
   color: 'white',
-  minWidth: '350px',
+  minWidth: '450px', 
   display: 'flex',
   flexDirection: 'column',
-  justifyContent: 'space-between'
-}));
-
-export const FeaturesList = styled(Box)(({ theme }) => ({
-  flex: 1,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: theme.spacing(2.5)
-}));
-
-export const FeatureItem = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  padding: theme.spacing(2.5),
-  backgroundColor: alpha('#ffffff', 0.1),
-  borderRadius: 16,
-  backdropFilter: 'blur(10px)',
-  border: `1px solid ${alpha('#ffffff', 0.15)}`,
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    backgroundColor: alpha('#ffffff', 0.15),
-    transform: 'translateX(8px)',
-    boxShadow: `0 8px 20px ${alpha('#000000', 0.2)}`
-  }
-}));
-
-export const FeatureIconWrapper = styled(Box)(({ theme }) => ({
-  width: 48,
-  height: 48,
-  borderRadius: 12,
-  backgroundColor: alpha('#ffffff', 0.2),
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  marginRight: theme.spacing(2.5),
-  fontSize: '20px',
-  flexShrink: 0
+  justifyContent: 'center', 
+  position: 'relative',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  transition: 'background-image 0.5s ease-in-out',
 }));
 
 export const LoginFormSection = styled(Box)(({ theme }) => ({
@@ -114,7 +75,9 @@ export const LoginFormSection = styled(Box)(({ theme }) => ({
   padding: theme.spacing(6),
   minWidth: '400px',
   display: 'flex',
-  flexDirection: 'column'
+  flexDirection: 'column',
+  justifyContent: 'center', 
+  overflowY: 'auto', 
 }));
 
 export const LogoHeader = styled(Box)(({ theme }) => ({
@@ -153,7 +116,7 @@ export const GradientButton = styled(Button)(({ theme }) => ({
   fontWeight: 700,
   textTransform: 'none',
   letterSpacing: '0.5px',
-    color: 'white',
+  color: 'white',
   background: `linear-gradient(135deg, 
     ${theme.palette.primary.main} 0%, 
     ${theme.palette.primary.dark} 100%
@@ -222,7 +185,9 @@ export const FormSection = styled(Box)(({ theme }) => ({
   padding: theme.spacing(5),
   minWidth: '400px',
   display: 'flex',
-  flexDirection: 'column'
+  flexDirection: 'column',
+  justifyContent: 'center', // markazga joylashtirish
+  overflowY: 'auto',
 }));
 
 export const LogoIcon = styled(FaStore)(({ theme }) => ({
@@ -231,7 +196,6 @@ export const LogoIcon = styled(FaStore)(({ theme }) => ({
   filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))',
   marginBottom: theme.spacing(2),
 }));
-
 
 export const GlassDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiPaper-root': {

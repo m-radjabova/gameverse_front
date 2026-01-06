@@ -7,7 +7,7 @@ export interface Shop {
   shop_name: string;
   owner_name?: string;
   phone_number?: string;
-  address?: string;
+  address: string;
   is_active: boolean;
   created_at?: string;
 }

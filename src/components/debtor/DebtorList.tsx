@@ -103,12 +103,12 @@ function DebtorList() {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ p: 4 }}>
+    <Box>
       {/* Header Section */}
       <Paper
         elevation={0}
         sx={{
-          borderRadius: 4,
+          // borderRadius: 4,
           overflow: "hidden",
           mb: 4,
           border: "1px solid",
@@ -117,7 +117,7 @@ function DebtorList() {
       >
         <Box
           sx={{
-            p: 4,
+            p: 2,
             background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             color: "white",
             display: "flex",
@@ -945,7 +945,7 @@ function DebtorList() {
         onSubmit={handleSubmit}
         shopName={shop?.shop_name} 
       />
-    </Container>
+    </Box>
   );
 }
 

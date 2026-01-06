@@ -40,7 +40,7 @@ function StatisticsCards({ formatCurrency, totalDebt, pendingDebt, paidDebt, deb
             radial-gradient(circle at 20% 80%, rgba(33, 150, 243, 0.1) 0%, transparent 50%)
           `,
           '&:hover': {
-            transform: 'translateY(-8px) scale(1.02)',
+            transform: 'translateY(-8px) scale(1)',
             boxShadow: '0 12px 32px rgba(25, 118, 210, 0.2)',
             borderColor: 'rgba(25, 118, 210, 0.3)',
           },
@@ -173,7 +173,7 @@ function StatisticsCards({ formatCurrency, totalDebt, pendingDebt, paidDebt, deb
             radial-gradient(circle at 20% 80%, rgba(255, 152, 0, 0.1) 0%, transparent 50%)
           `,
           '&:hover': {
-            transform: 'translateY(-8px) scale(1.02)',
+            transform: 'translateY(-8px) scale(1)',
             boxShadow: '0 12px 32px rgba(245, 124, 0, 0.2)',
             borderColor: 'rgba(245, 124, 0, 0.3)',
           },
@@ -306,7 +306,7 @@ function StatisticsCards({ formatCurrency, totalDebt, pendingDebt, paidDebt, deb
             radial-gradient(circle at 20% 80%, rgba(76, 175, 80, 0.1) 0%, transparent 50%)
           `,
           '&:hover': {
-            transform: 'translateY(-8px) scale(1.02)',
+            transform: 'translateY(-8px) scale(1)',
             boxShadow: '0 12px 32px rgba(46, 125, 50, 0.2)',
             borderColor: 'rgba(46, 125, 50, 0.3)',
           },
@@ -438,7 +438,7 @@ function StatisticsCards({ formatCurrency, totalDebt, pendingDebt, paidDebt, deb
             radial-gradient(circle at 20% 80%, rgba(3, 169, 244, 0.1) 0%, transparent 50%)
           `,
           '&:hover': {
-            transform: 'translateY(-8px) scale(1.02)',
+            transform: 'translateY(-8px) scale(1)',
             boxShadow: '0 12px 32px rgba(2, 136, 209, 0.2)',
             borderColor: 'rgba(2, 136, 209, 0.3)',
           },
