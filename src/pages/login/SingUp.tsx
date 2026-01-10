@@ -131,25 +131,11 @@ function SignUp() {
           <Box
             sx={{
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent: "flex-end",
               alignItems: "center",
-              mb: 4,
+              // mb: 4,
             }}
           >
-            <Button
-              startIcon={<FaArrowLeft />}
-              onClick={() => navigate("/")}
-              sx={{
-                color: theme.palette.primary.main,
-                textTransform: "none",
-                fontWeight: 500,
-                "&:hover": {
-                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                },
-              }}
-            >
-              Back to Login
-            </Button>
 
             <Link to="/" style={{ textDecoration: "none" }}>
               <Typography
@@ -299,31 +285,6 @@ function SignUp() {
               >
                 {isLoading ? "Creating Store..." : "Create Store Account"}
               </GradientButton>
-
-              <Box sx={{ textAlign: "center", mt: 3 }}>
-                <Typography variant="caption" color="text.secondary">
-                  By registering, you agree to our{" "}
-                  <Link
-                    to="/terms"
-                    style={{
-                      color: theme.palette.primary.main,
-                      fontWeight: 500,
-                    }}
-                  >
-                    Terms of Service
-                  </Link>{" "}
-                  and{" "}
-                  <Link
-                    to="/privacy"
-                    style={{
-                      color: theme.palette.primary.main,
-                      fontWeight: 500,
-                    }}
-                  >
-                    Privacy Policy
-                  </Link>
-                </Typography>
-              </Box>
             </form>
 
             <Box

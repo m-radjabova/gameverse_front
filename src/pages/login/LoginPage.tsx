@@ -190,38 +190,12 @@ function LoginPage() {
                 }}>
                   <Stack 
                     direction="row" 
-                    justifyContent="space-between" 
+                    justifyContent="center" 
                     alignItems="center"
                   >
                     <Typography variant="caption" color="text.secondary">
                       © {new Date().getFullYear()} Debt Manager
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 2 }}>
-                      <Typography 
-                        variant="caption" 
-                        color="text.secondary"
-                        sx={{ 
-                          backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                          padding: '2px 8px',
-                          borderRadius: '6px',
-                          fontWeight: 500
-                        }}
-                      >
-                        v3.2.1
-                      </Typography>
-                      <Typography 
-                        variant="caption" 
-                        color="text.secondary"
-                        sx={{ 
-                          backgroundColor: alpha(theme.palette.success.main, 0.08),
-                          padding: '2px 8px',
-                          borderRadius: '6px',
-                          fontWeight: 500
-                        }}
-                      >
-                        PCI Compliant
-                      </Typography>
-                    </Box>
                   </Stack>
                 </Box>
               </Box>

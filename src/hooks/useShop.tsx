@@ -5,11 +5,11 @@ import type { ReqShop } from "../types/types";
 export interface Shop {
   shop_id: number;
   shop_name: string;
-  owner_name?: string;
-  phone_number?: string;
+  owner_name: string;
+  phone_number: string;
   address: string;
   is_active: boolean;
-  created_at?: string;
+  created_at: string;
 }
 
 export interface ShopStatistics {

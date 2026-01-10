@@ -84,29 +84,29 @@ function CreateContextPro({ children }: { children: ReactNode }) {
       dispatch({ type: "SET_LOADING", payload: true });
       dispatch({ type: "SET_ERROR", payload: null });
 
-      const response = await apiClient.get(`/shop/search/`, {
-        params: {
-          name: shopName,
-        },
+      // 1️⃣ search
+      const searchRes = await apiClient.get("/shop/search/", {
+        params: { name: shopName },
       });
 
-      if (response.data.shops && response.data.shops.length > 0) {
-        const shop = response.data.shops[0]; 
-
-        localStorage.setItem("shop_id", shop.shop_id.toString());
-        dispatch({ type: "SET_SHOP", payload: shop });
-        return { success: true, shop };
-      } else {
-        dispatch({ type: "SET_ERROR", payload: "Shop not found" });
-        return { success: false, error: "Shop not found" };
+      if (!searchRes.data.shops || searchRes.data.shops.length === 0) {
+        dispatch({ type: "SET_ERROR", payload: "Shop topilmadi" });
+        return { success: false, error: "Shop topilmadi" };
       }
-    } catch (error: any) {
-      console.error("Login error details:", error);
 
+      const shopId = searchRes.data.shops[0].shop_id;
+
+      // 2️⃣ full shop
+      const shopRes = await apiClient.get(`/shop/${shopId}`);
+
+      localStorage.setItem("shop_id", shopId.toString());
+      dispatch({ type: "SET_SHOP", payload: shopRes.data });
+
+      return { success: true, shop: shopRes.data };
+    } catch (error: any) {
       let errorMessage = "Server xatosi";
 
       if (error.response) {
-        console.error("Error response:", error.response);
         errorMessage =
           error.response.data?.detail ||
           error.response.data?.message ||

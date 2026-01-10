@@ -45,7 +45,8 @@ function useImages() {
             
             if (data.photos && data.photos.length > 0) {
               const randomIndex = Math.floor(Math.random() * data.photos.length);
-              setHeroImage(data.photos[randomIndex].src.large);
+              setHeroImage(data.photos[randomIndex].src.large2x);
+
             }
           } catch (error) {
             console.error('Failed to load image:', error);

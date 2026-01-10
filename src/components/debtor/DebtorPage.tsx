@@ -1,7 +1,6 @@
 import { useParams } from "react-router-dom";
 import useDebtor from "../../hooks/useDebtor";
 import {
-  Container,
   Paper,
   Box,
   Typography,
@@ -18,7 +17,8 @@ import {
   FaUser,
   FaPlus,
   FaPhone,
-  FaExclamationTriangle
+  FaExclamationTriangle,
+  FaCheckCircle,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { formatCurrency, formatPhoneNumber, getInitials } from "../../utils";
@@ -57,16 +57,40 @@ function DebtorPage() {
 
   if (debtorLoading || debtsLoading) {
     return (
-      <Container sx={{ py: 4 }}>
-        <Box sx={{ width: "100%" }}>
-          <LinearProgress sx={{ height: 3, borderRadius: 2 }} />
-          <Box sx={{ textAlign: "center", mt: 4 }}>
-            <Typography variant="h6" color="textSecondary">
-              Loading debtor information...
-            </Typography>
-          </Box>
+      <Box
+        sx={{
+          height: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        }}
+      >
+        <Box sx={{ width: "100%", maxWidth: 600, px: 4 }}>
+          <LinearProgress
+            sx={{
+              height: 6,
+              borderRadius: 3,
+              bgcolor: "rgba(255, 255, 255, 0.2)",
+              "& .MuiLinearProgress-bar": {
+                background:
+                  "linear-gradient(90deg, #fff 0%, rgba(255, 255, 255, 0.8) 100%)",
+              },
+            }}
+          />
+          <Typography
+            variant="h5"
+            sx={{
+              textAlign: "center",
+              mt: 4,
+              color: "white",
+              fontWeight: 600,
+            }}
+          >
+            Loading debtor information...
+          </Typography>
         </Box>
-      </Container>
+      </Box>
     );
   }
 
@@ -91,14 +115,24 @@ function DebtorPage() {
 
   if (!debtor) {
     return (
-      <Container sx={{ py: 6 }}>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          bgcolor: "#f8f9fc",
+          p: 3,
+        }}
+      >
         <Paper
           elevation={0}
           sx={{
-            p: 6,
+            p: 8,
             textAlign: "center",
-            borderRadius: 4,
-            border: "1px solid",
+            maxWidth: 600,
+            width: "100%",
+            border: "2px solid",
             borderColor: "divider",
           }}
         >
@@ -106,45 +140,46 @@ function DebtorPage() {
             sx={{
               bgcolor: "#ffebee",
               borderRadius: "50%",
-              width: 100,
-              height: 100,
+              width: 120,
+              height: 120,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               margin: "0 auto",
-              mb: 3,
+              mb: 4,
             }}
           >
-            <FaExclamationTriangle size={48} color="#d32f2f" />
+            <FaExclamationTriangle size={56} color="#d32f2f" />
           </Box>
-          <Typography variant="h4" fontWeight="700" color="error" gutterBottom>
+          <Typography variant="h3" fontWeight="800" color="error" gutterBottom>
             Debtor Not Found
           </Typography>
           <Typography
             variant="body1"
-            color="textSecondary"
-            sx={{ mb: 4, maxWidth: 500, mx: "auto" }}
+            color="text.secondary"
+            sx={{ mb: 5, fontSize: "1.1rem", lineHeight: 1.7 }}
           >
             The debtor you are looking for does not exist or has been removed
             from the system.
           </Typography>
           <Button
             component={Link}
-            to="/"
+            to="/home/debtor"
             variant="contained"
             size="large"
             startIcon={<FaArrowLeft />}
             sx={{
-              px: 4,
-              py: 1.5,
-              borderRadius: 3,
+              px: 5,
+              py: 1.75,
+              borderRadius: 2,
               textTransform: "none",
-              fontWeight: 600,
-              fontSize: "1rem",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              fontWeight: 700,
+              fontSize: "1.1rem",
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              boxShadow: "0 8px 24px rgba(102, 126, 234, 0.3)",
               "&:hover": {
                 transform: "translateY(-2px)",
-                boxShadow: "0 6px 16px rgba(0,0,0,0.2)",
+                boxShadow: "0 12px 32px rgba(102, 126, 234, 0.4)",
               },
               transition: "all 0.3s ease",
             }}
@@ -152,7 +187,7 @@ function DebtorPage() {
             Back to Debtors
           </Button>
         </Paper>
-      </Container>
+      </Box>
     );
   }
 
@@ -192,77 +227,92 @@ function DebtorPage() {
   };
 
   return (
-    <Box>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        bgcolor: "#f8f9fc",
+      }}
+    >
       {/* Header Section */}
-      <Box sx={{ mb: 4 }}>
-        <Paper
-          elevation={0}
+      <Paper
+        elevation={0}
+        sx={{
+          overflow: "hidden",
+          borderBottom: "1px solid",
+          borderColor: "divider",
+        }}
+      >
+        <Box
           sx={{
-            p: 2,
-            // borderRadius: 4,
+            p: 3,
             background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             color: "white",
             position: "relative",
-            overflow: "hidden",
-            border: "1px solid",
-            borderColor: "divider",
           }}
         >
+          {/* Background decorative elements */}
           <Box
             sx={{
               position: "absolute",
               top: -50,
               right: -50,
-              width: 200,
-              height: 200,
+              width: 250,
+              height: 250,
               borderRadius: "50%",
-              bgcolor: "rgba(255, 255, 255, 0.1)",
+              bgcolor: "rgba(255, 255, 255, 0.08)",
+              filter: "blur(40px)",
             }}
           />
           <Box
             sx={{
               position: "absolute",
-              bottom: -30,
-              left: -30,
-              width: 150,
-              height: 150,
+              bottom: -40,
+              left: -40,
+              width: 200,
+              height: 200,
               borderRadius: "50%",
-              bgcolor: "rgba(255, 255, 255, 0.1)",
+              bgcolor: "rgba(255, 255, 255, 0.08)",
+              filter: "blur(40px)",
             }}
           />
 
           <Box
             sx={{
+              // maxWidth: 1400,
+              mx: "auto",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
               flexWrap: "wrap",
-              gap: 3,
+              gap: 4,
               position: "relative",
               zIndex: 1,
             }}
           >
+            {/* Debtor Info */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
               <Avatar
                 sx={{
-                  width: 90,
-                  height: 90,
+                  width: 100,
+                  height: 100,
                   bgcolor: "white",
                   color: "#667eea",
-                  fontSize: "2.25rem",
-                  fontWeight: "700",
-                  boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-                  border: "4px solid rgba(255, 255, 255, 0.3)",
+                  fontSize: "2.5rem",
+                  fontWeight: "800",
+                  boxShadow: "0 12px 32px rgba(0,0,0,0.25)",
+                  border: "5px solid rgba(255, 255, 255, 0.3)",
                 }}
               >
                 {getInitials(debtor.full_name)}
               </Avatar>
               <Box>
                 <Typography
-                  variant="h4"
-                  fontWeight="700"
-                  gutterBottom
-                  sx={{ mb: 1.5 }}
+                  variant="h3"
+                  fontWeight="800"
+                  sx={{
+                    mb: 1.5,
+                    textShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                  }}
                 >
                   {debtor.full_name}
                 </Typography>
@@ -270,20 +320,22 @@ function DebtorPage() {
                   sx={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 1.5,
+                    gap: 2,
                     flexWrap: "wrap",
                   }}
                 >
                   <Chip
                     icon={<FaUser style={{ fontSize: "14px" }} />}
                     label={`ID: #${debtor.debtor_id}`}
-                    size="small"
                     sx={{
-                      bgcolor: "rgba(255,255,255,0.25)",
+                      bgcolor: "rgba(255,255,255,0.2)",
                       color: "white",
-                      fontWeight: "600",
+                      fontWeight: "700",
+                      fontSize: "0.9rem",
                       backdropFilter: "blur(10px)",
                       border: "1px solid rgba(255,255,255,0.3)",
+                      px: 1,
+                      height: 36,
                       "& .MuiChip-icon": {
                         color: "white",
                       },
@@ -292,29 +344,41 @@ function DebtorPage() {
                   <Chip
                     icon={<FaPhone style={{ fontSize: "14px" }} />}
                     label={formatPhoneNumber(debtor.phone_number)}
-                    size="small"
                     sx={{
-                      bgcolor: "rgba(255,255,255,0.25)",
+                      bgcolor: "rgba(255,255,255,0.2)",
                       color: "white",
-                      fontWeight: "600",
+                      fontWeight: "700",
+                      fontSize: "0.9rem",
                       backdropFilter: "blur(10px)",
                       border: "1px solid rgba(255,255,255,0.3)",
+                      px: 1,
+                      height: 36,
                       "& .MuiChip-icon": {
                         color: "white",
                       },
                     }}
                   />
                   <Chip
-                    icon={<FaMoneyBillWave style={{ fontSize: "14px" }} />}
+                    icon={
+                      allPaid ? (
+                        <FaCheckCircle style={{ fontSize: "14px" }} />
+                      ) : (
+                        <FaMoneyBillWave style={{ fontSize: "14px" }} />
+                      )
+                    }
                     label={`Total: ${formatCurrency(debtor.total_debt || 0)}`}
-                    size="small"
                     sx={{
-                      bgcolor: "rgba(255,255,255,0.95)",
-                      color: "#667eea",
-                      fontWeight: "700",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                      bgcolor: allPaid ? "#4CAF50" : "white",
+                      color: allPaid ? "white" : "#667eea",
+                      fontWeight: "800",
+                      fontSize: "0.95rem",
+                      px: 1.5,
+                      height: 36,
+                      boxShadow: allPaid
+                        ? "0 4px 16px rgba(76, 175, 80, 0.4)"
+                        : "0 4px 16px rgba(0,0,0,0.2)",
                       "& .MuiChip-icon": {
-                        color: "#667eea",
+                        color: allPaid ? "white" : "#667eea",
                       },
                     }}
                   />
@@ -322,39 +386,44 @@ function DebtorPage() {
               </Box>
             </Box>
 
-            <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+            {/* Action Buttons */}
+            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
               <Tooltip
                 title={allPaid ? "All debts are paid" : "Make a payment"}
                 arrow
               >
-                <Button
-                  variant="contained"
-                  startIcon={<FaMoneyBillWave />}
-                  onClick={handleRepaymentClick}
-                  sx={{
-                    bgcolor: allPaid ? "#4CAF50" : "white",
-                    color: allPaid ? "white" : "#667eea",
-                    px: 3,
-                    py: 1.25,
-                    borderRadius: 2.5,
-                    textTransform: "none",
-                    fontWeight: "700",
-                    fontSize: "0.95rem",
-                    boxShadow: allPaid
-                      ? "0 4px 12px rgba(76, 175, 80, 0.3)"
-                      : "0 4px 12px rgba(0,0,0,0.15)",
-                    "&:hover": {
-                      bgcolor: allPaid ? "#388E3C" : "rgba(255,255,255,0.95)",
-                      transform: "translateY(-2px)",
+                <span>
+                  <Button
+                    variant="contained"
+                    startIcon={
+                      allPaid ? <FaCheckCircle /> : <FaMoneyBillWave />
+                    }
+                    onClick={handleRepaymentClick}
+                    sx={{
+                      bgcolor: allPaid ? "#4CAF50" : "white",
+                      color: allPaid ? "white" : "#667eea",
+                      px: 4,
+                      py: 1.5,
+                      borderRadius: 2,
+                      textTransform: "none",
+                      fontWeight: "800",
+                      fontSize: "1rem",
                       boxShadow: allPaid
-                        ? "0 6px 16px rgba(76, 175, 80, 0.4)"
-                        : "0 6px 16px rgba(0,0,0,0.2)",
-                    },
-                    transition: "all 0.3s ease",
-                  }}
-                >
-                  {allPaid ? "All Paid ✓" : "Repayment"}
-                </Button>
+                        ? "0 6px 20px rgba(76, 175, 80, 0.4)"
+                        : "0 6px 20px rgba(0,0,0,0.2)",
+                      "&:hover": {
+                        bgcolor: allPaid ? "#388E3C" : "rgba(255,255,255,0.95)",
+                        transform: "translateY(-2px)",
+                        boxShadow: allPaid
+                          ? "0 8px 28px rgba(76, 175, 80, 0.5)"
+                          : "0 8px 28px rgba(0,0,0,0.25)",
+                      },
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    {allPaid ? "All Paid ✓" : "Repayment"}
+                  </Button>
+                </span>
               </Tooltip>
               <Tooltip title="Add new debt" arrow>
                 <Button
@@ -362,19 +431,20 @@ function DebtorPage() {
                   startIcon={<FaPlus />}
                   onClick={() => setOpen(true)}
                   sx={{
-                    bgcolor: "rgba(255,255,255,0.25)",
+                    bgcolor: "rgba(255,255,255,0.2)",
                     color: "white",
-                    px: 3,
-                    py: 1.25,
-                    borderRadius: 2.5,
+                    px: 4,
+                    py: 1.5,
+                    borderRadius: 2,
                     textTransform: "none",
-                    fontWeight: "700",
-                    fontSize: "0.95rem",
+                    fontWeight: "800",
+                    fontSize: "1rem",
                     backdropFilter: "blur(10px)",
-                    border: "1px solid rgba(255,255,255,0.3)",
+                    border: "2px solid rgba(255,255,255,0.3)",
                     "&:hover": {
-                      bgcolor: "rgba(255,255,255,0.35)",
+                      bgcolor: "rgba(255,255,255,0.3)",
                       transform: "translateY(-2px)",
+                      borderColor: "rgba(255,255,255,0.5)",
                     },
                     transition: "all 0.3s ease",
                   }}
@@ -387,47 +457,54 @@ function DebtorPage() {
                   component={Link}
                   to="/home/debtor"
                   sx={{
-                    bgcolor: "rgba(255,255,255,0.25)",
+                    bgcolor: "rgba(255,255,255,0.2)",
                     color: "white",
+                    width: 48,
+                    height: 48,
                     backdropFilter: "blur(10px)",
-                    border: "1px solid rgba(255,255,255,0.3)",
+                    border: "2px solid rgba(255,255,255,0.3)",
                     "&:hover": {
-                      bgcolor: "rgba(255,255,255,0.35)",
+                      bgcolor: "rgba(255,255,255,0.3)",
                       transform: "translateY(-2px)",
+                      borderColor: "rgba(255,255,255,0.5)",
                     },
                     transition: "all 0.3s ease",
                   }}
                 >
-                  <FaArrowLeft size={18} />
+                  <FaArrowLeft size={20} />
                 </IconButton>
               </Tooltip>
             </Box>
           </Box>
-        </Paper>
+        </Box>
+      </Paper>
+
+      {/* Content Section */}
+      <Box sx={{mx: "auto", px: 3, py: 4 }}>
+        {/* Statistics Cards */}
+        <StatisticsCards
+          formatCurrency={formatCurrency}
+          totalDebt={totalDebts}
+          pendingDebt={pendingDebt}
+          paidDebt={paidDebt}
+          debts={debts}
+        />
+
+        {/* Result Component */}
+        <Result result={result} setResult={setResult} />
+
+        {/* Debt Records Table */}
+        <DebtRecordTable
+          debtor={debtor}
+          debts={debts}
+          setOpen={setOpen}
+          allPaid={allPaid}
+          setOpenHistoryPayment={setOpenHistoryPayment}
+          setOpenRepaySingleDebt={setOpenRepaySingleDebt}
+          setSelectedDebtId={setSelectedDebtId}
+          setOpenAllPaidModal={setOpenAllPaidModal}
+        />
       </Box>
-
-      {/* Statistics Cards */}
-      <StatisticsCards
-        formatCurrency={formatCurrency}
-        totalDebt={totalDebts}
-        pendingDebt={pendingDebt}
-        paidDebt={paidDebt}
-        debts={debts}
-      />
-
-     <Result result={result} setResult={setResult} />
-
-      {/* Debt Records Table */}
-      <DebtRecordTable
-        debtor={debtor}
-        debts={debts}
-        setOpen={setOpen}
-        allPaid={allPaid}
-        setOpenHistoryPayment={setOpenHistoryPayment}
-        setOpenRepaySingleDebt={setOpenRepaySingleDebt}
-        setSelectedDebtId={setSelectedDebtId}
-        setOpenAllPaidModal={setOpenAllPaidModal}
-      />
 
       {/* Modals */}
       <DebtForm

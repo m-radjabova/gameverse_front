@@ -182,11 +182,11 @@ export const FeatureIcon = styled(Box)(({ theme }) => ({
 
 export const FormSection = styled(Box)(({ theme }) => ({
   flex: 1,
-  padding: theme.spacing(5),
+  padding: theme.spacing(2),
   minWidth: '400px',
   display: 'flex',
   flexDirection: 'column',
-  justifyContent: 'center', // markazga joylashtirish
+  justifyContent: 'center', 
   overflowY: 'auto',
 }));
 

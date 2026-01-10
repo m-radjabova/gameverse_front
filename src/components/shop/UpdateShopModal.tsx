@@ -40,9 +40,9 @@ interface Props {
   shop: {
     shop_id: number;
     shop_name: string;
-    owner_name?: string;
-    phone_number?: string;
-    address?: string;
+    owner_name: string;
+    phone_number: string;
+    address: string;
   };
 }
 

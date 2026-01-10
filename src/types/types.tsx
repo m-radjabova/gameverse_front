@@ -75,7 +75,7 @@ export interface ReqShop{
   shop_name: string;
   owner_name?: string;
   phone_number?: string;
-  address?: string;
+  address: string;
 }
 
 export interface Statistics{
