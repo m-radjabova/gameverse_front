@@ -1,30 +1,40 @@
 import { Route, Routes } from "react-router-dom";
-
 import MainLayout from "./layout/MainLayout";
-import DebtorList from "./components/debtor/DebtorList";
-import DebtorPage from "./components/debtor/DebtorPage";
 import Home from "./pages/home/Home";
 import ProtectedRoute from "./components/ProtectedRoute";
-import LoginPage from "./pages/login/LoginPage";
-import SignUp from "./pages/login/SingUp";
+import Login from "./pages/login/Login";
+import Signup from "./pages/login/SingUp";
+import HelloAdmin from "./pages/admin/HelloAdmin";
+import AdminLayout from "./layout/AdminLayout";
 
 function App() {
   return (
     <div>
       <Routes>
-          <Route path="/" element={<LoginPage />} />
-          <Route path="/sign-up" element={<SignUp />} />
+         <Route path="/" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+
 
           <Route
             element={
-              <ProtectedRoute>
+              <ProtectedRoute role="user">
                 <MainLayout />
               </ProtectedRoute>
             }
           >
             <Route path="/home" element={<Home />} />
-            <Route path="/home/debtor" element={<DebtorList />} />
-            <Route path="/home/debtor/:id" element={<DebtorPage />} />
+          </Route>
+
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute role="admin">
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+
+          >
+            <Route index element={<HelloAdmin />} />
           </Route>
         </Routes>
     </div>

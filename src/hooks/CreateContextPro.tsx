@@ -1,42 +1,34 @@
-import { useReducer, type Dispatch, type ReactNode, useEffect } from "react";
-import { MyContext } from "../context/MyContext";
-import type { Shop } from "../types/types";
+import { useEffect, useReducer, type ReactNode, useMemo } from "react";
 import apiClient from "../apiClient/apiClient";
-
-export interface ContextType {
-  state: TypeState;
-  dispatch: Dispatch<Action>;
-  login: (
-    shopName: string
-  ) => Promise<{ success: boolean; shop?: Shop; error?: string }>;
-}
+import type { User } from "../types/types";
+import { MyContext } from "../context/MyContext";
+import { parseJwt } from "../utils";
 
 export interface TypeState {
-  shop: Shop | null;
+  user: User | null;
   isLoading: boolean;
   error: string | null;
 }
 
-type SETAction = { type: "SET_SHOP"; payload: Shop };
+type SETUserAction = { type: "SET_USER"; payload: User };
 type LOGOUTAction = { type: "LOGOUT" };
 type SETLoadingAction = { type: "SET_LOADING"; payload: boolean };
-type SET_ERRORAction = { type: "SET_ERROR"; payload: string | null };
+type SETErrorAction = { type: "SET_ERROR"; payload: string | null };
 
-type Action = SETAction | LOGOUTAction | SETLoadingAction | SET_ERRORAction;
+type Action = SETUserAction | LOGOUTAction | SETLoadingAction | SETErrorAction;
 
-const initialState: TypeState = {
-  shop: null,
-  isLoading: true,
-  error: null,
-};
+export interface RegisterData {
+  username: string;
+  email: string;
+  password: string;
+}
 
 function reducer(state: TypeState, action: Action): TypeState {
   switch (action.type) {
-    case "SET_SHOP":
-      return { ...state, shop: action.payload, error: null };
+    case "SET_USER":
+      return { ...state, user: action.payload, error: null };
     case "LOGOUT":
-      localStorage.removeItem("shop_id");
-      return { ...state, shop: null, error: null };
+      return { ...state, user: null };
     case "SET_LOADING":
       return { ...state, isLoading: action.payload };
     case "SET_ERROR":
@@ -46,94 +38,110 @@ function reducer(state: TypeState, action: Action): TypeState {
   }
 }
 
+const clearStorage = () => {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("user");
+};
+
+const saveTokens = (access: string, refresh: string) => {
+  localStorage.setItem("access_token", access);
+  localStorage.setItem("refresh_token", refresh);
+};
+
 function CreateContextPro({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, {
+    user: null,
+    isLoading: true,
+    error: null,
+  });
 
-  useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        const shopId = localStorage.getItem("shop_id");
+  const login = async (username: string, password: string): Promise<void> => {
+  dispatch({ type: "SET_LOADING", payload: true });
+  try {
+    const res = await apiClient.post("/auth/login", { username, password });
 
-        if (!shopId) {
-          dispatch({ type: "SET_LOADING", payload: false });
-          return;
-        }
+    const access = res.data.access_token as string;
+    const refresh = res.data.refresh_token as string;
 
-        dispatch({ type: "SET_LOADING", payload: true });
+    saveTokens(access, refresh);
 
-        const response = await apiClient.get(`/shop/${shopId}`);
+    const payload = parseJwt(access);
+    const role = payload?.role as "admin" | "user" | undefined;
 
-        if (response.data) {
-          dispatch({ type: "SET_SHOP", payload: response.data });
-        } else {
-          localStorage.clear();
-        }
-      } catch (error) {
-        console.error("Auth initialization error:", error);
-        localStorage.clear();
-      } finally {
-        dispatch({ type: "SET_LOADING", payload: false });
-      }
+    const user: User = {
+      username,
+      role
     };
 
-    initializeAuth();
-  }, []);
+    localStorage.setItem("user", JSON.stringify(user));
+    dispatch({ type: "SET_USER", payload: user });
+  } catch (err: any) {
+    dispatch({
+      type: "SET_ERROR",
+      payload: err?.response?.data?.detail || "Login failed",
+    });
+    throw err;
+  } finally {
+    dispatch({ type: "SET_LOADING", payload: false });
+  }
+};
 
-  const login = async (shopName: string) => {
+  const register = async (data: RegisterData): Promise<void> => {
+    dispatch({ type: "SET_LOADING", payload: true });
+
     try {
-      dispatch({ type: "SET_LOADING", payload: true });
-      dispatch({ type: "SET_ERROR", payload: null });
-
-      // 1️⃣ search
-      const searchRes = await apiClient.get("/shop/search/", {
-        params: { name: shopName },
+      await apiClient.post("/users/", data);
+      dispatch({ type: "SET_ERROR", payload: null }); 
+    } catch (err: any) {
+      dispatch({
+        type: "SET_ERROR",
+        payload: err?.response?.data?.detail || "Register failed",
       });
-
-      if (!searchRes.data.shops || searchRes.data.shops.length === 0) {
-        dispatch({ type: "SET_ERROR", payload: "Shop topilmadi" });
-        return { success: false, error: "Shop topilmadi" };
-      }
-
-      const shopId = searchRes.data.shops[0].shop_id;
-
-      // 2️⃣ full shop
-      const shopRes = await apiClient.get(`/shop/${shopId}`);
-
-      localStorage.setItem("shop_id", shopId.toString());
-      dispatch({ type: "SET_SHOP", payload: shopRes.data });
-
-      return { success: true, shop: shopRes.data };
-    } catch (error: any) {
-      let errorMessage = "Server xatosi";
-
-      if (error.response) {
-        errorMessage =
-          error.response.data?.detail ||
-          error.response.data?.message ||
-          `Server xatosi: ${error.response.status}`;
-      } else if (error.request) {
-        errorMessage = "Serverga ulanishda xatolik";
-      }
-
-      dispatch({ type: "SET_ERROR", payload: errorMessage });
-      return { success: false, error: errorMessage };
+      throw err;
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
     }
   };
 
-  const logout = () => {
-    dispatch({ type: "LOGOUT" });
+  const logout = async (): Promise<void> => {
+    try {
+      await apiClient.post("/auth/logout");
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      clearStorage();
+      dispatch({ type: "LOGOUT" });
+    }
   };
 
-  const value = {
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    const token = localStorage.getItem("access_token");
+
+    if (storedUser && token) {
+      dispatch({ type: "SET_USER", payload: JSON.parse(storedUser) });
+    }
+
+    dispatch({ type: "SET_LOADING", payload: false });
+  }, []);
+
+  const isAuthenticated = useMemo(() => {
+    return !!state.user && !!localStorage.getItem("access_token");
+  }, [state.user]);
+
+  const contextValue = {
     state,
     dispatch,
     login,
+    register,
     logout,
+    isAuthenticated,
   };
 
-  return <MyContext.Provider value={value}>{children}</MyContext.Provider>;
+  return (
+    <MyContext.Provider value={contextValue}>{children}</MyContext.Provider>
+  );
 }
 
 export default CreateContextPro;

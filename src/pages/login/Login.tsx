@@ -1,56 +1,50 @@
 
-import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import useContextPro from "../../hooks/useContextPro";
 
-type SignupFormValues = {
-  email: string;
+import useContextPro from "../../hooks/useContextPro";
+import { useForm } from "react-hook-form";
+
+type LoginFormValues = {
   username: string;
   password: string;
-  confirmPassword: string;
 };
 
-export default function Signup() {
+export default function Login() {
   const ctx = useContextPro();
   const navigate = useNavigate();
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
-  } = useForm<SignupFormValues>({
-    defaultValues: {
-      email: "",
-      username: "",
-      password: "",
-      confirmPassword: "",
-    },
+  } = useForm<LoginFormValues>({
+    defaultValues: { username: "", password: "" },
   });
 
   if (!ctx) return null;
 
-  const { register: registerUser, state } = ctx;
+  const { login, state } = ctx;
 
+  const onSubmit = async (data: LoginFormValues) => {
+    await login(data.username, data.password);
 
-  const passwordValue = watch("password");
+    const savedUser = localStorage.getItem("user");
+    const role = savedUser ? JSON.parse(savedUser)?.role : null;
 
-  const onSubmit = async (data: SignupFormValues) => {
-    await registerUser({
-      email: data.email,
-      username: data.username,
-      password: data.password,
-    });
+    if (role === "admin") {
+        navigate("/admin", { replace: true });
+    } else {
+        navigate("/home", { replace: true });
+    }
+    };
 
-    navigate("/login", { replace: true });
-  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <h1 className="text-2xl font-bold text-slate-900">Create an account</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
           <p className="text-sm text-slate-500 mt-1">
-            Sign up to get started
+            Please sign in to your account
           </p>
 
           {state.error && (
@@ -60,30 +54,6 @@ export default function Signup() {
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Email
-              </label>
-              <input
-                type="email"
-                className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Enter your email"
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value: /^\S+@\S+\.\S+$/,
-                    message: "Invalid email address",
-                  },
-                })}
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-
             {/* Username */}
             <div>
               <label className="block text-sm font-medium text-slate-700">
@@ -91,7 +61,7 @@ export default function Signup() {
               </label>
               <input
                 className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Choose a username"
+                placeholder="Enter your username"
                 {...register("username", {
                   required: "Username is required",
                   minLength: { value: 3, message: "Minimum 3 characters" },
@@ -112,10 +82,10 @@ export default function Signup() {
               <input
                 type="password"
                 className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Create a password"
+                placeholder="Enter your password"
                 {...register("password", {
                   required: "Password is required",
-                  minLength: { value: 6, message: "Minimum 6 characters" },
+                  minLength: { value: 4, message: "Minimum 4 characters" },
                 })}
               />
               {errors.password && (
@@ -125,44 +95,22 @@ export default function Signup() {
               )}
             </div>
 
-            {/* Confirm password */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Confirm password
-              </label>
-              <input
-                type="password"
-                className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Repeat your password"
-                {...register("confirmPassword", {
-                  required: "Please confirm your password",
-                  validate: (val) =>
-                    val === passwordValue || "Passwords do not match",
-                })}
-              />
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.confirmPassword.message}
-                </p>
-              )}
-            </div>
-
             <button
               type="submit"
               disabled={state.isLoading}
               className="w-full rounded-xl bg-indigo-600 text-white font-semibold py-2.5 hover:bg-indigo-700 disabled:opacity-70"
             >
-              {state.isLoading ? "Creating account..." : "Create account"}
+              {state.isLoading ? "Signing in..." : "Sign in"}
             </button>
           </form>
 
           <p className="mt-4 text-sm text-slate-600">
-            Already have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link
               className="font-semibold text-indigo-600 hover:text-indigo-700"
-              to="/login"
+              to="/signup"
             >
-              Sign in
+              Create one
             </Link>
           </p>
         </div>
