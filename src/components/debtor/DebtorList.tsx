@@ -174,20 +174,9 @@ function DebtorList() {
                     mb: 2,
                   }}
                 >
-                  <FaStore size={18} />
-                  <Typography variant="body2" fontWeight={600}>
+                  <FaStore size={30} />
+                  <Typography variant="h3" fontWeight={600}>
                     {shop.shop_name}
-                  </Typography>
-                  <Box
-                    sx={{
-                      width: 4,
-                      height: 4,
-                      borderRadius: "50%",
-                      bgcolor: "rgba(255, 255, 255, 0.6)",
-                    }}
-                  />
-                  <Typography variant="caption" sx={{ opacity: 0.9 }}>
-                    ID: {shop.shop_id}
                   </Typography>
                 </Box>
               )}

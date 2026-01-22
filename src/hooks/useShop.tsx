@@ -75,6 +75,7 @@ function useShop(shopId?: number) {
     mutationFn: async ({ shopId: sId, data }: { shopId: number; data: Partial<ReqShop> }) => {
       const res = await apiClient.put(`/shop/${sId}`, data);
       return res.data;
+
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["shop", variables.shopId] });

@@ -13,8 +13,7 @@ import {
   Stack,
   alpha,
   useTheme,
-  Tooltip,
-  Badge
+  Tooltip
 } from "@mui/material";
 
 import useContextPro from "../../hooks/useContextPro";
@@ -31,7 +30,6 @@ import {
   FaCog,
   FaShieldAlt,
   FaSignal,
-  FaBell,
   FaArrowUp,
   FaArrowDown,
   FaClock,
@@ -39,6 +37,7 @@ import {
 } from "react-icons/fa";
 import UpdateShopModal from "../../components/shop/UpdateShopModal";
 import type { ReqShop } from "../../types/types";
+import { formatPhoneNumber } from "../../utils";
 
 interface StatCardProps {
   title: string;
@@ -219,20 +218,20 @@ function Home() {
                   backdropFilter: "blur(10px)"
                 }}
               >
-                <FaStore style={{ color: "white", fontSize: 20 }} />
+                <FaStore style={{ color: "white", fontSize: 30 }} />
               </Box>
               <Box>
-                <Typography variant="h6" fontWeight={800}>
+                <Typography variant="h3" fontWeight={800}>
                   Debt Manager
                 </Typography>
-                <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                <Typography variant="h6" sx={{ opacity: 0.9 }}>
                   Professional Management System
                 </Typography>
               </Box>
             </Stack>
 
             <Stack direction="row" alignItems="center" spacing={2}>
-              <Tooltip title="Notifications" arrow>
+              {/* <Tooltip title="Notifications" arrow>
                 <IconButton
                   sx={{
                     width: 40,
@@ -247,7 +246,7 @@ function Home() {
                     <FaBell style={{ color: "white", fontSize: 16 }} />
                   </Badge>
                 </IconButton>
-              </Tooltip>
+              </Tooltip> */}
 
               <Box
                 sx={{
@@ -263,21 +262,21 @@ function Home() {
               >
                 <Avatar
                   sx={{
-                    width: 32,
-                    height: 32,
+                    width: 50,
+                    height: 50,
                     background: "white",
                     color: "#6366f1",
                     fontWeight: 700,
-                    fontSize: "0.9rem"
+                    fontSize: "2rem"
                   }}
                 >
                   {shop.shop_name.charAt(0).toUpperCase()}
                 </Avatar>
                 <Box>
-                  <Typography variant="body2" fontWeight={700} fontSize="0.85rem">
+                  <Typography variant="h5" fontWeight={700} >
                     {shop.shop_name}
                   </Typography>
-                  <Typography variant="caption" sx={{ opacity: 0.8, fontSize: "0.7rem" }}>
+                  <Typography variant="h6" sx={{ opacity: 0.8 }}>
                     {shop.owner_name || "Store Owner"}
                   </Typography>
                 </Box>
@@ -287,8 +286,8 @@ function Home() {
                 <IconButton
                   onClick={handleLogout}
                   sx={{
-                    width: 40,
-                    height: 40,
+                    width: 50,
+                    height: 50,
                     background: "rgba(239, 68, 68, 0.2)",
                     "&:hover": {
                       background: "rgba(239, 68, 68, 0.3)",
@@ -297,7 +296,7 @@ function Home() {
                     transition: "all 0.4s ease"
                   }}
                 >
-                  <FaSignOutAlt style={{ color: "white", fontSize: 16 }} />
+                  <FaSignOutAlt style={{ color: "white", fontSize: 30 }} />
                 </IconButton>
               </Tooltip>
             </Stack>
@@ -311,7 +310,7 @@ function Home() {
           {/* Compact Welcome Section */}
           <Box sx={{ mb: 3 }}>
             <Typography 
-              variant="h4" 
+              variant="h3" 
               sx={{
                 fontWeight: 800,
                 mb: 1,
@@ -328,7 +327,7 @@ function Home() {
               <Chip
                 icon={<FaShieldAlt style={{ fontSize: 12 }} />}
                 label={`ID: ${shop.shop_id}`}
-                size="small"
+                size="medium"
                 sx={{ 
                   background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
                   color: "white",
@@ -341,7 +340,7 @@ function Home() {
               <Chip
                 icon={<FaSignal style={{ fontSize: 12 }} />}
                 label="Online"
-                size="small"
+                size="medium"
                 sx={{ 
                   background: alpha("#6366f1", 0.1),
                   color: "#6366f1",
@@ -355,7 +354,7 @@ function Home() {
                   day: 'numeric',
                   year: 'numeric'
                 })}
-                size="small"
+                size="medium"
                 sx={{ 
                   background: alpha("#06b6d4", 0.1),
                   color: "#06b6d4",
@@ -588,7 +587,7 @@ function Home() {
                     {
                       icon: <FaPhone />,
                       label: "Contact",
-                      value: shop.phone_number || "Not provided",
+                      value: formatPhoneNumber(shop.phone_number || "Not provided" as string),
                       color: "#10b981"
                     },
                     {
