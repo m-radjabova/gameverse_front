@@ -1,8 +1,7 @@
 import { useEffect, useReducer, type ReactNode, useMemo } from "react";
-import apiClient from "../apiClient/apiClient";
+// import apiClient from "../apiClient/apiClient";
 import type { User } from "../types/types";
 import { MyContext } from "../context/MyContext";
-import { parseJwt } from "../utils";
 
 export interface TypeState {
   user: User | null;
@@ -38,16 +37,16 @@ function reducer(state: TypeState, action: Action): TypeState {
   }
 }
 
-const clearStorage = () => {
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
-  localStorage.removeItem("user");
-};
+// const clearStorage = () => {
+//   localStorage.removeItem("access_token");
+//   localStorage.removeItem("refresh_token");
+//   localStorage.removeItem("user");
+// };
 
-const saveTokens = (access: string, refresh: string) => {
-  localStorage.setItem("access_token", access);
-  localStorage.setItem("refresh_token", refresh);
-};
+// const saveTokens = (access: string, refresh: string) => {
+//   localStorage.setItem("access_token", access);
+//   localStorage.setItem("refresh_token", refresh);
+// };
 
 function CreateContextPro({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, {
@@ -56,64 +55,64 @@ function CreateContextPro({ children }: { children: ReactNode }) {
     error: null,
   });
 
-  const login = async (username: string, password: string): Promise<void> => {
-  dispatch({ type: "SET_LOADING", payload: true });
-  try {
-    const res = await apiClient.post("/auth/login", { username, password });
+  // const login = async (username: string, password: string): Promise<void> => {
+  //   dispatch({ type: "SET_LOADING", payload: true });
+  //   try {
+  //     const res = await apiClient.post("/auth/login", { username, password });
 
-    const access = res.data.access_token as string;
-    const refresh = res.data.refresh_token as string;
+  //     const access = res.data.access_token as string;
+  //     const refresh = res.data.refresh_token as string;
 
-    saveTokens(access, refresh);
+  //     saveTokens(access, refresh);
 
-    const payload = parseJwt(access);
-    const role = payload?.role as "admin" | "user" | undefined;
+  //     const payload = parseJwt(access);
+  //     const role = payload?.role as "admin" | "user" | undefined;
 
-    const user: User = {
-      username,
-      role
-    };
+  //     const user: User = {
+  //       username,
+  //       role
+  //     };
 
-    localStorage.setItem("user", JSON.stringify(user));
-    dispatch({ type: "SET_USER", payload: user });
-  } catch (err: any) {
-    dispatch({
-      type: "SET_ERROR",
-      payload: err?.response?.data?.detail || "Login failed",
-    });
-    throw err;
-  } finally {
-    dispatch({ type: "SET_LOADING", payload: false });
-  }
-};
+  //     localStorage.setItem("user", JSON.stringify(user));
+  //     dispatch({ type: "SET_USER", payload: user });
+  //   } catch (err: any) {
+  //     dispatch({
+  //       type: "SET_ERROR",
+  //       payload: err?.response?.data?.detail || "Login failed",
+  //     });
+  //     throw err;
+  //   } finally {
+  //     dispatch({ type: "SET_LOADING", payload: false });
+  //   }
+  // };
 
-  const register = async (data: RegisterData): Promise<void> => {
-    dispatch({ type: "SET_LOADING", payload: true });
+  // const register = async (data: RegisterData): Promise<void> => {
+  //   dispatch({ type: "SET_LOADING", payload: true });
 
-    try {
-      await apiClient.post("/users/", data);
-      dispatch({ type: "SET_ERROR", payload: null }); 
-    } catch (err: any) {
-      dispatch({
-        type: "SET_ERROR",
-        payload: err?.response?.data?.detail || "Register failed",
-      });
-      throw err;
-    } finally {
-      dispatch({ type: "SET_LOADING", payload: false });
-    }
-  };
+  //   try {
+  //     await apiClient.post("/users/", data);
+  //     dispatch({ type: "SET_ERROR", payload: null }); 
+  //   } catch (err: any) {
+  //     dispatch({
+  //       type: "SET_ERROR",
+  //       payload: err?.response?.data?.detail || "Register failed",
+  //     });
+  //     throw err;
+  //   } finally {
+  //     dispatch({ type: "SET_LOADING", payload: false });
+  //   }
+  // };
 
-  const logout = async (): Promise<void> => {
-    try {
-      await apiClient.post("/auth/logout");
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      clearStorage();
-      dispatch({ type: "LOGOUT" });
-    }
-  };
+  // const logout = async (): Promise<void> => {
+  //   try {
+  //     await apiClient.post("/auth/logout");
+  //   } catch (error) {
+  //     console.error("Logout error:", error);
+  //   } finally {
+  //     clearStorage();
+  //     dispatch({ type: "LOGOUT" });
+  //   }
+  // };
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -133,9 +132,9 @@ function CreateContextPro({ children }: { children: ReactNode }) {
   const contextValue = {
     state,
     dispatch,
-    login,
-    register,
-    logout,
+    // login,
+    // register,
+    // logout,
     isAuthenticated,
   };
 

@@ -3,16 +3,17 @@ import MainLayout from "./layout/MainLayout";
 import Home from "./pages/home/Home";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/login/Login";
-import Signup from "./pages/login/SingUp";
 import HelloAdmin from "./pages/admin/HelloAdmin";
 import AdminLayout from "./layout/AdminLayout";
+// import Register from "./pages/login/Register";
 
 function App() {
   return (
     <div>
       <Routes>
-         <Route path="/" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+        <Route path="/" element={<Home />} />
+         <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Login />} />
 
 
           <Route

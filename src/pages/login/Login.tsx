@@ -1,120 +1,205 @@
+import { useEffect, useState } from "react";
+import { FaEyeSlash } from "react-icons/fa";
+import { FaEye } from "react-icons/fa";
+import imgLogin from "../../assets/loginImg.svg";
+import imgRegister from "../../assets/registerImg.svg";
+import { useLocation, useNavigate } from "react-router-dom";
 
-import { Link, useNavigate } from "react-router-dom";
-
-import useContextPro from "../../hooks/useContextPro";
-import { useForm } from "react-hook-form";
-
-type LoginFormValues = {
-  username: string;
-  password: string;
-};
-
-export default function Login() {
-  const ctx = useContextPro();
+function AuthPage() {
+  const location = useLocation();
   const navigate = useNavigate();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormValues>({
-    defaultValues: { username: "", password: "" },
-  });
 
-  if (!ctx) return null;
+  const [activeTab, setActiveTab] = useState("login");
 
-  const { login, state } = ctx;
-
-  const onSubmit = async (data: LoginFormValues) => {
-    await login(data.username, data.password);
-
-    const savedUser = localStorage.getItem("user");
-    const role = savedUser ? JSON.parse(savedUser)?.role : null;
-
-    if (role === "admin") {
-        navigate("/admin", { replace: true });
+  useEffect(() => {
+    if (location.pathname === "/register") {
+      setActiveTab("register");
     } else {
-        navigate("/home", { replace: true });
+      setActiveTab("login");
     }
-    };
+  }, [location.pathname]);
 
+  const [showPassword, setShowPassword] = useState(false);
+
+  const isLogin = activeTab === "login";
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Please sign in to your account
-          </p>
+    <div className="min-h-screen bg-slate-100 p-4 flex items-center justify-center">
+      <div className="w-full max-w-6xl overflow-hidden rounded-3xl bg-white shadow-xl">
+        <div className="grid lg:grid-cols-2">
+          {/* LEFT IMAGE */}
+          <div className="relative hidden lg:block">
+            <img
+              src={isLogin ? imgLogin : imgRegister}
+              alt="auth"
+              className="h-full w-full object-cover"
+            />
 
-          {state.error && (
-            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700 text-sm">
-              {state.error}
+            <div className="absolute bottom-10 left-10 text-white">
+              <h2 className="text-4xl font-extrabold drop-shadow">
+                Lorem Ipsum is simply
+              </h2>
+              <p className="mt-2 text-lg text-white/80 drop-shadow">
+                Lorem ipsum is simply
+              </p>
             </div>
-          )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
-            {/* Username */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Username
-              </label>
-              <input
-                className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Enter your username"
-                {...register("username", {
-                  required: "Username is required",
-                  minLength: { value: 3, message: "Minimum 3 characters" },
-                })}
-              />
-              {errors.username && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.username.message}
-                </p>
+            <div className="absolute inset-0 bg-black/10" />
+          </div>
+
+          {/* RIGHT FORM */}
+          <div className="flex items-center justify-center p-6 sm:p-10">
+            <div className="w-full max-w-md">
+              <p className="text-center text-sm text-slate-600">
+                Welcome to lorem..!
+              </p>
+
+              {/* Tabs */}
+              <div className="mx-auto mt-5 flex w-full rounded-full bg-teal-200/70 p-1">
+                <button
+                  onClick={() => navigate("/login")}
+                  className={`w-1/2 rounded-full py-2 text-sm font-semibold transition ${
+                    activeTab === "login"
+                      ? "bg-teal-500 text-white shadow"
+                      : "text-slate-700"
+                  }`}
+                >
+                  Login
+                </button>
+
+                <button
+                  onClick={() => navigate("/register")}
+                  className={`w-1/2 rounded-full py-2 text-sm font-semibold transition ${
+                    activeTab === "register"
+                      ? "bg-teal-500 text-white shadow"
+                      : "text-slate-700"
+                  }`}
+                >
+                  Register
+                </button>
+              </div>
+
+              {/* Description */}
+              <p className="mt-6 text-sm leading-6 text-slate-500">
+                Lorem Ipsum is simply dummy text of the printing and typesetting
+                industry.
+              </p>
+
+              {/* FORMS */}
+              {isLogin ? (
+                <LoginForm
+                  showPassword={showPassword}
+                  setShowPassword={setShowPassword}
+                />
+              ) : (
+                <RegisterForm />
               )}
             </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Password
-              </label>
-              <input
-                type="password"
-                className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Enter your password"
-                {...register("password", {
-                  required: "Password is required",
-                  minLength: { value: 4, message: "Minimum 4 characters" },
-                })}
-              />
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={state.isLoading}
-              className="w-full rounded-xl bg-indigo-600 text-white font-semibold py-2.5 hover:bg-indigo-700 disabled:opacity-70"
-            >
-              {state.isLoading ? "Signing in..." : "Sign in"}
-            </button>
-          </form>
-
-          <p className="mt-4 text-sm text-slate-600">
-            Don&apos;t have an account?{" "}
-            <Link
-              className="font-semibold text-indigo-600 hover:text-indigo-700"
-              to="/signup"
-            >
-              Create one
-            </Link>
-          </p>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
+function LoginForm({
+  showPassword,
+  setShowPassword,
+}: {
+  showPassword: boolean;
+  setShowPassword: (value: boolean) => void;
+}) {
+  return (
+    <form className="mt-8 space-y-5">
+      <div>
+        <label className="text-sm font-medium text-slate-700">User name</label>
+        <input
+          type="text"
+          placeholder="Enter your User name"
+          className="mt-2 w-full rounded-full border border-teal-300 px-5 py-3 text-sm outline-none focus:border-teal-500"
+        />
+      </div>
+
+      <div>
+        <label className="text-sm font-medium text-slate-700">Password</label>
+        <div className="relative mt-2">
+          <input
+            type="password"
+            placeholder="Enter your Password"
+            className="w-full rounded-full border border-teal-300 px-5 py-3 pr-12 text-sm outline-none focus:border-teal-500"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+          >
+            {showPassword ? <FaEye /> : <FaEyeSlash />}
+          </button>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between text-xs text-slate-500">
+        <label className="flex items-center gap-2">
+          <input type="checkbox" className="accent-teal-500" />
+          Remember me
+        </label>
+        <button type="button" className="hover:text-teal-600">
+          Forgot Password ?
+        </button>
+      </div>
+
+      <button className="mt-2 w-full rounded-full bg-teal-500 py-3 text-sm font-semibold text-white transition hover:bg-teal-600 active:scale-[0.99]">
+        Login
+      </button>
+    </form>
+  );
+}
+
+function RegisterForm() {
+  return (
+    <form className="mt-8 space-y-5">
+      <div>
+        <label className="text-sm font-medium text-slate-700">
+          Email Address
+        </label>
+        <input
+          type="email"
+          placeholder="Enter your Email Address"
+          className="mt-2 w-full rounded-full border border-teal-300 px-5 py-3 text-sm outline-none focus:border-teal-500"
+        />
+      </div>
+
+      <div>
+        <label className="text-sm font-medium text-slate-700">User name</label>
+        <input
+          type="text"
+          placeholder="Enter your User name"
+          className="mt-2 w-full rounded-full border border-teal-300 px-5 py-3 text-sm outline-none focus:border-teal-500"
+        />
+      </div>
+
+      <div>
+        <label className="text-sm font-medium text-slate-700">Password</label>
+        <div className="relative mt-2">
+          <input
+            type="password"
+            placeholder="Enter your Password"
+            className="w-full rounded-full border border-teal-300 px-5 py-3 pr-12 text-sm outline-none focus:border-teal-500"
+          />
+          <button
+            type="button"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+          >
+            <FaEyeSlash />
+          </button>
+        </div>
+      </div>
+
+      <button className="mt-2 w-full rounded-full bg-teal-500 py-3 text-sm font-semibold text-white transition hover:bg-teal-600 active:scale-[0.99]">
+        Register
+      </button>
+    </form>
+  );
+}
+
+export default AuthPage;

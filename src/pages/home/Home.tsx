@@ -1,12 +1,37 @@
-import useContextPro from "../../hooks/useContextPro"
+import CloudSoftware from "../../components/cloud/CloudSoftware"
+import Courses from "../../components/course/Courses"
+import Everything from "../../components/everything/Everything"
+import Features from "../../components/features/Features"
+import Footer from "../../components/footer/Footer"
+import Header from "../../components/header/Header"
+import LatestNews from "../../components/latest_news/LatestNews"
+import Hero from "../../components/main/Hero"
+import OurSuccess from "../../components/success/OurSuccess"
+import Testemonial from "../../components/testemonial/Testemonial"
+import Discussion from "../../components/tools/Discussion"
+import Management from "../../components/tools/Management"
+import Question from "../../components/tools/Questions"
+import Tools from "../../components/tools/Tools"
+import What from "../../components/what_is_totc/What"
 
 function Home() {
-
-  const{state: { user}, logout} = useContextPro();
   return (
     <div>
-      <h1 className="text-3xl font-bold underline">Welcome, {user?.username}!</h1>
-      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={logout}>Logout</button>
+      <Header />
+      <Hero />
+      <OurSuccess />
+      <CloudSoftware />
+      <What />
+      <Everything />
+      <Features />
+      <Tools />
+      <Question />
+      <Management />
+      <Discussion />
+      <Courses />
+      <Testemonial />
+      <LatestNews />
+      <Footer />
     </div>
   )
 }
