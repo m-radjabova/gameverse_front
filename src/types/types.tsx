@@ -1,8 +1,10 @@
 export interface User {
-  id?: number;          
+  id: string;
   username: string;
-  email?: string;
-  role?: string;     
-  is_active?: boolean;
-  created_at?: string;
+  email: string;
+  password: string;
+  avatar?: string | null;
+  confirmPassword: string;
+  roles: string[],
+  uid: string;
 }

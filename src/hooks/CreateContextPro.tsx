@@ -1,146 +1,93 @@
-import { useEffect, useReducer, type ReactNode, useMemo } from "react";
-// import apiClient from "../apiClient/apiClient";
-import type { User } from "../types/types";
+import { useEffect, useReducer, type ReactNode } from "react";
 import { MyContext } from "../context/MyContext";
+import type { User } from "../types/types";
+import { useNavigate } from "react-router-dom";
+import apiClient from "../apiClient/apiClient";
 
 export interface TypeState {
   user: User | null;
   isLoading: boolean;
-  error: string | null;
+  roles: string[];
+
 }
 
-type SETUserAction = { type: "SET_USER"; payload: User };
-type LOGOUTAction = { type: "LOGOUT" };
-type SETLoadingAction = { type: "SET_LOADING"; payload: boolean };
-type SETErrorAction = { type: "SET_ERROR"; payload: string | null };
+type SET_USER = { type: "SET_USER"; payload: User | null };
+type LOGOUT = { type: "LOGOUT" };
+type SET_LOADING = { type: "SET_LOADING"; payload: boolean };
+type REMOVE_FROM_CART = { type: "REMOVE_FROM_CART"; payload: string };
+type UPDATE_USER = { type: "UPDATE_USER"; payload: Partial<User> };
 
-type Action = SETUserAction | LOGOUTAction | SETLoadingAction | SETErrorAction;
 
-export interface RegisterData {
-  username: string;
-  email: string;
-  password: string;
-}
+type Action =
+  | SET_USER
+  | LOGOUT
+  | SET_LOADING
+  | REMOVE_FROM_CART
+  | UPDATE_USER;
 
 function reducer(state: TypeState, action: Action): TypeState {
   switch (action.type) {
     case "SET_USER":
-      return { ...state, user: action.payload, error: null };
+      return { ...state, user: action.payload };
+
     case "LOGOUT":
       return { ...state, user: null };
-    case "SET_LOADING":
-      return { ...state, isLoading: action.payload };
-    case "SET_ERROR":
-      return { ...state, error: action.payload };
+
+    case "UPDATE_USER":
+      return state.user
+        ? { ...state, user: { ...state.user, ...action.payload } }
+        : state;
+
     default:
       return state;
   }
 }
 
-// const clearStorage = () => {
-//   localStorage.removeItem("access_token");
-//   localStorage.removeItem("refresh_token");
-//   localStorage.removeItem("user");
-// };
-
-// const saveTokens = (access: string, refresh: string) => {
-//   localStorage.setItem("access_token", access);
-//   localStorage.setItem("refresh_token", refresh);
-// };
-
 function CreateContextPro({ children }: { children: ReactNode }) {
+  const navigate = useNavigate();
+
   const [state, dispatch] = useReducer(reducer, {
     user: null,
     isLoading: true,
-    error: null,
+    roles: [],
   });
 
-  // const login = async (username: string, password: string): Promise<void> => {
-  //   dispatch({ type: "SET_LOADING", payload: true });
-  //   try {
-  //     const res = await apiClient.post("/auth/login", { username, password });
+  const fetchUser = async () => {
+    dispatch({ type: "SET_LOADING", payload: true });
 
-  //     const access = res.data.access_token as string;
-  //     const refresh = res.data.refresh_token as string;
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        dispatch({ type: "SET_USER", payload: null });
+        return;
+      }
 
-  //     saveTokens(access, refresh);
-
-  //     const payload = parseJwt(access);
-  //     const role = payload?.role as "admin" | "user" | undefined;
-
-  //     const user: User = {
-  //       username,
-  //       role
-  //     };
-
-  //     localStorage.setItem("user", JSON.stringify(user));
-  //     dispatch({ type: "SET_USER", payload: user });
-  //   } catch (err: any) {
-  //     dispatch({
-  //       type: "SET_ERROR",
-  //       payload: err?.response?.data?.detail || "Login failed",
-  //     });
-  //     throw err;
-  //   } finally {
-  //     dispatch({ type: "SET_LOADING", payload: false });
-  //   }
-  // };
-
-  // const register = async (data: RegisterData): Promise<void> => {
-  //   dispatch({ type: "SET_LOADING", payload: true });
-
-  //   try {
-  //     await apiClient.post("/users/", data);
-  //     dispatch({ type: "SET_ERROR", payload: null }); 
-  //   } catch (err: any) {
-  //     dispatch({
-  //       type: "SET_ERROR",
-  //       payload: err?.response?.data?.detail || "Register failed",
-  //     });
-  //     throw err;
-  //   } finally {
-  //     dispatch({ type: "SET_LOADING", payload: false });
-  //   }
-  // };
-
-  // const logout = async (): Promise<void> => {
-  //   try {
-  //     await apiClient.post("/auth/logout");
-  //   } catch (error) {
-  //     console.error("Logout error:", error);
-  //   } finally {
-  //     clearStorage();
-  //     dispatch({ type: "LOGOUT" });
-  //   }
-  // };
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("access_token");
-
-    if (storedUser && token) {
-      dispatch({ type: "SET_USER", payload: JSON.parse(storedUser) });
+      const res = await apiClient.get<User>("/users/me");
+      dispatch({ type: "SET_USER", payload: res.data });
+    } catch (e )  {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("role");
+      dispatch({ type: "SET_USER", payload: null });
+      navigate("/login"); 
+    } finally {
+      dispatch({ type: "SET_LOADING", payload: false });
     }
-
-    dispatch({ type: "SET_LOADING", payload: false });
-  }, []);
-
-  const isAuthenticated = useMemo(() => {
-    return !!state.user && !!localStorage.getItem("access_token");
-  }, [state.user]);
-
-  const contextValue = {
-    state,
-    dispatch,
-    // login,
-    // register,
-    // logout,
-    isAuthenticated,
   };
 
-  return (
-    <MyContext.Provider value={contextValue}>{children}</MyContext.Provider>
-  );
+  // app start
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  // role redirect
+  useEffect(() => {
+    if (!state.user) return;
+
+    if (state.user.roles?.includes("admin")) return;
+  }, [state.user, navigate]);
+
+  return <MyContext.Provider value={{ state, dispatch }}>{children}</MyContext.Provider>;
 }
 
 export default CreateContextPro;

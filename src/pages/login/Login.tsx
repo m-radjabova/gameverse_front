@@ -1,141 +1,153 @@
-import { useEffect, useState } from "react";
-import { FaEyeSlash } from "react-icons/fa";
+import { useForm, type FieldValues } from "react-hook-form";
+import { FaEyeSlash, FaUserCheck } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
-import imgLogin from "../../assets/loginImg.svg";
-import imgRegister from "../../assets/registerImg.svg";
-import { useLocation, useNavigate } from "react-router-dom";
+import useContextPro from "../../hooks/useContextPro";
+import apiClient from "../../apiClient/apiClient";
+import type { User } from "../../types/types";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { isAxiosError } from "axios";
 
-function AuthPage() {
-  const location = useLocation();
+type LoginResponse = {
+  access_token: string;
+  refresh_token: string;
+  token_type: "bearer" | string;
+};
+
+type Props = {
+  showPassword: boolean;
+  setShowPassword: (value: boolean) => void;
+};
+
+function LoginForm({ showPassword, setShowPassword }: Props) {
+  const { dispatch } = useContextPro();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState("login");
+  const {
+    handleSubmit,
+    register,
+    formState: { errors, isSubmitting },
+  } = useForm();
 
-  useEffect(() => {
-    if (location.pathname === "/register") {
-      setActiveTab("register");
-    } else {
-      setActiveTab("login");
-    }
-  }, [location.pathname]);
+  const onSubmit = async (data: FieldValues) => {
+    try {
+      const res = await apiClient.post<LoginResponse>("/auth/login", {
+        email: data.email,
+        password: data.password,
+      });
 
-  const [showPassword, setShowPassword] = useState(false);
+      localStorage.setItem("accessToken", res.data.access_token);
+      localStorage.setItem("refreshToken", res.data.refresh_token);
 
-  const isLogin = activeTab === "login";
+      const me = await apiClient.get<User>("/users/me");
+      const currentUser = me.data;
 
-  return (
-    <div className="min-h-screen bg-slate-100 p-4 flex items-center justify-center">
-      <div className="w-full max-w-6xl overflow-hidden rounded-3xl bg-white shadow-xl">
-        <div className="grid lg:grid-cols-2">
-          {/* LEFT IMAGE */}
-          <div className="relative hidden lg:block">
-            <img
-              src={isLogin ? imgLogin : imgRegister}
-              alt="auth"
-              className="h-full w-full object-cover"
-            />
+      dispatch({ type: "SET_USER", payload: currentUser });
 
-            <div className="absolute bottom-10 left-10 text-white">
-              <h2 className="text-4xl font-extrabold drop-shadow">
-                Lorem Ipsum is simply
-              </h2>
-              <p className="mt-2 text-lg text-white/80 drop-shadow">
-                Lorem ipsum is simply
-              </p>
-            </div>
+      if (currentUser?.roles?.length) {
+        localStorage.setItem("role", currentUser.roles.join(","));
+      } else {
+        localStorage.removeItem("role");
+      }
 
-            <div className="absolute inset-0 bg-black/10" />
-          </div>
-
-          {/* RIGHT FORM */}
-          <div className="flex items-center justify-center p-6 sm:p-10">
-            <div className="w-full max-w-md">
-              <p className="text-center text-sm text-slate-600">
-                Welcome to lorem..!
-              </p>
-
-              {/* Tabs */}
-              <div className="mx-auto mt-5 flex w-full rounded-full bg-teal-200/70 p-1">
-                <button
-                  onClick={() => navigate("/login")}
-                  className={`w-1/2 rounded-full py-2 text-sm font-semibold transition ${
-                    activeTab === "login"
-                      ? "bg-teal-500 text-white shadow"
-                      : "text-slate-700"
-                  }`}
-                >
-                  Login
-                </button>
-
-                <button
-                  onClick={() => navigate("/register")}
-                  className={`w-1/2 rounded-full py-2 text-sm font-semibold transition ${
-                    activeTab === "register"
-                      ? "bg-teal-500 text-white shadow"
-                      : "text-slate-700"
-                  }`}
-                >
-                  Register
-                </button>
-              </div>
-
-              {/* Description */}
-              <p className="mt-6 text-sm leading-6 text-slate-500">
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry.
-              </p>
-
-              {/* FORMS */}
-              {isLogin ? (
-                <LoginForm
-                  showPassword={showPassword}
-                  setShowPassword={setShowPassword}
-                />
-              ) : (
-                <RegisterForm />
-              )}
-            </div>
-          </div>
-        </div>
+       const CustomToast = () => (
+    <div className="elegant-toast">
+      <div className="elegant-icon">
+        <FaUserCheck />
+      </div>
+      <div className="elegant-content">
+        <h5 className="elegant-title">Welcome Back! ✨</h5>
+        <p className="elegant-message">You have successfully logged in to your account</p>
       </div>
     </div>
   );
-}
 
-function LoginForm({
-  showPassword,
-  setShowPassword,
-}: {
-  showPassword: boolean;
-  setShowPassword: (value: boolean) => void;
-}) {
+      toast(CustomToast, {
+    position: "top-right",
+    autoClose: 4000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    theme: "light",
+    className: 'custom-toast-container',
+    progressClassName: 'custom-progress'
+  });
+
+      navigate("/", { replace: true });
+    } catch (error: unknown) {
+      const status = isAxiosError(error) ? error.response?.status : undefined;
+      const message = isAxiosError(error)
+        ? error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Kirishda xatolik yuz berdi. Qayta urinib ko‘ring."
+        : "Kirishda xatolik yuz berdi. Qayta urinib ko‘ring.";
+
+      if (status === 401) {
+        toast.error("Email yoki parol noto‘g‘ri.");
+      } else if (status === 404) {
+        toast.error("Account topilmadi. Ro‘yxatdan o‘ting.");
+      } else if (status === 429) {
+        toast.error("Juda ko‘p urinish. Birozdan keyin qayta urinib ko‘ring.");
+      } else {
+        toast.error(message);
+      }
+    }
+  };
+
   return (
-    <form className="mt-8 space-y-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">
       <div>
-        <label className="text-sm font-medium text-slate-700">User name</label>
+        <label className="text-sm font-medium text-slate-700">Email</label>
         <input
-          type="text"
-          placeholder="Enter your User name"
+          type="email"
+          placeholder="Enter your email"
           className="mt-2 w-full rounded-full border border-teal-300 px-5 py-3 text-sm outline-none focus:border-teal-500"
+          {...register("email", {
+            required: "Email is required",
+            pattern: {
+              value: /^\S+@\S+\.\S+$/,
+              message: "Invalid email format",
+            },
+          })}
         />
+        {errors.email && (
+          <p className="mt-1 text-xs text-red-500">
+            {(errors.email as any).message}
+          </p>
+        )}
       </div>
 
       <div>
         <label className="text-sm font-medium text-slate-700">Password</label>
         <div className="relative mt-2">
           <input
-            type="password"
-            placeholder="Enter your Password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Enter your password"
             className="w-full rounded-full border border-teal-300 px-5 py-3 pr-12 text-sm outline-none focus:border-teal-500"
+            {...register("password", {
+              required: "Password is required",
+              minLength: {
+                value: 6,
+                message: "Password must be at least 6 characters",
+              },
+            })}
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+            aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? <FaEye /> : <FaEyeSlash />}
           </button>
         </div>
+
+        {errors.password && (
+          <p className="mt-1 text-xs text-red-500">
+            {(errors.password as any).message}
+          </p>
+        )}
       </div>
 
       <div className="flex items-center justify-between text-xs text-slate-500">
@@ -144,62 +156,19 @@ function LoginForm({
           Remember me
         </label>
         <button type="button" className="hover:text-teal-600">
-          Forgot Password ?
+          Forgot password?
         </button>
       </div>
 
-      <button className="mt-2 w-full rounded-full bg-teal-500 py-3 text-sm font-semibold text-white transition hover:bg-teal-600 active:scale-[0.99]">
-        Login
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="mt-2 w-full rounded-full bg-teal-500 py-3 text-sm font-semibold text-white transition hover:bg-teal-600 active:scale-[0.99] disabled:opacity-60"
+      >
+        {isSubmitting ? "Logging in..." : "Login"}
       </button>
     </form>
   );
 }
 
-function RegisterForm() {
-  return (
-    <form className="mt-8 space-y-5">
-      <div>
-        <label className="text-sm font-medium text-slate-700">
-          Email Address
-        </label>
-        <input
-          type="email"
-          placeholder="Enter your Email Address"
-          className="mt-2 w-full rounded-full border border-teal-300 px-5 py-3 text-sm outline-none focus:border-teal-500"
-        />
-      </div>
-
-      <div>
-        <label className="text-sm font-medium text-slate-700">User name</label>
-        <input
-          type="text"
-          placeholder="Enter your User name"
-          className="mt-2 w-full rounded-full border border-teal-300 px-5 py-3 text-sm outline-none focus:border-teal-500"
-        />
-      </div>
-
-      <div>
-        <label className="text-sm font-medium text-slate-700">Password</label>
-        <div className="relative mt-2">
-          <input
-            type="password"
-            placeholder="Enter your Password"
-            className="w-full rounded-full border border-teal-300 px-5 py-3 pr-12 text-sm outline-none focus:border-teal-500"
-          />
-          <button
-            type="button"
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
-          >
-            <FaEyeSlash />
-          </button>
-        </div>
-      </div>
-
-      <button className="mt-2 w-full rounded-full bg-teal-500 py-3 text-sm font-semibold text-white transition hover:bg-teal-600 active:scale-[0.99]">
-        Register
-      </button>
-    </form>
-  );
-}
-
-export default AuthPage;
+export default LoginForm;

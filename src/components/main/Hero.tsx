@@ -16,18 +16,18 @@ function Hero() {
               much easier
             </h1>
 
-            <p className="mt-6 max-w-md text-white/80 leading-relaxed opacity-0 animate-fade-in-up" style={{ animationDelay: "0.2s", animationFillMode: "forwards" }}>
+            <p className="mt-6 max-w-md text-white/80 leading-relaxed  animate-fade-in-up" style={{ animationDelay: "0.2s", animationFillMode: "forwards" }}>
               TOTC is an interesting platform that will teach you in more an
               interactive way
             </p>
 
-            <div className="mt-10 flex flex-wrap items-center gap-6 opacity-0 animate-fade-in-up" style={{ animationDelay: "0.4s", animationFillMode: "forwards" }}>
-              <button className="h-12 px-8 rounded-full bg-white/20 text-white font-semibold hover:bg-white/40 transition-all duration-300 hover-lift border border-white/30 backdrop-blur-sm hover:shadow-lg hover:shadow-orange-300/30">
+            <div className="mt-10 flex flex-wrap items-center gap-6 animate-fade-in-up" style={{ animationDelay: "0.4s", animationFillMode: "forwards" }}>
+              <button className="h-12 px-8 rounded-full bg-white/20 text-white font-semibold hover:bg-white/40 transition-all duration-300 hover-lift hover-shine border border-white/30 backdrop-blur-sm hover:shadow-lg hover:shadow-orange-300/30">
                 Join for free
               </button>
 
               <button className="flex items-center gap-3 text-white/90 hover:text-white transition-all duration-300 font-medium group hover-lift">
-                <span className="grid place-items-center h-12 w-12 rounded-full bg-white group-hover:shadow-lg group-hover:shadow-orange-300/50 transition-all duration-300 animate-pulse-slow">
+                <span className="grid place-items-center h-12 w-12 rounded-full bg-white group-hover:shadow-lg group-hover:shadow-orange-300/50 transition-all duration-300 animate-pulse-slow hover-shine">
                   {/* play icon */}
                   <svg
                     width="18"

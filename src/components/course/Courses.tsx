@@ -38,9 +38,9 @@ const PillCard = ({ item }: { item: CourseItem }) => {
   return (
     <div className="relative shrink-0 rotate-[-12deg] hover-scale cursor-pointer group">
       {/* outer soft bg */}
-      <div className="h-[180px] w-[90px] rounded-[32px] bg-gradient-to-b from-green-50 to-emerald-50 flex items-center justify-center shadow-sm group-hover:shadow-lg transition-all duration-300">
+      <div className="h-[280px] w-[90px] rounded-[32px] bg-gradient-to-b from-green-50 to-emerald-50 flex items-center justify-center shadow-sm group-hover:shadow-lg transition-all duration-300">
         <div
-          className={`h-[160px] w-[70px] rounded-[28px] border-[5px] border-white shadow-lg ${item.color} flex items-center justify-center group-hover:shadow-xl group-hover:scale-105 transition-all duration-300`}
+          className={`h-[260px] w-[70px] rounded-[28px] border-[5px] border-white shadow-lg ${item.color} flex items-center justify-center group-hover:shadow-xl group-hover:scale-105 transition-all duration-300`}
         >
           <span className="text-white text-[11px] font-bold whitespace-nowrap -rotate-90 tracking-wide group-hover:scale-110 transition-transform duration-300">
             {item.label}

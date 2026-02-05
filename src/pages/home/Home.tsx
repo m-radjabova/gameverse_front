@@ -2,8 +2,8 @@ import CloudSoftware from "../../components/cloud/CloudSoftware"
 import Courses from "../../components/course/Courses"
 import Everything from "../../components/everything/Everything"
 import Features from "../../components/features/Features"
-import Footer from "../../components/footer/Footer"
-import Header from "../../components/header/Header"
+// import Footer from "../../components/footer/Footer"
+// import Header from "../../components/header/Header"
 import LatestNews from "../../components/latest_news/LatestNews"
 import Hero from "../../components/main/Hero"
 import OurSuccess from "../../components/success/OurSuccess"
@@ -17,7 +17,7 @@ import What from "../../components/what_is_totc/What"
 function Home() {
   return (
     <div>
-      <Header />
+      {/* <Header /> */}
       <Hero />
       <OurSuccess />
       <CloudSoftware />
@@ -31,7 +31,7 @@ function Home() {
       <Courses />
       <Testemonial />
       <LatestNews />
-      <Footer />
+      {/* <Footer /> */}
     </div>
   )
 }

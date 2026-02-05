@@ -1,11 +1,82 @@
 @import "tailwindcss";
 
-/* ==================== ANIMATIONS ==================== */
+:root {
+  color-scheme: light;
+}
 
-@keyframes fadeInUp {
+@layer utilities {
+  .hover-lift {
+    transition: transform 250ms ease, box-shadow 250ms ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-4px);
+  }
+
+  .hover-scale {
+    transition: transform 250ms ease;
+  }
+  .hover-scale:hover {
+    transform: scale(1.04);
+  }
+
+  .hover-shine {
+    position: relative;
+    overflow: hidden;
+  }
+  .hover-shine::after {
+    content: "";
+    position: absolute;
+    inset: -120% 0 0 -120%;
+    width: 200%;
+    height: 200%;
+    transform: rotate(20deg);
+    background: linear-gradient(
+      120deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.4) 50%,
+      transparent 70%
+    );
+    opacity: 0;
+    transition: opacity 300ms ease, transform 500ms ease;
+  }
+  .hover-shine:hover::after {
+    opacity: 1;
+    transform: translateX(35%) rotate(20deg);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 700ms ease both;
+  }
+  .animate-slide-in-left {
+    animation: slide-in-left 700ms ease both;
+  }
+  .animate-slide-in-right {
+    animation: slide-in-right 700ms ease both;
+  }
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  .animate-pulse-slow {
+    animation: pulse-slow 3s ease-in-out infinite;
+  }
+  .animate-bounce-light {
+    animation: bounce-light 2.2s ease-in-out infinite;
+  }
+}
+
+@keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(18px);
   }
   to {
     opacity: 1;
@@ -13,10 +84,10 @@
   }
 }
 
-@keyframes slideInLeft {
+@keyframes slide-in-left {
   from {
     opacity: 0;
-    transform: translateX(-40px);
+    transform: translateX(-26px);
   }
   to {
     opacity: 1;
@@ -24,10 +95,10 @@
   }
 }
 
-@keyframes slideInRight {
+@keyframes slide-in-right {
   from {
     opacity: 0;
-    transform: translateX(40px);
+    transform: translateX(26px);
   }
   to {
     opacity: 1;
@@ -36,8 +107,9 @@
 }
 
 @keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
+  0%,
+  100% {
+    transform: translateY(0);
   }
   50% {
     transform: translateY(-10px);
@@ -45,172 +117,74 @@
 }
 
 @keyframes pulse-slow {
-  0%, 100% {
-    opacity: 1;
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
   }
   50% {
-    opacity: 0.8;
+    transform: scale(1.06);
+    opacity: 1;
   }
 }
 
 @keyframes bounce-light {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-8px);
+    transform: translateY(-6px);
   }
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-  100% {
-    background-position: 1000px 0;
-  }
+.elegant-toast {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.2rem 1.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+  animation: slideInRight 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-@keyframes glow {
-  0%, 100% {
-    box-shadow: 0 0 5px rgba(20, 184, 166, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(20, 184, 166, 0.8);
-  }
+.elegant-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  animation: bounce 2s ease-in-out infinite;
 }
 
-@keyframes rotate-slow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.elegant-content {
+  flex: 1;
 }
 
-/* ==================== UTILITY CLASSES ==================== */
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out;
+.elegant-title {
+  margin: 0 0 0.3rem 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #333;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.animate-slide-in-left {
-  animation: slideInLeft 0.6s ease-out;
-}
-
-.animate-slide-in-right {
-  animation: slideInRight 0.6s ease-out;
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-.animate-pulse-slow {
-  animation: pulse-slow 2s ease-in-out infinite;
-}
-
-.animate-bounce-light {
-  animation: bounce-light 2s ease-in-out infinite;
-}
-
-.animate-shimmer {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 1000px 100%;
-  animation: shimmer 2s infinite;
-}
-
-.animate-glow {
-  animation: glow 2s ease-in-out infinite;
-}
-
-.animate-rotate-slow {
-  animation: rotate-slow 20s linear infinite;
-}
-
-/* ==================== SMOOTH TRANSITIONS ==================== */
-
-.transition-all-smooth {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.transition-scale {
-  transition: transform 0.2s ease-in-out;
-}
-
-/* ==================== HOVER EFFECTS ==================== */
-
-.hover-lift {
-  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
-}
-
-.hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-}
-
-.hover-scale {
-  transition: transform 0.3s ease-out;
-}
-
-.hover-scale:hover {
-  transform: scale(1.05);
-}
-
-.hover-glow {
-  transition: all 0.3s ease-out;
-}
-
-.hover-glow:hover {
-  box-shadow: 0 0 20px rgba(20, 184, 166, 0.4);
-}
-
-.hover-shine {
-  position: relative;
-  overflow: hidden;
-}
-
-.hover-shine::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  transition: left 0.5s ease;
-}
-
-.hover-shine:hover::before {
-  left: 100%;
-}
-
-/* ==================== SCROLLBAR ==================== */
-
-.no-scrollbar::-webkit-scrollbar { 
-  display: none; 
-}
-
-.no-scrollbar { 
-  -ms-overflow-style: none; 
-  scrollbar-width: none; 
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #14b8a6;
-  border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #0d9488;
+.elegant-message {
+  margin: 0;
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.4;
 }
