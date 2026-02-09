@@ -12,8 +12,20 @@ import MainLayout from "./layout/MainLayout";
 import AdminLayout from "./layout/AdminLayout";
 import HelloAdmin from "./pages/admin/HelloAdmin";
 import CourseDetail from "./pages/course/CourseDetail";
+import useContextPro from "./hooks/useContextPro";
 
 function App() {
+  const { state: { isLoading } } = useContextPro();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="h-10 w-10 rounded-full border-4 border-gray-300 border-t-gray-900 animate-spin" />
+      </div>
+    );
+  }
+
+
   return (
     <Routes>
       <Route element={<AuthLayout />}>
@@ -34,7 +46,7 @@ function App() {
 
       <Route
         element={
-          <ProtectedRoute role="user">
+          <ProtectedRoute>
             <MainLayout />
           </ProtectedRoute>
         }

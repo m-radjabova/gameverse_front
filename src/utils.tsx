@@ -13,4 +13,15 @@ export function parseJwt(token: string): any | null {
     return null;
   }
 }
-export const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
+
+export const API_ORIGIN =
+  import.meta.env.VITE_API_ORIGIN ||
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:8000";
+
+export function toMediaUrl(path?: string | null): string {
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  if (path.startsWith("/")) return `${API_ORIGIN}${path}`;
+  return `${API_ORIGIN}/${path}`;
+}

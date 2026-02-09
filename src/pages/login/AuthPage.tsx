@@ -25,8 +25,8 @@ function AuthPage() {
   const isLogin = activeTab === "login";
 
   return (
-    <div className="min-h-screen bg-slate-100 p-4 flex items-center justify-center">
-      <div className="w-full max-w-6xl overflow-hidden rounded-3xl bg-white shadow-xl">
+    <div className="min-h-screen bg-slate-300  flex items-center justify-center">
+      <div className="w-full max-w-7xl overflow-hidden rounded-3xl bg-white shadow-xl">
         <div className="grid lg:grid-cols-2">
           <div className="relative hidden lg:block">
             <img

@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import apiClient from "../../apiClient/apiClient";
 import { isAxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
+import { getErrorMessage } from "../../utils/error";
 
 type RegisterFormInputs = {
   username: string;
@@ -57,7 +58,8 @@ function RegisterForm() {
       const status = isAxiosError(error) ? error.response?.status : undefined;
 
       const message = isAxiosError(error)
-        ? (error.response?.data as any)?.message ||
+        ? (error.response?.data as any)?.detail ||
+          (error.response?.data as any)?.message ||
           (error.response?.data as any)?.error ||
           "Registration failed. Please try again."
         : "Registration failed. Please try again.";
@@ -65,7 +67,7 @@ function RegisterForm() {
       if (status === 409) {
         toast.error("This email is already registered.");
       } else {
-        toast.error(message);
+        toast.error(getErrorMessage(error) || message);
       }
     }
   };

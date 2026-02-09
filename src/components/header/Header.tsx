@@ -14,6 +14,8 @@ import {
 import apiClient from "../../apiClient/apiClient";
 import type { User } from "../../types/types";
 import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import { clearAuthStorage, logoutRequest } from "../../utils/auth";
+import { toMediaUrl } from "../../utils";
 
 function Header() {
   const {
@@ -37,9 +39,7 @@ function Header() {
         const me = await apiClient.get<User>("/users/me");
         dispatch({ type: "SET_USER", payload: me.data });
       } catch {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("role");
+        clearAuthStorage();
         dispatch({ type: "LOGOUT" });
       }
     })();
@@ -55,10 +55,8 @@ function Header() {
 
   const handleMenuClose = () => setAnchorEl(null);
 
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("role");
+  const handleLogout = async () => {
+    await logoutRequest();
     dispatch({ type: "LOGOUT" });
     handleMenuClose();
     navigate("/login");
@@ -172,13 +170,7 @@ function Header() {
                   }}
                 >
                   <Avatar
-                    src={
-                      user.avatar
-                        ? user.avatar.startsWith("http")
-                          ? user.avatar
-                          : `${import.meta.env.VITE_API_ORIGIN}${user.avatar}`
-                        : undefined
-                    }
+                    src={user.avatar ? toMediaUrl(user.avatar) : undefined}
                     alt={user.username}
                     sx={{
                       width: 44,
@@ -243,6 +235,26 @@ function Header() {
                   >
                     Profile
                   </MenuItem>
+
+                  {
+                    user.roles.includes("admin") && (
+                      <MenuItem
+                        onClick={() => {
+                          handleMenuClose();
+                          navigate("/admin");
+                        }}
+                        sx={{
+                          fontWeight: 600,
+                          "&:hover": {
+                            bgcolor: "rgba(20, 184, 166, 0.08)",
+                          },
+                        }}
+                      >
+                        Admin
+                      </MenuItem>
+                    )
+                  }
+
 
                   <Divider />
 

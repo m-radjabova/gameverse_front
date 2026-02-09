@@ -1,5 +1,5 @@
 import useCategories from "../../hooks/useCategories";
-import { API_ORIGIN } from "../../utils";
+import { toMediaUrl } from "../../utils";
 
 type CategoryApi = {
   id: string;
@@ -154,7 +154,7 @@ function Categories() {
                   <div className={`w-14 h-14 rounded-xl ${style.iconBg} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-inner`}>
                     {c.icon ? (
                       <img
-                        src={`${API_ORIGIN}${c.icon}`}
+                        src={toMediaUrl(c.icon)}
                         alt={c.name}
                         className="w-6 h-6 object-contain filter group-hover:drop-shadow-md transition-all duration-300"
                       />

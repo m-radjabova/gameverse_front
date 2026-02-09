@@ -7,6 +7,8 @@ import type { User } from "../../types/types";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { isAxiosError } from "axios";
+import { getErrorMessage } from "../../utils/error";
+import { setTokens } from "../../utils/auth";
 
 type LoginResponse = {
   access_token: string;
@@ -36,12 +38,10 @@ function LoginForm({ showPassword, setShowPassword }: Props) {
         password: data.password,
       });
 
-      localStorage.setItem("accessToken", res.data.access_token);
-      localStorage.setItem("refreshToken", res.data.refresh_token);
+      setTokens(res.data.access_token, res.data.refresh_token);
 
       const me = await apiClient.get<User>("/users/me");
       const currentUser = me.data;
-
       dispatch({ type: "SET_USER", payload: currentUser });
 
       if (currentUser?.roles?.length) {
@@ -50,45 +50,46 @@ function LoginForm({ showPassword, setShowPassword }: Props) {
         localStorage.removeItem("role");
       }
 
-       const CustomToast = () => (
-    <div className="elegant-toast">
-      <div className="elegant-icon">
-        <FaUserCheck />
-      </div>
-      <div className="elegant-content">
-        <h5 className="elegant-title">Welcome Back! ✨</h5>
-        <p className="elegant-message">You have successfully logged in to your account</p>
-      </div>
-    </div>
-  );
+      const CustomToast = () => (
+        <div className="flex items-center gap-4 w-[340px] rounded-xl bg-emerald-50 px-5 py-4 text-emerald-900 border border-emerald-100 animate-toast-in">
+          {/* Icon */}
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white">
+            <FaUserCheck className="text-lg" />
+          </div>
+
+          {/* Content */}
+          <div className="flex-1">
+            <h5 className="text-sm font-semibold leading-tight">
+              Welcome back 👋
+            </h5>
+            <p className="text-xs text-emerald-700 mt-1">
+              You have successfully logged in
+            </p>
+          </div>
+        </div>
+      );
 
       toast(CustomToast, {
-    position: "top-right",
-    autoClose: 4000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    theme: "light",
-    className: 'custom-toast-container',
-    progressClassName: 'custom-progress'
-  });
+        position: "top-right",
+        autoClose: 4000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        className: "!bg-transparent !p-0 !shadow-none",
+        progressClassName: "bg-emerald-500",
+        
+      });
 
       navigate("/", { replace: true });
     } catch (error: unknown) {
       const status = isAxiosError(error) ? error.response?.status : undefined;
-      const message = isAxiosError(error)
-        ? error.response?.data?.message ||
-          error.response?.data?.error ||
-          "Kirishda xatolik yuz berdi. Qayta urinib ko‘ring."
-        : "Kirishda xatolik yuz berdi. Qayta urinib ko‘ring.";
+      const message = getErrorMessage(error);
 
       if (status === 401) {
-        toast.error("Email yoki parol noto‘g‘ri.");
+        toast.error("Email yoki parol noto'g'ri.");
       } else if (status === 404) {
-        toast.error("Account topilmadi. Ro‘yxatdan o‘ting.");
-      } else if (status === 429) {
-        toast.error("Juda ko‘p urinish. Birozdan keyin qayta urinib ko‘ring.");
+        toast.error("Account topilmadi.");
       } else {
         toast.error(message);
       }
@@ -148,16 +149,6 @@ function LoginForm({ showPassword, setShowPassword }: Props) {
             {(errors.password as any).message}
           </p>
         )}
-      </div>
-
-      <div className="flex items-center justify-between text-xs text-slate-500">
-        <label className="flex items-center gap-2">
-          <input type="checkbox" className="accent-teal-500" />
-          Remember me
-        </label>
-        <button type="button" className="hover:text-teal-600">
-          Forgot password?
-        </button>
       </div>
 
       <button

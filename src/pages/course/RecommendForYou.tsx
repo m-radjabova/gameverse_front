@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useCourses from "../../hooks/useCourses";
 import useCategories from "../../hooks/useCategories";
-import { API_ORIGIN } from "../../utils";
+import { toMediaUrl } from "../../utils";
 import type { Category } from "../../types/types";
 
 function RecommendForYou() {
@@ -35,7 +35,19 @@ function RecommendForYou() {
     if (!image) {
       return "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1200&auto=format&fit=crop";
     }
-    return image.startsWith("http") ? image : `${API_ORIGIN}${image}`;
+    return toMediaUrl(image);
+  };
+
+  const formatDuration = (duration: number | string | null | undefined) => {
+    const totalMinutes = Number(duration);
+    if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) return "0m";
+
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = Math.round(totalMinutes % 60);
+
+    if (hours === 0) return `${minutes}m`;
+    if (minutes === 0) return `${hours}h`;
+    return `${hours}h ${minutes}m`;
   };
 
   const pageCount = useMemo(() => Math.ceil(courses.length / 4), [courses.length]);
@@ -114,7 +126,7 @@ function RecommendForYou() {
 
               <div className="p-5">
                 <div className="flex items-center justify-between text-sm mb-3">
-                  <span className="text-slate-600">{c.duration} min</span>
+                  <span className="text-slate-600">{formatDuration(c.duration)}</span>
                   <span className="flex items-center gap-2 text-amber-600 font-semibold">
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />

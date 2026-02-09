@@ -24,7 +24,7 @@ function useCategories() {
     error,
   } = useQuery<Category[]>({
     queryKey: ["categories"],
-    queryFn: async () => (await apiClient.get("/categories")).data,
+    queryFn: async () => (await apiClient.get("/categories/")).data,
   });
 
   const addCategory = useMutation({
@@ -41,7 +41,7 @@ function useCategories() {
       }
 
       return (
-        await apiClient.post("/categories", formData, {
+        await apiClient.post("/categories/", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         })
       ).data;
@@ -64,6 +64,10 @@ function useCategories() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["categories"] }),
   });
 
+  const getCategoryDetail = async (categoryId: string) => {
+    return (await apiClient.get(`/categories/${categoryId}`)).data as Category;
+  };
+
   return {
     categories,
     loading,
@@ -72,6 +76,7 @@ function useCategories() {
     addCategory: addCategory.mutateAsync,
     updateCategory: updateCategory.mutateAsync,
     deleteCategory: deleteCategory.mutateAsync,
+    getCategoryDetail,
   };
 }
 

@@ -3,6 +3,7 @@ import { MyContext } from "../context/MyContext";
 import type { User } from "../types/types";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../apiClient/apiClient";
+import { clearAuthStorage } from "../utils/auth";
 
 export interface TypeState {
   user: User | null;
@@ -29,6 +30,8 @@ function reducer(state: TypeState, action: Action): TypeState {
   switch (action.type) {
     case "SET_USER":
       return { ...state, user: action.payload };
+    case "SET_LOADING":
+      return { ...state, isLoading: action.payload };
 
     case "LOGOUT":
       return { ...state, user: null };
@@ -65,9 +68,7 @@ function CreateContextPro({ children }: { children: ReactNode }) {
       const res = await apiClient.get<User>("/users/me");
       dispatch({ type: "SET_USER", payload: res.data });
     } catch (e )  {
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("role");
+      clearAuthStorage();
       dispatch({ type: "SET_USER", payload: null });
       navigate("/login"); 
     } finally {
