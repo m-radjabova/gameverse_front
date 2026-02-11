@@ -1,69 +1,76 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useCourses from "../../hooks/useCourses";
 import useCategories from "../../hooks/useCategories";
-import { toMediaUrl } from "../../utils";
+import { formatDuration, toMediaUrl } from "../../utils";
 import type { Category } from "../../types/types";
 
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination, Autoplay } from "swiper/modules";
+
+import {
+  FiClock,
+  FiStar,
+  FiArrowRight,
+  FiArrowLeft,
+  FiChevronRight
+} from "react-icons/fi";
+
+import { RiFlashlightFill } from "react-icons/ri";
+import { HiOutlineFire } from "react-icons/hi";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import { MdDiscount } from "react-icons/md";
+
 function GetChoise() {
-  const { courses, loading: coursesLoading, isError: coursesError } = useCourses();
+  const {
+    courses,
+    loading: coursesLoading,
+    isError: coursesError,
+  } = useCourses();
   const { categories, loading: categoriesLoading } = useCategories();
-  const [index, setIndex] = useState(0);
   const [categoryMap, setCategoryMap] = useState<Map<string, string>>(new Map());
   const navigate = useNavigate();
 
-  const visible = courses.slice(index, index + 4);
-  const canPrev = index > 0;
-  const canNext = index + 4 < courses.length;
-
   useEffect(() => {
     if (!categories?.length) return;
-
     const map = new Map<string, string>();
-    categories.forEach((cat: Category) => {
-      map.set(String(cat.id), cat.name);
-    });
+    categories.forEach((cat: Category) => map.set(String(cat.id), cat.name));
     setCategoryMap(map);
   }, [categories]);
 
   const getCategoryName = (categoryId: string | number | undefined) => {
-    if (categoryId === undefined || categoryId === null) return "Design";
-    return categoryMap.get(String(categoryId)) || "Design";
+    if (categoryId === undefined || categoryId === null) return "General";
+    return categoryMap.get(String(categoryId)) || "General";
   };
 
   const resolveImage = (image?: string | null) => {
     if (!image) {
-      return "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1200&auto=format&fit=crop";
+      return "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=600&auto=format&fit=crop";
     }
     return toMediaUrl(image);
   };
 
-  const formatDuration = (duration: number | string | null | undefined) => {
-    const totalMinutes = Number(duration);
-    if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) return "0m";
-
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = Math.round(totalMinutes % 60);
-
-    if (hours === 0) return `${minutes}m`;
-    if (minutes === 0) return `${hours}h`;
-    return `${hours}h ${minutes}m`;
-  };
-
-  const pageCount = useMemo(() => Math.ceil(courses.length / 4), [courses.length]);
-
   if (coursesLoading || categoriesLoading) {
     return (
-      <div className="bg-gradient-to-br from-sky-50/80 via-white to-emerald-50/50 rounded-3xl p-6 md:p-10 mt-10 shadow-lg">
+      <div className="rounded-3xl p-6 md:p-10 mt-10 bg-gradient-to-br from-slate-50 via-white to-teal-50/30 shadow-xl border border-slate-100">
         <div className="animate-pulse">
-          <div className="h-8 bg-slate-200 rounded w-64 mb-4" />
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <div className="h-9 bg-slate-200 rounded-lg w-64 mb-2" />
+              <div className="h-4 bg-slate-200 rounded w-40" />
+            </div>
+            <div className="h-11 bg-slate-200 rounded-xl w-36" />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl shadow p-5">
-                <div className="h-[200px] bg-slate-200 rounded mb-4" />
-                <div className="h-4 bg-slate-200 rounded mb-2" />
+              <div key={i} className="bg-white rounded-2xl shadow-sm p-5 border border-slate-200 h-[420px]">
+                <div className="h-[180px] bg-slate-200 rounded-xl mb-4" />
+                <div className="h-4 bg-slate-200 rounded w-20 mb-3" />
                 <div className="h-6 bg-slate-200 rounded mb-3" />
-                <div className="h-12 bg-slate-100 rounded" />
+                <div className="h-14 bg-slate-100 rounded mb-4" />
+                <div className="h-10 bg-slate-200 rounded" />
               </div>
             ))}
           </div>
@@ -74,127 +81,203 @@ function GetChoise() {
 
   if (coursesError) {
     return (
-      <div className="bg-gradient-to-br from-sky-50/80 via-white to-emerald-50/50 rounded-3xl p-6 md:p-10 mt-10 shadow-lg text-center">
-        <h3 className="text-xl font-semibold text-slate-900 mb-2">Failed to load courses</h3>
-        <p className="text-slate-600">Please try again later</p>
+      <div className="rounded-3xl p-6 md:p-10 mt-10 bg-gradient-to-br from-rose-50 via-white to-pink-50/30 shadow-xl border border-rose-100 text-center">
+        <div className="flex flex-col items-center justify-center py-10">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-r from-rose-100 to-pink-100 flex items-center justify-center mb-4">
+            <HiOutlineFire className="w-8 h-8 text-rose-500" />
+          </div>
+          <h3 className="text-xl font-bold text-slate-900 mb-2">
+            Couldn't load courses
+          </h3>
+          <p className="text-slate-600 mb-4">Please check your connection</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-2.5 bg-gradient-to-r from-slate-900 to-slate-700 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <section className="rounded-3xl p-6 md:p-10 mt-10 shadow-lg">
+    <section className="container mx-auto px-4 rounded-3xl p-6 md:p-10 mt-10 bg-gradient-to-br from-slate-50 via-white to-teal-50/30 shadow-xl border border-slate-100">
+      {/* Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-10">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold text-slate-900 bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-            Get Choise of your courses
-          </h2>
-          <p className="text-slate-600 mt-2">Choose from a wide range of courses</p>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500">
+              <RiFlashlightFill className="w-5 h-5 text-white" />
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
+              Get Choise For You
+            </h2>
+          </div>
+          <p className="text-slate-600 mt-2 max-w-2xl">
+            We have curated a collection of courses that will help you unlock
+            your potential and achieve your goals.
+          </p>
         </div>
 
         <button
           onClick={() => navigate("/courses")}
-          className="mt-4 md:mt-0 px-6 py-2.5 bg-gradient-to-r from-slate-900 to-slate-700 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-slate-300 transition-all duration-300 hover:scale-[1.02]"
+          className="mt-4 md:mt-0 px-6 py-3 bg-gradient-to-r from-slate-900 to-slate-800 text-white font-semibold rounded-xl hover:shadow-xl hover:shadow-slate-300/50 transition-all duration-300 hover:scale-[1.02] flex items-center gap-2 group"
         >
-          See All Courses
+          Explore All
+          <FiChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {visible.map((c) => {
-          const oldPrice = Math.round(c.price * 1.3);
-          const discount = Math.round(((oldPrice - c.price) / oldPrice) * 100);
+      {/* Swiper Container */}
+      <div className="relative px-2">
+        {/* Custom Navigation Buttons */}
+        <button className="swiper-prev absolute left-[-16px] top-1/2 z-10 -translate-y-1/2 hidden lg:block">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-xl border border-slate-200 hover:border-teal-300 transition-all hover:scale-110 group">
+            <FiArrowLeft className="w-5 h-5 text-slate-600 group-hover:text-teal-600" />
+          </div>
+        </button>
 
-          return (
-            <div
-              key={c.id}
-              onClick={() => navigate(`/courses/${c.id}`)}
-              className="group bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden border border-slate-100 hover:shadow-[0_25px_60px_rgba(2,8,23,0.15)] hover:border-teal-100 hover:translate-y-[-6px] transition-all duration-500 cursor-pointer"
-            >
-              <div className="relative overflow-hidden">
-                <img
-                  src={resolveImage(c.image)}
-                  alt={c.title}
-                  className="w-full h-[200px] object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute top-4 right-4">
-                  <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-slate-800 text-xs font-semibold rounded-full">
-                    {getCategoryName(c.category_id)}
-                  </span>
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white/90 to-transparent" />
-              </div>
+        <button className="swiper-next absolute right-[-16px] top-1/2 z-10 -translate-y-1/2 hidden lg:block">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-teal-500 to-emerald-500 shadow-xl transition-all hover:scale-110 group">
+            <FiArrowRight className="w-5 h-5 text-white" />
+          </div>
+        </button>
 
-              <div className="p-5">
-                <div className="flex items-center justify-between text-sm mb-3">
-                  <span className="text-slate-600">{formatDuration(c.duration)}</span>
-                  <span className="flex items-center gap-2 text-amber-600 font-semibold">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                  {c.rating} 
-                </span>
-                </div>
+        {/* Swiper */}
+        <Swiper
+          className="courses-swiper"
+          modules={[Navigation, Pagination, Autoplay]}
+          navigation={{ prevEl: ".swiper-prev", nextEl: ".swiper-next" }}
+          pagination={{ 
+            clickable: true,
+            bulletClass: 'swiper-pagination-bullet bg-slate-300 opacity-50',
+            bulletActiveClass: 'swiper-pagination-bullet-active !bg-teal-500 !opacity-100'
+          }}
+          autoplay={{ 
+            delay: 4000, 
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true 
+          }}
+          loop={courses.length > 4}
+          spaceBetween={24}
+          breakpoints={{
+            0: { 
+              slidesPerView: 1,
+              spaceBetween: 16 
+            },
+            640: { 
+              slidesPerView: 2,
+              spaceBetween: 20 
+            },
+            1024: { 
+              slidesPerView: 3,
+              spaceBetween: 24 
+            },
+            1280: { 
+              slidesPerView: 4,
+              spaceBetween: 24 
+            },
+          }}
+        >
+          {courses.map((c) => {
+            const oldPrice = Math.round(c.price * 1.3);
+            const discount = Math.round(((oldPrice - c.price) / oldPrice) * 100);
+            const categoryName = getCategoryName(c.category_id);
 
-                <h3 className="font-bold text-slate-900 text-lg mb-3 group-hover:text-teal-700 transition-colors duration-300 line-clamp-2">
-                  {c.title}
-                </h3>
+            return (
+              <SwiperSlide key={c.id}>
+                <div className="h-full">
+                  <div
+                    onClick={() => navigate(`/courses/${c.id}`)}
+                    className="group bg-white rounded-2xl overflow-hidden border border-slate-200
+                    shadow-[0_4px_20px_rgba(0,0,0,0.05)]
+                    hover:shadow-[0_20px_50px_rgba(2,132,199,0.12)]
+                    hover:border-teal-200 hover:translate-y-[-8px]
+                    transition-all duration-500 cursor-pointer
+                    h-full flex flex-col"
+                  >
+                    {/* Image Container */}
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={resolveImage(c.image)}
+                        alt={c.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      />
+                      
+                      {/* Category Badge */}
+                      <div className="absolute top-4 left-4">
+                        <span className="px-3 py-1.5 bg-white/95 backdrop-blur-sm text-slate-800 text-xs font-semibold rounded-full border border-slate-200">
+                          {categoryName}
+                        </span>
+                      </div>
+                      
+                      {/* Discount Badge */}
+                      <div className="absolute top-4 right-4">
+                        <div className="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xs font-bold rounded-full">
+                          <MdDiscount className="w-3 h-3" />
+                          {discount}% OFF
+                        </div>
+                      </div>
+                      
+                      {/* Gradient Overlay */}
+                      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white via-white/90 to-transparent" />
+                    </div>
 
-                <p className="text-sm text-slate-600 mb-4 line-clamp-2">
-                  {c.description || "Comprehensive course covering essential concepts with practical examples."}
-                </p>
+                    {/* Content Container - Fixed height for consistency */}
+                    <div className="p-5 flex-1 flex flex-col">
+                      {/* Course Info */}
+                      <div className="flex items-center justify-between text-sm mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1 text-slate-600">
+                            <FiClock className="w-4 h-4" />
+                            <span>{formatDuration(c.duration)}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 text-amber-600 font-semibold">
+                          <FiStar className="w-4 h-4 fill-amber-400" />
+                          <span>{c.rating || 4.5}</span>
+                        </div>
+                      </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-slate-900">${c.price}</span>
-                    <span className="text-sm text-slate-400 line-through">${oldPrice}</span>
-                    <span className="px-2 py-1 bg-gradient-to-r from-rose-100 to-pink-100 text-rose-600 text-xs font-bold rounded">
-                      {discount}% OFF
-                    </span>
+                      {/* Title - Fixed height */}
+                      <h3 className="font-bold text-slate-900 text-lg mb-3 group-hover:text-teal-700 transition-colors duration-300 line-clamp-2 min-h-[56px]">
+                        {c.title}
+                      </h3>
+
+                      {/* Description - Fixed height */}
+                      <p className="text-sm text-slate-600 mb-5 line-clamp-2 flex-1 min-h-[40px]">
+                        {c.description || "Master essential skills with hands-on projects and expert guidance."}
+                      </p>
+
+                      {/* Stats */}
+                      <div className="flex items-center justify-between mb-5 text-sm text-slate-500">
+                        <div className="px-2 py-1 bg-slate-100 rounded text-xs font-medium">
+                          {c.level || "Beginner"}
+                        </div>
+                      </div>
+
+                      {/* Price and Button */}
+                      <div className="flex items-center justify-between pt-4 border-t border-slate-100 mt-auto">
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl font-bold text-slate-900">
+                            ${c.price}
+                          </span>
+                          <span className="text-sm text-slate-400 line-through">
+                            ${oldPrice}
+                          </span>
+                        </div>
+                        <button className="px-4 py-2 bg-gradient-to-r from-teal-50 to-emerald-50 text-teal-700 text-sm font-semibold rounded-lg border border-teal-100 hover:bg-teal-100 transition-colors">
+                          Enroll Now
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="mt-10 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {Array.from({ length: pageCount }).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setIndex(i * 4)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index === i * 4 ? "bg-teal-500 w-8" : "bg-slate-300 hover:bg-slate-400"
-              }`}
-            />
-          ))}
-        </div>
-
-        <div className="flex gap-3">
-          <button
-            onClick={() => setIndex((v) => Math.max(0, v - 4))}
-            disabled={!canPrev}
-            className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center text-xl font-bold transition-all duration-300 ${
-              canPrev
-                ? "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 hover:scale-105 active:scale-95"
-                : "bg-slate-100 border-slate-100 text-slate-400 cursor-not-allowed"
-            }`}
-          >
-            &lt;
-          </button>
-          <button
-            onClick={() => setIndex((v) => Math.min(v + 4, Math.max(courses.length - 4, 0)))}
-            disabled={!canNext}
-            className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center text-xl font-bold transition-all duration-300 ${
-              canNext
-                ? "bg-gradient-to-r from-teal-500 to-emerald-500 border-teal-500 text-white hover:shadow-lg hover:shadow-teal-200 hover:scale-105 active:scale-95"
-                : "bg-slate-100 border-slate-100 text-slate-400 cursor-not-allowed"
-            }`}
-          >
-            &gt;
-          </button>
-        </div>
+              </SwiperSlide>
+            );
+          })}
+        </Swiper>
       </div>
     </section>
   );

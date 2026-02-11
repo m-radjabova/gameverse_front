@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
 import apiClient from "../apiClient/apiClient";
 import type { AssignmentOut, SubmissionOut } from "../types/types";
 import {
@@ -108,22 +109,47 @@ export function useAssignmentActions(lessonId: string) {
   };
 }
 
-export function useSubmissionActions(assignmentId: string) {
+type SubmissionQueryOptions = {
+  canViewMySubmission?: boolean;
+  canViewSubmissions?: boolean;
+};
+
+export function useSubmissionActions(
+  assignmentId: string,
+  { canViewMySubmission = true, canViewSubmissions = true }: SubmissionQueryOptions = {},
+) {
   const queryClient = useQueryClient();
 
   const mySubmission = useQuery<SubmissionOut | null>({
     queryKey: ["my-submission", assignmentId],
-    queryFn: async () =>
-      (await apiClient.get(`/assignments/${assignmentId}/my-submission`)).data,
-    enabled: !!assignmentId,
+    queryFn: async () => {
+      try {
+        return (await apiClient.get(`/assignments/${assignmentId}/my-submission`)).data;
+      } catch (error) {
+        if (isAxiosError(error) && error.response?.status === 404) {
+          return null;
+        }
+        throw error;
+      }
+    },
+    enabled: !!assignmentId && canViewMySubmission,
     retry: false,
   });
 
   const submissions = useQuery<SubmissionOut[]>({
     queryKey: ["submissions", assignmentId],
-    queryFn: async () =>
-      (await apiClient.get(`/assignments/${assignmentId}/submissions`)).data,
-    enabled: !!assignmentId,
+    queryFn: async () => {
+      try {
+        return (await apiClient.get(`/assignments/${assignmentId}/submissions`)).data;
+      } catch (error) {
+        if (isAxiosError(error) && error.response?.status === 403) {
+          return [];
+        }
+        throw error;
+      }
+    },
+    enabled: !!assignmentId && canViewSubmissions,
+    retry: false,
   });
 
   const submitAssignment = useMutation({

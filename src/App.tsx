@@ -13,6 +13,7 @@ import AdminLayout from "./layout/AdminLayout";
 import HelloAdmin from "./pages/admin/HelloAdmin";
 import CourseDetail from "./pages/course/CourseDetail";
 import useContextPro from "./hooks/useContextPro";
+import Profile from "./components/profile/Profile";
 
 function App() {
   const { state: { isLoading } } = useContextPro();
@@ -55,6 +56,7 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/courses" element={<CoursePage />} />
         <Route path="/courses/:id" element={<CourseDetail />} />
+        <Route path="/profile" element={<Profile />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/home" replace />} />

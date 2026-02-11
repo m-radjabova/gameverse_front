@@ -7,6 +7,7 @@ export interface User {
   confirmPassword?: string;
   roles: string[];
   uid?: string;
+  created_at?: string;
 }
 
 export interface Category {
@@ -94,4 +95,21 @@ export interface CourseProgressOut {
   completed_lessons: number;
   progress_percent: number;
   lessons: LessonProgressOut[];
+}
+
+export interface LessonChatThreadOut {
+  id: string;
+  lesson_id: string;
+  student_id: string;
+  student_username?: string | null;
+  created_at: string;
+}
+
+export interface LessonChatMessageOut {
+  id: string;
+  thread_id: string;
+  sender_id: string;
+  sender_username?: string | null;
+  text: string;
+  created_at: string;
 }

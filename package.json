@@ -28,6 +28,7 @@
     "react-select": "^5.10.2",
     "react-slick": "^0.31.0",
     "react-toastify": "^11.0.5",
+    "swiper": "^12.1.0",
     "tailwindcss": "^4.1.13"
   },
   "devDependencies": {

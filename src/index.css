@@ -4,9 +4,25 @@
   color-scheme: light;
 }
 
+/* Make all slides equal height */
+.courses-swiper .swiper-wrapper {
+  align-items: stretch;
+}
+
+.courses-swiper .swiper-slide {
+  height: auto;
+  display: flex;
+}
+
+.courses-swiper .swiper-slide > div {
+  height: 100%;
+}
+
 @layer utilities {
   .hover-lift {
-    transition: transform 250ms ease, box-shadow 250ms ease;
+    transition:
+      transform 250ms ease,
+      box-shadow 250ms ease;
   }
   .hover-lift:hover {
     transform: translateY(-4px);
@@ -37,7 +53,9 @@
       transparent 70%
     );
     opacity: 0;
-    transition: opacity 300ms ease, transform 500ms ease;
+    transition:
+      opacity 300ms ease,
+      transform 500ms ease;
   }
   .hover-shine:hover::after {
     opacity: 1;
@@ -136,4 +154,22 @@
   50% {
     transform: translateY(-6px);
   }
+}
+
+.courses-swiper {
+  padding-bottom: 40px !important;
+}
+.swiper-pagination {
+  position: absolute !important;
+  bottom: 0 !important;
+}
+.swiper-pagination-bullet {
+  width: 10px !important;
+  height: 10px !important;
+  margin: 0 6px !important;
+  transition: all 0.3s ease !important;
+}
+.swiper-pagination-bullet-active {
+  width: 24px !important;
+  border-radius: 6px !important;
 }

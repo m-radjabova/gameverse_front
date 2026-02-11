@@ -1,70 +1,120 @@
 import useCategories from "../../hooks/useCategories";
 import { toMediaUrl } from "../../utils";
 
-type CategoryApi = {
-  id: string;
-  name: string;
-  description?: string | null;
-  icon?: string | null;
-};
+import {
+  FiCode,
+  FiTrendingUp,
+  FiCamera,
+  FiMusic,
+  FiHeart,
+  FiBook,
+  FiChevronRight,
+  FiLoader
+} from "react-icons/fi";
+import {
+  MdOutlineDesignServices,
+  MdOutlineScience,
+  MdOutlineBusinessCenter
+} from "react-icons/md";
+import { HiOutlineSparkles } from "react-icons/hi2";
 
 type UiStyle = {
   iconBg: string;
   iconColor: string;
-  hoverGlow: string;
+  cardBg: string;
   borderColor: string;
+  gradient: string;
+  statsColor: string;
 };
 
 const STYLES: UiStyle[] = [
   { 
-    iconBg: "bg-gradient-to-br from-teal-50 to-teal-100", 
+    iconBg: "bg-gradient-to-br from-teal-500/10 to-emerald-500/20", 
     iconColor: "text-teal-600",
-    hoverGlow: "hover:shadow-[0_20px_60px_-12px_rgba(6,148,162,0.3)]",
-    borderColor: "border-teal-100"
+    cardBg: "from-teal-50/30 via-white to-emerald-50/20",
+    borderColor: "border-teal-100",
+    gradient: "from-teal-500 to-emerald-500",
+    statsColor: "text-teal-600"
   },
   { 
-    iconBg: "bg-gradient-to-br from-indigo-50 to-indigo-100", 
+    iconBg: "bg-gradient-to-br from-indigo-500/10 to-purple-500/20", 
     iconColor: "text-indigo-600",
-    hoverGlow: "hover:shadow-[0_20px_60px_-12px_rgba(76,81,191,0.3)]",
-    borderColor: "border-indigo-100"
+    cardBg: "from-indigo-50/30 via-white to-purple-50/20",
+    borderColor: "border-indigo-100",
+    gradient: "from-indigo-500 to-purple-500",
+    statsColor: "text-indigo-600"
   },
   { 
-    iconBg: "bg-gradient-to-br from-sky-50 to-sky-100", 
+    iconBg: "bg-gradient-to-br from-sky-500/10 to-cyan-500/20", 
     iconColor: "text-sky-600",
-    hoverGlow: "hover:shadow-[0_20px_60px_-12px_rgba(6,182,212,0.3)]",
-    borderColor: "border-sky-100"
+    cardBg: "from-sky-50/30 via-white to-cyan-50/20",
+    borderColor: "border-sky-100",
+    gradient: "from-sky-500 to-cyan-500",
+    statsColor: "text-sky-600"
   },
   { 
-    iconBg: "bg-gradient-to-br from-emerald-50 to-emerald-100", 
+    iconBg: "bg-gradient-to-br from-emerald-500/10 to-green-500/20", 
     iconColor: "text-emerald-600",
-    hoverGlow: "hover:shadow-[0_20px_60px_-12px_rgba(16,185,129,0.3)]",
-    borderColor: "border-emerald-100"
+    cardBg: "from-emerald-50/30 via-white to-green-50/20",
+    borderColor: "border-emerald-100",
+    gradient: "from-emerald-500 to-green-500",
+    statsColor: "text-emerald-600"
   },
   { 
-    iconBg: "bg-gradient-to-br from-amber-50 to-amber-100", 
+    iconBg: "bg-gradient-to-br from-amber-500/10 to-orange-500/20", 
     iconColor: "text-amber-600",
-    hoverGlow: "hover:shadow-[0_20px_60px_-12px_rgba(251,191,36,0.3)]",
-    borderColor: "border-amber-100"
+    cardBg: "from-amber-50/30 via-white to-orange-50/20",
+    borderColor: "border-amber-100",
+    gradient: "from-amber-500 to-orange-500",
+    statsColor: "text-amber-600"
   },
   { 
-    iconBg: "bg-gradient-to-br from-rose-50 to-rose-100", 
+    iconBg: "bg-gradient-to-br from-rose-500/10 to-pink-500/20", 
     iconColor: "text-rose-600",
-    hoverGlow: "hover:shadow-[0_20px_60px_-12px_rgba(244,63,94,0.3)]",
-    borderColor: "border-rose-100"
+    cardBg: "from-rose-50/30 via-white to-pink-50/20",
+    borderColor: "border-rose-100",
+    gradient: "from-rose-500 to-pink-500",
+    statsColor: "text-rose-600"
   },
   { 
-    iconBg: "bg-gradient-to-br from-violet-50 to-violet-100", 
+    iconBg: "bg-gradient-to-br from-violet-500/10 to-purple-500/20", 
     iconColor: "text-violet-600",
-    hoverGlow: "hover:shadow-[0_20px_60px_-12px_rgba(139,92,246,0.3)]",
-    borderColor: "border-violet-100"
+    cardBg: "from-violet-50/30 via-white to-purple-50/20",
+    borderColor: "border-violet-100",
+    gradient: "from-violet-500 to-purple-500",
+    statsColor: "text-violet-600"
   },
   { 
-    iconBg: "bg-gradient-to-br from-lime-50 to-lime-100", 
+    iconBg: "bg-gradient-to-br from-lime-500/10 to-green-500/20", 
     iconColor: "text-lime-600",
-    hoverGlow: "hover:shadow-[0_20px_60px_-12px_rgba(132,204,22,0.3)]",
-    borderColor: "border-lime-100"
+    cardBg: "from-lime-50/30 via-white to-green-50/20",
+    borderColor: "border-lime-100",
+    gradient: "from-lime-500 to-green-500",
+    statsColor: "text-lime-600"
   },
 ];
+
+const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  'programming': <FiCode className="w-6 h-6" />,
+  'business': <FiTrendingUp className="w-6 h-6" />,
+  'design': <MdOutlineDesignServices className="w-6 h-6" />,
+  'photography': <FiCamera className="w-6 h-6" />,
+  'music': <FiMusic className="w-6 h-6" />,
+  'health': <FiHeart className="w-6 h-6" />,
+  'science': <MdOutlineScience className="w-6 h-6" />,
+  'marketing': <MdOutlineBusinessCenter className="w-6 h-6" />,
+  'default': <FiBook className="w-6 h-6" />
+};
+
+function getCategoryIcon(name: string): React.ReactNode {
+  const lowerName = name.toLowerCase();
+  for (const key in CATEGORY_ICONS) {
+    if (lowerName.includes(key)) {
+      return CATEGORY_ICONS[key];
+    }
+  }
+  return CATEGORY_ICONS.default;
+}
 
 function styleFor(id: string): UiStyle {
   let sum = 0;
@@ -73,121 +123,145 @@ function styleFor(id: string): UiStyle {
 }
 
 function Categories() {
-  const { categories, loading, isError, error } = useCategories();
+  const { categories, loading, isError } = useCategories();
 
   return (
-    <section className="py-16">
-      {/* Header with gradient text */}
-      <div className="mb-12">
-        <h2 className="text-3xl md:text-4xl font-bold mb-4">
-          <span className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent">
-            Choice favourite course from
-          </span>
-          <span className="ml-3 bg-gradient-to-r from-teal-600 via-emerald-500 to-teal-600 bg-clip-text text-transparent">
-            top category
-          </span>
-        </h2>
-        <p className="text-slate-600 max-w-2xl">
-          Explore our carefully curated categories and find the perfect course to advance your career
-        </p>
-      </div>
+    <section className="py-10 bg-gradient-to-b from-slate-50 via-white to-emerald-50/30">
+      <div className="container mx-auto px-4">
+        {/* Header with stats */}
+        <div className="mb-12">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-100 mb-6">
+            <HiOutlineSparkles className="w-4 h-4 text-teal-600" />
+            <span className="text-sm font-semibold text-teal-700">Explore Categories</span>
+          </div>
+          
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <span className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent">
+              Discover Your
+            </span>
+            <span className="ml-3 bg-gradient-to-r from-teal-600 via-emerald-500 to-teal-600 bg-clip-text text-transparent">
+              Perfect Course
+            </span>
+          </h1>
+          
+          <p className="text-lg text-slate-600 max-w-2xl mb-8">
+            Browse through our expertly curated categories and find the ideal learning path
+            to advance your career and skills
+          </p>
+        </div>
 
-      {loading && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-7">
-          {[...Array(8)].map((_, i) => (
-            <div
-              key={i}
-              className="bg-white rounded-2xl p-8 border border-slate-100 shadow-[0_18px_45px_rgba(2,8,23,0.08)] animate-pulse"
-            >
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 mb-6"></div>
-              <div className="h-6 bg-gradient-to-r from-slate-100 to-slate-200 rounded mb-4 w-3/4"></div>
-              <div className="space-y-2">
-                <div className="h-4 bg-gradient-to-r from-slate-50 to-slate-100 rounded w-full"></div>
-                <div className="h-4 bg-gradient-to-r from-slate-50 to-slate-100 rounded w-5/6"></div>
-                <div className="h-4 bg-gradient-to-r from-slate-50 to-slate-100 rounded w-4/6"></div>
+        {/* Loading State */}
+        {loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="bg-white rounded-2xl p-6 border border-slate-200 h-full">
+                  <div className="w-16 h-16 rounded-xl bg-slate-200 mb-4"></div>
+                  <div className="h-6 bg-slate-200 rounded mb-3 w-3/4"></div>
+                  <div className="space-y-2 mb-4">
+                    <div className="h-3 bg-slate-100 rounded w-full"></div>
+                    <div className="h-3 bg-slate-100 rounded w-5/6"></div>
+                    <div className="h-3 bg-slate-100 rounded w-4/6"></div>
+                  </div>
+                  <div className="h-8 bg-slate-100 rounded"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Error State */}
+        {isError && (
+          <div className="max-w-lg mx-auto text-center">
+            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-rose-50 to-pink-50 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center">
+                <FiLoader className="w-6 h-6 text-white animate-spin" />
               </div>
             </div>
-          ))}
-        </div>
-      )}
-
-      {isError && (
-        <div className="max-w-md mx-auto bg-gradient-to-br from-white to-slate-50 rounded-2xl p-8 border border-slate-200 shadow-lg text-center">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-red-50 to-rose-100 flex items-center justify-center">
-            <svg className="w-10 h-10 text-rose-500" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
+            <h3 className="text-2xl font-bold text-slate-900 mb-3">Unable to Load Categories</h3>
+            <p className="text-slate-600 mb-6">
+              "There was an issue loading the categories. Please try again.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-slate-900 to-slate-800 text-white font-semibold rounded-xl hover:shadow-xl transition-all"
+            >
+              Try Again
+            </button>
           </div>
-          <h3 className="text-xl font-bold text-slate-900 mb-2">Loading Failed</h3>
-          <p className="text-slate-600 mb-6">
-            {(error as any)?.message || "Unable to load categories. Please try again."}
-          </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-6 py-3 bg-gradient-to-r from-slate-900 to-slate-700 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-slate-300 transition-all duration-300"
-          >
-            Retry Loading
-          </button>
-        </div>
-      )}
+        )}
 
-      {!loading && !isError && categories && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-7">
-          {(categories as CategoryApi[]).map((c, index) => {
-            const style = styleFor(c.id);
-            
-            return (
-              <div
-                key={c.id}
-                className="group relative bg-white rounded-2xl p-8 border border-slate-100 shadow-[0_18px_45px_rgba(2,8,23,0.08)] hover:shadow-[0_22px_55px_rgba(2,8,23,0.12)] transition-all duration-500 hover:-translate-y-2 overflow-hidden"
-              >
-                {/* Animated background gradient on hover */}
-                <div className={`absolute inset-0 bg-gradient-to-br from-transparent via-transparent ${style.hoverGlow.replace('hover:', 'group-hover:')} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-                
-                {/* Decorative corner accent */}
-                <div className="absolute top-0 right-0 w-12 h-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-gradient-to-br from-white to-transparent" />
-                </div>
+        {/* Categories Grid */}
+        {!loading && !isError && categories.length > 0 && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {categories.map((c) => {
+                const style = styleFor(c.id);
+                const iconElement = c.icon ? (
+                  <img
+                    src={toMediaUrl(c.icon)}
+                    alt={c.name}
+                    className="w-6 h-6 object-contain"
+                  />
+                ) : getCategoryIcon(c.name);
 
-                {/* Icon container with subtle shine effect */}
-                <div className="relative mb-6">
-                  <div className={`w-14 h-14 rounded-xl ${style.iconBg} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-inner`}>
-                    {c.icon ? (
-                      <img
-                        src={toMediaUrl(c.icon)}
-                        alt={c.name}
-                        className="w-6 h-6 object-contain filter group-hover:drop-shadow-md transition-all duration-300"
-                      />
-                    ) : (
-                      <div className={`w-6 h-6 rounded ${style.iconColor} bg-opacity-20 flex items-center justify-center`}>
-                        <span className={`text-xs font-bold ${style.iconColor}`}>
-                          {c.name?.charAt(0)?.toUpperCase()}
+                return (
+                  <div
+                    key={c.id}
+                    className="group relative bg-gradient-to-br from-white to-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl hover:border-teal-200 transition-all duration-500 hover:-translate-y-2"
+                  >
+                    {/* Category icon */}
+                    <div className={`w-16 h-16 rounded-xl ${style.iconBg} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}>
+                      <div className={style.iconColor}>
+                        {iconElement}
+                      </div>
+                    </div>
+
+                    {/* Category info */}
+                    <div className="mb-4">
+                      <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-teal-700 transition-colors">
+                        {c.name}
+                      </h3>
+                      <p className="text-sm text-slate-600 line-clamp-2 min-h-[40px]">
+                        {c.description || "Explore comprehensive courses and master new skills"}
+                      </p>
+                    </div>
+
+                    {/* Stats and action */}
+                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">
+                      <div className="flex items-center gap-4">
+                        <span className="text-xs text-slate-500 flex items-center gap-1">
+                          <FiTrendingUp className="w-3 h-3" />
+                          Trending
                         </span>
                       </div>
-                    )}
+                      <button className={`flex items-center justify-center w-8 h-8 rounded-full ${style.iconBg} ${style.iconColor} hover:scale-110 transition-transform`}>
+                        <FiChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Hover effect gradient */}
+                    <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${style.cardBg} opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10`} />
                   </div>
-                  {/* Icon shine effect */}
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </div>
+                );
+              })}
+            </div>
+          </>
+        )}
 
-                {/* Category title with gradient underline on hover */}
-                <h3 className="relative text-lg font-extrabold text-slate-900 mb-4 group-hover:text-slate-800 transition-colors duration-300">
-                  {c.name}
-                  <span className={`absolute -bottom-2 left-0 w-0 h-0.5 bg-gradient-to-r ${style.iconColor.replace('text-', 'from-')} ${style.iconColor.replace('text-', 'to-')} group-hover:w-12 transition-all duration-500`}></span>
-                </h3>
-
-                {/* Description with subtle hover effect */}
-                <p className="text-sm text-slate-600 leading-relaxed line-clamp-3 min-h-[60px] group-hover:text-slate-700 transition-colors duration-300 relative z-10">
-                  {c.description || "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod adipiscing elit, sed do eiusmod"}
-                </p>
-
-                {/* Subtle glow border on hover */}
-                <div className={`absolute inset-0 rounded-2xl border-2 border-transparent group-hover:${style.borderColor} transition-all duration-500 pointer-events-none`} />
-              </div>
-            );
-          })}
-        </div>
-      )}
+        {/* Empty state */}
+        {!loading && !isError && (!categories || categories.length === 0) && (
+          <div className="text-center py-12">
+            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-teal-50 to-emerald-50 flex items-center justify-center">
+              <FiBook className="w-12 h-12 text-teal-500" />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900 mb-3">No Categories Available</h3>
+            <p className="text-slate-600 max-w-md mx-auto">
+              Categories will be available soon. Check back later to explore our learning paths.
+            </p>
+          </div>
+        )}
+      </div>
     </section>
   );
 }
