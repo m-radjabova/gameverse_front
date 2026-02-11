@@ -14,7 +14,7 @@ export const DEFAULT_ASSIGNMENT_FORM: AssignmentFormState = {
   description: "",
   order: 1,
   due_at: "",
-  max_score: "",
+  max_score: "5",
   is_required: true,
 };
 

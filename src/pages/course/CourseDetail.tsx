@@ -169,9 +169,10 @@ function CourseDetail() {
     }
   };
 
-  const handleGrade = async (submissionId: string) => {
+  const handleGrade = async (submissionId: string, fallbackScore?: number | null) => {
     try {
-      await gradeSubmission({ submissionId, score: gradeDrafts[submissionId] ?? "", status: "graded" });
+      const score = gradeDrafts[submissionId] ?? (fallbackScore != null ? String(fallbackScore) : "");
+      await gradeSubmission({ submissionId, score, status: "graded" });
       toast.success("Graded");
     } catch (error) {
       toast.error(getErrorMessage(error));

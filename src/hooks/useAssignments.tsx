@@ -47,6 +47,9 @@ export function useAssignmentActions(lessonId: string) {
       if (payload.max_score !== undefined && payload.max_score !== null && maxScore === null) {
         throw new Error("max_score number bo'lishi shart");
       }
+      if (maxScore !== null && (maxScore < 1 || maxScore > 5)) {
+        throw new Error("max_score 1 dan 5 gacha bo'lishi shart");
+      }
       if (payload.due_at && !dueAt) {
         throw new Error("due_at ISO datetime bo'lishi shart");
       }
@@ -81,6 +84,9 @@ export function useAssignmentActions(lessonId: string) {
         const maxScore = toNumberOrNull(payload.max_score);
         if (payload.max_score !== null && maxScore === null) {
           throw new Error("max_score number bo'lishi shart");
+        }
+        if (maxScore !== null && (maxScore < 1 || maxScore > 5)) {
+          throw new Error("max_score 1 dan 5 gacha bo'lishi shart");
         }
         normalized.max_score = maxScore;
       }
@@ -180,6 +186,9 @@ export function useSubmissionActions(
     }) => {
       const normalizedScore = toNumberOrNull(score);
       if (normalizedScore === null) throw new Error("score number bo'lishi shart");
+      if (!Number.isInteger(normalizedScore) || normalizedScore < 1 || normalizedScore > 5) {
+        throw new Error("score 1 dan 5 gacha bo'lishi shart");
+      }
       return (
         await apiClient.post(`/assignments/submissions/${submissionId}/grade`, {
           score: normalizedScore,

@@ -14,6 +14,7 @@ import HelloAdmin from "./pages/admin/HelloAdmin";
 import CourseDetail from "./pages/course/CourseDetail";
 import useContextPro from "./hooks/useContextPro";
 import Profile from "./components/profile/Profile";
+import CheckEmailPage from "./pages/login/CheckEmailPage";
 
 function App() {
   const { state: { isLoading } } = useContextPro();
@@ -32,6 +33,7 @@ function App() {
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<AuthPage />} />
         <Route path="/register" element={<AuthPage />} />
+        <Route path="/check-email" element={<CheckEmailPage />} />
       </Route>
 
       <Route

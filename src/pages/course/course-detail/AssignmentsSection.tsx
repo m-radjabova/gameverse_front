@@ -15,7 +15,9 @@ import {
   MdGrade,
   MdPerson,
   MdDownload,
-  MdAttachFile
+  MdAttachFile,
+  MdStar,
+  MdStarBorder
 } from "react-icons/md";
 import { FiFileText, FiCalendar, FiUser } from "react-icons/fi";
 
@@ -39,7 +41,7 @@ type Props = {
   submissions: SubmissionOut[];
   gradeDrafts: Record<string, string>;
   setGradeDrafts: Dispatch<SetStateAction<Record<string, string>>>;
-  onGrade: (submissionId: string) => void;
+  onGrade: (submissionId: string, fallbackScore?: number | null) => void;
 };
 
 function AssignmentsSection({
@@ -65,6 +67,7 @@ function AssignmentsSection({
   onGrade
 }: Props) {
   const selectedAssignment = assignments.find((item) => item.id === selectedAssignmentId) ?? null;
+  const STAR_COUNT = 5;
 
   return (
     <section className="space-y-6 rounded-3xl border border-slate-200/50 bg-gradient-to-b from-white to-slate-50/50 p-6 shadow-xl">
@@ -156,7 +159,7 @@ function AssignmentsSection({
                             </div>
                             <div className="flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700">
                               <MdScore size={12} />
-                              Max score: {assignment.max_score ?? "N/A"}
+                              Max stars: {assignment.max_score ?? 5}
                             </div>
                             {mode === "submissions" && selectedAssignmentId === assignment.id && (
                               <div className="flex items-center gap-1.5 rounded-full bg-cyan-100 px-3 py-1 text-xs text-cyan-700">
@@ -263,13 +266,15 @@ function AssignmentsSection({
               </div>
               
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">Max Score</label>
+                <label className="mb-2 block text-sm font-medium text-slate-700">Max Stars (1-5)</label>
                 <input
                   type="number"
                   value={assignmentForm.max_score}
                   onChange={(event) => setAssignmentForm((prev) => ({ ...prev, max_score: event.target.value }))}
                   className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm placeholder-slate-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-200 focus:outline-none transition-all"
-                  placeholder="Maximum points"
+                  placeholder="5"
+                  min={1}
+                  max={5}
                 />
               </div>
               
@@ -381,6 +386,19 @@ function AssignmentsSection({
                   <div className="text-right">
                     <p className="text-sm text-emerald-600">Submitted on</p>
                     <p className="font-medium text-emerald-700">{formatDate(mySubmission.submitted_at)}</p>
+                    {typeof mySubmission.score === "number" && (
+                      <div className="mt-2 flex justify-end gap-1">
+                        {Array.from({ length: STAR_COUNT }, (_, idx) => {
+                          const value = idx + 1;
+                          const filled = value <= mySubmission.score;
+                          return filled ? (
+                            <MdStar key={value} className="text-amber-400" size={16} />
+                          ) : (
+                            <MdStarBorder key={value} className="text-amber-300" size={16} />
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -452,22 +470,39 @@ function AssignmentsSection({
                   {/* Grading Controls */}
                   <div className="flex items-center gap-4">
                     <div className="flex-1">
-                      <label className="mb-2 block text-sm font-medium text-slate-700">Grade</label>
+                      <label className="mb-2 block text-sm font-medium text-slate-700">Star Grade</label>
                       <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          value={gradeDrafts[item.id] ?? ""}
-                          onChange={(event) => setGradeDrafts((prev) => ({ ...prev, [item.id]: event.target.value }))}
-                          className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm placeholder-slate-400 focus:border-violet-400 focus:ring-2 focus:ring-violet-200 focus:outline-none transition-all"
-                          placeholder="Enter score"
-                          min="0"
-                        />
-                        <span className="text-sm text-slate-500">/ {selectedAssignment?.max_score}</span>
+                        <div className="flex items-center gap-1 rounded-xl border border-slate-300 bg-white px-3 py-2">
+                          {Array.from({ length: STAR_COUNT }, (_, idx) => {
+                            const value = idx + 1;
+                            const draft = gradeDrafts[item.id];
+                            const selectedScore = draft ? Number(draft) : (item.score ?? 0);
+                            const filled = value <= selectedScore;
+                            return (
+                              <button
+                                key={value}
+                                type="button"
+                                onClick={() => setGradeDrafts((prev) => ({ ...prev, [item.id]: String(value) }))}
+                                className="transition-transform hover:scale-110"
+                                aria-label={`${value} stars`}
+                              >
+                                {filled ? (
+                                  <MdStar className="text-amber-400" size={24} />
+                                ) : (
+                                  <MdStarBorder className="text-slate-300" size={24} />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <span className="text-sm text-slate-500">
+                          {gradeDrafts[item.id] ?? item.score ?? 0} / 5
+                        </span>
                       </div>
                     </div>
                     <div className="flex-shrink-0">
                       <button
-                        onClick={() => onGrade(item.id)}
+                        onClick={() => onGrade(item.id, item.score)}
                         className="rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 px-5 py-3 text-sm font-semibold text-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2"
                       >
                         <MdGrade size={16} />

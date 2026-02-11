@@ -25,7 +25,7 @@ function AuthPage() {
   const isLogin = activeTab === "login";
 
   return (
-    <div className="min-h-screen bg-slate-300  flex items-center justify-center">
+    <div className="min-h-screen  flex items-center justify-center">
       <div className="w-full max-w-7xl overflow-hidden rounded-3xl bg-white shadow-xl">
         <div className="grid lg:grid-cols-2">
           <div className="relative hidden lg:block">
@@ -51,7 +51,7 @@ function AuthPage() {
           <div className="flex items-center justify-center p-6 sm:p-10">
             <div className="w-full max-w-md">
               <p className="text-center text-sm text-slate-600">
-                Welcome to lorem..!
+                Welcome to TOTC!
               </p>
 
               {/* Tabs */}
@@ -79,11 +79,6 @@ function AuthPage() {
                 </button>
               </div>
 
-              {/* Description */}
-              <p className="mt-6 text-sm leading-6 text-slate-500">
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry.
-              </p>
 
               {/* FORMS */}
               {isLogin ? (
