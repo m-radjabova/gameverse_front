@@ -259,9 +259,19 @@ function AssignmentsSection({
                 <input
                   type="number"
                   value={assignmentForm.order}
-                  onChange={(event) => setAssignmentForm((prev) => ({ ...prev, order: Number(event.target.value) }))}
+                  onChange={(event) =>
+                    setAssignmentForm((prev) => {
+                      const raw = Number(event.target.value);
+                      if (!Number.isFinite(raw)) {
+                        return { ...prev, order: 1 };
+                      }
+                      return { ...prev, order: Math.max(1, Math.trunc(raw)) };
+                    })
+                  }
                   className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm placeholder-slate-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-200 focus:outline-none transition-all"
                   placeholder="Sequence number"
+                  min={1}
+                  step={1}
                 />
               </div>
               

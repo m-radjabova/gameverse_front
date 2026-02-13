@@ -44,6 +44,9 @@ export function useAssignmentActions(lessonId: string) {
       if (order === null) {
         throw new Error("order number bo'lishi shart");
       }
+      if (!Number.isInteger(order) || order < 1) {
+        throw new Error("order 1 yoki undan katta butun son bo'lishi shart");
+      }
       if (payload.max_score !== undefined && payload.max_score !== null && maxScore === null) {
         throw new Error("max_score number bo'lishi shart");
       }
@@ -78,6 +81,9 @@ export function useAssignmentActions(lessonId: string) {
       if (payload.order !== undefined) {
         const order = toNumberOrNull(payload.order);
         if (order === null) throw new Error("order number bo'lishi shart");
+        if (!Number.isInteger(order) || order < 1) {
+          throw new Error("order 1 yoki undan katta butun son bo'lishi shart");
+        }
         normalized.order = order;
       }
       if (payload.max_score !== undefined) {

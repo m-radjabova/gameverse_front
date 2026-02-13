@@ -2,11 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "../apiClient/apiClient";
 import type { LessonChatMessageOut, LessonChatThreadOut } from "../types/types";
 
-export function useMyLessonMessages(lessonId: string) {
+export function useMyLessonMessages(lessonId: string, enabled = true) {
   return useQuery<LessonChatMessageOut[]>({
     queryKey: ["lesson-chat", "lesson-messages", lessonId],
     queryFn: async () => (await apiClient.get(`/lesson-chat/lessons/${lessonId}/messages`)).data,
-    enabled: !!lessonId,
+    enabled: !!lessonId && enabled,
     retry: false,
   });
 }
@@ -64,9 +64,41 @@ export function useLessonChatActions(lessonId: string, threadId: string) {
     },
   });
 
+  const updateMessage = useMutation({
+    mutationFn: async ({ messageId, text }: { messageId: string; text: string }) => {
+      const normalized = text.trim();
+      if (!normalized) throw new Error("Xabar matni bo'sh bo'lmasligi kerak");
+      return (await apiClient.patch(`/lesson-chat/messages/${messageId}`, { text: normalized })).data;
+    },
+    onSuccess: (updated: LessonChatMessageOut) => {
+      queryClient.invalidateQueries({
+        queryKey: ["lesson-chat", "thread-messages", updated.thread_id],
+      });
+      queryClient.invalidateQueries({ queryKey: ["lesson-chat", "threads", lessonId] });
+      queryClient.invalidateQueries({ queryKey: ["lesson-chat", "lesson-messages", lessonId] });
+    },
+  });
+
+  const deleteMessage = useMutation({
+    mutationFn: async ({ messageId, targetThreadId }: { messageId: string; targetThreadId: string }) => {
+      await apiClient.delete(`/lesson-chat/messages/${messageId}`);
+      return { targetThreadId };
+    },
+    onSuccess: ({ targetThreadId }) => {
+      queryClient.invalidateQueries({
+        queryKey: ["lesson-chat", "thread-messages", targetThreadId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["lesson-chat", "threads", lessonId] });
+      queryClient.invalidateQueries({ queryKey: ["lesson-chat", "lesson-messages", lessonId] });
+    },
+  });
+
   return {
     sendMyMessage: sendMyMessage.mutateAsync,
     sendThreadMessage: sendThreadMessage.mutateAsync,
+    updateMessage: updateMessage.mutateAsync,
+    deleteMessage: deleteMessage.mutateAsync,
     isSending: sendMyMessage.isPending || sendThreadMessage.isPending,
+    isMessageActionPending: updateMessage.isPending || deleteMessage.isPending,
   };
 }

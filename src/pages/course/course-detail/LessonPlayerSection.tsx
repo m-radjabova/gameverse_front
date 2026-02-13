@@ -54,6 +54,10 @@ function LessonPlayerSection({
     }
   }, [activeLesson, lessonProgressMap]);
 
+  useEffect(() => {
+    setIsPlaying(false);
+  }, [activeLesson?.id]);
+
   const handlePlayPause = () => {
     if (!videoRef.current) return;
     
@@ -155,9 +159,10 @@ function LessonPlayerSection({
             <>
               <video
                 ref={videoRef}
+                key={activeLesson?.id ?? videoSource}
                 className="aspect-video w-full object-cover"
                 controls={false}
-                autoPlay
+                preload="metadata"
                 src={videoSource}
                 onLoadedMetadata={(event) => {
                   if (!activeLesson) return;

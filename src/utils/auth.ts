@@ -28,10 +28,15 @@ export function clearAuthStorage(): void {
 
 export async function logoutRequest(): Promise<void> {
   try {
+    const accessToken = getAccessToken();
+    if (!accessToken) return;
+
     const refreshToken = getRefreshToken();
-    await axios.post(`${API_ORIGIN}/auth/logout`, {
-      refresh_token: refreshToken,
-    });
+    await axios.post(
+      `${API_ORIGIN}/auth/logout`,
+      { refresh_token: refreshToken },
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+    );
   } catch {
     // Best effort logout. Local cleanup still must happen.
   } finally {

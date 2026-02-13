@@ -31,7 +31,6 @@ type CreateUserResponse = {
   created_at: string;
 };
 
-type SendVerifyResponse = { ok: boolean };
 
 function Register() {
   const {
@@ -91,76 +90,65 @@ function Register() {
   const passwordStrength = getPasswordStrength(password || "");
 
   const onSubmit: SubmitHandler<RegisterFormInputs> = async (data) => {
-    if (data.password !== data.confirmPassword) {
-      toast.error("🔐 Passwords do not match", {
+  if (data.password !== data.confirmPassword) {
+    toast.error("🔐 Passwords do not match", {
+      style: {
+        borderRadius: "12px",
+        background: "#fee2e2",
+        color: "#991b1b",
+        border: "1px solid #fecaca",
+      },
+    });
+    return;
+  }
+
+  try {
+    const created = await apiClient.post<CreateUserResponse>("/users/", {
+      username: data.username,
+      email: data.email,
+      password: data.password,
+    });
+
+    toast.success("✅ Account created successfully!", {
+      icon: <FaStar />,
+      style: {
+        borderRadius: "16px",
+        background: "linear-gradient(135deg, #14b8a6 0%, #10b981 100%)",
+        color: "#fff",
+        fontWeight: 500,
+        boxShadow: "0 10px 25px rgba(20, 184, 166, 0.3)",
+      },
+    });
+
+    reset();
+
+    // xohlasang login page ga yubor
+    navigate("/login");
+  } catch (error: unknown) {
+    const status = isAxiosError(error) ? error.response?.status : undefined;
+
+    const message = isAxiosError(error)
+      ? (error.response?.data as any)?.detail ||
+        (error.response?.data as any)?.message ||
+        (error.response?.data as any)?.error ||
+        "Registration failed. Please try again."
+      : "Registration failed. Please try again.";
+
+    if (status === 409) {
+      toast.error("📧 This email is already registered", {
         style: {
           borderRadius: "12px",
-          background: "#fee2e2",
-          color: "#991b1b",
-          border: "1px solid #fecaca",
+          background: "#fff3cd",
+          color: "#856404",
+          border: "1px solid #ffeeba",
         },
       });
-      return;
+    } else {
+      toast.error(getErrorMessage(error) || message);
     }
+  }
+};
 
-    try {
-      const created = await apiClient.post<CreateUserResponse>("/users/", {
-        username: data.username,
-        email: data.email,
-        password: data.password,
-      });
-
-      try {
-        await apiClient.post("/mail/send-verify", {
-          email: created.data.email,
-        });
-
-        toast.success("📩 Verification link has been sent to your email!", {
-          icon: <FaStar />,
-          style: {
-            borderRadius: "16px",
-            background: "linear-gradient(135deg, #14b8a6 0%, #10b981 100%)",
-            color: "#fff",
-            fontWeight: 500,
-            boxShadow: "0 10px 25px rgba(20, 184, 166, 0.3)",
-          },
-        });
-      } catch (mailErr) {
-        toast.warning(
-          "Account created, but verification email could not be sent. You can resend it from the login page.",
-          { autoClose: 6000 },
-        );
-        console.error("send-verify error:", mailErr);
-      }
-
-      reset();
-
-      // 3) ✅ Check email page ga yuboramiz
-      navigate("/check-email", { state: { email: created.data.email } });
-    } catch (error: unknown) {
-      const status = isAxiosError(error) ? error.response?.status : undefined;
-
-      const message = isAxiosError(error)
-        ? (error.response?.data as any)?.detail ||
-          (error.response?.data as any)?.message ||
-          (error.response?.data as any)?.error ||
-          "Registration failed. Please try again."
-        : "Registration failed. Please try again.";
-
-      if (status === 409) {
-        toast.error("📧 This email is already registered", {
-          style: {
-            borderRadius: "12px",
-            background: "#fff3cd",
-            color: "#856404",
-            border: "1px solid #ffeeba",
-          },
-        });
-      } else {
-        toast.error(getErrorMessage(error) || message);
-      }
-    }
-  };
 
   return (
     <div className="w-full max-w-md mx-auto">

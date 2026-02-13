@@ -119,16 +119,23 @@ function CourseDetail() {
       canViewMySubmission: isStudent,
       canViewSubmissions: canManageAssignments,
     });
-  const myLessonMessages = useMyLessonMessages(activeLesson?.id ?? "");
+  const myLessonMessages = useMyLessonMessages(
+    activeLesson?.id ?? "",
+    activeTab === "chat" && !canModerateChat,
+  );
   const lessonThreads = useLessonThreads(
     activeLesson?.id ?? "",
     canModerateChat,
   );
   const threadMessages = useThreadMessages(selectedThreadId, canModerateChat);
-  const { sendMyMessage, sendThreadMessage, isSending } = useLessonChatActions(
-    activeLesson?.id ?? "",
-    selectedThreadId,
-  );
+  const {
+    sendMyMessage,
+    sendThreadMessage,
+    updateMessage,
+    deleteMessage,
+    isSending,
+    isMessageActionPending,
+  } = useLessonChatActions(activeLesson?.id ?? "", selectedThreadId);
   const queryClient = useQueryClient();
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -161,7 +168,7 @@ function CourseDetail() {
     wsRef.current = ws;
 
     ws.onopen = () => {
-      console.log("WS connected:", url);
+      // console.log("WS connected:", url);
     };
 
     ws.onmessage = (event) => {
@@ -181,13 +188,41 @@ function CourseDetail() {
               return [...prev, newMessage];
             },
           );
+        }
 
-          // optional: thread listni yangilab turamiz
-          if (activeLesson?.id) {
-            queryClient.invalidateQueries({
-              queryKey: ["lesson-chat", "threads", activeLesson.id],
-            });
-          }
+        if (msg?.type === "message_updated" && msg?.data) {
+          const updatedMessage = msg.data;
+          queryClient.setQueryData(
+            ["lesson-chat", "thread-messages", selectedThreadId],
+            (old: LessonChatMessageOut[] | undefined) => {
+              const prev = Array.isArray(old) ? old : [];
+              return prev.map((item) =>
+                item.id === updatedMessage.id ? { ...item, ...updatedMessage } : item,
+              );
+            },
+          );
+        }
+
+        if (msg?.type === "message_deleted" && msg?.data?.id) {
+          const deletedId = msg.data.id as string;
+          queryClient.setQueryData(
+            ["lesson-chat", "thread-messages", selectedThreadId],
+            (old: LessonChatMessageOut[] | undefined) => {
+              const prev = Array.isArray(old) ? old : [];
+              return prev.filter((item) => item.id !== deletedId);
+            },
+          );
+        }
+
+        if (
+          activeLesson?.id &&
+          (msg?.type === "new_message" ||
+            msg?.type === "message_updated" ||
+            msg?.type === "message_deleted")
+        ) {
+          queryClient.invalidateQueries({
+            queryKey: ["lesson-chat", "threads", activeLesson.id],
+          });
         }
       } catch (e) {
         console.error("WS parse error", e);
@@ -199,7 +234,7 @@ function CourseDetail() {
     };
 
     ws.onclose = () => {
-      console.log("WS disconnected");
+      // console.log("WS disconnected");
     };
 
     return () => {
@@ -344,6 +379,29 @@ function CourseDetail() {
       setChatDraft("");
     } catch (error) {
       toast.error(getErrorMessage(error));
+    }
+  };
+
+  const handleUpdateChatMessage = async (messageId: string, text: string) => {
+    try {
+      await updateMessage({ messageId, text });
+      toast.success("Message updated");
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+      throw error;
+    }
+  };
+
+  const handleDeleteChatMessage = async (
+    messageId: string,
+    targetThreadId: string,
+  ) => {
+    try {
+      await deleteMessage({ messageId, targetThreadId });
+      toast.success("Message deleted");
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+      throw error;
     }
   };
 
@@ -535,6 +593,9 @@ function CourseDetail() {
                 setChatDraft={setChatDraft}
                 onSend={handleSendChatMessage}
                 isSending={isSending}
+                onUpdateMessage={handleUpdateChatMessage}
+                onDeleteMessage={handleDeleteChatMessage}
+                isMessageActionPending={isMessageActionPending}
               />
             )}
 

@@ -7,6 +7,10 @@ import {
   MdChatBubble,
   MdChatBubbleOutline,
   MdEmojiEmotions,
+  MdEdit,
+  MdDelete,
+  MdDone,
+  MdClose,
 } from "react-icons/md";
 import { FiMessageSquare, FiUser, FiClock } from "react-icons/fi";
 import { IoIosSend } from "react-icons/io";
@@ -25,6 +29,9 @@ type Props = {
   setChatDraft: Dispatch<SetStateAction<string>>;
   onSend: () => void;
   isSending: boolean;
+  onUpdateMessage: (messageId: string, text: string) => Promise<void> | void;
+  onDeleteMessage: (messageId: string, threadId: string) => Promise<void> | void;
+  isMessageActionPending: boolean;
 };
 
 function LessonChatSection({
@@ -40,6 +47,9 @@ function LessonChatSection({
   setChatDraft,
   onSend,
   isSending,
+  onUpdateMessage,
+  onDeleteMessage,
+  isMessageActionPending,
 }: Props) {
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -84,6 +94,7 @@ function LessonChatSection({
   useEffect(() => {
     // thread o'zgarganda auto-scrollni yana yoqamiz
     setAutoScrollEnabled(true);
+    cancelEditingMessage();
     // biroz kutib (DOM render bo'lsin) keyin tushiramiz
     const t = setTimeout(() => scrollToBottom(false), 0);
     return () => clearTimeout(t);
@@ -92,6 +103,10 @@ function LessonChatSection({
   // ✅ emoji picker
   const [showEmoji, setShowEmoji] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const emojiPanelRef = useRef<HTMLDivElement | null>(null);
+  const emojiToggleRef = useRef<HTMLButtonElement | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState("");
+  const [editDraft, setEditDraft] = useState("");
 
   const EMOJIS = useMemo(
     () => ["😀", "😄", "😂", "😍", "😎", "🥳", "👍", "🙏", "🔥", "❤️", "🎉", "✅", "😅", "😢", "🤝", "✨"],
@@ -122,12 +137,36 @@ function LessonChatSection({
     const onDocClick = (e: MouseEvent) => {
       if (!showEmoji) return;
       const target = e.target as HTMLElement;
-      if (target.closest("[data-emoji-root='1']")) return;
+      if (emojiPanelRef.current?.contains(target)) return;
+      if (emojiToggleRef.current?.contains(target)) return;
       setShowEmoji(false);
     };
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [showEmoji]);
+
+  const startEditingMessage = (messageId: string, text: string) => {
+    setEditingMessageId(messageId);
+    setEditDraft(text);
+  };
+
+  const cancelEditingMessage = () => {
+    setEditingMessageId("");
+    setEditDraft("");
+  };
+
+  const saveEditingMessage = async (messageId: string) => {
+    const normalized = editDraft.trim();
+    if (!normalized) return;
+    await onUpdateMessage(messageId, normalized);
+    cancelEditingMessage();
+  };
+
+  const deleteChatMessage = async (messageId: string, threadId: string) => {
+    if (!window.confirm("Delete this message?")) return;
+    await onDeleteMessage(messageId, threadId);
+    if (editingMessageId === messageId) cancelEditingMessage();
+  };
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-gradient-to-b from-white to-slate-50/50 p-6 shadow-xl">
@@ -285,6 +324,8 @@ function LessonChatSection({
                   {messages.map((message) => {
                     const mine = message.sender_id === userId;
                     const isInstructor = mine && canModerateChat;
+                    const canManageMessage = mine || canModerateChat;
+                    const isEditing = editingMessageId === message.id;
 
                     return (
                       <div key={message.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
@@ -304,7 +345,7 @@ function LessonChatSection({
                               </span>
                               {isInstructor && (
                                 <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">
-                                  Instructor
+                                  Teacher 
                                 </span>
                               )}
                             </div>
@@ -314,7 +355,71 @@ function LessonChatSection({
                             </div>
                           </div>
 
-                          <p className="whitespace-pre-wrap leading-relaxed">{message.text}</p>
+                          {isEditing ? (
+                            <div className="space-y-2">
+                              <textarea
+                                value={editDraft}
+                                onChange={(event) => setEditDraft(event.target.value)}
+                                rows={3}
+                                maxLength={3000}
+                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-200 focus:outline-none"
+                                disabled={isMessageActionPending}
+                              />
+                              <div className="flex items-center justify-end gap-2">
+                                <button
+                                  type="button"
+                                  onClick={cancelEditingMessage}
+                                  className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-400"
+                                  disabled={isMessageActionPending}
+                                >
+                                  <MdClose size={14} />
+                                  Cancel
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void saveEditingMessage(message.id)}
+                                  className="inline-flex items-center gap-1 rounded-lg bg-cyan-600 px-3 py-1 text-xs font-semibold text-white hover:bg-cyan-700 disabled:opacity-60"
+                                  disabled={isMessageActionPending || !editDraft.trim()}
+                                >
+                                  <MdDone size={14} />
+                                  Save
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="whitespace-pre-wrap leading-relaxed">{message.text}</p>
+                          )}
+
+                          {canManageMessage && !isEditing && (
+                            <div className="mt-2 flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => startEditingMessage(message.id, message.text)}
+                                className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-semibold ${
+                                  mine
+                                    ? "border-white/40 bg-white/10 text-white hover:bg-white/20"
+                                    : "border-slate-300 bg-white text-slate-700 hover:border-slate-400"
+                                }`}
+                                disabled={isMessageActionPending}
+                              >
+                                <MdEdit size={13} />
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void deleteChatMessage(message.id, message.thread_id)}
+                                className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-semibold ${
+                                  mine
+                                    ? "border-rose-200/60 bg-rose-500/20 text-white hover:bg-rose-500/30"
+                                    : "border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100"
+                                }`}
+                                disabled={isMessageActionPending}
+                              >
+                                <MdDelete size={13} />
+                                Delete
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
@@ -360,7 +465,7 @@ function LessonChatSection({
                   <p className="text-sm text-slate-500 mt-1">Choose a student thread from the left sidebar</p>
                 </div>
               ) : (
-                <div className="space-y-3" data-emoji-root="1">
+                <div className="space-y-3">
                   <div className="relative">
                     <textarea
                       ref={textareaRef}
@@ -385,6 +490,7 @@ function LessonChatSection({
                     {/* Right controls */}
                     <div className="absolute right-3 bottom-3 flex items-center gap-2">
                       <button
+                        ref={emojiToggleRef}
                         type="button"
                         onClick={() => setShowEmoji((p) => !p)}
                         className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500 hover:border-cyan-300 hover:text-cyan-700"
@@ -412,7 +518,10 @@ function LessonChatSection({
 
                     {/* Emoji panel */}
                     {showEmoji && (
-                      <div className="absolute bottom-14 right-3 w-64 rounded-2xl border border-slate-200 bg-white shadow-xl p-3">
+                      <div
+                        ref={emojiPanelRef}
+                        className="absolute bottom-14 right-3 w-64 rounded-2xl border border-slate-200 bg-white shadow-xl p-3"
+                      >
                         <div className="grid grid-cols-8 gap-2">
                           {EMOJIS.map((em) => (
                             <button
