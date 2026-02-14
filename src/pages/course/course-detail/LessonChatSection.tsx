@@ -63,7 +63,6 @@ function LessonChatSection({
     return date.toLocaleDateString();
   };
 
-  // ✅ scroll control
   const messagesBoxRef = useRef<HTMLDivElement | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
@@ -76,31 +75,24 @@ function LessonChatSection({
     const el = messagesBoxRef.current;
     if (!el) return;
     const distanceFromBottom = el.scrollHeight - (el.scrollTop + el.clientHeight);
-    // user pastdan 80px yuqoriga chiqsa auto-scrollni vaqtincha o'chiramiz
     setAutoScrollEnabled(distanceFromBottom < 80);
   };
 
-  // ✅ yangi message kelsa pastga tushirish
   const lastMessageId = messages.length ? messages[messages.length - 1].id : "";
   useEffect(() => {
     if (isChatLoading) return;
     if (!messages.length) return;
 
-    // faqat user pastda bo'lsa auto-scroll
     if (autoScrollEnabled) scrollToBottom(true);
   }, [lastMessageId, isChatLoading, autoScrollEnabled]);
 
-  // ✅ thread almashganda birdan pastga tushirsin
   useEffect(() => {
-    // thread o'zgarganda auto-scrollni yana yoqamiz
     setAutoScrollEnabled(true);
     cancelEditingMessage();
-    // biroz kutib (DOM render bo'lsin) keyin tushiramiz
     const t = setTimeout(() => scrollToBottom(false), 0);
     return () => clearTimeout(t);
   }, [selectedThreadId]);
 
-  // ✅ emoji picker
   const [showEmoji, setShowEmoji] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const emojiPanelRef = useRef<HTMLDivElement | null>(null);
@@ -124,7 +116,6 @@ function LessonChatSection({
     const next = chatDraft.slice(0, start) + emoji + chatDraft.slice(end);
     setChatDraft(next);
 
-    // cursor emoji’dan keyin tursin
     requestAnimationFrame(() => {
       ta.focus();
       const pos = start + emoji.length;
@@ -132,7 +123,6 @@ function LessonChatSection({
     });
   };
 
-  // emoji panel tashqariga bosilganda yopish
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
       if (!showEmoji) return;
@@ -203,7 +193,11 @@ function LessonChatSection({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_1fr]">
+      <div
+        className={`grid grid-cols-1 gap-6 ${
+          canModerateChat ? "lg:grid-cols-[320px_1fr]" : ""
+        }`}
+      >
         {/* Threads Sidebar */}
         {canModerateChat && (
           <div className="space-y-4">
@@ -305,7 +299,11 @@ function LessonChatSection({
           </div>
 
           {/* Messages Container */}
-          <div className="rounded-2xl border border-slate-200/50 bg-white p-4 h-[400px] overflow-hidden flex flex-col">
+          <div
+            className={`rounded-2xl border border-slate-200/50 bg-white p-4 overflow-hidden flex flex-col ${
+              canModerateChat ? "h-[400px]" : "h-[560px]"
+            }`}
+          >
             {/* Messages Area */}
             <div
               ref={messagesBoxRef}
@@ -324,7 +322,7 @@ function LessonChatSection({
                   {messages.map((message) => {
                     const mine = message.sender_id === userId;
                     const isInstructor = mine && canModerateChat;
-                    const canManageMessage = mine || canModerateChat;
+                    const canManageMessage = mine;
                     const isEditing = editingMessageId === message.id;
 
                     return (
@@ -471,7 +469,7 @@ function LessonChatSection({
                       ref={textareaRef}
                       value={chatDraft}
                       onChange={(event) => setChatDraft(event.target.value)}
-                      rows={3}
+                      rows={canModerateChat ? 3 : 4}
                       placeholder={
                         canModerateChat
                           ? `Reply to ${selectedThread?.student_username || "student"}...`

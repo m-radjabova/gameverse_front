@@ -26,6 +26,7 @@ import {
   useLessonAssignments,
   useSubmissionActions,
 } from "../../hooks/useAssignments";
+import { useCourseRating } from "../../hooks/useCourseRating";
 import { getErrorMessage } from "../../utils/error";
 import CourseHeroSection from "./course-detail/CourseHeroSection";
 import LessonsSidebar from "./course-detail/LessonsSidebar";
@@ -54,6 +55,11 @@ function CourseDetail() {
   const isStudent = hasAnyRole(user, ["student"]) || hasAnyRole(user, ["user"]);
 
   const { data: course, isLoading: courseLoading } = useCourseDetail(courseId);
+  const {
+    summary: courseRatingSummary,
+    rateCourse,
+    isRatingPending,
+  } = useCourseRating(courseId, !!courseId);
   const { data: lessons = [], isLoading: lessonLoading } =
     useCourseLessons(courseId);
   const { data: courseProgress } = useCourseProgress(courseId);
@@ -114,11 +120,17 @@ function CourseDetail() {
     if (!selectedAssignmentId) setSelectedAssignmentId(assignments[0].id);
   }, [assignments, selectedAssignmentId]);
 
-  const { mySubmission, submissions, submitAssignment, gradeSubmission } =
-    useSubmissionActions(selectedAssignmentId, {
-      canViewMySubmission: isStudent,
-      canViewSubmissions: canManageAssignments,
-    });
+  const {
+    mySubmission,
+    submissions,
+    submitAssignment,
+    uploadAssignmentFile,
+    isUploadingAssignmentFile,
+    gradeSubmission,
+  } = useSubmissionActions(selectedAssignmentId, {
+    canViewMySubmission: isStudent,
+    canViewSubmissions: canManageAssignments,
+  });
   const myLessonMessages = useMyLessonMessages(
     activeLesson?.id ?? "",
     activeTab === "chat" && !canModerateChat,
@@ -140,15 +152,12 @@ function CourseDetail() {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    // faqat Chat tab ochilganda ulanadi (xohlasang olib tashlasa ham bo'ladi)
     if (activeTab !== "chat") return;
 
-    // Hozir backend WS faqat thread bo'yicha ishlaydi => teacher/admin
     if (!canModerateChat) return;
 
     if (!selectedThreadId) return;
 
-    // tokenni o'zingda qayerda saqlasang shu yerdan olasan
     const token = getAccessToken();
     if (!token) return;
 
@@ -158,7 +167,6 @@ function CourseDetail() {
 
     const url = `${wsBase}/lesson-chat/ws/threads/${selectedThreadId}?token=${token}`;
 
-    // oldingi connectionni yopamiz
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
@@ -178,12 +186,10 @@ function CourseDetail() {
         if (msg?.type === "new_message" && msg?.data) {
           const newMessage = msg.data;
 
-          // ✅ thread messages query cache’ga qo'shamiz
           queryClient.setQueryData(
             ["lesson-chat", "thread-messages", selectedThreadId],
             (old: LessonChatMessageOut[] | undefined) => {
               const prev = Array.isArray(old) ? old : [];
-              // duplicate bo'lib qolmasin
               if (prev.some((m) => m.id === newMessage.id)) return prev;
               return [...prev, newMessage];
             },
@@ -355,6 +361,17 @@ function CourseDetail() {
     }
   };
 
+  const handleAssignmentFileUpload = async (file: File) => {
+    try {
+      const uploadedUrl = await uploadAssignmentFile(file);
+      setStudentSubmit((prev) => ({ ...prev, file_url: uploadedUrl }));
+      toast.success("File attached");
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+      throw error;
+    }
+  };
+
   const handleGrade = async (
     submissionId: string,
     fallbackScore?: number | null,
@@ -365,6 +382,15 @@ function CourseDetail() {
         (fallbackScore != null ? String(fallbackScore) : "");
       await gradeSubmission({ submissionId, score, status: "graded" });
       toast.success("Graded");
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
+  const handleRateCourse = async (score: number) => {
+    try {
+      await rateCourse(score);
+      toast.success("Rating saved");
     } catch (error) {
       toast.error(getErrorMessage(error));
     }
@@ -447,13 +473,16 @@ function CourseDetail() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#e0f2fe,_#f8fafc_40%,_#ecfeff_100%)] py-8 md:py-10">
-      <div className="mx-auto max-w-[1400px] space-y-6 px-4 md:px-6">
+      <div className="mx-auto max-w-[1700px] space-y-6 px-4 md:px-6">
         <CourseHeroSection
           course={course}
           courseImage={courseImage}
           lessonsCount={sortedLessons.length}
           completedPercent={completedPercent}
           completedLessons={completedLessons}
+          ratingSummary={courseRatingSummary.data ?? null}
+          onRate={handleRateCourse}
+          isRatingPending={isRatingPending}
         />
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[400px_1fr]">
@@ -615,6 +644,8 @@ function CourseDetail() {
                 isStudent={isStudent}
                 studentSubmit={studentSubmit}
                 setStudentSubmit={setStudentSubmit}
+                onUploadFile={handleAssignmentFileUpload}
+                isUploadingFile={isUploadingAssignmentFile}
                 onStudentSubmit={handleStudentSubmit}
                 mySubmission={mySubmission.data ?? null}
                 submissions={submissions.data ?? []}
@@ -640,6 +671,8 @@ function CourseDetail() {
                 isStudent={isStudent}
                 studentSubmit={studentSubmit}
                 setStudentSubmit={setStudentSubmit}
+                onUploadFile={handleAssignmentFileUpload}
+                isUploadingFile={isUploadingAssignmentFile}
                 onStudentSubmit={handleStudentSubmit}
                 mySubmission={mySubmission.data ?? null}
                 submissions={submissions.data ?? []}

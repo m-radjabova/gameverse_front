@@ -102,7 +102,7 @@ function GetChoise() {
   }
 
   return (
-    <section className="container mx-auto px-4 rounded-3xl p-6 md:p-10 mt-10 bg-gradient-to-br from-slate-50 via-white to-teal-50/30 shadow-xl border border-slate-100">
+    <section className="max-w-[1700px] mx-auto px-4 rounded-3xl p-6 md:p-10 mt-10 bg-gradient-to-br from-slate-50 via-white to-teal-50/30 shadow-xl border border-slate-100">
       {/* Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-10">
         <div>
@@ -121,7 +121,7 @@ function GetChoise() {
         </div>
 
         <button
-          onClick={() => navigate("/courses")}
+          onClick={() => navigate("/courses/explore")}
           className="mt-4 md:mt-0 px-6 py-3 bg-gradient-to-r from-slate-900 to-slate-800 text-white font-semibold rounded-xl hover:shadow-xl hover:shadow-slate-300/50 transition-all duration-300 hover:scale-[1.02] flex items-center gap-2 group"
         >
           Explore All

@@ -160,10 +160,11 @@ function LessonPlayerSection({
               <video
                 ref={videoRef}
                 key={activeLesson?.id ?? videoSource}
-                className="aspect-video w-full object-cover"
+                className="aspect-video w-full cursor-pointer object-cover"
                 controls={false}
                 preload="metadata"
                 src={videoSource}
+                onClick={handlePlayPause}
                 onLoadedMetadata={(event) => {
                   if (!activeLesson) return;
                   const saved = lessonProgressMap.get(activeLesson.id);

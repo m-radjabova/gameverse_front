@@ -169,14 +169,32 @@ export function useSubmissionActions(
       if (!payload.text_answer?.trim() && !payload.file_url?.trim()) {
         throw new Error("text_answer yoki file_url dan bittasi to'ldirilishi shart");
       }
-      if (payload.file_url?.trim() && !isValidHttpUrl(payload.file_url.trim())) {
-        throw new Error("file_url http/https bo'lishi shart");
+      const normalizedFileUrl = payload.file_url?.trim() ?? "";
+      if (
+        normalizedFileUrl &&
+        !isValidHttpUrl(normalizedFileUrl) &&
+        !normalizedFileUrl.startsWith("/")
+      ) {
+        throw new Error("file_url http/https yoki /static/... bo'lishi shart");
       }
       return (await apiClient.post(`/assignments/${assignmentId}/submit`, payload)).data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-submission", assignmentId] });
       queryClient.invalidateQueries({ queryKey: ["submissions", assignmentId] });
+    },
+  });
+
+  const uploadAssignmentFile = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await apiClient.post<{ file_url: string }>(
+        "/assignments/upload",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } },
+      );
+      return res.data.file_url;
     },
   });
 
@@ -209,6 +227,8 @@ export function useSubmissionActions(
     mySubmission,
     submissions,
     submitAssignment: submitAssignment.mutateAsync,
+    uploadAssignmentFile: uploadAssignmentFile.mutateAsync,
+    isUploadingAssignmentFile: uploadAssignmentFile.isPending,
     gradeSubmission: gradeSubmission.mutateAsync,
   };
 }

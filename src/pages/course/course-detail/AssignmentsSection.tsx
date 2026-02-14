@@ -1,7 +1,8 @@
-import type { Dispatch, SetStateAction } from "react";
+import { useRef, type Dispatch, type SetStateAction } from "react";
 import type { AssignmentOut, SubmissionOut } from "../../../types/types";
 import type { AssignmentFormState } from "./utils";
 import { formatDate, getSubmitterLabel } from "./utils";
+import { toMediaUrl } from "../../../utils";
 import {
   MdAssignment,
   MdEdit,
@@ -36,6 +37,8 @@ type Props = {
   isStudent: boolean;
   studentSubmit: { text_answer: string; file_url: string };
   setStudentSubmit: Dispatch<SetStateAction<{ text_answer: string; file_url: string }>>;
+  onUploadFile: (file: File) => Promise<void>;
+  isUploadingFile: boolean;
   onStudentSubmit: () => void;
   mySubmission: SubmissionOut | null;
   submissions: SubmissionOut[];
@@ -59,6 +62,8 @@ function AssignmentsSection({
   isStudent,
   studentSubmit,
   setStudentSubmit,
+  onUploadFile,
+  isUploadingFile,
   onStudentSubmit,
   mySubmission,
   submissions,
@@ -68,6 +73,7 @@ function AssignmentsSection({
 }: Props) {
   const selectedAssignment = assignments.find((item) => item.id === selectedAssignmentId) ?? null;
   const STAR_COUNT = 5;
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   return (
     <section className="space-y-6 rounded-3xl border border-slate-200/50 bg-gradient-to-b from-white to-slate-50/50 p-6 shadow-xl">
@@ -365,11 +371,44 @@ function AssignmentsSection({
                   className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm placeholder-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-200 focus:outline-none transition-all"
                   placeholder="https://example.com/your-file.pdf"
                 />
-                <button className="rounded-xl bg-gradient-to-r from-slate-600 to-slate-700 px-4 py-3 text-sm font-semibold text-white hover:shadow-md transition-all duration-300 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploadingFile}
+                  className="rounded-xl bg-gradient-to-r from-slate-600 to-slate-700 px-4 py-3 text-sm font-semibold text-white hover:shadow-md transition-all duration-300 flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-70"
+                >
                   <MdAttachFile size={16} />
-                  Attach
+                  {isUploadingFile ? "Uploading..." : "Attach"}
                 </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  onChange={async (event) => {
+                    const file = event.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      await onUploadFile(file);
+                    } catch {
+                      // parent handles user-facing error toast
+                    }
+                    event.target.value = "";
+                  }}
+                />
               </div>
+              {studentSubmit.file_url && (
+                <p className="mt-2 text-sm text-emerald-700">
+                  Attached:{" "}
+                  <a
+                    href={toMediaUrl(studentSubmit.file_url)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium underline decoration-emerald-500 underline-offset-2"
+                  >
+                    {studentSubmit.file_url.split("/").pop() || "View file"}
+                  </a>
+                </p>
+              )}
             </div>
             
             <button 
@@ -476,6 +515,31 @@ function AssignmentsSection({
                       {item.status.toUpperCase()}
                     </span>
                   </div>
+
+                  {(item.text_answer || item.file_url) && (
+                    <div className="mb-4 space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      {item.text_answer && (
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Text answer</p>
+                          <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{item.text_answer}</p>
+                        </div>
+                      )}
+                      {item.file_url && (
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Attached file</p>
+                          <a
+                            href={toMediaUrl(item.file_url)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-1 inline-flex items-center gap-2 text-sm font-medium text-cyan-700 underline decoration-cyan-500 underline-offset-2"
+                          >
+                            <MdAttachFile size={16} />
+                            {item.file_url.split("/").pop() || "Open file"}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   
                   {/* Grading Controls */}
                   <div className="flex items-center gap-4">

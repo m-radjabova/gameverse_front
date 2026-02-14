@@ -25,7 +25,19 @@ type UpdateCourseInput = {
   category_id?: string;
 };
 
-function useCourses(categoryId?: string) {
+type CourseFilters = {
+  categoryId?: string;
+  level?: string;
+  search?: string;
+};
+
+function useCourses(filters: CourseFilters = {}) {
+  const categoryId = filters.categoryId;
+  const normalizedCategoryId =
+    categoryId && isValidUuid(categoryId) ? categoryId : undefined;
+  const normalizedLevel = filters.level?.trim().toLowerCase() || undefined;
+  const normalizedSearch = filters.search?.trim() || undefined;
+
   const queryClient = useQueryClient();
   const {
     data: courses = [],
@@ -33,13 +45,20 @@ function useCourses(categoryId?: string) {
     isError,
     error,
   } = useQuery<CourseApi[]>({
-    queryKey: ["courses", categoryId ?? "all"],
-    queryFn: async () =>
-      (
-        await apiClient.get("/courses/", {
-          params: categoryId && isValidUuid(categoryId) ? { category_id: categoryId } : {},
-        })
-      ).data,
+    queryKey: [
+      "courses",
+      normalizedCategoryId ?? "all",
+      normalizedLevel ?? "all",
+      normalizedSearch ?? "",
+    ],
+    queryFn: async () => {
+      const params: Record<string, string> = {};
+      if (normalizedCategoryId) params.category_id = normalizedCategoryId;
+      if (normalizedLevel) params.level = normalizedLevel;
+      if (normalizedSearch) params.search = normalizedSearch;
+
+      return (await apiClient.get("/courses/", { params })).data;
+    },
   });
 
   const addCourse = useMutation({

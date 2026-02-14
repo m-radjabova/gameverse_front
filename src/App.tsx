@@ -12,6 +12,7 @@ import MainLayout from "./layout/MainLayout";
 import AdminLayout from "./layout/AdminLayout";
 import HelloAdmin from "./pages/admin/HelloAdmin";
 import CourseDetail from "./pages/course/CourseDetail";
+import ExploreCourses from "./pages/course/ExploreCourses";
 import useContextPro from "./hooks/useContextPro";
 import Profile from "./components/profile/Profile";
 import CheckEmailPage from "./pages/login/CheckEmailPage";
@@ -57,6 +58,7 @@ function App() {
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<Home />} />
         <Route path="/courses" element={<CoursePage />} />
+        <Route path="/courses/explore" element={<ExploreCourses />} />
         <Route path="/courses/:id" element={<CourseDetail />} />
         <Route path="/profile" element={<Profile />} />
       </Route>

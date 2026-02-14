@@ -46,6 +46,13 @@ export type LessonOut = {
 export type CourseApi = CourseOut;
 export type LessonApi = LessonOut;
 
+export interface CourseRatingSummary {
+  course_id: string;
+  average_rating: number;
+  ratings_count: number;
+  my_rating?: number | null;
+}
+
 export interface AssignmentOut {
   id: string;
   lesson_id: string;

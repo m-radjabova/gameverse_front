@@ -158,7 +158,7 @@ function WelcomeBack() {
   }
 
   return (
-    <section className=" container mx-auto px-4 rounded-3xl p-2 md:p-10 ">
+    <section className=" max-w-[1700px] mx-auto px-4 rounded-3xl p-2 md:p-10 ">
       {/* Header */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-10">
         <div>
@@ -215,7 +215,7 @@ function WelcomeBack() {
         </div>
 
         <button
-          onClick={() => navigate("/courses")}
+          onClick={() => navigate("/courses/explore")}
           className="mt-6 lg:mt-0 px-6 py-3 bg-gradient-to-r from-slate-900 to-slate-800 text-white font-semibold rounded-xl hover:shadow-xl hover:shadow-slate-300/50 transition-all duration-300 hover:scale-[1.02] flex items-center gap-2 group"
         >
           <MdOutlineAutoStories className="w-5 h-5" />
@@ -234,7 +234,7 @@ function WelcomeBack() {
             Start learning to see your progress here. Browse courses and begin your journey!
           </p>
           <button
-            onClick={() => navigate("/courses")}
+            onClick={() => navigate("/courses/explore")}
             className="px-6 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
           >
             Start Learning

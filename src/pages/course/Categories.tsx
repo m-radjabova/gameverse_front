@@ -127,7 +127,7 @@ function Categories() {
 
   return (
     <section className="py-10 bg-gradient-to-b from-slate-50 via-white to-emerald-50/30">
-      <div className="container mx-auto px-4">
+      <div className="mx-auto max-w-[1700px] px-4">
         {/* Header with stats */}
         <div className="mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-100 mb-6">
