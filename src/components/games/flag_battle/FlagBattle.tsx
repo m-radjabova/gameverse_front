@@ -127,10 +127,11 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
   }, [teamAnswers, phase, locked, currentQuestion]);
 
   useEffect(() => {
-    if (phase !== "round" || roundWinner === null) return;
+    if (phase !== "round") return;
+    const delay = roundWinner === null ? 2500 : 1500;
     const t = window.setTimeout(() => {
       nextRound();
-    }, 1500);
+    }, delay);
     return () => window.clearTimeout(t);
   }, [phase, roundWinner, currentIndex, totalRounds]);
 

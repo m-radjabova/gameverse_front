@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { 
-  FaBackspace, FaForward, FaPlay, FaPlus, FaRedo, 
+  FaBackspace, FaPlay, FaPlus, FaRedo, 
   FaTrophy, FaUsers, FaBolt, FaStar, FaCrown,
   FaCheckCircle, FaTimesCircle, FaClock, FaMagic, FaRocket
 } from "react-icons/fa";
@@ -10,7 +10,7 @@ import { TbAlt } from "react-icons/tb";
 
 type Phase = "setup" | "play" | "round" | "finish";
 type TeamId = 0 | 1;
-
+  
 type Puzzle = {
   answer: string;
   category: string;
@@ -30,18 +30,18 @@ const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const emptyDraft: DraftPuzzle = { answer: "", category: "Teacher" };
 
 const BUILTIN_PUZZLES: Puzzle[] = [
-  { answer: "WORLD", category: "Global" },
-  { answer: "STRAWBERRY", category: "Fruit" },
-  { answer: "NOTEBOOK", category: "School" },
-  { answer: "CREATIVE", category: "Skill" },
-  { answer: "TEACHER", category: "Education" },
-  { answer: "PUZZLE", category: "Game" },
-  { answer: "MOTION", category: "Design" },
-  { answer: "COMPASS", category: "Object" },
-  { answer: "VICTORY", category: "Result" },
-  { answer: "CHAMPION", category: "Sport" },
-  { answer: "LANGUAGE", category: "Learning" },
-  { answer: "KEYBOARD", category: "Device" },
+  { answer: "OLMA", category: "Meva" },
+  { answer: "ANOR", category: "Meva" },
+  { answer: "MAKTAB", category: "Ta'lim" },
+  { answer: "USTOZ", category: "Ta'lim" },
+  { answer: "DAFTAR", category: "Maktab" },
+  { answer: "KITOB", category: "Maktab" },
+  { answer: "DOSTLIK", category: "Qadriyat" },
+  { answer: "GALABA", category: "Natija" },
+  { answer: "JAMOA", category: "Sport" },
+  { answer: "BILIM", category: "O'qish" },
+  { answer: "ZEHN", category: "Ko'nikma" },
+  { answer: "TOPSHIRIQ", category: "Dars" },
 ];
 
 const shuffle = <T,>(list: T[]) => {
@@ -156,19 +156,23 @@ export default function WordBattle() {
     setDraftError("");
   };
 
-  const nextRound = () => {
-    const nextIndex = roundIndex + 1;
-    if (nextIndex >= deck.length) {
-      setPhase("finish");
-      return;
-    }
-    setRoundIndex(nextIndex);
-    setRoundTimer(ROUND_SECONDS);
-    resetRoundInputs();
-    setRoundMessage("");
-    setRoundWinner(null);
-    setPhase("play");
-  };
+  useEffect(() => {
+    if (phase !== "round") return;
+    const timer = window.setTimeout(() => {
+      const nextIndex = roundIndex + 1;
+      if (nextIndex >= deck.length) {
+        setPhase("finish");
+        return;
+      }
+      setRoundIndex(nextIndex);
+      setRoundTimer(ROUND_SECONDS);
+      resetRoundInputs();
+      setRoundMessage("");
+      setRoundWinner(null);
+      setPhase("play");
+    }, 2000);
+    return () => window.clearTimeout(timer);
+  }, [phase, roundIndex, deck.length]);
 
   const onPickLetter = (team: TeamId, letter: string) => {
     if (phase !== "play" || !currentPuzzle) return;
@@ -606,21 +610,6 @@ export default function WordBattle() {
               </div>
             )}
 
-            {/* Next Round Button */}
-            {phase === "round" && (
-              <div className="text-center">
-                <button
-                  onClick={nextRound}
-                  className="group relative inline-flex items-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-yellow-500 to-orange-500 px-8 py-4 text-xl font-black text-white shadow-2xl transition-all hover:scale-105 active:scale-95"
-                >
-                  <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
-                  <span className="relative flex items-center gap-2">
-                    <FaForward />
-                    KEYINGI RAUND
-                  </span>
-                </button>
-              </div>
-            )}
           </div>
         )}
 
