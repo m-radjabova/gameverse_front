@@ -1,4 +1,4 @@
-import { 
+﻿import { 
   FaFlag, 
   FaUsers, 
   FaTrophy, 
@@ -20,11 +20,9 @@ import {
   MdPublic,
   MdLanguage
 } from "react-icons/md";
-import { RiTeamFill } from "react-icons/ri";
-import FlagBattle from "./FlagBattle";
+import { RiTeamFill } from "react-icons/ri";import FlagBattle from "./FlagBattle";
 
-function FlagBattlePage() {
-  const flagBattleImg = "https://media.istockphoto.com/id/1030295058/photo/flags-of-different-countries-together-us-flag-in-focus.jpg?s=612x612&w=0&k=20&c=fZ67LXjSvX6LlHflpGF5YpD8bZHNUfzcQW_DvtU3lNQ="
+function FlagBattlePage() {  const flagBattleImg = "https://media.istockphoto.com/id/1030295058/photo/flags-of-different-countries-together-us-flag-in-focus.jpg?s=612x612&w=0&k=20&c=fZ67LXjSvX6LlHflpGF5YpD8bZHNUfzcQW_DvtU3lNQ="
   const gameStats = [
     { icon: FaUsers, label: "O'YINCHILAR", value: "2 guruh", color: "from-blue-400 to-cyan-400" },
     { icon: MdTimer, label: "DAVOMIYLIK", value: "5-8 min", color: "from-cyan-400 to-teal-400" },
@@ -98,7 +96,7 @@ function FlagBattlePage() {
         <MdLanguage className="absolute right-[12%] top-[25%] animate-float text-8xl text-blue-500/5" />
       </div>
 
-      <div className="relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-4 py-6 md:px-6 md:py-8 lg:px-8 xl:px-10">
+      <div className="relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-4 py-6 md:px-6 md:py-8 lg:px-8 xl:px-10 motion-safe:animate-[fadeInUp_.35s_ease-out]">
         {/* Hero Section */}
         <div className="group relative mb-8 transform-gpu overflow-hidden rounded-3xl border border-blue-500/20 bg-gradient-to-br from-blue-900/40 via-cyan-900/40 to-teal-900/40 p-6 backdrop-blur-xl shadow-2xl md:p-8 lg:p-10">
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
@@ -268,7 +266,7 @@ function FlagBattlePage() {
                   <h2 className="text-xl font-black text-white">Flag Battle</h2>
                   <p className="flex items-center gap-2 text-sm text-blue-200/80">
                     <RiTeamFill className="text-blue-400" />
-                    Bayroqlarni topish o'yini · 2 guruh
+                    Bayroqlarni topish o'yini В· 2 guruh
                   </p>
                 </div>
               </div>
@@ -303,3 +301,6 @@ function FlagBattlePage() {
 }
 
 export default FlagBattlePage;
+
+
+

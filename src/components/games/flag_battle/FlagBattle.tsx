@@ -18,6 +18,8 @@ import Confetti from "react-confetti-boom";
 import correctSfx from "../../../assets/correct.m4a";
 import wrongSfx from "../../../assets/wrong.m4a";
 import { FLAG_QUESTIONS, type FlagQuestion } from "./data";
+import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
+import { useGameStartCountdown } from "../shared/useGameStartCountdown";
 
 type TeamId = 0 | 1;
 type Phase = "setup" | "play" | "round" | "finish";
@@ -81,6 +83,7 @@ export default function FlagBattle() {
   const [roundWinner, setRoundWinner] = useState<TeamId | null>(null);
   const [roundMessage, setRoundMessage] = useState("");
   const [toast, setToast] = useState<string | null>(null);
+  const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
 
   // вњ… audio (public papkaga qoвЂying)
   // src/assets/correct.m4a
@@ -211,6 +214,8 @@ export default function FlagBattle() {
     setPhase("play");
     setToast("O'yin boshlandi.");
   };
+
+  const handleStartGame = () => runStartCountdown(startGame);
 
   const handleTeamAnswer = (team: TeamId, answer: string) => {
     if (phase !== "play" || locked || paused || !currentQuestion) return;
@@ -481,7 +486,7 @@ export default function FlagBattle() {
           {nameError && <div className="mt-4 rounded-xl border border-rose-500/30 bg-rose-500/20 p-3 text-rose-300">{nameError}</div>}
 
           <div className="mt-6 flex justify-center">
-            <button onClick={startGame} className="rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 px-10 py-4 text-lg font-black text-white transition-all hover:scale-105">
+            <button onClick={handleStartGame} className="rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 px-10 py-4 text-lg font-black text-white transition-all hover:scale-105">
               <span className="flex items-center gap-3"><FaPlay /> O'YINNI BOSHLASH</span>
             </button>
           </div>
@@ -655,7 +660,7 @@ export default function FlagBattle() {
             <div className="border-t border-blue-500/30 pt-3 text-sm text-blue-100/60">Raund: {totalRounds}</div>
           </div>
           <div className="flex justify-center gap-4">
-            <button onClick={startGame} className="rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 px-6 py-3 font-black text-white transition-all hover:scale-105">
+            <button onClick={handleStartGame} className="rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 px-6 py-3 font-black text-white transition-all hover:scale-105">
               <span className="flex items-center gap-2"><FaPlay /> QAYTA O'YNASH</span>
             </button>
             <button onClick={resetGame} className="rounded-xl border border-white/20 bg-white/10 px-6 py-3 font-bold text-white transition-all hover:bg-white/20">
@@ -664,7 +669,7 @@ export default function FlagBattle() {
           </div>
         </div>
       )}
+      <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue} />
     </div>
   );
 }
-

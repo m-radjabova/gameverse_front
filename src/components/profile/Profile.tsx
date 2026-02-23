@@ -91,8 +91,8 @@ function Profile() {
       });
 
       setSuccess("Profil muvaffaqiyatli yangilandi!");
-    } catch (err: any) {
-      setError(err?.message ?? "Profilni yangilashda xatolik yuz berdi.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Profilni yangilashda xatolik yuz berdi.");
     }
   };
 
@@ -112,8 +112,8 @@ function Profile() {
     try {
       await uploadAvatar.mutateAsync(file);
       setSuccess("Rasm muvaffaqiyatli yangilandi!");
-    } catch (err: any) {
-      setError(err?.message ?? "Rasmni yuklashda xatolik yuz berdi.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Rasmni yuklashda xatolik yuz berdi.");
     } finally {
       e.target.value = "";
       setIsUploadingAvatar(false);
@@ -513,8 +513,8 @@ function Profile() {
             await changePassword.mutateAsync(data);
             setSuccess("Parol muvaffaqiyatli yangilandi!");
             setPasswordOpen(false);
-          } catch (err: any) {
-            setError(err?.message ?? "Parolni o'zgartirishda xatolik yuz berdi.");
+          } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Parolni o'zgartirishda xatolik yuz berdi.");
           }
         }}
       />

@@ -29,6 +29,7 @@ import WordSearchPuzzlePage from "./components/games/word_search_puzzle/WordSear
 import Profile from "./components/profile/Profile";
 import OceanWordFishingPage from "./components/games/ocean_word_fishing/OceanWordFishingPage";
 import MathRacePage from "./components/games/math_race/MathRacePage";
+import BaamboozlePage from "./components/games/baamboozle/BaamboozlePage";
 
 function App() {
   const { state: { isLoading } } = useContextPro();
@@ -87,6 +88,7 @@ function App() {
         <Route path="/games/word-search" element={<WordSearchPuzzlePage />} />
         <Route path="/games/ocean-word-fishing" element={<OceanWordFishingPage />} />
         <Route path="/games/math-race" element={<MathRacePage />} />
+        <Route path="/games/baamboozle" element={<BaamboozlePage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/home" replace />} />

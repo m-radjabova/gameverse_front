@@ -1,4 +1,4 @@
-import { 
+﻿import { 
   FaStar, FaUsers, FaTrophy, FaHeart, FaLayerGroup, FaBolt,
   FaCrown} from "react-icons/fa";
 import { 
@@ -7,11 +7,9 @@ import {
 import { 
   MdTimer, MdSpeed, MdStars, MdMemory,
   MdEmojiEvents} from "react-icons/md";
-import { RiBrainFill} from "react-icons/ri";
-import MemoryRush from "./MemoryRush";
+import { RiBrainFill} from "react-icons/ri";import MemoryRush from "./MemoryRush";
 
-function MemoryRushPage() {
-  const memoryRushImg = "https://media.istockphoto.com/id/1434154110/vector/reminder-yellow-note-circled.jpg?s=612x612&w=0&k=20&c=2mfjGFRNi7htNGB47t3fzlfg5mCGLQSfUXMoWBogWL0=";
+function MemoryRushPage() {  const memoryRushImg = "https://media.istockphoto.com/id/1434154110/vector/reminder-yellow-note-circled.jpg?s=612x612&w=0&k=20&c=2mfjGFRNi7htNGB47t3fzlfg5mCGLQSfUXMoWBogWL0=";
 
   const gameStats = [
     { icon: FaUsers, label: "3.8k+ o'yinchi", value: "ONLINE", color: "from-emerald-400 to-teal-400" },
@@ -90,7 +88,7 @@ function MemoryRushPage() {
         <GiLeak className="absolute right-[12%] top-[25%] animate-float text-8xl text-emerald-500/5" />
       </div>
 
-      <div className="relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-4 py-6 md:px-6 md:py-8 lg:px-8 xl:px-10">
+      <div className="relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-4 py-6 md:px-6 md:py-8 lg:px-8 xl:px-10 motion-safe:animate-[fadeInUp_.35s_ease-out]">
         {/* Hero Section */}
         <div className="group relative mb-8 transform-gpu overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-emerald-900/40 via-teal-900/40 to-cyan-900/40 p-6 backdrop-blur-xl shadow-2xl md:p-8 lg:p-10">
           {/* Animated Gradient Border */}
@@ -274,7 +272,7 @@ function MemoryRushPage() {
                   <h2 className="text-xl font-black text-white">Memory Rush</h2>
                   <p className="flex items-center gap-2 text-sm text-gray-300">
                     <RiBrainFill className="text-emerald-400" />
-                    Xotirangizni sinang · Juftlarni toping
+                    Xotirangizni sinang В· Juftlarni toping
                   </p>
                 </div>
               </div>
@@ -310,3 +308,6 @@ function MemoryRushPage() {
 }
 
 export default MemoryRushPage;
+
+
+

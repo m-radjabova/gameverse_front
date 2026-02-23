@@ -15,6 +15,8 @@ import { GiPodiumWinner, GiSpinningWheel} from "react-icons/gi";
 import { MdQuiz, MdTimer} from "react-icons/md";
 import Confetti from "react-confetti-boom";
 import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
+import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
+import { useGameStartCountdown } from "../shared/useGameStartCountdown";
 
 type Student = { id: string; name: string; score: number };
 type Question = {
@@ -107,6 +109,7 @@ export default function WheelOfFortune() {
   const [toast, setToast] = useState<string | null>(null);
   const [category, setCategory] = useState("Geografiya");
   const [points, setPoints] = useState(100);
+  const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
 
   const spinTimeoutRef = useRef<number | null>(null);
   const countdownRef = useRef<number | null>(null);
@@ -288,6 +291,8 @@ export default function WheelOfFortune() {
     setPhase("spinning");
     setToast("🎮 O'yin boshlandi!");
   };
+
+  const handleStartGame = () => runStartCountdown(startGame);
 
   const spinWheel = () => {
     if (spinning || students.length === 0 || !currentQuestion) return;
@@ -561,7 +566,7 @@ export default function WheelOfFortune() {
               )}
               
               <div className="max-h-64 space-y-2 overflow-auto pr-2">
-                {questions.map((q, index) => (
+                {questions.map((q) => (
                   <div
                     key={q.id}
                     className="group relative overflow-hidden rounded-xl border border-purple-500/30 bg-purple-950/30 p-3 transition-all hover:bg-purple-900/40"
@@ -619,7 +624,7 @@ export default function WheelOfFortune() {
           {students.length >= 2 && questions.length >= 1 && (
             <div className="relative mt-8 flex justify-center">
               <button
-                onClick={startGame}
+                onClick={handleStartGame}
                 className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 px-12 py-4 text-xl font-black text-white shadow-2xl transition-all hover:scale-105 active:scale-95"
               >
                 <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
@@ -935,6 +940,7 @@ export default function WheelOfFortune() {
           </div>
         </div>
       )}
+      <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue} />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { FaStar, FaPlus, FaArrowLeft, FaArrowRight, FaRegSmile, FaMeh, FaSurpris
 import { GiPlanetCore, GiSparkles, GiOrbit, GiBookshelf, GiBrain, GiTrophy } from "react-icons/gi";
 import { HiOutlineAcademicCap } from "react-icons/hi";
 import trialCharacter from "../../assets/trialSection.png";
+import { useNavigate } from "react-router-dom";
 
 const features = [
   {
@@ -22,6 +23,7 @@ const features = [
 ];
 
 function TrialSection() {
+  const navigate = useNavigate();
   return (
     <section
       className={`section-reveal relative min-h-screen overflow-hidden bg-transparent py-16 lg:py-24`}
@@ -120,7 +122,7 @@ function TrialSection() {
                       </p>
 
                       {/* Play Button - Animate with Bounce */}
-                      <button className="group relative mt-8 overflow-hidden rounded-full border-2 border-[#ffe24d] bg-gradient-to-b from-[#ffd966] to-[#ffb347] px-12 py-4 text-lg font-black tracking-wider text-[#1a1a1a] shadow-[0_12px_0_0_rgba(230,126,34,0.95),0_15px_25px_rgba(0,0,0,0.2)] transition-all hover:translate-y-1 hover:shadow-[0_10px_0_0_rgba(230,126,34,0.95)] active:translate-y-3 active:shadow-[0_8px_0_0_rgba(230,126,34,0.95)] animate-fade-in-up">
+                      <button onClick={() => navigate("/games")} className="group relative mt-8 overflow-hidden rounded-full border-2 border-[#ffe24d] bg-gradient-to-b from-[#ffd966] to-[#ffb347] px-12 py-4 text-lg font-black tracking-wider text-[#1a1a1a] shadow-[0_12px_0_0_rgba(230,126,34,0.95),0_15px_25px_rgba(0,0,0,0.2)] transition-all hover:translate-y-1 hover:shadow-[0_10px_0_0_rgba(230,126,34,0.95)] active:translate-y-3 active:shadow-[0_8px_0_0_rgba(230,126,34,0.95)] animate-fade-in-up">
                         <span className="relative z-10 flex items-center gap-3">
                           <FaRegSmile className="text-xl animate-bounce-slow" />
                           SINAB KO‘RING
@@ -204,6 +206,7 @@ function TrialSection() {
 
               {/* More Games Button */}
               <button
+                  onClick={() => navigate("/games")}
                 className="group relative mt-10 w-full lg:w-auto overflow-hidden rounded-full bg-white/10 backdrop-blur-sm px-8 py-4 text-white font-black tracking-wider border border-white/20 shadow-[0_10px_0_rgba(0,0,0,0.15)] hover:translate-y-1 hover:shadow-[0_8px_0_rgba(0,0,0,0.15)] active:translate-y-2 active:shadow-[0_6px_0_rgba(0,0,0,0.15)] transition-all animate-fade-in-up"
                 style={{ animationDelay: "600ms" }}
               >

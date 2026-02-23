@@ -1,4 +1,4 @@
-import { 
+﻿import { 
   FaApple, 
   FaCarrot, 
   FaCrown, 
@@ -20,11 +20,9 @@ import {
   MdGridOn,
   MdOutlineGridOn
 } from "react-icons/md";
-import { RiTeamFill} from "react-icons/ri";
-import WordSearchPuzzle from "./WordSearchPuzzle";
+import { RiTeamFill} from "react-icons/ri";import WordSearchPuzzle from "./WordSearchPuzzle";
 
-function WordSearchPuzzlePage() {
-  const wordSearchImg = "https://media.istockphoto.com/id/2260590479/vector/vector-easter-village-placemat-spring-holiday-printable-activity-mat-with-maze-crossword.jpg?s=612x612&w=0&k=20&c=YpKwS6BpAuc6dSzcfFuBfTHFyNf9hDxWgwQXHjZOJ7E=";
+function WordSearchPuzzlePage() {  const wordSearchImg = "https://media.istockphoto.com/id/2260590479/vector/vector-easter-village-placemat-spring-holiday-printable-activity-mat-with-maze-crossword.jpg?s=612x612&w=0&k=20&c=YpKwS6BpAuc6dSzcfFuBfTHFyNf9hDxWgwQXHjZOJ7E=";
   const gameStats = [
     { icon: FaUsers, label: "GURUHLAR", value: "2 jamoa", color: "from-emerald-400 to-teal-400" },
     { icon: MdTimer, label: "DAVOMIYLIK", value: "10-15 min", color: "from-teal-400 to-cyan-400" },
@@ -102,7 +100,7 @@ function WordSearchPuzzlePage() {
         <MdGridOn className="absolute right-[12%] top-[25%] animate-float text-8xl text-emerald-500/5" />
       </div>
 
-      <div className="relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-4 py-6 md:px-6 md:py-8 lg:px-8 xl:px-10">
+      <div className="relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-4 py-6 md:px-6 md:py-8 lg:px-8 xl:px-10 motion-safe:animate-[fadeInUp_.35s_ease-out]">
         {/* Hero Section */}
         <div className="group relative mb-8 transform-gpu overflow-hidden rounded-3xl border border-emerald-500/20 bg-gradient-to-br from-emerald-900/40 via-teal-900/40 to-cyan-900/40 p-6 backdrop-blur-xl shadow-2xl md:p-8 lg:p-10">
           {/* Animated Gradient Border */}
@@ -286,7 +284,7 @@ function WordSearchPuzzlePage() {
                   <h2 className="text-xl font-black text-white">Word Search Puzzle</h2>
                   <p className="flex items-center gap-2 text-sm text-emerald-200/80">
                     <RiTeamFill className="text-emerald-400" />
-                    2 guruh · custom tema
+                    2 guruh В· custom tema
                   </p>
                 </div>
               </div>
@@ -322,3 +320,6 @@ function WordSearchPuzzlePage() {
 }
 
 export default WordSearchPuzzlePage;
+
+
+

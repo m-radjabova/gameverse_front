@@ -16,6 +16,8 @@ import {
 import { MdQuiz} from "react-icons/md";
 import Confetti from "react-confetti-boom";
 import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
+import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
+import { useGameStartCountdown } from "../shared/useGameStartCountdown";
 
 type TeamId = 0 | 1;
 
@@ -69,6 +71,7 @@ function QuizBattle() {
   const [doublePoints, setDoublePoints] = useState(false);
   const [streak, setStreak] = useState<[number, number]>([0, 0]);
   const [toast, setToast] = useState<string | null>(null);
+  const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
 
   const question = questions[current];
   const progressPct = questions.length > 0 ? Math.round(((current + 1) / questions.length) * 100) : 0;
@@ -260,6 +263,8 @@ function QuizBattle() {
     setPhase("play");
     setToast("🎮 O'yin boshlandi!");
   };
+
+  const handleStartGame = () => runStartCountdown(startGame);
 
   const goNext = () => {
     if (current + 1 >= questions.length) {
@@ -584,7 +589,7 @@ function QuizBattle() {
             </button>
             
             <button
-              onClick={startGame}
+              onClick={handleStartGame}
               className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 px-8 py-3 font-black text-white shadow-2xl transition-all hover:scale-105 active:scale-95"
             >
               <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
@@ -803,6 +808,7 @@ function QuizBattle() {
           </div>
         </div>
       )}
+      <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue} />
     </div>
   );
 }

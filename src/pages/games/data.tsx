@@ -16,6 +16,7 @@ import {
   FaSearch,
   FaFish,
   FaCar,
+  FaQuestion,
 } from "react-icons/fa";
 import {
   GiPuzzle,
@@ -27,14 +28,15 @@ import {
   GiPodiumWinner,
   GiFishing,
   GiRaceCar,
+  GiGamepad,
 } from "react-icons/gi";
-import { MdQuiz, MdMemory, MdGames, MdNumbers } from "react-icons/md";
+import { MdQuiz, MdMemory, MdGames, MdNumbers, MdOutlineGamepad } from "react-icons/md";
 import { RiBubbleChartFill } from "react-icons/ri";
 
 export const gameCards = [
   {
     id: "quiz-battle",
-    title: "Quiz Battle",
+    title: "Tezkor Savollar",
     description: "Tezkor savollar, timer va reyting bilan bilim sinovi.",
     mainIcon: MdQuiz,
     icon: FaBolt,
@@ -60,7 +62,7 @@ export const gameCards = [
   },
   {
     id: "memory-rush",
-    title: "Memory Rush",
+    title: "Xotira Mashqi",
     description: "Xotirani charxlaydigan tezkor kartochkalar o'yini.",
     mainIcon: MdMemory,
     icon: FaBrain,
@@ -86,7 +88,7 @@ export const gameCards = [
   },
   {
     id: "treasure-hunt",
-    title: "Treasure Hunt",
+    title: "Xazina Izlovchilar",
     description: "Topishmoqlar yechish va xazina topish sarguzashti.",
     mainIcon: GiTreasureMap,
     icon: FaCompass,
@@ -112,7 +114,7 @@ export const gameCards = [
   },
   {
     id: "word-battle",
-    title: "Word Battle",
+    title: "So'z O'yini",
     description: "So'z topish, harflar bilan o'ynash va lug'at boyitish.",
     mainIcon: RiBubbleChartFill,
     icon: GiSpellBook,
@@ -138,7 +140,7 @@ export const gameCards = [
   },
   {
     id: "classic-arcade",
-    title: "Classic Arcade",
+    title: "Mantiq va Tezkorlik",
     description: "Mantiq va tezkorlikni oshiradigan mini challenge'lar.",
     mainIcon: MdGames,
     icon: GiPuzzle,
@@ -164,7 +166,7 @@ export const gameCards = [
   },
   {
     id: "flag-battle",
-    title: "Flag Battle",
+    title: "Bayroq Topish O'yini",
     description:
       "Dunyo davlatlarining bayroqlarini toping va guruh bo'lib o'ynang.",
     mainIcon: FaFlag,
@@ -191,7 +193,7 @@ export const gameCards = [
   },
   {
     id: "wheel-of-fortune",
-    title: "Wheel of Fortune",
+    title: "Baraban O'yini",
     description:
       "Baraban aylantiring, tasodifiy o'quvchi tanlang va savollarga javob bering.",
     mainIcon: GiSpinningWheel,
@@ -218,7 +220,7 @@ export const gameCards = [
   },
   {
     id: "word-search",
-    title: "Word Search",
+    title: "Yashirin so'zlarni top!",
     description:
       "Harflar ichida yashiringan so'zlarni toping va guruh bo'lib o'ynang.",
     mainIcon: FaSearch,
@@ -245,7 +247,7 @@ export const gameCards = [
   },
   {
     id: "ocean-word-fishing",
-    title: "Ocean Word Fishing",
+    title: "Baliqlar bilan So'z O'yini",
     description:
       "Baliqlar ustidagi harflardan so'zlar yig'ing. Okean sadosi bilan o'ynang va so'zlar toping.",
     mainIcon: FaFish,
@@ -265,14 +267,14 @@ export const gameCards = [
     badgeIcon: FaRocket,
     time: "5-10 min",
     points: "500+",
-    category: "So'z o'yini",
+    category: "So'z",
     categoryIcon: FaFish,
     gradient: "from-blue-400 to-cyan-400",
     borderGlow: "hover:border-blue-400/50",
   },
   {
     id: "math-race",
-    title: "Math Race",
+    title: "Matematik Poyga",
     description:
       "Ikki o'yinchi tezkor misol ishlash musobaqasida qatnashing. Kim tez va to'g'ri javob bersa, uning mashinasi oldinga yuradi!",
     mainIcon: GiRaceCar,
@@ -297,4 +299,29 @@ export const gameCards = [
     gradient: "from-yellow-400 to-orange-400",
     borderGlow: "hover:border-yellow-400/50",
   },
+  {
+  id: "baamboozle",
+  title: "Baamboozle",
+  description: "25 katakli interaktiv o'yin. Savollar, bonus, jarima, steal va double kartalari bilan jamoa bo'lib o'ynang.",
+  mainIcon: MdOutlineGamepad,
+  icon: GiGamepad,
+  iconBg: "from-indigo-500 to-purple-500",
+  iconColor: "text-indigo-300",
+  shadowColor: "indigo",
+  available: true,
+  path: "/games/baamboozle",
+  bgPattern: "bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600",
+  image: "https://media.istockphoto.com/id/1268465415/photo/quiz-time-concept-speech-bubble-with-pencil-on-yellow-background.jpg?s=612x612&w=0&k=20&c=ZowfYpCJeyknpWhnfyWqV1_If6aJmFUiSqqqEUBhvAg=",
+  players: "2 jamoa",
+  level: "Boshlang'ich - Professional",
+  levelIcon: FaStar,
+  badge: "YANGI",
+  badgeIcon: FaRocket,
+  time: "15-25 min",
+  points: "5000+",
+  category: "Bilim",
+  categoryIcon: FaQuestion,
+  gradient: "from-indigo-400 to-purple-400",
+  borderGlow: "hover:border-indigo-400/50",
+},
 ];

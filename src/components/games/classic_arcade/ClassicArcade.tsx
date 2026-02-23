@@ -8,6 +8,8 @@ import {
 import { 
   MdSkipNext, } from "react-icons/md";
 import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
+import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
+import { useGameStartCountdown } from "../shared/useGameStartCountdown";
 
 type Phase = "teacher" | "teams" | "play" | "finish";
 type Mini = "math" | "pattern" | "odd";
@@ -82,6 +84,7 @@ export default function ClassicArcade() {
   const [patternShowing, setPatternShowing] = useState(false);
   const patternTimerRef = useRef<number | null>(null);
   const betweenTimerRef = useRef<number | null>(null);
+  const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
   const sessionPct = useMemo(() => Math.round((sessionLeft / SESSION_SECONDS) * 100), [sessionLeft]);
   const roundPct = useMemo(() => Math.round((roundLeft / ROUND_SECONDS) * 100), [roundLeft]);
   const winner = useMemo(() => (scores[0] === scores[1] ? null : scores[0] > scores[1] ? 0 : 1), [scores]);
@@ -195,6 +198,8 @@ export default function ClassicArcade() {
     const first: Mini = (["math", "pattern", "odd"] as Mini[])[r(0, 2)]; prevMiniRef.current = first; setMini(first); setRoundLeft(ROUND_SECONDS); setBetweenLeft(0);
     if (first === "math") setMathRound(buildMath()); if (first === "pattern") { const p = buildPattern(); setPatternRound(p); setPatternShowing(true); if (patternTimerRef.current) window.clearTimeout(patternTimerRef.current); patternTimerRef.current = window.setTimeout(() => setPatternShowing(false), p.revealMs); } if (first === "odd") setOddRound(buildOdd(teacherRounds));
   };
+
+  const handleStartGame = () => runStartCountdown(startGame);
 
   const queueNextRound = () => {
     if (betweenTimerRef.current) window.clearTimeout(betweenTimerRef.current);
@@ -445,7 +450,7 @@ export default function ClassicArcade() {
             </button>
             
             <button
-              onClick={startGame}
+              onClick={handleStartGame}
               className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-fuchsia-500 to-rose-500 px-8 py-3 font-black text-white shadow-2xl transition-all hover:scale-105 active:scale-95"
             >
               <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
@@ -720,7 +725,7 @@ export default function ClassicArcade() {
           
           <div className="relative flex justify-center gap-4">
             <button
-              onClick={startGame}
+              onClick={handleStartGame}
               className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-fuchsia-500 to-rose-500 px-6 py-3 font-black text-white shadow-2xl transition-all hover:scale-105 active:scale-95"
             >
               <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
@@ -761,6 +766,7 @@ export default function ClassicArcade() {
           </div>
         </div>
       )}
+      <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue} />
     </div>
   );
 }

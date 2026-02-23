@@ -11,6 +11,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import useContextPro from "../../hooks/useContextPro";
 import { logoutRequest } from "../../utils/auth";
 
+
 type HeaderProps = {
   active?: "O'yinlar" | "Haqida" | "Izohlar" | "Bog'lanish";
   onNavClick?: (section: string) => void;

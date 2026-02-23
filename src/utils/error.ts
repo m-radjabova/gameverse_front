@@ -5,8 +5,10 @@ export function getErrorMessage(error: unknown): string {
     return "Unexpected error";
   }
 
-  const detail = (error.response?.data as any)?.detail;
-  const message = (error.response?.data as any)?.message;
+  const data = error.response?.data;
+  const payload = data && typeof data === "object" ? (data as Record<string, unknown>) : null;
+  const detail = payload?.detail;
+  const message = payload?.message;
   const fallbackByCode =
     error.response?.status === 403
       ? "Sizda ruxsat yo'q"

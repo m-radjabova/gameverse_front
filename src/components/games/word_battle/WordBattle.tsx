@@ -7,6 +7,8 @@ import {
 import { GiBattleGear, GiTeamIdea, GiSwordsEmblem } from "react-icons/gi";
 import { RiFlashlightFill } from "react-icons/ri";
 import { TbAlt } from "react-icons/tb";
+import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
+import { useGameStartCountdown } from "../shared/useGameStartCountdown";
 
 type Phase = "setup" | "play" | "round" | "finish";
 type TeamId = 0 | 1;
@@ -82,6 +84,7 @@ export default function WordBattle() {
   const [teacherPuzzles, setTeacherPuzzles] = useState<Puzzle[]>([]);
   const [activeTeam, setActiveTeam] = useState<TeamId | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
 
   const currentPuzzle = deck[roundIndex];
 
@@ -141,6 +144,8 @@ export default function WordBattle() {
     setRoundWinner(null);
     setPhase("play");
   };
+
+  const handleStartGame = () => runStartCountdown(startGame);
 
   const addTeacherPuzzle = () => {
     const answer = sanitizeWord(draft.answer);
@@ -378,7 +383,7 @@ export default function WordBattle() {
                 </div>
 
                 <button
-                  onClick={startGame}
+                  onClick={handleStartGame}
                   className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 p-4 text-lg font-black text-white shadow-2xl transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
@@ -642,7 +647,7 @@ export default function WordBattle() {
 
             <div className="flex flex-wrap justify-center gap-4">
               <button
-                onClick={startGame}
+                onClick={handleStartGame}
                 className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 px-6 py-3 text-lg font-bold text-white shadow-2xl transition-all hover:scale-105 active:scale-95"
               >
                 <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
@@ -663,6 +668,7 @@ export default function WordBattle() {
             </div>
           </div>
         )}
+        <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue} />
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { 
+﻿import { 
   FaBolt, FaStar, FaCrown, FaTrophy, FaMedal, FaUsers} from "react-icons/fa";
 import { GiBrain, GiPodium, GiAchievement, GiBrainTentacle } from "react-icons/gi";
 import { MdQuiz, MdTimer, MdEmojiEvents, MdSpeed } from "react-icons/md";
@@ -79,13 +79,13 @@ function QuizBattlePage() {
         }} />
 
         {/* Quiz Icons Background */}
-        <div className="absolute left-[5%] top-[15%] animate-float text-8xl opacity-5 text-yellow-500">❓</div>
-        <div className="absolute right-[8%] bottom-[20%] animate-float-delayed text-7xl opacity-5 text-orange-500">⚡</div>
-        <div className="absolute left-[15%] bottom-[10%] animate-float-slow text-7xl opacity-5 text-red-500">🏆</div>
-        <div className="absolute right-[12%] top-[25%] animate-float text-8xl opacity-5 text-yellow-500">⭐</div>
+        <div className="absolute left-[5%] top-[15%] animate-float text-8xl opacity-5 text-yellow-500">вќ“</div>
+        <div className="absolute right-[8%] bottom-[20%] animate-float-delayed text-7xl opacity-5 text-orange-500">вљЎ</div>
+        <div className="absolute left-[15%] bottom-[10%] animate-float-slow text-7xl opacity-5 text-red-500">рџЏ†</div>
+        <div className="absolute right-[12%] top-[25%] animate-float text-8xl opacity-5 text-yellow-500">в­ђ</div>
       </div>
 
-      <div className="relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-4 py-6 md:px-6 md:py-8 lg:px-8 xl:px-10">
+      <div className="relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-4 py-6 md:px-6 md:py-8 lg:px-8 xl:px-10 motion-safe:animate-[fadeInUp_.35s_ease-out]">
         {/* Hero Section */}
         <div className="group relative mb-8 transform-gpu overflow-hidden rounded-3xl border border-yellow-500/20 bg-gradient-to-br from-yellow-900/40 via-orange-900/40 to-red-900/40 p-6 backdrop-blur-xl shadow-2xl md:p-8 lg:p-10">
           {/* Animated Gradient Border */}
@@ -176,7 +176,7 @@ function QuizBattlePage() {
                 {/* Floating Badges */}
                 <div className="absolute top-4 right-4 z-20 flex gap-2">
                   <div className="rounded-full bg-gradient-to-r from-yellow-600 to-orange-600 px-3 py-1 text-xs font-bold text-white shadow-lg">
-                    4.9 ★
+                    4.9/5
                   </div>
                   <div className="rounded-full bg-gradient-to-r from-orange-600 to-red-600 px-3 py-1 text-xs font-bold text-white shadow-lg">
                     2.3k+
@@ -269,7 +269,7 @@ function QuizBattlePage() {
                   <h2 className="text-xl font-black text-white">Quiz Battle</h2>
                   <p className="flex items-center gap-2 text-sm text-yellow-200/80">
                     <RiTeamFill className="text-yellow-400" />
-                    Bilimlar bellashuvi · 2 jamoa
+                    Bilimlar bellashuvi В· 2 jamoa
                   </p>
                 </div>
               </div>
@@ -305,3 +305,6 @@ function QuizBattlePage() {
 }
 
 export default QuizBattlePage;
+
+
+

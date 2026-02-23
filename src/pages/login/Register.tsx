@@ -114,7 +114,7 @@ function Register() {
     }
 
     try {
-      const created = await apiClient.post<CreateUserResponse>("/users/", {
+      await apiClient.post<CreateUserResponse>("/users/", {
         username: data.username,
         email: data.email,
         password: data.password,

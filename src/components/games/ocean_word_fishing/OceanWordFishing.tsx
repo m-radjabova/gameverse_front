@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import {
   FaArrowLeft,
   FaCrown,
@@ -11,10 +11,18 @@ import {
   FaVolumeUp,
 } from "react-icons/fa";
 import Confetti from "react-confetti-boom";
+
 import oceanSound from "../../../assets/ocean-wave-1.m4a";
-import fish1 from "../../../assets/blue_fish-removebg-preview.png";
+
+import dingSound from "../../../assets/ding.m4a";
+import oopsSound from "../../../assets/wrong.m4a";
+import tadaSound from "../../../assets/tada.mp3";
+
+import fish1 from "../../../assets/blue-fish-removebg-preview.png";
 import fish2 from "../../../assets/cute_fish-removebg-preview.png";
 import fish3 from "../../../assets/fish-removebg-preview.png";
+import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
+import { useGameStartCountdown } from "../shared/useGameStartCountdown";
 
 type Phase = "teacher" | "play" | "finish";
 type FishVariant = 0 | 1 | 2;
@@ -26,8 +34,8 @@ type Fish = {
   y: number;
   facing: 1 | -1;
 
-  fromX: number; 
-  toX: number; 
+  fromX: number;
+  toX: number;
   swimDuration: number;
   swimDelay: number;
 
@@ -53,10 +61,10 @@ const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const OCEAN_IMAGE =
   "https://media.istockphoto.com/id/537816526/vector/underwater-world.jpg?s=612x612&w=0&k=20&c=U_1QpgfCsqkNFdbiLqFs6C-RyC5d2Eyfl5Kf8_YBgT0=";
 
-const FISH_IMAGES = {
-  0: fish1, // 1-baliq rasmi
-  1: fish2, // 2-baliq rasmi
-  2: fish3, // 3-baliq rasmi
+const FISH_IMAGES: Record<FishVariant, string> = {
+  0: fish1,
+  1: fish2,
+  2: fish3,
 };
 
 const FISH_COLORS = [
@@ -106,7 +114,8 @@ const buildLettersForRound = (word: string) => {
   return shuffle([...targetLetters, ...distractors]);
 };
 
-const createFishes = (letters: string[]) => {
+// ✅ now takes allowedVariants for unlock system
+const createFishes = (letters: string[], allowedVariants: FishVariant[]) => {
   const lanes = clamp(Math.ceil(letters.length / 3.5), 5, 7);
 
   const topMin = 18;
@@ -136,24 +145,24 @@ const createFishes = (letters: string[]) => {
       : Math.floor(Math.random() * slotsPerLane);
     const x = laneMinX + slotIndex * slotStep;
 
-    // Lane bo'yicha yo'nalish ajratish: chiroyli ko'rinadi
     const facing = (lane < Math.ceil(lanes / 2) ? 1 : -1) as 1 | -1;
 
     const size = 66 + Math.random() * 36;
 
-    // ✅ Real pass: chetdan kirib chetdan chiqish (vw)
     const fromX =
       facing === 1 ? -35 - Math.random() * 25 : 120 + Math.random() * 25;
     const toX =
       facing === 1 ? 120 + Math.random() * 25 : -35 - Math.random() * 25;
 
-    // Duration + Delay collision kamaytiradi
     const swimDuration = 14 + lane * 1.6 + Math.random() * 6;
     const swimDelay = slotIndex * 0.65 + Math.random() * 1.1;
 
     const floatDuration = 2.4 + Math.random() * 2.6;
 
-    const variant = Math.floor(Math.random() * 3) as FishVariant;
+    const variant =
+      allowedVariants[
+        Math.floor(Math.random() * Math.max(1, allowedVariants.length))
+      ] ?? 0;
 
     return {
       id: `${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 7)}`,
@@ -180,7 +189,6 @@ const createFishes = (letters: string[]) => {
 const FishImage = ({ fish }: { fish: Fish }) => {
   const [imageError, setImageError] = useState(false);
 
-  // ✅ MUHIM: PNG default yo'nalishi teskari bo'lsa shu yordam beradi
   const flip = fish.facing > 0 ? "scaleX(-1)" : "scaleX(1)";
 
   if (imageError || !fish.imageUrl) {
@@ -195,7 +203,9 @@ const FishImage = ({ fish }: { fish: Fish }) => {
         }}
       >
         <div style={{ transform: flip }}>
-          <span className="text-2xl font-bold text-white drop-shadow-lg">{fish.letter}</span>
+          <span className="text-2xl font-bold text-white drop-shadow-lg">
+            {fish.letter}
+          </span>
         </div>
       </div>
     );
@@ -203,18 +213,17 @@ const FishImage = ({ fish }: { fish: Fish }) => {
 
   return (
     <div className="relative" style={{ width: fish.size, height: fish.size * 0.8 }}>
-      <div className="w-full h-full" style={{ transform: flip }}>
-        <img
-          src={fish.imageUrl}
-          alt={`Baliq-${fish.letter}`}
-          className="w-full h-full object-contain drop-shadow-2xl"
-          onError={() => setImageError(true)}
-        />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-2xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-            {fish.letter}
-          </span>
-        </div>
+      <img
+        src={fish.imageUrl}
+        alt={`Baliq-${fish.letter}`}
+        className="h-full w-full object-contain drop-shadow-2xl"
+        style={{ transform: flip }}
+        onError={() => setImageError(true)}
+      />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-2xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+          {fish.letter}
+        </span>
       </div>
     </div>
   );
@@ -234,7 +243,25 @@ export default function OceanWordFishing() {
   const [draftWord, setDraftWord] = useState("");
   const [draftError, setDraftError] = useState("");
 
+  const [streak, setStreak] = useState(0);
+  const [bestStreak, setBestStreak] = useState(0);
+  const [hadMistakeThisRound, setHadMistakeThisRound] = useState(false);
+
+  const [caughtFxId, setCaughtFxId] = useState<string | null>(null);
+  const [screenShake, setScreenShake] = useState(false);
+
+  const [stars, setStars] = useState(0);
+  const [medal, setMedal] = useState<"bronze" | "silver" | "gold" | null>(null);
+  const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
+  const [playerLevel, setPlayerLevel] = useState(1);
+  const [unlockedFish, setUnlockedFish] = useState<FishVariant[]>([0]);
+
+  // audio refs
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const dingRef = useRef<HTMLAudioElement | null>(null);
+  const oopsRef = useRef<HTMLAudioElement | null>(null);
+  const tadaRef = useRef<HTMLAudioElement | null>(null);
+
   const timerRef = useRef<number | null>(null);
   const wordsRef = useRef<WordItem[]>([]);
   const indexRef = useRef(0);
@@ -242,6 +269,7 @@ export default function OceanWordFishing() {
   const currentWord = words[currentWordIndex];
   const progress =
     words.length > 0 ? ((currentWordIndex + 1) / words.length) * 100 : 0;
+
   const foundCount = useMemo(
     () => words.filter((word) => word.found).length,
     [words],
@@ -252,23 +280,63 @@ export default function OceanWordFishing() {
     window.setTimeout(() => setToast(null), 1800);
   };
 
+  const playSfx = (ref: React.RefObject<HTMLAudioElement | null>) => {
+    if (isMuted) return;
+    const a = ref.current;
+    if (!a) return;
+    try {
+      a.currentTime = 0;
+      a.play().catch(() => undefined);
+    } catch {
+      // ignore
+    }
+  };
+
   const setupRound = (index: number, list = wordsRef.current) => {
     const target = list[index];
     if (!target) return;
 
     setCurrentWordIndex(index);
     indexRef.current = index;
+
     setSelectedLetters([]);
     setTimeLeft(getRoundTime(target.word));
 
+    setHadMistakeThisRound(false);
+    setStreak(0);
+
     const letters = buildLettersForRound(target.word);
-    setFishes(createFishes(letters));
+    setFishes(createFishes(letters, unlockedFish));
+  };
+
+  const calculateRewards = () => {
+    const total = wordsRef.current.length || 1;
+    const found = wordsRef.current.filter((w) => w.found).length;
+    const ratio = found / total;
+
+    const nextStars = ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : ratio >= 0.3 ? 1 : 0;
+    const nextMedal =
+      ratio >= 0.9 ? "gold" : ratio >= 0.6 ? "silver" : ratio >= 0.3 ? "bronze" : null;
+
+    setStars(nextStars);
+    setMedal(nextMedal);
+
+    setPlayerLevel((lvl) => lvl + Math.floor(nextStars / 2));
+
+    if (nextStars >= 2) {
+      setUnlockedFish((prev) => {
+        const all: FishVariant[] = [0, 1, 2];
+        const next = all.find((v) => !prev.includes(v));
+        return next !== undefined ? [...prev, next] : prev;
+      });
+    }
   };
 
   const finishGame = () => {
     setIsPlaying(false);
     setPhase("finish");
     if (audioRef.current) audioRef.current.pause();
+    calculateRewards();
   };
 
   const advanceRound = (isFound: boolean) => {
@@ -276,9 +344,7 @@ export default function OceanWordFishing() {
 
     if (isFound) {
       setWords((prev) =>
-        prev.map((word, wIdx) =>
-          wIdx === idx ? { ...word, found: true } : word,
-        ),
+        prev.map((word, wIdx) => (wIdx === idx ? { ...word, found: true } : word)),
       );
     }
 
@@ -295,15 +361,27 @@ export default function OceanWordFishing() {
   }, [words]);
 
   useEffect(() => {
+    // bg ocean
     audioRef.current = new Audio(oceanSound);
     audioRef.current.loop = true;
     audioRef.current.volume = 0.32;
 
+    // sfx
+    dingRef.current = new Audio(dingSound);
+    oopsRef.current = new Audio(oopsSound);
+    tadaRef.current = new Audio(tadaSound);
+
+    if (dingRef.current) dingRef.current.volume = 0.7;
+    if (oopsRef.current) oopsRef.current.volume = 0.7;
+    if (tadaRef.current) tadaRef.current.volume = 0.8;
+
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
+      [audioRef, dingRef, oopsRef, tadaRef].forEach((r) => {
+        if (r.current) {
+          r.current.pause();
+          r.current = null;
+        }
+      });
     };
   }, []);
 
@@ -338,10 +416,8 @@ export default function OceanWordFishing() {
 
   const addWord = () => {
     const word = normalizeWord(draftWord.trim());
-    if (!word)
-      return setDraftError("Faqat lotin harflari bilan so'z kiriting.");
-    if (word.length < 3)
-      return setDraftError("So'z kamida 3 harf bo'lishi kerak.");
+    if (!word) return setDraftError("Faqat lotin harflari bilan so'z kiriting.");
+    if (word.length < 3) return setDraftError("So'z kamida 3 harf bo'lishi kerak.");
     if (words.some((item) => item.word === word))
       return setDraftError("Bu so'z allaqachon qo'shilgan.");
 
@@ -377,20 +453,30 @@ export default function OceanWordFishing() {
     setPhase("play");
     setIsPlaying(true);
 
+    // reset run stats
+    setHadMistakeThisRound(false);
+    setStreak(0);
+    setBestStreak(0);
+
     const target = resetWords[0];
     setCurrentWordIndex(0);
     indexRef.current = 0;
     setSelectedLetters([]);
     setTimeLeft(getRoundTime(target.word));
-    setFishes(createFishes(buildLettersForRound(target.word)));
+
+    setFishes(createFishes(buildLettersForRound(target.word), unlockedFish));
 
     showToast("O'yin boshlandi. To'g'ri harflarni tuting!");
   };
 
+  const handleStartGame = () => runStartCountdown(startGame);
+
   const resetCurrentRound = () => {
     if (!currentWord) return;
     setSelectedLetters([]);
-    setFishes(createFishes(buildLettersForRound(currentWord.word)));
+    setHadMistakeThisRound(false);
+    setStreak(0);
+    setFishes(createFishes(buildLettersForRound(currentWord.word), unlockedFish));
     showToast("Joriy so'z qayta boshlandi");
   };
 
@@ -400,25 +486,68 @@ export default function OceanWordFishing() {
     const nextIndex = selectedLetters.length;
     const expectedLetter = currentWord.letters[nextIndex];
 
+    // ❌ WRONG: no restart, only penalty + shake + sound
     if (fish.letter !== expectedLetter) {
-      showToast(`Xato: "${expectedLetter}" harfini toping`);
-      setSelectedLetters([]);
-      setFishes(createFishes(buildLettersForRound(currentWord.word)));
+      setHadMistakeThisRound(true);
+      setStreak(0);
+      setTimeLeft((t) => Math.max(0, t - 3));
+
+      playSfx(oopsRef);
+
+      setScreenShake(true);
+      window.setTimeout(() => setScreenShake(false), 300);
+
+      showToast(`Xato! "${expectedLetter}" harfini toping`);
       return;
     }
 
+    // ✅ CORRECT
+    const comboAfter = streak + 1; // use for last-letter scoring immediately
+
+    playSfx(dingRef);
+
+    setStreak((prev) => {
+      const next = prev + 1;
+      setBestStreak((b) => Math.max(b, next));
+      return next;
+    });
+
+    // mark caught
     setFishes((prev) =>
-      prev.map((item) =>
-        item.id === fish.id ? { ...item, caught: true } : item,
-      ),
+      prev.map((item) => (item.id === fish.id ? { ...item, caught: true } : item)),
     );
+
+    // trigger caught animation (we keep rendering caught fish briefly)
+    setCaughtFxId(fish.id);
+    window.setTimeout(() => setCaughtFxId(null), 260);
+
     const updated = [...selectedLetters, fish.letter];
     setSelectedLetters(updated);
 
+    // word completed
     if (updated.length === currentWord.letters.length) {
-      const earned = currentWord.points + Math.max(0, timeLeft);
+      const timeBonus = Math.max(0, timeLeft);
+      const streakBonus = comboAfter >= 8 ? 40 : comboAfter >= 5 ? 25 : comboAfter >= 3 ? 12 : 0;
+      const perfectBonus = hadMistakeThisRound ? 0 : 40;
+
+      const earned = currentWord.points + timeBonus + streakBonus + perfectBonus;
+
+      const bonusText = [
+        timeBonus ? `+${timeBonus} time` : null,
+        streakBonus ? `+${streakBonus} combo` : null,
+        perfectBonus ? `+${perfectBonus} PERFECT` : null,
+      ]
+        .filter(Boolean)
+        .join(" • ");
+
       setScore((prev) => prev + earned);
-      showToast(`Ajoyib! +${earned} ball`);
+
+      playSfx(tadaRef);
+
+      showToast(
+        bonusText ? `Ajoyib! +${earned} (${bonusText})` : `Ajoyib! +${earned} ball`,
+      );
+
       window.setTimeout(() => advanceRound(true), 900);
     }
   };
@@ -502,12 +631,12 @@ export default function OceanWordFishing() {
                 <FaFish className="text-3xl text-white" />
               </div>
               <div>
-                <h2 className="text-3xl font-black text-white">
-                  OCEAN WORD FISHING
-                </h2>
+                <h2 className="text-3xl font-black text-white">OCEAN WORD FISHING</h2>
                 <p className="text-cyan-100/80">
-                  O'qituvchi so'zlarni kiritsin, bolalar baliq tutib so'z
-                  yig'adi.
+                  O'qituvchi so'zlarni kiritsin, bolalar baliq tutib so'z yig'adi.
+                </p>
+                <p className="mt-1 text-xs text-cyan-100/70">
+                  Unlock: {unlockedFish.length}/3 fish • Level: {playerLevel}
                 </p>
               </div>
             </div>
@@ -529,9 +658,7 @@ export default function OceanWordFishing() {
                   Qo'shish
                 </button>
               </div>
-              {draftError && (
-                <p className="mt-2 text-sm text-rose-300">{draftError}</p>
-              )}
+              {draftError && <p className="mt-2 text-sm text-rose-300">{draftError}</p>}
             </div>
 
             <div className="grid max-h-80 gap-3 overflow-y-auto pr-1">
@@ -545,12 +672,8 @@ export default function OceanWordFishing() {
                       {idx + 1}
                     </span>
                     <div>
-                      <p className="text-lg font-black text-white">
-                        {word.word}
-                      </p>
-                      <p className="text-xs text-cyan-100/75">
-                        Ball: {word.points}
-                      </p>
+                      <p className="text-lg font-black text-white">{word.word}</p>
+                      <p className="text-xs text-cyan-100/75">Ball: {word.points}</p>
                     </div>
                   </div>
                   <button
@@ -572,7 +695,7 @@ export default function OceanWordFishing() {
             {words.length > 0 && (
               <div className="mt-7 text-center">
                 <button
-                  onClick={startGame}
+                  onClick={handleStartGame}
                   className="rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-500 px-10 py-4 text-xl font-black text-white shadow-2xl transition hover:scale-[1.03]"
                 >
                   <FaPlay className="mr-3 inline" />
@@ -599,13 +722,18 @@ export default function OceanWordFishing() {
                   <p className="text-xs text-cyan-100">Vaqt</p>
                   <p className="text-2xl font-black text-white">{timeLeft}s</p>
                 </div>
+
+                {/* ✅ Combo/Streak panel */}
+                <div className="rounded-xl border border-cyan-200/30 bg-white/15 px-4 py-2 backdrop-blur-md">
+                  <p className="text-xs text-cyan-100">Combo</p>
+                  <p className="text-2xl font-black text-white">{streak}</p>
+                  <p className="text-[10px] text-cyan-100/70">Best: {bestStreak}</p>
+                </div>
               </div>
 
               <div className="max-w-3xl flex-1 rounded-xl border border-cyan-200/25 bg-white/10 p-3 backdrop-blur-md">
                 <div className="mb-2 flex flex-wrap items-center gap-2">
-                  <span className="text-sm text-cyan-100">
-                    Topiladigan so'z:
-                  </span>
+                  <span className="text-sm text-cyan-100">Topiladigan so'z:</span>
                   {currentWord.letters.map((letter, i) => (
                     <span
                       key={`${letter}-${i}`}
@@ -618,7 +746,15 @@ export default function OceanWordFishing() {
                       {i < selectedLetters.length ? letter : "?"}
                     </span>
                   ))}
+
+                  {/* ✅ Perfect hint */}
+                  {!hadMistakeThisRound && (
+                    <span className="ml-2 rounded-full border border-emerald-200/30 bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-100">
+                      PERFECT ACTIVE
+                    </span>
+                  )}
                 </div>
+
                 <div className="h-2 rounded-full bg-white/15">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-sky-400 to-cyan-400"
@@ -630,13 +766,13 @@ export default function OceanWordFishing() {
               <div className="flex gap-2">
                 <button
                   onClick={toggleMute}
-                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-200/30 bg-white/15 text-white hover:bg-white/25 transition-all"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-200/30 bg-white/15 text-white transition-all hover:bg-white/25"
                 >
                   {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}
                 </button>
                 <button
                   onClick={resetCurrentRound}
-                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-200/30 bg-white/15 text-white hover:bg-white/25 transition-all"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-200/30 bg-white/15 text-white transition-all hover:bg-white/25"
                 >
                   <FaRedo />
                 </button>
@@ -645,57 +781,68 @@ export default function OceanWordFishing() {
           </div>
 
           {/* Baliqlar maydoni */}
-          <div className="relative h-screen w-full overflow-hidden pt-28">
-  {fishes.map(
-    (fish) =>
-      !fish.caught && (
-        // 1) POSITION wrapper: translate(-50%, -50%) shu yerda qoladi
-        <div
-          key={fish.id}
-          className="absolute"
-          style={{
-            left: `${fish.x}%`,
-            top: `${fish.y}%`,
-            transform: "translate(-50%, -50%)",
-          }}
-        >
-          {/* 2) SWIM wrapper: transform faqat shu divda animatsiya bo'ladi */}
           <div
-            style={{
-              animation: `fish-pass-${fish.facing === 1 ? "right" : "left"} ${fish.swimDuration}s linear infinite`,
-              animationDelay: `${fish.swimDelay}s`,
-              ["--fromX" as any]: `${fish.fromX}vw`,
-              ["--toX" as any]: `${fish.toX}vw`,
-              willChange: "transform",
-            }}
+            className={`relative h-screen w-full overflow-hidden pt-28 ${
+              screenShake ? "screen-shake" : ""
+            }`}
           >
-            {/* 3) FLOAT wrapper */}
-            <div
-              style={{
-                animation: `fish-float ${fish.floatDuration}s ease-in-out infinite`,
-                willChange: "transform",
-              }}
-            >
-              <button
-                onClick={() => handleFishClick(fish)}
-                className="relative transition duration-200 hover:scale-110 active:scale-95"
-              >
-                <span className="absolute -inset-5" />
-                <FishImage fish={fish} />
-              </button>
-            </div>
+            {fishes.map((fish) => {
+              const shouldRender = !fish.caught || caughtFxId === fish.id;
+              if (!shouldRender) return null;
+
+              return (
+                <div
+                  key={fish.id}
+                  className="absolute"
+                  style={{
+                    left: `${fish.x}%`,
+                    top: `${fish.y}%`,
+                    transform: "translate(-50%, -50%)",
+                    pointerEvents: fish.caught ? "none" : "auto",
+                  }}
+                >
+                  <div
+                    style={
+                      {
+                        animation: `fish-pass-${
+                          fish.facing === 1 ? "right" : "left"
+                        } ${fish.swimDuration}s linear infinite`,
+                        animationDelay: `${fish.swimDelay}s`,
+                        ["--fromX"]: `${fish.fromX}vw`,
+                        ["--toX"]: `${fish.toX}vw`,
+                        willChange: "transform",
+                        opacity: fish.caught ? 0.92 : 1,
+                      } as CSSProperties
+                    }
+                  >
+                    <div
+                      style={
+                        {
+                          animation: `fish-float ${fish.floatDuration}s ease-in-out infinite`,
+                          willChange: "transform",
+                        } as CSSProperties
+                      }
+                    >
+                      <button
+                        onClick={() => handleFishClick(fish)}
+                        className={`relative transition duration-200 hover:scale-110 active:scale-95 ${
+                          fish.caught && caughtFxId === fish.id ? "fish-caught" : ""
+                        }`}
+                      >
+                        <span className="absolute -inset-5" />
+                        <FishImage fish={fish} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        </div>
-      ),
-  )}
-</div>
 
           {/* Pastki panel - yig'ilgan harflar */}
           <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2">
             <div className="rounded-2xl border border-cyan-100/30 bg-sky-950/65 p-4 backdrop-blur-lg">
-              <p className="mb-2 text-center text-xs text-cyan-100/80">
-                Yig'ilgan harflar
-              </p>
+              <p className="mb-2 text-center text-xs text-cyan-100/80">Yig'ilgan harflar</p>
               <div className="flex min-h-11 gap-2">
                 {selectedLetters.length > 0 ? (
                   selectedLetters.map((letter, i) => (
@@ -727,10 +874,33 @@ export default function OceanWordFishing() {
                 <FaCrown className="text-4xl text-white" />
               </div>
             </div>
-            <h2 className="mb-3 text-4xl font-black text-white">
-              Tabriklaymiz!
-            </h2>
-            <p className="mb-6 text-xl text-cyan-100">Yakuniy ball: {score}</p>
+
+            <h2 className="mb-3 text-4xl font-black text-white">Tabriklaymiz!</h2>
+            <p className="mb-3 text-xl text-cyan-100">Yakuniy ball: {score}</p>
+
+            {/* ✅ stars */}
+            <div className="mb-3 flex justify-center gap-2">
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className={`text-3xl ${i < stars ? "opacity-100" : "opacity-30"}`}
+                >
+                  ⭐
+                </span>
+              ))}
+            </div>
+
+            {/* ✅ medal + level + unlock */}
+            {medal && (
+              <p className="mb-2 text-lg font-bold text-cyan-100">
+                Medal:{" "}
+                {medal === "gold" ? "🥇 Gold" : medal === "silver" ? "🥈 Silver" : "🥉 Bronze"}
+              </p>
+            )}
+            <p className="mb-5 text-sm text-cyan-100/85">
+              Level: <span className="font-black text-white">{playerLevel}</span> • Unlock:
+              <span className="ml-1 font-black text-white">{unlockedFish.length}/3</span>
+            </p>
 
             <div className="mx-auto mb-6 grid max-w-md grid-cols-2 gap-3">
               <div className="rounded-xl border border-cyan-100/30 bg-white/10 p-4">
@@ -740,8 +910,8 @@ export default function OceanWordFishing() {
                 </p>
               </div>
               <div className="rounded-xl border border-cyan-100/30 bg-white/10 p-4">
-                <p className="text-sm text-cyan-100/80">Umumiy ball</p>
-                <p className="text-2xl font-black text-white">{score}</p>
+                <p className="text-sm text-cyan-100/80">Best Combo</p>
+                <p className="text-2xl font-black text-white">{bestStreak}</p>
               </div>
             </div>
 
@@ -751,7 +921,7 @@ export default function OceanWordFishing() {
                   setPhase("teacher");
                   setIsPlaying(false);
                 }}
-                className="rounded-xl bg-gradient-to-r from-sky-500 to-cyan-500 px-7 py-3 text-lg font-black text-white hover:scale-105 transition-all"
+                className="rounded-xl bg-gradient-to-r from-sky-500 to-cyan-500 px-7 py-3 text-lg font-black text-white transition-all hover:scale-105"
               >
                 <FaPlay className="mr-2 inline" />
                 Qayta O'yna
@@ -760,7 +930,7 @@ export default function OceanWordFishing() {
                 onClick={() => {
                   window.location.href = "/games";
                 }}
-                className="rounded-xl border border-cyan-100/40 bg-white/10 px-7 py-3 text-lg font-bold text-white hover:bg-white/20 transition-all"
+                className="rounded-xl border border-cyan-100/40 bg-white/10 px-7 py-3 text-lg font-bold text-white transition-all hover:bg-white/20"
               >
                 <FaArrowLeft className="mr-2 inline" />
                 O'yinlar
@@ -769,6 +939,7 @@ export default function OceanWordFishing() {
           </div>
         </div>
       )}
+      <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue} />
     </div>
   );
 }

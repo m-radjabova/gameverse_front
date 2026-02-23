@@ -1,4 +1,4 @@
-import { 
+﻿import { 
   FaUsers, 
   FaTrophy, 
   FaClock,  
@@ -17,11 +17,9 @@ import {
   MdEmojiEvents, 
   MdQuiz 
 } from "react-icons/md";
-import { RiTeamFill } from "react-icons/ri";
-import WheelOfFortune from "./WheelOfFortune";
+import { RiTeamFill } from "react-icons/ri";import WheelOfFortune from "./WheelOfFortune";
 
-function WheelOfFortunePage() {
-  const wheelOfFortuneImg = "https://media.istockphoto.com/id/2177986731/photo/wheel-of-fortune-with-rewards.jpg?s=612x612&w=0&k=20&c=dkony3LqMPl7Mftei-8AkXfoGQgWsOQlqo_7NBeLOT0=";
+function WheelOfFortunePage() {  const wheelOfFortuneImg = "https://media.istockphoto.com/id/2177986731/photo/wheel-of-fortune-with-rewards.jpg?s=612x612&w=0&k=20&c=dkony3LqMPl7Mftei-8AkXfoGQgWsOQlqo_7NBeLOT0=";
   const gameStats = [
     { icon: FaUsers, label: "O'QUVCHILAR", value: "2-10 kishi", color: "from-purple-400 to-pink-400" },
     { icon: MdTimer, label: "DAVOMIYLIK", value: "10-15 min", color: "from-pink-400 to-rose-400" },
@@ -95,7 +93,7 @@ function WheelOfFortunePage() {
         <FaCrown className="absolute right-[12%] top-[25%] animate-float text-8xl text-purple-500/5" />
       </div>
 
-      <div className="relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-4 py-6 md:px-6 md:py-8 lg:px-8 xl:px-10">
+      <div className="relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-4 py-6 md:px-6 md:py-8 lg:px-8 xl:px-10 motion-safe:animate-[fadeInUp_.35s_ease-out]">
         {/* Hero Section */}
         <div className="group relative mb-8 transform-gpu overflow-hidden rounded-3xl border border-purple-500/20 bg-gradient-to-br from-purple-900/40 via-pink-900/40 to-rose-900/40 p-6 backdrop-blur-xl shadow-2xl md:p-8 lg:p-10">
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
@@ -265,7 +263,7 @@ function WheelOfFortunePage() {
                   <h2 className="text-xl font-black text-white">Wheel of Fortune</h2>
                   <p className="flex items-center gap-2 text-sm text-purple-200/80">
                     <RiTeamFill className="text-purple-400" />
-                    Baraban o'yini · Tasodifiy tanlov
+                    Baraban o'yini В· Tasodifiy tanlov
                   </p>
                 </div>
               </div>
@@ -300,3 +298,6 @@ function WheelOfFortunePage() {
 }
 
 export default WheelOfFortunePage;
+
+
+

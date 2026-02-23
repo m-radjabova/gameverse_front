@@ -1,11 +1,9 @@
-import { FaUsers, FaTrophy, FaClock, FaBolt } from "react-icons/fa";
-import { GiPuzzle, GiBrain, GiAchievement, GiPodium, GiConsoleController} from "react-icons/gi";
+﻿import { FaUsers, FaTrophy, FaClock, FaBolt } from "react-icons/fa";import { GiPuzzle, GiBrain, GiAchievement, GiPodium, GiConsoleController} from "react-icons/gi";
 import { MdGames, MdSportsEsports, MdTimer, MdSpeed, MdEmojiEvents } from "react-icons/md";
 import { RiTeamFill} from "react-icons/ri";
 import ClassicArcade from "./ClassicArcade";
 
-function ClassicArcadePage() {
-  const classicArcadeImg =
+function ClassicArcadePage() {  const classicArcadeImg =
     "https://media.istockphoto.com/id/1582151789/vector/vector-arcade-premium-alphabet-in-purple-violet-blue-colors-vector-3d-font-text-elements.jpg?s=612x612&w=0&k=20&c=x6f1QrMBy4O6ac6IFTWDG13A9D3vQFK8cIPXGrvA6aA=";
 
   const gameStats = [
@@ -85,7 +83,7 @@ function ClassicArcadePage() {
         <GiBrain className="absolute right-[12%] top-[25%] animate-float text-8xl text-white/5" />
       </div>
 
-      <div className="relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-4 py-6 md:px-6 md:py-8 lg:px-8 xl:px-10">
+      <div className="relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-4 py-6 md:px-6 md:py-8 lg:px-8 xl:px-10 motion-safe:animate-[fadeInUp_.35s_ease-out]">
         {/* Hero Section */}
         <div className="group relative mb-8 transform-gpu overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-fuchsia-900/40 via-rose-900/40 to-orange-900/40 p-6 backdrop-blur-xl shadow-2xl md:p-8 lg:p-10">
           {/* Animated Gradient Border */}
@@ -268,7 +266,7 @@ function ClassicArcadePage() {
                   <h2 className="text-xl font-black text-white">Classic Arcade</h2>
                   <p className="flex items-center gap-2 text-sm text-gray-300">
                     <RiTeamFill className="text-fuchsise-400" />
-                    Guruhli bellashuv · Navbat bilan o'ynash
+                    Guruhli bellashuv В· Navbat bilan o'ynash
                   </p>
                 </div>
               </div>
@@ -304,3 +302,6 @@ function ClassicArcadePage() {
 }
 
 export default ClassicArcadePage;
+
+
+

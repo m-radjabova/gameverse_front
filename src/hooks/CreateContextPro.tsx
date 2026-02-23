@@ -67,7 +67,7 @@ function CreateContextPro({ children }: { children: ReactNode }) {
 
       const res = await apiClient.get<User>("/users/me");
       dispatch({ type: "SET_USER", payload: res.data });
-    } catch (e )  {
+    } catch {
       clearAuthStorage();
       dispatch({ type: "SET_USER", payload: null });
       navigate("/login"); 

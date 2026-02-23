@@ -5,6 +5,8 @@ import { GiBroccoli, GiFruitBowl, GiPodium, GiSpinningWheel } from "react-icons/
 import { MdSettings, MdTimer } from "react-icons/md";
 import { RiTeamFill } from "react-icons/ri";
 import Confetti from "react-confetti-boom";
+import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
+import { useGameStartCountdown } from "../shared/useGameStartCountdown";
 
 type TeamId = 0 | 1;
 type Phase = "teacher" | "play" | "finish";
@@ -115,6 +117,7 @@ export default function WordSearchPuzzle() {
   const [timer, setTimer] = useState(GAME_TIME_SECONDS);
   const [showWordLists, setShowWordLists] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
+  const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
   const [team1Message, setTeam1Message] = useState("");
   const [team2Message, setTeam2Message] = useState("");
 
@@ -223,6 +226,8 @@ export default function WordSearchPuzzle() {
     setPhase("play");
     setToast("🎮 4 daqiqa boshlandi");
   };
+
+  const handleStartGame = () => runStartCountdown(startGame);
 
   const checkSelectedWord = (teamId: TeamId): WordItem | null => {
     const selected = teamId === 0 ? team1Selected : team2Selected;
@@ -499,7 +504,7 @@ export default function WordSearchPuzzle() {
           </div>
 
           {nameError && <div className="mt-4 rounded-xl border border-rose-500/30 bg-rose-500/20 p-3 text-rose-300">⚠️ {nameError}</div>}
-          <div className="mt-8 flex justify-center"><button onClick={startGame} className="rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-12 py-4 text-xl font-black text-white"><FaPlay className="mr-3 inline" />O'YINNI BOSHLASH</button></div>
+          <div className="mt-8 flex justify-center"><button onClick={handleStartGame} className="rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-12 py-4 text-xl font-black text-white"><FaPlay className="mr-3 inline" />O'YINNI BOSHLASH</button></div>
         </div>
       )}
 
@@ -548,6 +553,7 @@ export default function WordSearchPuzzle() {
           </div>
         </div>
       )}
+      <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue} />
     </div>
   );
 }

@@ -9,17 +9,29 @@ import {
   FaStar,
   FaBolt,
   FaFire,
+  FaShieldAlt,
+  FaClock,
+  FaDiceTwo,
 } from "react-icons/fa";
 import { GiRaceCar, GiCheckeredFlag } from "react-icons/gi";
 import { MdTimer } from "react-icons/md";
 import Confetti from "react-confetti-boom";
+import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
+import { useGameStartCountdown } from "../shared/useGameStartCountdown";
 
 import trackImg from "../../../assets/track-road.jpg";
 import carBlue from "../../../assets/blue-car-removebg-preview.png";
 import carBlack from "../../../assets/black-car-removebg-preview.png";
+import carSound from "../../../assets/car_sound.mp3";
+
+import sfxCorrect from "../../../assets/ding.m4a";
+import sfxWrong from "../../../assets/wrong.m4a";
+import sfxNitro from "../../../assets/whoosh.m4a";
+import sfxFinish from "../../../assets/tada.mp3";
 
 type Phase = "teacher" | "play" | "finish";
 type PlayerId = 0 | 1;
+type Difficulty = "easy" | "medium" | "hard";
 
 type Player = {
   id: PlayerId;
@@ -31,18 +43,33 @@ type MathQuestion = {
   id: string;
   question: string;
   answer: number;
-  difficulty: "easy" | "medium" | "hard";
+  difficulty: Difficulty;
   points: number;
 };
 
 type QuestionDraft = {
   question: string;
   answer: string;
-  difficulty: "easy" | "medium" | "hard";
+  difficulty: Difficulty;
   points: number;
 };
 
-const RACE_TRACK_LENGTH = 100; // 100%
+type PlayerStats = {
+  streak: number;
+  bestStreak: number;
+  correct: number;
+  wrong: number;
+
+  used5050: boolean;
+  usedTime: boolean;
+
+  shieldCharges: number; // 1 at start
+  shieldArmed: boolean;  // armed => next wrong has no penalty
+
+  reducedOptions: number[] | null; // 50/50 options for current question
+};
+
+const RACE_TRACK_LENGTH = 100;
 const BASE_MOVE_AMOUNT = 10;
 const TIME_BONUS_MULTIPLIER = 0.3;
 const ROUND_TIME = 15;
@@ -76,6 +103,46 @@ const shuffleArray = <T,>(arr: T[]) => {
   return next;
 };
 
+const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
+
+const createDefaultStats = (): Record<PlayerId, PlayerStats> => ({
+  0: {
+    streak: 0,
+    bestStreak: 0,
+    correct: 0,
+    wrong: 0,
+    used5050: false,
+    usedTime: false,
+    shieldCharges: 1,
+    shieldArmed: false,
+    reducedOptions: null,
+  },
+  1: {
+    streak: 0,
+    bestStreak: 0,
+    correct: 0,
+    wrong: 0,
+    used5050: false,
+    usedTime: false,
+    shieldCharges: 1,
+    shieldArmed: false,
+    reducedOptions: null,
+  },
+});
+
+const wrongPenalty = (difficulty: Difficulty) => {
+  if (difficulty === "easy") return 0;
+  if (difficulty === "medium") return 2;
+  return 4;
+};
+
+const nitroBonusFromStreak = (streakAfter: number) => {
+  // 2-streak: +3, 3+ streak: +5
+  if (streakAfter >= 3) return 5;
+  if (streakAfter >= 2) return 3;
+  return 0;
+};
+
 export default function MathRace() {
   const [phase, setPhase] = useState<Phase>("teacher");
   const [players, setPlayers] = useState<Player[]>([
@@ -90,9 +157,23 @@ export default function MathRace() {
   const [isPlaying, setIsPlaying] = useState(false);
 
   const [toast, setToast] = useState<string | null>(null);
+  const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
   const [winner, setWinner] = useState<PlayerId | null>(null);
   const [locked, setLocked] = useState(false);
   const [answerResult, setAnswerResult] = useState<{ correct: boolean; message: string } | null>(null);
+
+  // ✅ NEW: stats / effects / finish rewards
+  const [stats, setStats] = useState<Record<PlayerId, PlayerStats>>(createDefaultStats());
+  const statsRef = useRef(stats);
+  useEffect(() => {
+    statsRef.current = stats;
+  }, [stats]);
+
+  const [nitroFxPlayer, setNitroFxPlayer] = useState<PlayerId | null>(null);
+  const [screenShake, setScreenShake] = useState(false);
+
+  const [stars, setStars] = useState(0);
+  const [medal, setMedal] = useState<string | null>(null);
 
   const [draftQuestion, setDraftQuestion] = useState<QuestionDraft>({
     question: "",
@@ -107,7 +188,13 @@ export default function MathRace() {
   const playersRef = useRef<Player[]>(players);
   const activeQuestionsCountRef = useRef(0);
 
-  // ===== Track sizing =====
+  const carSoundRef = useRef<HTMLAudioElement | null>(null);
+  const correctRef = useRef<HTMLAudioElement | null>(null);
+  const wrongRef = useRef<HTMLAudioElement | null>(null);
+  const nitroRef = useRef<HTMLAudioElement | null>(null);
+  const finishRef = useRef<HTMLAudioElement | null>(null);
+
+  // Track sizing
   const trackRef = useRef<HTMLDivElement | null>(null);
   const [trackWidth, setTrackWidth] = useState(0);
 
@@ -130,23 +217,56 @@ export default function MathRace() {
     activeQuestionsCountRef.current = activeQuestions.length;
   }, [activeQuestions.length]);
 
-  // MUHIM: START va FINISH pozitsiyalari
-  const CAR_WIDTH = 220; // Kichikroq qilindi
-  const START_POSITION = 40; // Start chizig'i chapdan 40px
-  const FINISH_POSITION = trackWidth - 120; // Finish chizig'i o'ngdan 120px oldin
+  useEffect(() => {
+    carSoundRef.current = new Audio(carSound);
+    carSoundRef.current.volume = 1;
+
+    // optional sfx
+    correctRef.current = new Audio(sfxCorrect);
+    wrongRef.current = new Audio(sfxWrong);
+    nitroRef.current = new Audio(sfxNitro);
+    finishRef.current = new Audio(sfxFinish);
+
+    if (correctRef.current) correctRef.current.volume = 0.7;
+    if (wrongRef.current) wrongRef.current.volume = 0.7;
+    if (nitroRef.current) nitroRef.current.volume = 0.75;
+    if (finishRef.current) finishRef.current.volume = 0.8;
+
+    return () => {
+      [carSoundRef, correctRef, wrongRef, nitroRef, finishRef].forEach((r) => {
+        if (r.current) {
+          r.current.pause();
+          r.current.currentTime = 0;
+        }
+      });
+    };
+  }, []);
+
+  const playSfx = (ref: React.RefObject<HTMLAudioElement | null>) => {
+    const a = ref.current;
+    if (!a) return;
+    a.currentTime = 0;
+    a.play().catch(() => {});
+  };
+
+  // positions
+  const CAR_WIDTH = trackWidth < 500 ? 160 : 220;
+  const START_POSITION = 40;
+  const FINISH_POSITION = trackWidth - 120;
 
   const getCarX = (posPercent: number) => {
     if (trackWidth === 0) return START_POSITION;
-    
-    // 0% da START_POSITION, 100% da FINISH_POSITION - CAR_WIDTH
     const availableTrack = FINISH_POSITION - START_POSITION - CAR_WIDTH;
     return START_POSITION + (availableTrack * posPercent) / 100;
   };
 
   const currentQuestion = activeQuestions[currentQuestionIndex];
-  const progress = activeQuestions.length > 0 ? ((currentQuestionIndex + 1) / activeQuestions.length) * 100 : 0;
+  const progress =
+    activeQuestions.length > 0
+      ? ((currentQuestionIndex + 1) / activeQuestions.length) * 100
+      : 0;
 
-  const options = useMemo(() => {
+  const baseOptions = useMemo(() => {
     if (!currentQuestion) return [];
     const correct = currentQuestion.answer;
     const opts = [correct];
@@ -165,9 +285,25 @@ export default function MathRace() {
     return shuffleArray(opts);
   }, [currentQuestion]);
 
+  const optionsFor = (playerId: PlayerId) => {
+    const reduced = stats[playerId].reducedOptions;
+    return reduced && reduced.length ? reduced : baseOptions;
+  };
+
   const showToast = (message: string) => {
     setToast(message);
     window.setTimeout(() => setToast(null), 2000);
+  };
+
+  const triggerShake = () => {
+    setScreenShake(true);
+    window.setTimeout(() => setScreenShake(false), 260);
+  };
+
+  const triggerNitro = (playerId: PlayerId) => {
+    setNitroFxPlayer(playerId);
+    playSfx(nitroRef);
+    window.setTimeout(() => setNitroFxPlayer(null), 450);
   };
 
   // ===== Timer =====
@@ -179,15 +315,16 @@ export default function MathRace() {
       setLocked(true);
       setAnswerResult({ correct: false, message: "Vaqt tugadi!" });
 
-      if (transitionTimerRef.current) {
-        window.clearTimeout(transitionTimerRef.current);
-      }
+      if (transitionTimerRef.current) window.clearTimeout(transitionTimerRef.current);
       transitionTimerRef.current = window.setTimeout(() => {
         if (currentQuestionIndex + 1 >= activeQuestionsCountRef.current) {
           const snapshot = playersRef.current;
           const w =
-            snapshot[0].position > snapshot[1].position ? 0 :
-            snapshot[1].position > snapshot[0].position ? 1 : null;
+            snapshot[0].position > snapshot[1].position
+              ? 0
+              : snapshot[1].position > snapshot[0].position
+                ? 1
+                : null;
 
           setWinner(w);
           setPhase("finish");
@@ -197,15 +334,19 @@ export default function MathRace() {
           setTimeLeft(ROUND_TIME);
           setLocked(false);
           setAnswerResult(null);
+
+          // per-question reset (50/50 view only)
+          setStats((prev) => ({
+            0: { ...prev[0], reducedOptions: null },
+            1: { ...prev[1], reducedOptions: null },
+          }));
         }
       }, 1200);
 
       return;
     }
 
-    if (countdownTimerRef.current) {
-      window.clearTimeout(countdownTimerRef.current);
-    }
+    if (countdownTimerRef.current) window.clearTimeout(countdownTimerRef.current);
     countdownTimerRef.current = window.setTimeout(() => setTimeLeft((p) => p - 1), 1000);
 
     return () => {
@@ -224,6 +365,37 @@ export default function MathRace() {
     }
   }, [players, phase]);
 
+  // finish rewards
+  useEffect(() => {
+    if (phase !== "finish") return;
+
+    const s0 = statsRef.current[0];
+    const s1 = statsRef.current[1];
+
+    const total = s0.correct + s0.wrong + s1.correct + s1.wrong;
+    const correctAll = s0.correct + s1.correct;
+    const acc = total ? correctAll / total : 0;
+
+    const diff = Math.abs(playersRef.current[0].position - playersRef.current[1].position);
+
+    const nextStars =
+      winner !== null && acc >= 0.75 ? 3 :
+      winner !== null && acc >= 0.55 ? 2 :
+      acc >= 0.45 ? 1 : 0;
+
+    setStars(nextStars);
+
+    const nextMedal =
+      nextStars >= 3 && diff >= 15 ? "🥇 Gold" :
+      nextStars >= 2 ? "🥈 Silver" :
+      nextStars >= 1 ? "🥉 Bronze" : null;
+
+    setMedal(nextMedal);
+
+    playSfx(finishRef);
+  }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ===== Teacher actions =====
   const addQuestion = () => {
     const question = draftQuestion.question.trim();
     const answer = parseInt(draftQuestion.answer);
@@ -275,50 +447,172 @@ export default function MathRace() {
     setAnswerResult(null);
     setWinner(null);
     setPhase("play");
+
+    setStats(createDefaultStats());
+    setStars(0);
+    setMedal(null);
+
     showToast("🏁 Poyga boshlandi!");
   };
 
+  const handleStartGame = () => runStartCountdown(startGame);
+
+  // ===== Power-ups =====
+  const activate5050 = (playerId: PlayerId) => {
+    if (locked || !isPlaying || !currentQuestion) return;
+    if (stats[playerId].used5050) return showToast("🎲 50/50 allaqachon ishlatilgan!");
+
+    const correct = currentQuestion.answer;
+    const wrongs = baseOptions.filter((x) => x !== correct);
+    const wrong = wrongs[Math.floor(Math.random() * wrongs.length)];
+    const reduced = shuffleArray([correct, wrong]);
+
+    setStats((prev) => ({
+      ...prev,
+      [playerId]: { ...prev[playerId], used5050: true, reducedOptions: reduced },
+    }));
+
+    showToast(`🎲 ${players[playerId].name}: 50/50!`);
+  };
+
+  const activatePlusTime = (playerId: PlayerId) => {
+    if (locked || !isPlaying) return;
+    if (stats[playerId].usedTime) return showToast("⏱️ +3s allaqachon ishlatilgan!");
+
+    setStats((prev) => ({
+      ...prev,
+      [playerId]: { ...prev[playerId], usedTime: true },
+    }));
+
+    setTimeLeft((t) => clamp(t + 3, 0, 30));
+    showToast(`⏱️ ${players[playerId].name}: +3s`);
+  };
+
+  const activateShield = (playerId: PlayerId) => {
+    if (locked || !isPlaying) return;
+    if (stats[playerId].shieldCharges <= 0) return showToast("🛡️ Shield yo‘q!");
+    if (stats[playerId].shieldArmed) return showToast("🛡️ Shield allaqachon tayyor!");
+
+    setStats((prev) => ({
+      ...prev,
+      [playerId]: {
+        ...prev[playerId],
+        shieldCharges: prev[playerId].shieldCharges - 1,
+        shieldArmed: true,
+      },
+    }));
+
+    showToast(`🛡️ ${players[playerId].name}: Shield armed!`);
+  };
+
+  // ===== Answer handler =====
   const handleAnswer = (playerId: PlayerId, answer: number) => {
     if (locked || !isPlaying || !currentQuestion) return;
 
-    if (countdownTimerRef.current) {
-      window.clearTimeout(countdownTimerRef.current);
-    }
+    if (countdownTimerRef.current) window.clearTimeout(countdownTimerRef.current);
     setLocked(true);
 
     const isCorrect = answer === currentQuestion.answer;
     const player = players[playerId];
 
+    const curStats = statsRef.current[playerId];
+
     if (isCorrect) {
-      const difficultyBonus = 
-        currentQuestion.difficulty === "hard" ? 5 :
-        currentQuestion.difficulty === "medium" ? 3 : 1;
-      
+      const difficultyBonus =
+        currentQuestion.difficulty === "hard"
+          ? 5
+          : currentQuestion.difficulty === "medium"
+            ? 3
+            : 1;
+
       const timeBonus = Math.floor(timeLeft * TIME_BONUS_MULTIPLIER);
-      const moveAmount = BASE_MOVE_AMOUNT + difficultyBonus + timeBonus;
+
+      const streakAfter = curStats.streak + 1;
+      const nitroBonus = nitroBonusFromStreak(streakAfter);
+
+      const moveAmount = BASE_MOVE_AMOUNT + difficultyBonus + timeBonus + nitroBonus;
 
       setPlayers((prev) =>
         prev.map((p) =>
-          p.id === playerId ? { ...p, position: Math.min(p.position + moveAmount, RACE_TRACK_LENGTH) } : p
-        )
+          p.id === playerId
+            ? { ...p, position: Math.min(p.position + moveAmount, RACE_TRACK_LENGTH) }
+            : p,
+        ),
       );
 
-      setAnswerResult({ correct: true, message: `✅ ${player.name} to'g'ri! +${moveAmount}%` });
+      // update stats
+      setStats((prev) => ({
+        ...prev,
+        [playerId]: {
+          ...prev[playerId],
+          correct: prev[playerId].correct + 1,
+          streak: streakAfter,
+          bestStreak: Math.max(prev[playerId].bestStreak, streakAfter),
+          shieldArmed: false,     // correct => keep armed? (odatiy: armed qolaversin ham mumkin)
+          reducedOptions: null,
+        },
+      }));
+
+      playSfx(correctRef);
+
+      if (carSoundRef.current) {
+        carSoundRef.current.currentTime = 0;
+        void carSoundRef.current.play().catch(() => {});
+      }
+
+      if (nitroBonus > 0) triggerNitro(playerId);
+
+      setAnswerResult({
+        correct: true,
+        message: `✅ ${player.name} to'g'ri! +${moveAmount}% ${nitroBonus ? `(NITRO +${nitroBonus})` : ""}`,
+      });
       showToast(`🚀 ${player.name} oldinga!`);
     } else {
-      setAnswerResult({ correct: false, message: `❌ ${player.name} xato! To'g'ri: ${currentQuestion.answer}` });
+      // wrong
+      const shieldActive = curStats.shieldArmed;
+
+      const back = shieldActive ? 0 : wrongPenalty(currentQuestion.difficulty);
+
+      if (back > 0) {
+        setPlayers((prev) =>
+          prev.map((p) =>
+            p.id === playerId ? { ...p, position: Math.max(0, p.position - back) } : p,
+          ),
+        );
+      }
+
+      setStats((prev) => ({
+        ...prev,
+        [playerId]: {
+          ...prev[playerId],
+          wrong: prev[playerId].wrong + 1,
+          streak: 0,
+          shieldArmed: false, // consume shield if it was armed
+          reducedOptions: null,
+        },
+      }));
+
+      playSfx(wrongRef);
+      triggerShake();
+
+      setAnswerResult({
+        correct: false,
+        message: `❌ ${player.name} xato! To'g'ri: ${currentQuestion.answer}${shieldActive ? " (SHIELD saved!)" : back ? ` (-${back}%)` : ""}`,
+      });
       showToast(`❌ Xato! To'g'ri javob: ${currentQuestion.answer}`);
     }
 
-    if (transitionTimerRef.current) {
-      window.clearTimeout(transitionTimerRef.current);
-    }
+    // next question transition
+    if (transitionTimerRef.current) window.clearTimeout(transitionTimerRef.current);
     transitionTimerRef.current = window.setTimeout(() => {
       if (currentQuestionIndex + 1 >= activeQuestionsCountRef.current) {
         const snapshot = playersRef.current;
         const w =
-          snapshot[0].position > snapshot[1].position ? 0 :
-          snapshot[1].position > snapshot[0].position ? 1 : null;
+          snapshot[0].position > snapshot[1].position
+            ? 0
+            : snapshot[1].position > snapshot[0].position
+              ? 1
+              : null;
 
         setWinner(w);
         setPhase("finish");
@@ -328,6 +622,11 @@ export default function MathRace() {
         setTimeLeft(ROUND_TIME);
         setLocked(false);
         setAnswerResult(null);
+
+        setStats((prev) => ({
+          0: { ...prev[0], reducedOptions: null },
+          1: { ...prev[1], reducedOptions: null },
+        }));
       }
     }, 1400);
   };
@@ -341,6 +640,8 @@ export default function MathRace() {
     setPlayers((p) => p.map((x) => ({ ...x, position: 0 })));
     setCurrentQuestionIndex(0);
     setWinner(null);
+    setLocked(false);
+    setAnswerResult(null);
   };
 
   useEffect(() => {
@@ -350,7 +651,7 @@ export default function MathRace() {
     };
   }, []);
 
-  const getDifficultyColor = (difficulty: string) => {
+  const getDifficultyColor = (difficulty: Difficulty) => {
     switch (difficulty) {
       case "easy":
         return "text-green-400 bg-green-500/20 border-green-500/30";
@@ -358,12 +659,10 @@ export default function MathRace() {
         return "text-yellow-400 bg-yellow-500/20 border-yellow-500/30";
       case "hard":
         return "text-red-400 bg-red-500/20 border-red-500/30";
-      default:
-        return "text-blue-400 bg-blue-500/20 border-blue-500/30";
     }
   };
 
-  const getDifficultyIcon = (difficulty: string) => {
+  const getDifficultyIcon = (difficulty: Difficulty) => {
     switch (difficulty) {
       case "easy":
         return <FaStar className="text-green-400" />;
@@ -371,21 +670,16 @@ export default function MathRace() {
         return <FaBolt className="text-yellow-400" />;
       case "hard":
         return <FaFire className="text-red-400" />;
-      default:
-        return null;
     }
   };
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-900">
-      {/* Background - faqat yo'l */}
+      {/* Background */}
       {phase === "play" && (
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url(${trackImg})`,
-            backgroundSize: "cover",
-          }}
+          style={{ backgroundImage: `url(${trackImg})`, backgroundSize: "cover" }}
         />
       )}
 
@@ -419,13 +713,17 @@ export default function MathRace() {
               </div>
               <div>
                 <h2 className="text-3xl font-black text-white">MATH RACE</h2>
-                <p className="text-yellow-200/80">O'qituvchi paneli - Savollar va o'yinchilarni sozlang</p>
+                <p className="text-yellow-200/80">
+                  Combo/Nitro + Power-ups + Stars/Medal qo‘shilgan versiya
+                </p>
               </div>
             </div>
 
             <div className="mb-6 grid gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm font-bold text-slate-200">1-O'yinchi (Qora)</label>
+                <label className="mb-2 block text-sm font-bold text-slate-200">
+                  1-O'yinchi (Qora)
+                </label>
                 <input
                   value={players[0].name}
                   onChange={(e) => updatePlayerName(0, e.target.value)}
@@ -434,7 +732,9 @@ export default function MathRace() {
                 />
               </div>
               <div>
-                <label className="mb-2 block text-sm font-bold text-slate-200">2-O'yinchi (Ko'k)</label>
+                <label className="mb-2 block text-sm font-bold text-slate-200">
+                  2-O'yinchi (Ko'k)
+                </label>
                 <input
                   value={players[1].name}
                   onChange={(e) => updatePlayerName(1, e.target.value)}
@@ -466,7 +766,7 @@ export default function MathRace() {
               <div className="mt-3 grid gap-3 md:grid-cols-3">
                 <select
                   value={draftQuestion.difficulty}
-                  onChange={(e) => setDraftQuestion({ ...draftQuestion, difficulty: e.target.value as any })}
+                  onChange={(e) => setDraftQuestion({ ...draftQuestion, difficulty: e.target.value as Difficulty })}
                   className="rounded-xl border border-yellow-400/30 bg-slate-900/50 px-4 py-2 text-white"
                 >
                   <option value="easy">🌟 Oson</option>
@@ -476,7 +776,9 @@ export default function MathRace() {
 
                 <input
                   value={draftQuestion.points}
-                  onChange={(e) => setDraftQuestion({ ...draftQuestion, points: parseInt(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setDraftQuestion({ ...draftQuestion, points: parseInt(e.target.value) || 0 })
+                  }
                   className="rounded-xl border border-yellow-400/30 bg-slate-900/50 px-4 py-2 text-white"
                   placeholder="Ball"
                   type="number"
@@ -505,13 +807,18 @@ export default function MathRace() {
                     <div className="flex items-center gap-3">
                       <span className="text-sm text-slate-400">#{idx + 1}</span>
                       <span className="text-white">{q.question}</span>
-                      <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${getDifficultyColor(q.difficulty)}`}>
+                      <span
+                        className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${getDifficultyColor(q.difficulty)}`}
+                      >
                         {getDifficultyIcon(q.difficulty)}
                         {q.difficulty}
                       </span>
                       <span className="text-yellow-400 text-sm">+{q.points}</span>
                     </div>
-                    <button onClick={() => removeQuestion(q.id)} className="text-red-400 hover:text-red-300">
+                    <button
+                      onClick={() => removeQuestion(q.id)}
+                      className="text-red-400 hover:text-red-300"
+                    >
                       <FaTrash size={14} />
                     </button>
                   </div>
@@ -522,7 +829,7 @@ export default function MathRace() {
             {questions.length >= 2 && (
               <div className="text-center">
                 <button
-                  onClick={startGame}
+                  onClick={handleStartGame}
                   className="rounded-2xl bg-gradient-to-r from-yellow-500 to-orange-500 px-10 py-4 text-xl font-black text-white shadow-2xl transition hover:scale-[1.03]"
                 >
                   <FaPlay className="mr-3 inline" />
@@ -536,7 +843,7 @@ export default function MathRace() {
 
       {/* ===== PLAY PHASE ===== */}
       {phase === "play" && (
-        <div className="relative z-10 min-h-screen">
+        <div className={`relative z-10 min-h-screen ${screenShake ? "screen-shake" : ""}`}>
           {/* Header */}
           <div className="absolute left-0 right-0 top-0 z-30 bg-gradient-to-b from-black/70 to-transparent p-4">
             <div className="mx-auto max-w-7xl">
@@ -551,7 +858,9 @@ export default function MathRace() {
                   <div className="rounded-xl bg-black/60 px-4 py-2 border border-yellow-400/30 backdrop-blur-sm">
                     <p className="text-xs text-yellow-200">Vaqt</p>
                     <p className="text-lg font-bold text-white flex items-center gap-1">
-                      <MdTimer className={`${timeLeft <= 5 ? 'text-red-400 animate-pulse' : 'text-yellow-300'}`} />
+                      <MdTimer
+                        className={`${timeLeft <= 5 ? "text-red-400 animate-pulse" : "text-yellow-300"}`}
+                      />
                       {timeLeft}s
                     </p>
                   </div>
@@ -576,94 +885,130 @@ export default function MathRace() {
             </div>
           </div>
 
-          {/* MUHIM: Track Area - Mashinalar uchun yuqori qism */}
-          <div ref={trackRef} className="absolute inset-x-0 top-28 bottom-64 z-20">
-            {/* START chizig'i */}
-            <div 
-              className="absolute top-0 bottom-0 w-1 bg-green-500/70 z-10"
-              style={{ left: `${START_POSITION}px` }}
-            >
-              <div className="absolute -left-7 top-2 text-xs font-bold text-white bg-green-600/80 px-2 py-1 rounded-full backdrop-blur-sm">
+          {/* Track Area */}
+          <div ref={trackRef} className="absolute inset-x-0 top-48 bottom-64 z-20 px-3 sm:px-6">
+            {/* Start / Finish */}
+            <div className="absolute top-0 bottom-0 w-1 bg-green-500/70 z-20" style={{ left: `${START_POSITION}px` }}>
+              <div className="absolute -left-7 top-2 text-xs font-bold text-white bg-green-600/80 px-2 py-1 rounded-full">
                 START
               </div>
             </div>
 
-            {/* FINISH chizig'i */}
-            <div 
-              className="absolute top-0 bottom-0 w-1 bg-yellow-400/90 z-10"
-              style={{ left: `${FINISH_POSITION}px` }}
-            >
-              <div className="absolute -left-7 top-2 text-xs font-bold text-white bg-yellow-600/80 px-2 py-1 rounded-full backdrop-blur-sm flex items-center gap-1">
+            <div className="absolute top-0 bottom-0 w-1 bg-yellow-400/90 z-20" style={{ left: `${FINISH_POSITION}px` }}>
+              <div className="absolute -left-7 top-2 text-xs font-bold text-white bg-yellow-600/80 px-2 py-1 rounded-full flex items-center gap-1">
                 <GiCheckeredFlag className="text-white" />
                 FINISH
               </div>
             </div>
 
-            {/* Track markers */}
-            <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-black/50 to-transparent">
-              <div className="flex justify-between px-4 text-xs text-white/50">
-                <span>0%</span>
-                <span>25%</span>
-                <span>50%</span>
-                <span>75%</span>
-                <span>100%</span>
-              </div>
-            </div>
-
-            {/* MUHIM: Cars - Kichikroq va balandroqda */}
-            {players.map((player, idx) => {
-              const x = getCarX(player.position);
-              const src = player.id === 0 ? carBlack : carBlue;
-
-              return (
-                <div
-                  key={player.id}
-                  className="absolute transition-all duration-700 ease-out"
-                  style={{
-                    top: `${15 + idx * 25}%`, // Yuqoriroqda
-                    left: `${x}px`,
-                    zIndex: 40, // Kartochkalardan yuqori
-                  }}
-                >
-                  <div className="relative group">
-                    {/* MUHIM: Kichikroq mashina */}
-                    <img
-                      src={src}
-                      alt={player.name}
-                      draggable={false}
-                      className="h-[100px] w-auto select-none drop-shadow-[0_15px_15px_rgba(0,0,0,0.7)] transition-transform group-hover:scale-105"
-                      style={{ 
-                        filter: 'brightness(1.1) contrast(1.1)',
-                        transform: 'scaleX(-1)'
+            <div className="relative h-full w-full min-h-[260px] md:min-h-[320px]">
+              <div className="flex h-full flex-col gap-4">
+                {/* Lane 1 */}
+                <div className="relative flex-1 rounded-2xl border border-white/10 bg-black/20 overflow-hidden">
+                  <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2">
+                    <div
+                      className="mx-2 h-[2px] bg-white/30"
+                      style={{
+                        backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.35) 40%, rgba(255,255,255,0) 0%)",
+                        backgroundSize: "28px 2px",
+                        backgroundRepeat: "repeat-x",
                       }}
                     />
-                    
-                    {/* Player name - Mashina ustida emas, pastda */}
-                    <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap z-50">
-                      <div className="bg-black/80 backdrop-blur-sm px-2 py-0.5 rounded-full border border-yellow-400/30 text-xs">
-                        <span className="text-white font-bold mr-1">{player.name}</span>
-                        <span className="text-yellow-300 font-bold bg-yellow-500/20 px-1.5 py-0.5 rounded-full">
-                          {Math.round(player.position)}%
-                        </span>
-                      </div>
-                    </div>
                   </div>
+
+                  {(() => {
+                    const player = players[0];
+                    const x = getCarX(player.position);
+                    const nitro = nitroFxPlayer === 0;
+
+                    return (
+                      <div
+                        className={`absolute z-40 transition-all duration-700 ease-out ${nitro ? "nitro-glow" : ""}`}
+                        style={{ left: `${x}px`, top: "50%", transform: "translateY(-50%)" }}
+                      >
+                        <div className="relative group">
+                          <img
+                            src={carBlack}
+                            alt={player.name}
+                            draggable={false}
+                            className="h-[90px] sm:h-[100px] w-auto select-none drop-shadow-[0_15px_15px_rgba(0,0,0,0.7)] transition-transform group-hover:scale-105"
+                            style={{ filter: "brightness(1.1) contrast(1.1)", transform: "scaleX(-1)" }}
+                          />
+                          <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                            <div className="bg-black/80 backdrop-blur-sm px-2 py-0.5 rounded-full border border-yellow-400/30 text-xs">
+                              <span className="text-white font-bold mr-1">{player.name}</span>
+                              <span className="text-yellow-300 font-bold bg-yellow-500/20 px-1.5 py-0.5 rounded-full">
+                                {Math.round(player.position)}%
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
-              );
-            })}
+
+                {/* Lane 2 */}
+                <div className="relative flex-1 rounded-2xl border border-white/10 bg-black/20 overflow-hidden">
+                  <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2">
+                    <div
+                      className="mx-2 h-[2px]"
+                      style={{
+                        backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.35) 40%, rgba(255,255,255,0) 0%)",
+                        backgroundSize: "28px 2px",
+                        backgroundRepeat: "repeat-x",
+                      }}
+                    />
+                  </div>
+
+                  {(() => {
+                    const player = players[1];
+                    const x = getCarX(player.position);
+                    const nitro = nitroFxPlayer === 1;
+
+                    return (
+                      <div
+                        className={`absolute z-40 transition-all duration-700 ease-out ${nitro ? "nitro-glow" : ""}`}
+                        style={{ left: `${x}px`, top: "50%", transform: "translateY(-50%)" }}
+                      >
+                        <div className="relative group">
+                          <img
+                            src={carBlue}
+                            alt={player.name}
+                            draggable={false}
+                            className="h-[90px] sm:h-[100px] w-auto select-none drop-shadow-[0_15px_15px_rgba(0,0,0,0.7)] transition-transform group-hover:scale-105"
+                            style={{ filter: "brightness(1.1) contrast(1.1)", transform: "scaleX(-1)" }}
+                          />
+                          <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                            <div className="bg-black/80 backdrop-blur-sm px-2 py-0.5 rounded-full border border-yellow-400/30 text-xs">
+                              <span className="text-white font-bold mr-1">{player.name}</span>
+                              <span className="text-yellow-300 font-bold bg-yellow-500/20 px-1.5 py-0.5 rounded-full">
+                                {Math.round(player.position)}%
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* MUHIM: Question Cards - Pastki qismda, mashinalardan pastda */}
-          <div className="absolute bottom-4 left-0 right-0 z-10 px-4">
+          {/* Question + Answers area */}
+          <div className="absolute -bottom-0 left-0 right-0 z-10 px-4">
             <div className="mx-auto max-w-6xl">
-              {/* Question info - Markazda, teparoqda */}
               {currentQuestion && (
-                <div className="mb-4 text-center">
+                <div className="relative z-100 mb-2 mt-2 text-center">
                   <div className="inline-flex items-center gap-3 bg-black/70 backdrop-blur-md px-5 py-2 rounded-full border border-yellow-400/30 shadow-xl">
                     <span className={`flex items-center gap-1 rounded-full px-3 py-1 text-sm font-bold ${getDifficultyColor(currentQuestion.difficulty)}`}>
                       {getDifficultyIcon(currentQuestion.difficulty)}
-                      {currentQuestion.difficulty === "easy" ? "OSON" : 
-                       currentQuestion.difficulty === "medium" ? "O'RTACHA" : "QIYIN"}
+                      {currentQuestion.difficulty === "easy"
+                        ? "OSON"
+                        : currentQuestion.difficulty === "medium"
+                          ? "O'RTACHA"
+                          : "QIYIN"}
                     </span>
                     <span className="text-2xl font-black text-white">{currentQuestion.question}</span>
                     <span className="text-yellow-300 font-bold text-sm bg-yellow-500/20 px-3 py-1 rounded-full">
@@ -673,18 +1018,59 @@ export default function MathRace() {
                 </div>
               )}
 
-              {/* Answer buttons - Ikki chetda, pastda */}
               <div className="grid grid-cols-2 gap-4">
-                {/* Player 1 (Qora) - Chap tomonda */}
+                {/* Player 0 */}
                 <div className="transform transition-all hover:scale-105">
                   <div className="rounded-xl border-2 border-purple-500/30 bg-black/70 p-4 backdrop-blur-md shadow-xl">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-2.5 h-2.5 rounded-full bg-black border-2 border-gray-400"></div>
-                      <p className="text-md font-bold text-white">{players[0].name}</p>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full bg-black border-2 border-gray-400"></div>
+                        <p className="text-md font-bold text-white">{players[0].name}</p>
+                      </div>
+
+                      {/* ✅ Powerups + Combo */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] text-white/80 bg-white/10 px-2 py-1 rounded-full border border-white/10">
+                          Combo: <b className="text-white">{stats[0].streak}</b> / Best:{" "}
+                          <b className="text-white">{stats[0].bestStreak}</b>
+                        </span>
+
+                        <button
+                          onClick={() => activate5050(0)}
+                          disabled={locked || stats[0].used5050}
+                          className="h-9 w-9 rounded-lg border border-purple-500/30 bg-purple-600/25 text-white hover:bg-purple-600/40 disabled:opacity-50"
+                          title="50/50"
+                        >
+                          <FaDiceTwo className="mx-auto" />
+                        </button>
+
+                        <button
+                          onClick={() => activatePlusTime(0)}
+                          disabled={locked || stats[0].usedTime}
+                          className="h-9 w-9 rounded-lg border border-purple-500/30 bg-purple-600/25 text-white hover:bg-purple-600/40 disabled:opacity-50"
+                          title="+3s"
+                        >
+                          <FaClock className="mx-auto" />
+                        </button>
+
+                        <button
+                          onClick={() => activateShield(0)}
+                          disabled={locked || stats[0].shieldCharges <= 0 || stats[0].shieldArmed}
+                          className="h-9 w-9 rounded-lg border border-purple-500/30 bg-purple-600/25 text-white hover:bg-purple-600/40 disabled:opacity-50"
+                          title="Shield"
+                        >
+                          <FaShieldAlt className="mx-auto" />
+                        </button>
+                      </div>
                     </div>
-                    
+
+                    <div className="mb-2 flex items-center justify-between text-xs text-white/70">
+                      <span>Shield: {stats[0].shieldCharges} {stats[0].shieldArmed ? "(ARMED)" : ""}</span>
+                      <span>✅ {stats[0].correct} / ❌ {stats[0].wrong}</span>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-2">
-                      {options.map((option, idx) => (
+                      {optionsFor(0).map((option, idx) => (
                         <button
                           key={`p0-${idx}`}
                           onClick={() => !locked && handleAnswer(0, option)}
@@ -698,16 +1084,58 @@ export default function MathRace() {
                   </div>
                 </div>
 
-                {/* Player 2 (Ko'k) - O'ng tomonda */}
+                {/* Player 1 */}
                 <div className="transform transition-all hover:scale-105">
                   <div className="rounded-xl border-2 border-blue-500/30 bg-black/70 p-4 backdrop-blur-md shadow-xl">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-2.5 h-2.5 rounded-full bg-blue-500 border-2 border-blue-300"></div>
-                      <p className="text-md font-bold text-white">{players[1].name}</p>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full bg-blue-500 border-2 border-blue-300"></div>
+                        <p className="text-md font-bold text-white">{players[1].name}</p>
+                      </div>
+
+                      {/* ✅ Powerups + Combo */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] text-white/80 bg-white/10 px-2 py-1 rounded-full border border-white/10">
+                          Combo: <b className="text-white">{stats[1].streak}</b> / Best:{" "}
+                          <b className="text-white">{stats[1].bestStreak}</b>
+                        </span>
+
+                        <button
+                          onClick={() => activate5050(1)}
+                          disabled={locked || stats[1].used5050}
+                          className="h-9 w-9 rounded-lg border border-blue-500/30 bg-blue-600/25 text-white hover:bg-blue-600/40 disabled:opacity-50"
+                          title="50/50"
+                        >
+                          <FaDiceTwo className="mx-auto" />
+                        </button>
+
+                        <button
+                          onClick={() => activatePlusTime(1)}
+                          disabled={locked || stats[1].usedTime}
+                          className="h-9 w-9 rounded-lg border border-blue-500/30 bg-blue-600/25 text-white hover:bg-blue-600/40 disabled:opacity-50"
+                          title="+3s"
+                        >
+                          <FaClock className="mx-auto" />
+                        </button>
+
+                        <button
+                          onClick={() => activateShield(1)}
+                          disabled={locked || stats[1].shieldCharges <= 0 || stats[1].shieldArmed}
+                          className="h-9 w-9 rounded-lg border border-blue-500/30 bg-blue-600/25 text-white hover:bg-blue-600/40 disabled:opacity-50"
+                          title="Shield"
+                        >
+                          <FaShieldAlt className="mx-auto" />
+                        </button>
+                      </div>
                     </div>
-                    
+
+                    <div className="mb-2 flex items-center justify-between text-xs text-white/70">
+                      <span>Shield: {stats[1].shieldCharges} {stats[1].shieldArmed ? "(ARMED)" : ""}</span>
+                      <span>✅ {stats[1].correct} / ❌ {stats[1].wrong}</span>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-2">
-                      {options.map((option, idx) => (
+                      {optionsFor(1).map((option, idx) => (
                         <button
                           key={`p1-${idx}`}
                           onClick={() => !locked && handleAnswer(1, option)}
@@ -722,12 +1150,13 @@ export default function MathRace() {
                 </div>
               </div>
 
-              {/* Answer result */}
               {answerResult && (
-                <div className="mt-3 text-center">
+                <div className="mt-5 text-center">
                   <div
                     className={`inline-block rounded-lg p-2 border-2 ${
-                      answerResult.correct ? "bg-green-500/30 border-green-500/40" : "bg-red-500/30 border-red-500/40"
+                      answerResult.correct
+                        ? "bg-green-500/30 border-green-500/40"
+                        : "bg-red-500/30 border-red-500/40"
                     } backdrop-blur-md`}
                   >
                     <p className="text-white font-bold">{answerResult.message}</p>
@@ -756,18 +1185,31 @@ export default function MathRace() {
               {winner !== null ? `${players[winner].name} G'OLIB!` : "DURANG!"}
             </h2>
 
-            <p className="mb-6 text-xl text-yellow-200">
-              {winner !== null ? "Mashina marraga birinchi yetib keldi!" : "Ikkala mashina ham teng!"}
-            </p>
+            {/* ⭐ Stars */}
+            <div className="mb-2 flex justify-center gap-2">
+              {[0, 1, 2].map((i) => (
+                <span key={i} className={`text-3xl ${i < stars ? "opacity-100" : "opacity-30"}`}>
+                  ⭐
+                </span>
+              ))}
+            </div>
+
+            {medal && <p className="mb-4 text-lg font-bold text-yellow-200">{medal}</p>}
 
             <div className="mx-auto mb-6 grid max-w-md grid-cols-2 gap-4">
               <div className="rounded-xl border border-white/10 bg-black/30 p-4">
                 <p className="text-white font-bold">{players[0].name}</p>
                 <p className="text-2xl font-black text-white">{players[0].position}%</p>
+                <p className="mt-2 text-xs text-white/70">
+                  ✅ {stats[0].correct} • ❌ {stats[0].wrong} • Best Combo: {stats[0].bestStreak}
+                </p>
               </div>
               <div className="rounded-xl border border-white/10 bg-black/30 p-4">
                 <p className="text-white font-bold">{players[1].name}</p>
                 <p className="text-2xl font-black text-white">{players[1].position}%</p>
+                <p className="mt-2 text-xs text-white/70">
+                  ✅ {stats[1].correct} • ❌ {stats[1].wrong} • Best Combo: {stats[1].bestStreak}
+                </p>
               </div>
             </div>
 
@@ -790,6 +1232,7 @@ export default function MathRace() {
           </div>
         </div>
       )}
+      <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue} />
     </div>
   );
 }

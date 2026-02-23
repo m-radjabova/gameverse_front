@@ -1,11 +1,9 @@
-import { FaBolt, FaPuzzlePiece, FaUsers, FaRocket, FaStar } from "react-icons/fa";
-import { MdTimer, MdOutlineLeaderboard} from "react-icons/md";
+﻿import { FaBolt, FaPuzzlePiece, FaUsers, FaRocket, FaStar } from "react-icons/fa";import { MdTimer, MdOutlineLeaderboard} from "react-icons/md";
 import { RiSwordFill } from "react-icons/ri";
 import { GiBrain, GiLightBulb, GiSwordsEmblem } from "react-icons/gi";
 import WordBattle from "./WordBattle";
 
-function WordBattlePage() {
-  const bannerImg =
+function WordBattlePage() {  const bannerImg =
     "https://images.unsplash.com/photo-1611996575749-79a3a250f948?auto=format&fit=crop&w=1200&q=80";
 
   const stats = [
@@ -54,7 +52,7 @@ function WordBattlePage() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-4 py-6 md:px-6 md:py-8 lg:px-8 xl:px-10">
+      <div className="relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-4 py-6 md:px-6 md:py-8 lg:px-8 xl:px-10 motion-safe:animate-[fadeInUp_.35s_ease-out]">
         {/* Hero Section */}
         <div className="group relative mb-8 transform-gpu overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#1a1f35]/90 via-[#1f2a45]/90 to-[#1a2f3f]/90 p-6 backdrop-blur-xl shadow-2xl transition-all hover:shadow-3xl md:p-8 lg:p-10">
           {/* Animated Border */}
@@ -177,7 +175,7 @@ function WordBattlePage() {
           <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-2 border border-white/10">
             <FaStar className="text-yellow-400" />
             <span className="text-xs text-gray-400">
-              © 2026 WORD BATTLE ARENA | BARCHA HUQUQLAR HIMOYALANGAN
+              В© 2026 WORD BATTLE ARENA | BARCHA HUQUQLAR HIMOYALANGAN
             </span>
             <FaStar className="text-yellow-400" />
           </div>
@@ -188,3 +186,6 @@ function WordBattlePage() {
 }
 
 export default WordBattlePage;
+
+
+

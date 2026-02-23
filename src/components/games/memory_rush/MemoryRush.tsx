@@ -4,6 +4,8 @@ import {FaCrown, FaMedal, FaPlay, FaRedo, FaBolt, FaArrowLeft, FaArrowRight,FaLa
 import { GiBrain, GiAchievement } from "react-icons/gi";
 import { MdRefresh} from "react-icons/md";
 import Confetti from "react-confetti-boom";
+import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
+import { useGameStartCountdown } from "../shared/useGameStartCountdown";
 
 type Difficulty = "easy" | "normal" | "hard";
 type Phase = "setup" | "preview" | "play" | "finish";
@@ -129,6 +131,7 @@ export default function MemoryRush() {
 
   const [turnTimeLeft, setTurnTimeLeft] = useState(TURN_TIME_LIMIT_SECONDS);
   const [toast, setToast] = useState<string | null>(null);
+  const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
 
   const totalCards = DIFFICULTY_SIZES[difficulty];
   const gameTimeLimit = DIFFICULTY_GAME_TIME_SECONDS[difficulty];
@@ -235,6 +238,8 @@ export default function MemoryRush() {
     setToast("👀 3 soniya yodlab oling!");
     setPhase("preview");
   };
+
+  const handleInitGame = () => runStartCountdown(initGame);
 
   const finishGame = () => {
     setPhase("finish");
@@ -511,7 +516,7 @@ export default function MemoryRush() {
 
                 {/* Start Button */}
                 <button
-                  onClick={initGame}
+                  onClick={handleInitGame}
                   className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 p-4 font-black text-white text-lg shadow-2xl transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
@@ -862,6 +867,7 @@ export default function MemoryRush() {
             </div>
           </div>
         )}
+        <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue} />
       </div>
     </div>
   );

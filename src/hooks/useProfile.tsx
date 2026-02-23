@@ -17,14 +17,19 @@ type ChangePasswordPayload = {
 function getApiErrorMessage(err: unknown, fallback: string) {
   if (!isAxiosError(err)) return fallback;
 
-  const data: any = err.response?.data;
-  if (typeof data?.detail === "string") return data.detail;
-  if (typeof data?.message === "string") return data.message;
+  const data = err.response?.data;
+  if (!data || typeof data !== "object") return fallback;
 
-  if (Array.isArray(data?.detail)) {
+  const payload = data as Record<string, unknown>;
+  if (typeof payload.detail === "string") return payload.detail;
+  if (typeof payload.message === "string") return payload.message;
+
+  if (Array.isArray(payload.detail)) {
     // FastAPI validation errors
-    const first = data.detail[0];
-    if (first?.msg) return String(first.msg);
+    const first = payload.detail[0];
+    if (first && typeof first === "object" && "msg" in first) {
+      return String((first as { msg: unknown }).msg);
+    }
   }
 
   return fallback;
