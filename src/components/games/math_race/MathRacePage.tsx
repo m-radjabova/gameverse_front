@@ -1,4 +1,4 @@
-﻿import { 
+import { 
   FaCar, 
   FaCrown, 
   FaStar, 
@@ -8,7 +8,6 @@
   FaRoad,
   FaGaugeHigh,
   FaRocket,
-  FaPlay,
   FaCarBattery
 } from "react-icons/fa6";
 import { 
@@ -30,6 +29,7 @@ import {
   IoFlashOutline
 } from "react-icons/io5";
 import MathRace from "./MathRace";
+import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 
 function MathRacePage() {
   const raceImg = "https://media.istockphoto.com/id/1409623927/vector/formula-racing-sport-car-reach-on-race-circuit-the-finish-line-cartoon-illustration-to-win.jpg?s=612x612&w=0&k=20&c=n5leemMDNJv1g_EFkTJxW9T5XiVQXx0CIA6R2z6Op1U="
@@ -72,8 +72,8 @@ function MathRacePage() {
 
   const raceLevels = [
     { level: "OSON", questions: "5 + 5", time: "20 soniya", icon: FaStar, color: "from-emerald-400 to-green-400", progress: 33, bgColor: "bg-emerald-500/20" },
-    { level: "O'RTACHA", questions: "7 × 6", time: "15 soniya", icon: FaGaugeHigh, color: "from-amber-400 to-orange-400", progress: 66, bgColor: "bg-amber-500/20" },
-    { level: "QIYIN", questions: "12 × 12", time: "10 soniya", icon: FaCrown, color: "from-red-400 to-rose-400", progress: 100, bgColor: "bg-red-500/20" },
+    { level: "O'RTACHA", questions: "7 ? 6", time: "15 soniya", icon: FaGaugeHigh, color: "from-amber-400 to-orange-400", progress: 66, bgColor: "bg-amber-500/20" },
+    { level: "QIYIN", questions: "12 ? 12", time: "10 soniya", icon: FaCrown, color: "from-red-400 to-rose-400", progress: 100, bgColor: "bg-red-500/20" },
   ];
 
   const achievements = [
@@ -152,7 +152,7 @@ function MathRacePage() {
                 className="inline-flex items-center gap-3 rounded-2xl bg-white/5 px-4 py-2 border border-white/10 backdrop-blur-sm"
               >
                 <div className="relative">
-                  <div className="absolute inset-0 rounded-full bg-green-500 animate-ping" />
+                  <div className="absolute inset-0 rounded-full bg-green-500" />
                   <div className="relative h-2 w-2 rounded-full bg-green-500" />
                 </div>
                 <span className="text-sm font-black bg-gradient-to-r from-amber-300 via-orange-300 to-red-300 bg-clip-text text-transparent">
@@ -413,7 +413,7 @@ function MathRacePage() {
                   <h2 className="text-xl font-black text-white">Math Race</h2>
                   <p className="flex items-center gap-2 text-sm text-gray-300">
                     <GiCarWheel className="text-amber-400" />
-                    Tezkor misollar · 2 o'yinchi
+                    Tezkor misollar � 2 o'yinchi
                   </p>
                 </div>
               </div>
@@ -435,6 +435,7 @@ function MathRacePage() {
             </div>
 
             {/* MathRace Component */}
+                        <GameFeedbackPanel gameKey="math-race" />
             <MathRace />
           </div>
         </div>
@@ -507,3 +508,4 @@ function MathRacePage() {
 }
 
 export default MathRacePage;
+

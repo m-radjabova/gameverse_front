@@ -622,7 +622,7 @@ export default function WordBattle() {
           <div className="transform-gpu overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#1e2a3a]/95 to-[#1f3a4a]/95 p-8 backdrop-blur-xl shadow-2xl text-center">
             <div className="mb-6 flex justify-center">
               <div className="relative">
-                <div className="absolute inset-0 animate-ping rounded-full bg-yellow-400/30" />
+                <div className="absolute inset-0 rounded-full bg-yellow-400/30" />
                 <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-orange-500">
                   <FaTrophy className="text-4xl text-white" />
                 </div>

@@ -1,11 +1,10 @@
-﻿import { 
+import { 
   FaFish,  
   FaCrown,  
   FaStar, 
   FaUsers,
   FaVolumeUp,
-  FaWaveSquare,
-  FaPlay
+  FaWaveSquare
 } from "react-icons/fa";
 import { 
   GiAchievement, 
@@ -26,9 +25,14 @@ import {
 import { 
   IoWaterOutline,
   IoVolumeHighOutline 
-} from "react-icons/io5";import OceanWordFishing from "./OceanWordFishing";
+} from "react-icons/io5";
+import OceanWordFishing from "./OceanWordFishing";
+import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import ocean from "../../../assets/ocean.jpg";
 
-function OceanWordFishingPage() {  const oceanImg = "https://media.istockphoto.com/id/537816526/vector/underwater-world.jpg?s=612x612&w=0&k=20&c=U_1QpgfCsqkNFdbiLqFs6C-RyC5d2Eyfl5Kf8_YBgT0="
+
+function OceanWordFishingPage() {
+  const oceanImg = ocean;
   const gameStats = [
     { icon: FaUsers, label: "O'YINCHILAR", value: "1-4 kishi", color: "from-blue-500 to-cyan-400", bgColor: "from-blue-600/30 to-cyan-600/30" },
     { icon: MdTimer, label: "DAVOMIYLIK", value: "5-10 min", color: "from-cyan-500 to-teal-400", bgColor: "from-cyan-600/30 to-teal-600/30" },
@@ -135,7 +139,7 @@ function OceanWordFishingPage() {  const oceanImg = "https://media.istockphoto.
                 className="inline-flex items-center gap-3 rounded-2xl bg-white/5 px-4 py-2 border border-white/10 backdrop-blur-sm"
               >
                 <div className="relative">
-                  <div className="absolute inset-0 rounded-full bg-green-500 animate-ping" />
+                  <div className="absolute inset-0 rounded-full bg-green-500" />
                   <div className="relative h-2 w-2 rounded-full bg-green-500" />
                 </div>
                 <span className="text-sm font-black bg-gradient-to-r from-blue-300 via-cyan-300 to-teal-300 bg-clip-text text-transparent">
@@ -184,22 +188,6 @@ function OceanWordFishingPage() {  const oceanImg = "https://media.istockphoto.
                     </div>
                   </div>
                 ))}
-              </div>
-
-              {/* Action Buttons */}
-              <div
-                className="flex gap-3"
-              >
-                <button className="group/btn relative overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 px-6 py-3 font-bold text-white shadow-lg transition-all hover:shadow-xl hover:shadow-blue-500/25">
-                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform" />
-                  <span className="relative flex items-center gap-2">
-                    <FaPlay className="text-sm" />
-                    BOSHLASH
-                  </span>
-                </button>
-                <button className="rounded-xl border border-white/20 px-6 py-3 font-bold text-white/80 backdrop-blur-sm transition-all hover:bg-white/5 hover:text-white">
-                  QOIDALAR
-                </button>
               </div>
             </div>
 
@@ -418,6 +406,7 @@ function OceanWordFishingPage() {  const oceanImg = "https://media.istockphoto.
             </div>
 
             {/* OceanWordFishing Component */}
+                        <GameFeedbackPanel gameKey="ocean-word-fishing" />
             <OceanWordFishing />
           </div>
         </div>
@@ -436,7 +425,7 @@ function OceanWordFishingPage() {  const oceanImg = "https://media.istockphoto.
         </div>
       </div>
 
-      <style>{`
+      {/* <style>{`
         @keyframes wave {
           0% { transform: translateY(0) translateX(0); }
           50% { transform: translateY(-20px) translateX(10px); }
@@ -505,9 +494,10 @@ function OceanWordFishingPage() {  const oceanImg = "https://media.istockphoto.
         .animate-pulse-slow {
           animation: pulse-slow 4s ease-in-out infinite;
         }
-      `}</style>
+      `}</style> */}
     </div>
   );
 }
 
 export default OceanWordFishingPage;
+

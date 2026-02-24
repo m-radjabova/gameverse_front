@@ -17,6 +17,7 @@ import {
   FaFish,
   FaCar,
   FaQuestion,
+  FaPalette,
 } from "react-icons/fa";
 import {
   GiPuzzle,
@@ -32,6 +33,8 @@ import {
 } from "react-icons/gi";
 import { MdQuiz, MdMemory, MdGames, MdNumbers, MdOutlineGamepad } from "react-icons/md";
 import { RiBubbleChartFill } from "react-icons/ri";
+import ocean from "../../assets/ocean.jpg";
+
 
 export const gameCards = [
   {
@@ -258,8 +261,7 @@ export const gameCards = [
     available: true,
     path: "/games/ocean-word-fishing",
     bgPattern: "bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600",
-    image:
-      "https://media.istockphoto.com/id/537816526/vector/underwater-world.jpg?s=612x612&w=0&k=20&c=U_1QpgfCsqkNFdbiLqFs6C-RyC5d2Eyfl5Kf8_YBgT0=",
+    image:ocean,
     players: "1-4 o'yinchi",
     level: "Boshlang'ich - Professional",
     levelIcon: FaStar,
@@ -323,5 +325,30 @@ export const gameCards = [
   categoryIcon: FaQuestion,
   gradient: "from-indigo-400 to-purple-400",
   borderGlow: "hover:border-indigo-400/50",
+},
+{
+  id: "find-color",
+  title: "Find Different Color",
+  description: "Farqli rangni topish o'yini. 100+ daraja, vaqt bonuslari va global reyting.",
+  mainIcon: FaPalette,
+  icon: FaPalette,
+  iconBg: "from-cyan-500 to-blue-500",
+  iconColor: "text-cyan-300",
+  shadowColor: "cyan",
+  available: true,
+  path: "/games/find-color",
+  bgPattern: "bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600",
+  image: "https://media.istockphoto.com/id/2190265535/photo/colorful-paint-cans-forming-a-vibrant-and-inspiring-palette.jpg?s=612x612&w=0&k=20&c=ur_StZRvNfu592Znu3_a0EnzceZZctp11Z4gHk5gsJg=",
+  players: "1 o'yinchi",
+  level: "Boshlang'ich - Afsonaviy",
+  levelIcon: FaStar,
+  badge: "YANGI",
+  badgeIcon: FaRocket,
+  time: "20s",
+  points: "310+",
+  category: "Diqqat",
+  categoryIcon: FaPalette,
+  gradient: "from-cyan-400 to-blue-400",
+  borderGlow: "hover:border-cyan-400/50",
 },
 ];

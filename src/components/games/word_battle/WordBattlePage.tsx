@@ -1,9 +1,12 @@
-﻿import { FaBolt, FaPuzzlePiece, FaUsers, FaRocket, FaStar } from "react-icons/fa";import { MdTimer, MdOutlineLeaderboard} from "react-icons/md";
+import { FaBolt, FaPuzzlePiece, FaUsers, FaRocket, FaStar } from "react-icons/fa";
+import { MdTimer, MdOutlineLeaderboard} from "react-icons/md";
 import { RiSwordFill } from "react-icons/ri";
 import { GiBrain, GiLightBulb, GiSwordsEmblem } from "react-icons/gi";
 import WordBattle from "./WordBattle";
+import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 
-function WordBattlePage() {  const bannerImg =
+function WordBattlePage() {
+  const bannerImg =
     "https://images.unsplash.com/photo-1611996575749-79a3a250f948?auto=format&fit=crop&w=1200&q=80";
 
   const stats = [
@@ -70,7 +73,7 @@ function WordBattlePage() {  const bannerImg =
                   WORD BATTLE ARENA
                 </span>
                 <div className="ml-2 flex h-2 w-2">
-                  <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-green-400 opacity-75" />
+                  <span className="absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
                 </div>
               </div>
@@ -128,7 +131,7 @@ function WordBattlePage() {  const bannerImg =
             <div className="relative">
               {/* Decorative Elements */}
               <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-cyan-500/30 via-purple-500/30 to-pink-500/30 blur-2xl animate-pulse" />
-              <div className="absolute -top-6 -right-6 h-24 w-24 rounded-full bg-yellow-500/20 blur-xl animate-ping" />
+              <div className="absolute -top-6 -right-6 h-24 w-24 rounded-full bg-yellow-500/20 blur-xl" />
               
               {/* Image Container */}
               <div className="relative transform-gpu overflow-hidden rounded-2xl border-2 border-white/20 shadow-2xl transition-all ">
@@ -166,6 +169,7 @@ function WordBattlePage() {  const bannerImg =
         <div className="relative">
           <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-pink-500/10 blur-3xl" />
           <div className="relative">
+                        <GameFeedbackPanel gameKey="word-battle" />
             <WordBattle />
           </div>
         </div>
@@ -175,7 +179,7 @@ function WordBattlePage() {  const bannerImg =
           <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-2 border border-white/10">
             <FaStar className="text-yellow-400" />
             <span className="text-xs text-gray-400">
-              В© 2026 WORD BATTLE ARENA | BARCHA HUQUQLAR HIMOYALANGAN
+              © 2026 WORD BATTLE ARENA | BARCHA HUQUQLAR HIMOYALANGAN
             </span>
             <FaStar className="text-yellow-400" />
           </div>
@@ -186,6 +190,7 @@ function WordBattlePage() {  const bannerImg =
 }
 
 export default WordBattlePage;
+
 
 
 

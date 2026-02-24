@@ -28,6 +28,7 @@ import {
 } from "react-icons/md";
 import { RiTeamFill} from "react-icons/ri";
 import BaamboozleOyini from "./Baamboozle";
+import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 
 function BaamboozlePage() {
   const baamboozleImg =
@@ -229,7 +230,7 @@ function BaamboozlePage() {
                   </span>
                   <div className="flex gap-1">
                     <span className="relative flex h-2 w-2">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-75" />
+                      <span className="absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
                       <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-500" />
                     </span>
                   </div>
@@ -451,7 +452,7 @@ function BaamboozlePage() {
               {/* Icon */}
               <div className="relative mb-4 flex justify-center">
                 <div className="relative">
-                  <div className="absolute inset-0 animate-ping rounded-full bg-indigo-500/30" />
+                  <div className="absolute inset-0 rounded-full bg-indigo-500/30" />
                   <div
                     className={`relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r ${level.color} text-white text-2xl shadow-2xl border-2 border-white/30`}
                   >
@@ -546,6 +547,7 @@ function BaamboozlePage() {
 
             {/* Baamboozle Component */}
             <div className="relative">
+              <GameFeedbackPanel gameKey="baamboozle" />
               <BaamboozleOyini />
             </div>
           </div>
@@ -581,91 +583,6 @@ function BaamboozlePage() {
           <div className="h-px w-12 bg-gradient-to-r from-indigo-500/30 via-transparent to-transparent" />
         </div>
       </div>
-
-      <style>{`
-        @keyframes float {
-          0%,
-          100% {
-            transform: translateY(0px) rotate(0deg);
-          }
-          50% {
-            transform: translateY(-20px) rotate(5deg);
-          }
-        }
-
-        @keyframes float-delayed {
-          0%,
-          100% {
-            transform: translateY(0px) rotate(0deg);
-          }
-          50% {
-            transform: translateY(-15px) rotate(-5deg);
-          }
-        }
-
-        @keyframes float-slow {
-          0%,
-          100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
-        }
-
-        @keyframes shimmer {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
-        }
-
-        @keyframes pulse-slow {
-          0%,
-          100% {
-            opacity: 0.5;
-          }
-          50% {
-            opacity: 0.8;
-          }
-        }
-
-        @keyframes pulse-slower {
-          0%,
-          100% {
-            opacity: 0.3;
-          }
-          50% {
-            opacity: 0.6;
-          }
-        }
-
-        .animate-float {
-          animation: float 8s ease-in-out infinite;
-        }
-
-        .animate-float-delayed {
-          animation: float-delayed 7s ease-in-out infinite;
-        }
-
-        .animate-float-slow {
-          animation: float-slow 10s ease-in-out infinite;
-        }
-
-        .animate-shimmer {
-          animation: shimmer 2s infinite;
-        }
-
-        .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
-        }
-
-        .animate-pulse-slower {
-          animation: pulse-slower 6s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 }

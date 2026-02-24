@@ -209,7 +209,7 @@ function HowItWorksSection() {
                           </span>
 
                           {isActive && (
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full animate-ping" />
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full" />
                           )}
                         </div>
                       </button>

@@ -1,9 +1,12 @@
-﻿import { FaUsers, FaTrophy, FaClock, FaBolt } from "react-icons/fa";import { GiPuzzle, GiBrain, GiAchievement, GiPodium, GiConsoleController} from "react-icons/gi";
+import { FaUsers, FaTrophy, FaClock, FaBolt } from "react-icons/fa";
+import { GiPuzzle, GiBrain, GiAchievement, GiPodium, GiConsoleController} from "react-icons/gi";
 import { MdGames, MdSportsEsports, MdTimer, MdSpeed, MdEmojiEvents } from "react-icons/md";
 import { RiTeamFill} from "react-icons/ri";
 import ClassicArcade from "./ClassicArcade";
+import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 
-function ClassicArcadePage() {  const classicArcadeImg =
+function ClassicArcadePage() {
+  const classicArcadeImg =
     "https://media.istockphoto.com/id/1582151789/vector/vector-arcade-premium-alphabet-in-purple-violet-blue-colors-vector-3d-font-text-elements.jpg?s=612x612&w=0&k=20&c=x6f1QrMBy4O6ac6IFTWDG13A9D3vQFK8cIPXGrvA6aA=";
 
   const gameStats = [
@@ -101,7 +104,7 @@ function ClassicArcadePage() {  const classicArcadeImg =
                   CLASSIC ARCADE CHALLENGE
                 </span>
                 <div className="ml-2 flex h-2 w-2">
-                  <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-green-400 opacity-75" />
+                  <span className="absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
                 </div>
               </div>
@@ -147,7 +150,7 @@ function ClassicArcadePage() {  const classicArcadeImg =
             <div className="relative">
               {/* Decorative Elements */}
               <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-fuchsia-500/30 via-rose-500/30 to-orange-500/30 blur-2xl animate-pulse" />
-              <div className="absolute -top-6 -right-6 h-32 w-32 rounded-full bg-fuchsia-500/20 blur-xl animate-ping" />
+              <div className="absolute -top-6 -right-6 h-32 w-32 rounded-full bg-fuchsia-500/20 blur-xl" />
               
               {/* Image Container */}
               <div className="relative transform-gpu overflow-hidden rounded-2xl border-2 border-white/20 shadow-2xl transition-all group-hover:scale-[1.02] group-hover:border-white/30">
@@ -266,7 +269,7 @@ function ClassicArcadePage() {  const classicArcadeImg =
                   <h2 className="text-xl font-black text-white">Classic Arcade</h2>
                   <p className="flex items-center gap-2 text-sm text-gray-300">
                     <RiTeamFill className="text-fuchsise-400" />
-                    Guruhli bellashuv В· Navbat bilan o'ynash
+                    Guruhli bellashuv · Navbat bilan o'ynash
                   </p>
                 </div>
               </div>
@@ -284,6 +287,7 @@ function ClassicArcadePage() {  const classicArcadeImg =
             </div>
 
             {/* ClassicArcade Component */}
+                        <GameFeedbackPanel gameKey="classic-arcade" />
             <ClassicArcade />
           </div>
         </div>
@@ -302,6 +306,7 @@ function ClassicArcadePage() {  const classicArcadeImg =
 }
 
 export default ClassicArcadePage;
+
 
 
 

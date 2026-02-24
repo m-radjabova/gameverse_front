@@ -53,6 +53,24 @@ export interface CourseRatingSummary {
   my_rating?: number | null;
 }
 
+export interface GameRatingSummary {
+  game_key: string;
+  average_rating: number;
+  ratings_count: number;
+  my_rating?: number | null;
+}
+
+export interface GameCommentOut {
+  id: string;
+  game_key: string;
+  user_id: string;
+  username?: string | null;
+  avatar?: string | null;
+  rating: number;
+  comment: string;
+  created_at: string;
+}
+
 export interface AssignmentOut {
   id: string;
   lesson_id: string;

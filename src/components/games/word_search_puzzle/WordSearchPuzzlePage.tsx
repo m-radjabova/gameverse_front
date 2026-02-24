@@ -1,4 +1,4 @@
-﻿import { 
+import { 
   FaApple, 
   FaCarrot, 
   FaCrown, 
@@ -20,9 +20,12 @@ import {
   MdGridOn,
   MdOutlineGridOn
 } from "react-icons/md";
-import { RiTeamFill} from "react-icons/ri";import WordSearchPuzzle from "./WordSearchPuzzle";
+import { RiTeamFill} from "react-icons/ri";
+import WordSearchPuzzle from "./WordSearchPuzzle";
+import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 
-function WordSearchPuzzlePage() {  const wordSearchImg = "https://media.istockphoto.com/id/2260590479/vector/vector-easter-village-placemat-spring-holiday-printable-activity-mat-with-maze-crossword.jpg?s=612x612&w=0&k=20&c=YpKwS6BpAuc6dSzcfFuBfTHFyNf9hDxWgwQXHjZOJ7E=";
+function WordSearchPuzzlePage() {
+  const wordSearchImg = "https://media.istockphoto.com/id/2260590479/vector/vector-easter-village-placemat-spring-holiday-printable-activity-mat-with-maze-crossword.jpg?s=612x612&w=0&k=20&c=YpKwS6BpAuc6dSzcfFuBfTHFyNf9hDxWgwQXHjZOJ7E=";
   const gameStats = [
     { icon: FaUsers, label: "GURUHLAR", value: "2 jamoa", color: "from-emerald-400 to-teal-400" },
     { icon: MdTimer, label: "DAVOMIYLIK", value: "10-15 min", color: "from-teal-400 to-cyan-400" },
@@ -118,7 +121,7 @@ function WordSearchPuzzlePage() {  const wordSearchImg = "https://media.istockp
                   WORD SEARCH PUZZLE
                 </span>
                 <div className="ml-2 flex h-2 w-2">
-                  <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-green-400 opacity-75" />
+                  <span className="absolute inline-flex h-2 w-2  rounded-full bg-green-400 opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
                 </div>
               </div>
@@ -164,7 +167,7 @@ function WordSearchPuzzlePage() {  const wordSearchImg = "https://media.istockp
             <div className="relative">
               {/* Decorative Elements */}
               <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-emerald-500/30 via-teal-500/30 to-cyan-500/30 blur-2xl animate-pulse" />
-              <div className="absolute -top-6 -right-6 h-32 w-32 rounded-full bg-emerald-500/20 blur-xl animate-ping" />
+              <div className="absolute -top-6 -right-6 h-32 w-32 rounded-full bg-emerald-500/20 blur-xl" />
               
               {/* Image Container */}
               <div className="relative transform-gpu overflow-hidden rounded-2xl border-2 border-emerald-500/30 shadow-2xl transition-all group-hover:scale-[1.02] group-hover:border-emerald-400/50">
@@ -284,7 +287,7 @@ function WordSearchPuzzlePage() {  const wordSearchImg = "https://media.istockp
                   <h2 className="text-xl font-black text-white">Word Search Puzzle</h2>
                   <p className="flex items-center gap-2 text-sm text-emerald-200/80">
                     <RiTeamFill className="text-emerald-400" />
-                    2 guruh В· custom tema
+                    2 guruh · custom tema
                   </p>
                 </div>
               </div>
@@ -302,6 +305,7 @@ function WordSearchPuzzlePage() {  const wordSearchImg = "https://media.istockp
             </div>
 
             {/* WordSearchPuzzle Component */}
+                        <GameFeedbackPanel gameKey="word-search" />
             <WordSearchPuzzle />
           </div>
         </div>
@@ -320,6 +324,7 @@ function WordSearchPuzzlePage() {  const wordSearchImg = "https://media.istockp
 }
 
 export default WordSearchPuzzlePage;
+
 
 
 

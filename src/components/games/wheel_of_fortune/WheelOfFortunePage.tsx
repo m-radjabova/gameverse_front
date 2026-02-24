@@ -1,4 +1,4 @@
-﻿import { 
+import { 
   FaUsers, 
   FaTrophy, 
   FaClock,  
@@ -17,9 +17,12 @@ import {
   MdEmojiEvents, 
   MdQuiz 
 } from "react-icons/md";
-import { RiTeamFill } from "react-icons/ri";import WheelOfFortune from "./WheelOfFortune";
+import { RiTeamFill } from "react-icons/ri";
+import WheelOfFortune from "./WheelOfFortune";
+import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 
-function WheelOfFortunePage() {  const wheelOfFortuneImg = "https://media.istockphoto.com/id/2177986731/photo/wheel-of-fortune-with-rewards.jpg?s=612x612&w=0&k=20&c=dkony3LqMPl7Mftei-8AkXfoGQgWsOQlqo_7NBeLOT0=";
+function WheelOfFortunePage() {
+  const wheelOfFortuneImg = "https://media.istockphoto.com/id/2177986731/photo/wheel-of-fortune-with-rewards.jpg?s=612x612&w=0&k=20&c=dkony3LqMPl7Mftei-8AkXfoGQgWsOQlqo_7NBeLOT0=";
   const gameStats = [
     { icon: FaUsers, label: "O'QUVCHILAR", value: "2-10 kishi", color: "from-purple-400 to-pink-400" },
     { icon: MdTimer, label: "DAVOMIYLIK", value: "10-15 min", color: "from-pink-400 to-rose-400" },
@@ -108,7 +111,7 @@ function WheelOfFortunePage() {  const wheelOfFortuneImg = "https://media.istoc
                   WHEEL OF FORTUNE
                 </span>
                 <div className="ml-2 flex h-2 w-2">
-                  <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-green-400 opacity-75" />
+                  <span className="absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
                 </div>
               </div>
@@ -149,7 +152,7 @@ function WheelOfFortunePage() {  const wheelOfFortuneImg = "https://media.istoc
 
             <div className="relative">
               <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-purple-500/30 via-pink-500/30 to-rose-500/30 blur-2xl animate-pulse" />
-              <div className="absolute -top-6 -right-6 h-32 w-32 rounded-full bg-purple-500/20 blur-xl animate-ping" />
+              <div className="absolute -top-6 -right-6 h-32 w-32 rounded-full bg-purple-500/20 blur-xl" />
               
               <div className="relative transform-gpu overflow-hidden rounded-2xl border-2 border-purple-500/30 shadow-2xl transition-all group-hover:scale-[1.02] group-hover:border-purple-400/50">
                 <div className="absolute inset-0 bg-gradient-to-t from-[#2a0a2a] via-transparent to-transparent z-10" />
@@ -263,7 +266,7 @@ function WheelOfFortunePage() {  const wheelOfFortuneImg = "https://media.istoc
                   <h2 className="text-xl font-black text-white">Wheel of Fortune</h2>
                   <p className="flex items-center gap-2 text-sm text-purple-200/80">
                     <RiTeamFill className="text-purple-400" />
-                    Baraban o'yini В· Tasodifiy tanlov
+                    Baraban o'yini · Tasodifiy tanlov
                   </p>
                 </div>
               </div>
@@ -280,6 +283,7 @@ function WheelOfFortunePage() {  const wheelOfFortuneImg = "https://media.istoc
               </div>
             </div>
 
+                        <GameFeedbackPanel gameKey="wheel-of-fortune" />
             <WheelOfFortune />
           </div>
         </div>
@@ -298,6 +302,7 @@ function WheelOfFortunePage() {  const wheelOfFortuneImg = "https://media.istoc
 }
 
 export default WheelOfFortunePage;
+
 
 
 

@@ -12,15 +12,16 @@ import {
 } from "react-icons/fa";
 import Confetti from "react-confetti-boom";
 
-import oceanSound from "../../../assets/ocean-wave-1.m4a";
+import oceanSound from "../../../assets/sounds/ocean-wave-1.m4a";
 
-import dingSound from "../../../assets/ding.m4a";
-import oopsSound from "../../../assets/wrong.m4a";
-import tadaSound from "../../../assets/tada.mp3";
+import dingSound from "../../../assets/sounds/ding.m4a";
+import oopsSound from "../../../assets/sounds/wrong.m4a";
+import tadaSound from "../../../assets/sounds/tada.mp3";
 
 import fish1 from "../../../assets/blue-fish-removebg-preview.png";
 import fish2 from "../../../assets/cute_fish-removebg-preview.png";
 import fish3 from "../../../assets/fish-removebg-preview.png";
+
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
 
@@ -56,11 +57,9 @@ type WordItem = {
   found: boolean;
   points: number;
 };
-
+import ocean from "../../../assets/ocean.jpg";
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const OCEAN_IMAGE =
-  "https://media.istockphoto.com/id/537816526/vector/underwater-world.jpg?s=612x612&w=0&k=20&c=U_1QpgfCsqkNFdbiLqFs6C-RyC5d2Eyfl5Kf8_YBgT0=";
-
+const OCEAN_IMAGE = ocean
 const FISH_IMAGES: Record<FishVariant, string> = {
   0: fish1,
   1: fish2,
@@ -868,7 +867,7 @@ export default function OceanWordFishing() {
       {/* Yakuniy natija */}
       {phase === "finish" && (
         <div className="relative z-10 mx-auto max-w-3xl p-6">
-          <div className="rounded-3xl border border-cyan-100/35 bg-gradient-to-br from-sky-950/80 via-cyan-950/75 to-teal-950/75 p-8 text-center shadow-2xl backdrop-blur-xl">
+          <div className="rounded-3xl border border-cyan-100/35  p-8 text-center shadow-2xl backdrop-blur-xl">
             <div className="mb-5 flex justify-center">
               <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-r from-yellow-400 to-orange-400">
                 <FaCrown className="text-4xl text-white" />
@@ -924,7 +923,7 @@ export default function OceanWordFishing() {
                 className="rounded-xl bg-gradient-to-r from-sky-500 to-cyan-500 px-7 py-3 text-lg font-black text-white transition-all hover:scale-105"
               >
                 <FaPlay className="mr-2 inline" />
-                Qayta O'yna
+                Qayta O'ynash
               </button>
               <button
                 onClick={() => {

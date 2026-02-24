@@ -758,7 +758,7 @@ function QuizBattle() {
           
           <div className="relative mb-6 flex justify-center">
             <div className="relative">
-              <div className="absolute inset-0 animate-ping rounded-full bg-yellow-400/30" />
+              <div className="absolute inset-0 rounded-full bg-yellow-400/30" />
               <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-r from-yellow-500 to-orange-500">
                 <FaCrown className="text-4xl text-white" />
               </div>

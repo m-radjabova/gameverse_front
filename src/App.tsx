@@ -1,13 +1,8 @@
 ﻿import { Route, Routes, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
-
 import Home from "./pages/home/Home";
-
-
 import AuthLayout from "./layout/AuthLayout";
-
 import MainLayout from "./layout/MainLayout";
-
 import AdminLayout from "./layout/AdminLayout";
 import HelloAdmin from "./pages/admin/HelloAdmin";
 import useContextPro from "./hooks/useContextPro";
@@ -20,8 +15,6 @@ import MemoryRushPage from "./components/games/memory_rush/MemoryRushPage";
 import SiteLoader from "./components/main/SiteLoader";
 import ClassicArcadePage from "./components/games/classic_arcade/ClassicArcadePage";
 import WordBattlePage from "./components/games/word_battle/WordBattlePage";
-
-
 import GameLayout from "./layout/GameLayout";
 import FlagBattlePage from "./components/games/flag_battle/FlagBattlePage";
 import WheelOfFortunePage from "./components/games/wheel_of_fortune/WheelOfFortunePage";
@@ -30,6 +23,8 @@ import Profile from "./components/profile/Profile";
 import OceanWordFishingPage from "./components/games/ocean_word_fishing/OceanWordFishingPage";
 import MathRacePage from "./components/games/math_race/MathRacePage";
 import BaamboozlePage from "./components/games/baamboozle/BaamboozlePage";
+import FindDifferentColorPage from "./components/find_color/FindDifferentColorPage";
+import NotFoundPage from "./components/NotFoundPage";
 
 function App() {
   const { state: { isLoading } } = useContextPro();
@@ -56,7 +51,6 @@ function App() {
         <Route index element={<HelloAdmin />} />
       </Route>
 
-      {/* Oddiy sahifalar: header/footer BOR */}
       <Route
         element={
           <ProtectedRoute>
@@ -69,7 +63,6 @@ function App() {
         <Route path="/profile" element={<Profile />} />
       </Route>
 
-      {/* Game sahifalar: header/footer YO'Q */}
       <Route
         element={
           <ProtectedRoute>
@@ -89,14 +82,12 @@ function App() {
         <Route path="/games/ocean-word-fishing" element={<OceanWordFishingPage />} />
         <Route path="/games/math-race" element={<MathRacePage />} />
         <Route path="/games/baamboozle" element={<BaamboozlePage />} />
+        <Route path="/games/find-color" element={<FindDifferentColorPage />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/home" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
 
 export default App;
-
-
-

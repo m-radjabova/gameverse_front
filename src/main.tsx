@@ -16,7 +16,7 @@ createRoot(document.getElementById("root")!).render(
       <BrowserRouter>
       <CreateContextPro>
         <App />
-          <ToastContainer />
+          <ToastContainer hideProgressBar />
           </CreateContextPro>
       </BrowserRouter>
     </QueryClientProvider>

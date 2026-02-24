@@ -1,4 +1,4 @@
-﻿import { 
+import { 
   FaStar, FaUsers, FaTrophy, FaHeart, FaLayerGroup, FaBolt,
   FaCrown} from "react-icons/fa";
 import { 
@@ -7,9 +7,12 @@ import {
 import { 
   MdTimer, MdSpeed, MdStars, MdMemory,
   MdEmojiEvents} from "react-icons/md";
-import { RiBrainFill} from "react-icons/ri";import MemoryRush from "./MemoryRush";
+import { RiBrainFill} from "react-icons/ri";
+import MemoryRush from "./MemoryRush";
+import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 
-function MemoryRushPage() {  const memoryRushImg = "https://media.istockphoto.com/id/1434154110/vector/reminder-yellow-note-circled.jpg?s=612x612&w=0&k=20&c=2mfjGFRNi7htNGB47t3fzlfg5mCGLQSfUXMoWBogWL0=";
+function MemoryRushPage() {
+  const memoryRushImg = "https://media.istockphoto.com/id/1434154110/vector/reminder-yellow-note-circled.jpg?s=612x612&w=0&k=20&c=2mfjGFRNi7htNGB47t3fzlfg5mCGLQSfUXMoWBogWL0=";
 
   const gameStats = [
     { icon: FaUsers, label: "3.8k+ o'yinchi", value: "ONLINE", color: "from-emerald-400 to-teal-400" },
@@ -106,7 +109,7 @@ function MemoryRushPage() {  const memoryRushImg = "https://media.istockphoto.c
                   MEMORY RUSH CHALLENGE
                 </span>
                 <div className="ml-2 flex h-2 w-2">
-                  <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-green-400 opacity-75" />
+                  <span className="absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
                 </div>
               </div>
@@ -152,7 +155,7 @@ function MemoryRushPage() {  const memoryRushImg = "https://media.istockphoto.c
             <div className="relative">
               {/* Decorative Elements */}
               <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-emerald-500/30 via-teal-500/30 to-cyan-500/30 blur-2xl animate-pulse" />
-              <div className="absolute -top-6 -right-6 h-32 w-32 rounded-full bg-emerald-500/20 blur-xl animate-ping" />
+              <div className="absolute -top-6 -right-6 h-32 w-32 rounded-full bg-emerald-500/20 blur-xl" />
               
               {/* Image Container */}
               <div className="relative transform-gpu overflow-hidden rounded-2xl border-2 border-white/20 shadow-2xl transition-all group-hover:scale-[1.02] group-hover:border-white/30">
@@ -272,7 +275,7 @@ function MemoryRushPage() {  const memoryRushImg = "https://media.istockphoto.c
                   <h2 className="text-xl font-black text-white">Memory Rush</h2>
                   <p className="flex items-center gap-2 text-sm text-gray-300">
                     <RiBrainFill className="text-emerald-400" />
-                    Xotirangizni sinang В· Juftlarni toping
+                    Xotirangizni sinang · Juftlarni toping
                   </p>
                 </div>
               </div>
@@ -290,6 +293,7 @@ function MemoryRushPage() {  const memoryRushImg = "https://media.istockphoto.c
             </div>
 
             {/* MemoryRush Component */}
+                        <GameFeedbackPanel gameKey="memory-rush" />
             <MemoryRush />
           </div>
         </div>
@@ -308,6 +312,7 @@ function MemoryRushPage() {  const memoryRushImg = "https://media.istockphoto.c
 }
 
 export default MemoryRushPage;
+
 
 
 

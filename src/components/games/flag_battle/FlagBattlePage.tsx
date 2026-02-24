@@ -1,4 +1,4 @@
-﻿import { 
+import { 
   FaFlag, 
   FaUsers, 
   FaTrophy, 
@@ -20,9 +20,12 @@ import {
   MdPublic,
   MdLanguage
 } from "react-icons/md";
-import { RiTeamFill } from "react-icons/ri";import FlagBattle from "./FlagBattle";
+import { RiTeamFill } from "react-icons/ri";
+import FlagBattle from "./FlagBattle";
+import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 
-function FlagBattlePage() {  const flagBattleImg = "https://media.istockphoto.com/id/1030295058/photo/flags-of-different-countries-together-us-flag-in-focus.jpg?s=612x612&w=0&k=20&c=fZ67LXjSvX6LlHflpGF5YpD8bZHNUfzcQW_DvtU3lNQ="
+function FlagBattlePage() {
+  const flagBattleImg = "https://media.istockphoto.com/id/1030295058/photo/flags-of-different-countries-together-us-flag-in-focus.jpg?s=612x612&w=0&k=20&c=fZ67LXjSvX6LlHflpGF5YpD8bZHNUfzcQW_DvtU3lNQ="
   const gameStats = [
     { icon: FaUsers, label: "O'YINCHILAR", value: "2 guruh", color: "from-blue-400 to-cyan-400" },
     { icon: MdTimer, label: "DAVOMIYLIK", value: "5-8 min", color: "from-cyan-400 to-teal-400" },
@@ -111,7 +114,7 @@ function FlagBattlePage() {  const flagBattleImg = "https://media.istockphoto.c
                   FLAG BATTLE ARENA
                 </span>
                 <div className="ml-2 flex h-2 w-2">
-                  <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-green-400 opacity-75" />
+                  <span className="absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
                 </div>
               </div>
@@ -152,7 +155,7 @@ function FlagBattlePage() {  const flagBattleImg = "https://media.istockphoto.c
 
             <div className="relative">
               <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-blue-500/30 via-cyan-500/30 to-teal-500/30 blur-2xl animate-pulse" />
-              <div className="absolute -top-6 -right-6 h-32 w-32 rounded-full bg-blue-500/20 blur-xl animate-ping" />
+              <div className="absolute -top-6 -right-6 h-32 w-32 rounded-full bg-blue-500/20 blur-xl" />
               
               <div className="relative transform-gpu overflow-hidden rounded-2xl border-2 border-blue-500/30 shadow-2xl transition-all group-hover:scale-[1.02] group-hover:border-blue-400/50">
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a1f2a] via-transparent to-transparent z-10" />
@@ -266,7 +269,7 @@ function FlagBattlePage() {  const flagBattleImg = "https://media.istockphoto.c
                   <h2 className="text-xl font-black text-white">Flag Battle</h2>
                   <p className="flex items-center gap-2 text-sm text-blue-200/80">
                     <RiTeamFill className="text-blue-400" />
-                    Bayroqlarni topish o'yini В· 2 guruh
+                    Bayroqlarni topish o'yini · 2 guruh
                   </p>
                 </div>
               </div>
@@ -283,6 +286,7 @@ function FlagBattlePage() {  const flagBattleImg = "https://media.istockphoto.c
               </div>
             </div>
 
+                        <GameFeedbackPanel gameKey="flag-battle" />
             <FlagBattle />
           </div>
         </div>
@@ -301,6 +305,7 @@ function FlagBattlePage() {  const flagBattleImg = "https://media.istockphoto.c
 }
 
 export default FlagBattlePage;
+
 
 
 

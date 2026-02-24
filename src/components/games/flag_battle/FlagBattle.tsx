@@ -15,8 +15,8 @@ import {
 import { GiEarthAfricaEurope, GiEarthAmerica, GiEarthAsiaOceania } from "react-icons/gi";
 import { RiShieldFill, RiSwordFill } from "react-icons/ri";
 import Confetti from "react-confetti-boom";
-import correctSfx from "../../../assets/correct.m4a";
-import wrongSfx from "../../../assets/wrong.m4a";
+import correctSfx from "../../../assets/sounds/correct.m4a";
+import wrongSfx from "../../../assets/sounds/wrong.m4a";
 import { FLAG_QUESTIONS, type FlagQuestion } from "./data";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
@@ -63,14 +63,10 @@ export default function FlagBattle() {
   const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]);
   const [nameError, setNameError] = useState("");
 
-  // вњ… filterlar
   const [continentFilter, setContinentFilter] = useState<ContinentFilter>("ALL");
   const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>("ALL");
 
-  // вњ… round sonini tanlash
   const [roundCount, setRoundCount] = useState<RoundCount>(10);
-
-  // вњ… pause/resume
   const [paused, setPaused] = useState(false);
 
   const [questions, setQuestions] = useState<FlagQuestion[]>([]);
@@ -85,9 +81,6 @@ export default function FlagBattle() {
   const [toast, setToast] = useState<string | null>(null);
   const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
 
-  // вњ… audio (public papkaga qoвЂying)
-  // src/assets/correct.m4a
-  // src/assets/wrong.m4a
   const correctAudioRef = useRef<HTMLAudioElement | null>(null);
   const wrongAudioRef = useRef<HTMLAudioElement | null>(null);
 

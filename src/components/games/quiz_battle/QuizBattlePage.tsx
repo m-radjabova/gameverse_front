@@ -1,9 +1,10 @@
-﻿import { 
+import { 
   FaBolt, FaStar, FaCrown, FaTrophy, FaMedal, FaUsers} from "react-icons/fa";
 import { GiBrain, GiPodium, GiAchievement, GiBrainTentacle } from "react-icons/gi";
 import { MdQuiz, MdTimer, MdEmojiEvents, MdSpeed } from "react-icons/md";
 import { RiTeamFill } from "react-icons/ri";
 import QuizBattle from "./QuizBattle";
+import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 
 function QuizBattlePage() {
   const quizBattleImg = "https://media.istockphoto.com/id/1336313511/vector/vector-funny-sign-quiz-game-set-of-creative-alphabet-letters-and-numbers.jpg?s=612x612&w=0&k=20&c=V7G9_GmHnJK89C-kt1U1kGDz2uBskO1-Z5fpxph9rX8=";
@@ -79,10 +80,10 @@ function QuizBattlePage() {
         }} />
 
         {/* Quiz Icons Background */}
-        <div className="absolute left-[5%] top-[15%] animate-float text-8xl opacity-5 text-yellow-500">вќ“</div>
-        <div className="absolute right-[8%] bottom-[20%] animate-float-delayed text-7xl opacity-5 text-orange-500">вљЎ</div>
-        <div className="absolute left-[15%] bottom-[10%] animate-float-slow text-7xl opacity-5 text-red-500">рџЏ†</div>
-        <div className="absolute right-[12%] top-[25%] animate-float text-8xl opacity-5 text-yellow-500">в­ђ</div>
+        <div className="absolute left-[5%] top-[15%] animate-float text-8xl opacity-5 text-yellow-500">❓</div>
+        <div className="absolute right-[8%] bottom-[20%] animate-float-delayed text-7xl opacity-5 text-orange-500">⚡</div>
+        <div className="absolute left-[15%] bottom-[10%] animate-float-slow text-7xl opacity-5 text-red-500">🏆</div>
+        <div className="absolute right-[12%] top-[25%] animate-float text-8xl opacity-5 text-yellow-500">⭐</div>
       </div>
 
       <div className="relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-4 py-6 md:px-6 md:py-8 lg:px-8 xl:px-10 motion-safe:animate-[fadeInUp_.35s_ease-out]">
@@ -103,7 +104,7 @@ function QuizBattlePage() {
                   QUIZ BATTLE ARENA
                 </span>
                 <div className="ml-2 flex h-2 w-2">
-                  <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-green-400 opacity-75" />
+                  <span className="absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
                 </div>
               </div>
@@ -149,7 +150,7 @@ function QuizBattlePage() {
             <div className="relative">
               {/* Decorative Elements */}
               <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-yellow-500/30 via-orange-500/30 to-red-500/30 blur-2xl animate-pulse" />
-              <div className="absolute -top-6 -right-6 h-32 w-32 rounded-full bg-yellow-500/20 blur-xl animate-ping" />
+              <div className="absolute -top-6 -right-6 h-32 w-32 rounded-full bg-yellow-500/20 blur-xl" />
               
               {/* Image Container */}
               <div className="relative transform-gpu overflow-hidden rounded-2xl border-2 border-yellow-500/30 shadow-2xl transition-all group-hover:scale-[1.02] group-hover:border-yellow-400/50">
@@ -269,7 +270,7 @@ function QuizBattlePage() {
                   <h2 className="text-xl font-black text-white">Quiz Battle</h2>
                   <p className="flex items-center gap-2 text-sm text-yellow-200/80">
                     <RiTeamFill className="text-yellow-400" />
-                    Bilimlar bellashuvi В· 2 jamoa
+                    Bilimlar bellashuvi · 2 jamoa
                   </p>
                 </div>
               </div>
@@ -287,6 +288,7 @@ function QuizBattlePage() {
             </div>
 
             {/* QuizBattle Component */}
+                        <GameFeedbackPanel gameKey="quiz-battle" />
             <QuizBattle />
           </div>
         </div>
@@ -305,6 +307,7 @@ function QuizBattlePage() {
 }
 
 export default QuizBattlePage;
+
 
 
 

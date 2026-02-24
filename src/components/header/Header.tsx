@@ -10,6 +10,7 @@ import { MdStars } from "react-icons/md";
 import { NavLink, useNavigate } from "react-router-dom";
 import useContextPro from "../../hooks/useContextPro";
 import { logoutRequest } from "../../utils/auth";
+import { toMediaUrl } from "../../utils";
 
 
 type HeaderProps = {
@@ -140,7 +141,7 @@ function Header({ active = "O'yinlar", onNavClick }: HeaderProps) {
               <div className="relative h-10 w-10 overflow-hidden rounded-full border border-white/40 bg-[#b0134d]">
                 {user.avatar ? (
                   <img
-                    src={user.avatar}
+                    src={user.avatar ? toMediaUrl(user.avatar) : undefined}
                     alt={user.username}
                     className="h-full w-full object-cover"
                   />

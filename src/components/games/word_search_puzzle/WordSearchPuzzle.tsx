@@ -7,6 +7,7 @@ import { RiTeamFill } from "react-icons/ri";
 import Confetti from "react-confetti-boom";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import wordSearchGameSound from "../../../assets/sounds/word_search_game_sound.m4a";
 
 type TeamId = 0 | 1;
 type Phase = "teacher" | "play" | "finish";
@@ -122,6 +123,7 @@ export default function WordSearchPuzzle() {
   const [team2Message, setTeam2Message] = useState("");
 
   const timerRef = useRef<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const allWords = useMemo(() => [...team1Words, ...team2Words], [team1Words, team2Words]);
   const team1Found = useMemo(() => team1Words.filter((w) => w.found).length, [team1Words]);
@@ -323,6 +325,31 @@ export default function WordSearchPuzzle() {
       if (timerRef.current) window.clearTimeout(timerRef.current);
     };
   }, [phase, timer]);
+
+  useEffect(() => {
+    const audio = new Audio(wordSearchGameSound);
+    audio.loop = true;
+    audio.volume = 0.35;
+    audioRef.current = audio;
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+      audioRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!audioRef.current) return;
+
+    if (phase === "play") {
+      void audioRef.current.play().catch(() => undefined);
+      return;
+    }
+
+    audioRef.current.pause();
+    audioRef.current.currentTime = 0;
+  }, [phase]);
 
   useEffect(() => {
     if (phase === "play" && team1Words.every((w) => w.found) && team2Words.every((w) => w.found)) {

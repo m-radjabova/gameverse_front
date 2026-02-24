@@ -153,13 +153,6 @@ export default function GameLayout() {
               )}
             </button>
           </div>
-
-          {/* Keyboard Shortcut Hint */}
-          <div className="fixed bottom-4 right-4 z-40 hidden md:block">
-            <div className="rounded-full bg-black/50 backdrop-blur-sm px-3 py-1.5 text-xs text-white/60 border border-white/10">
-              <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px]">Esc</kbd> - chiqish
-            </div>
-          </div>
         </>
       )}
 
