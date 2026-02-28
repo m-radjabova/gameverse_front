@@ -25,7 +25,10 @@ import MathRacePage from "./components/games/math_race/MathRacePage";
 import BaamboozlePage from "./components/games/baamboozle/BaamboozlePage";
 import FindDifferentColorPage from "./components/find_color/FindDifferentColorPage";
 import NotFoundPage from "./components/NotFoundPage";
-
+import BingoPage from "./components/games/bingo/BingoPage";
+import WordChainPage from "./components/games/word_chain/WordChainPage";
+import MemoryChainArenaPage from "./components/games/memory_chain_arena/MemoryChainArenaPage";
+import JumanjiPage from "./components/games/jumanji/JumanjiPage";
 function App() {
   const { state: { isLoading } } = useContextPro();
 
@@ -83,6 +86,10 @@ function App() {
         <Route path="/games/math-race" element={<MathRacePage />} />
         <Route path="/games/baamboozle" element={<BaamboozlePage />} />
         <Route path="/games/find-color" element={<FindDifferentColorPage />} />
+        <Route path="/games/bingo" element={<BingoPage />} />
+        <Route path="/games/word-chain" element={<WordChainPage />} />
+        <Route path="/games/memory-chain" element={<MemoryChainArenaPage />} />
+        <Route path="/games/jumanji" element={<JumanjiPage />} />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />
