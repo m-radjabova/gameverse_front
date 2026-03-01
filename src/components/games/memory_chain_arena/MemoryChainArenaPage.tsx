@@ -286,7 +286,7 @@ function MemoryChainArenaPage() {
 
               <div className="relative mb-4 flex justify-center">
                 <div className="relative">
-                  <div className="absolute inset-0 animate-ping rounded-full bg-cyan-400/30" />
+                  <div className="absolute inset-0 rounded-full bg-cyan-400/30" />
                   <div
                     className={`relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r ${level.color} text-white text-2xl shadow-2xl border-2 border-white/30`}
                   >

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import Confetti from "react-confetti-boom";
 import {
   FaUsers,
@@ -28,7 +28,7 @@ type Team = {
 
 type Phase = "teacher" | "game" | "result" | "finish";
 
-const TEAM_AVATARS = ["🦊", "🐼"];
+const TEAM_AVATARS = ["🦉", "🦜"];
 const TEAM_COLORS = [
   { primary: "from-orange-400 to-amber-400", text: "text-orange-300", bg: "bg-orange-500/10", border: "border-orange-500/30" },
   { primary: "from-teal-400 to-cyan-400", text: "text-teal-300", bg: "bg-teal-500/10", border: "border-teal-500/30" },
@@ -106,8 +106,10 @@ function MagicSquare() {
   const [winner, setWinner] = useState<Team | null>(null);
   const [roundTimer, setRoundTimer] = useState(60);
   const [isTimerActive, setIsTimerActive] = useState(false);
+  const [overlayMessage, setOverlayMessage] = useState<null | { title: string; subtitle?: string }>(null);
   const { countdownValue, countdownVisible, runStartCountdown } =
     useGameStartCountdown();
+  const activeTeam = teams.find((t) => t.isActive);
 
   // Initialize audio
   useEffect(() => {
@@ -203,7 +205,7 @@ function MagicSquare() {
   const removeTeam = (id: number) => {
     const team = teams.find(t => t.id === id);
     setTeams(teams.filter(t => t.id !== id));
-    showToast(`🗑️ ${team?.name} o'chirildi`);
+    showToast(`${team?.name} o'chirildi`);
   };
 
   // Start game
@@ -301,9 +303,14 @@ function MagicSquare() {
     setRoundWinner(teams.findIndex((t) => t.id === teamId));
     setGameHistory((prev) => [...prev, `${solvedTeam.name} sehrli kvadratni yechdi! +${points} ball`]);
     showToast(`Ajoyib! +${points} ball`);
+    setOverlayMessage({
+      title: "\u2705 To'g'ri!",
+      subtitle: `+${points} ball (30 + bonus) - Keyingi masala tayyorlanmoqda...`,
+    });
     setSelectedColor(null);
 
     setTimeout(() => {
+      setOverlayMessage(null);
       if (currentPuzzleIndex + 1 < puzzles.length) {
         const nextPuzzleIndex = currentPuzzleIndex + 1;
         const nextPuzzle = puzzles[nextPuzzleIndex];
@@ -326,15 +333,20 @@ function MagicSquare() {
       } else {
         finishGame();
       }
-    }, 2000);
+    }, 1800);
   };
 
   // Handle timeout
   const handleTimeout = () => {
     setIsTimerActive(false);
     showToast("Vaqt tugadi! Keyingi jamoa boshlaydi");
+    setOverlayMessage({
+      title: "Vaqt tugadi!",
+      subtitle: "Navbat keyingi jamoaga o'tdi",
+    });
 
     setTimeout(() => {
+      setOverlayMessage(null);
       const puzzle = puzzles[currentPuzzleIndex];
       setTeams((prev) => {
         const activeIndex = prev.findIndex((t) => t.isActive);
@@ -349,7 +361,7 @@ function MagicSquare() {
       setSelectedColor(null);
       setRoundTimer(60);
       setIsTimerActive(true);
-    }, 2000);
+    }, 1800);
   };
 
   // Finish game
@@ -361,7 +373,7 @@ function MagicSquare() {
     const sorted = [...teams].sort((a, b) => b.score - a.score);
     setWinner(sorted[0]);
     setPhase("finish");
-    showToast("?? O'yin tugadi!");
+    showToast("🏁 O'yin tugadi!");
   };
 
   // Reset game
@@ -402,6 +414,11 @@ function MagicSquare() {
                 key={`${rowIdx}-${colIdx}`}
                 onClick={() => handleCellClick(rowIdx, colIdx)}
                 disabled={!team.isActive || !isEditable}
+                title={
+                  isEditable
+                    ? "Bo'sh katak - shu yerga rang qo'ying"
+                    : "Berilgan katak - o'zgartirib bo'lmaydi"
+                }
                 className={`
                   aspect-square rounded-xl text-3xl font-bold
                   transition-all duration-300
@@ -412,12 +429,12 @@ function MagicSquare() {
                     : 'cursor-default'
                   }
                   ${colorInfo?.color ? colorInfo.color : 'bg-purple-100/20'}
-                  ${isEditable && !cell ? 'bg-purple-100/20 border-2 border-dashed border-purple-400/50' : ''}
+                  ${isEditable && !cell ? 'bg-purple-100/35 border-[3px] border-dashed border-purple-300/90 text-purple-200' : ''}
                   ${roundWinner !== null && team.isActive ? 'animate-pulse ring-4 ring-green-400' : ''}
                   shadow-lg hover:shadow-xl
                 `}
               >
-                {cell}
+                {isEditable && !cell ? "?" : cell}
               </button>
             );
           })
@@ -490,7 +507,7 @@ function MagicSquare() {
               
               <div className="flex items-center gap-3 mb-4 pb-2 border-b border-purple-500/30">
                 <div className="relative">
-                  <div className="absolute -inset-1 animate-ping rounded-full bg-purple-500/30" />
+                  <div className="absolute -inset-1 rounded-full bg-purple-500/30" />
                   <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500">
                     <FaUsers className="text-white text-sm" />
                   </div>
@@ -556,7 +573,7 @@ function MagicSquare() {
               
               <div className="flex items-center gap-3 mb-4 pb-2 border-b border-purple-500/30">
                 <div className="relative">
-                  <div className="absolute -inset-1 animate-ping rounded-full bg-purple-500/30" />
+                  <div className="absolute -inset-1 rounded-full bg-purple-500/30" />
                   <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500">
                     <FaMagic className="text-white text-sm" />
                   </div>
@@ -610,7 +627,7 @@ function MagicSquare() {
                     <div className="aspect-square rounded-lg bg-yellow-500 flex items-center justify-center">🟡</div>
                     <div className="aspect-square rounded-lg bg-red-500 flex items-center justify-center">🔴</div>
                     <div className="aspect-square rounded-lg bg-blue-500 flex items-center justify-center">🔵</div>
-                    <div className="aspect-square rounded-lg bg-purple-100/20 border-2 border-dashed border-purple-400/50 flex items-center justify-center">❓</div>
+                    <div className="aspect-square rounded-lg bg-purple-100/20 border-2 border-dashed border-purple-400/50 flex items-center justify-center">вќ“</div>
                     <div className="aspect-square rounded-lg bg-yellow-500 flex items-center justify-center">🟡</div>
                     <div className="aspect-square rounded-lg bg-red-500 flex items-center justify-center">🔴</div>
                   </div>
@@ -636,8 +653,19 @@ function MagicSquare() {
         {phase === "game" && (
           /* ========== O'YIN JARAYONI ========== */
           <div className="space-y-8">
+            {overlayMessage && (
+              <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
+                <div className="w-full max-w-xl rounded-2xl border border-purple-300/40 bg-gradient-to-br from-purple-900/90 to-pink-900/90 p-6 text-center shadow-2xl">
+                  <p className="text-3xl font-black text-white">{overlayMessage.title}</p>
+                  {overlayMessage.subtitle && (
+                    <p className="mt-2 text-base text-purple-100">{overlayMessage.subtitle}</p>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-center gap-4">
                 <div className="bg-purple-900/30 border-2 border-purple-500/30 rounded-xl px-4 py-2">
                   <p className="text-xs text-purple-300">Masala</p>
@@ -652,10 +680,10 @@ function MagicSquare() {
                 </div>
               </div>
 
-              <div className="text-center">
+              <div className="text-center lg:text-right">
                 <p className="text-sm text-purple-300 mb-1">Hozirgi navbat</p>
-                <div className="flex items-center gap-3">
-                  {teams.map((team, idx) => (
+                <div className="flex flex-wrap items-center justify-center gap-3 lg:justify-end">
+                  {teams.map((team) => (
                     <div
                       key={team.id}
                       className={`px-4 py-2 rounded-xl border-2 transition-all ${
@@ -675,6 +703,35 @@ function MagicSquare() {
                   ))}
                 </div>
               </div>
+            </div>
+
+            {/* Instruction Bar */}
+            <div className="grid gap-3 rounded-xl border border-purple-400/40 bg-purple-900/30 p-4 text-sm text-purple-100 backdrop-blur-sm md:grid-cols-2 xl:grid-cols-4">
+              <p className="rounded-lg bg-purple-950/40 px-3 py-2">1-qadam: Rang tanlang </p>
+              <p className="rounded-lg bg-purple-950/40 px-3 py-2">2-qadam: Bo&apos;sh katakka bosing (chiziqli kataklar)</p>
+              <p className="rounded-lg bg-purple-950/40 px-3 py-2">Qoida: Har qator va ustunda 3 xil rang bo&apos;lsin</p>
+              <p className="rounded-lg bg-purple-950/40 px-3 py-2">Taymer tugasa navbat almashadi</p>
+            </div>
+
+            {/* Status Banner */}
+            <div
+              className={`rounded-xl border-2 p-4 backdrop-blur-sm ${
+                selectedColor
+                  ? "border-emerald-400/60 bg-emerald-900/20"
+                  : "border-amber-400/70 bg-amber-900/20"
+              }`}
+            >
+              <p className="text-base font-bold text-white">
+                Hozir o&apos;ynayapti: {activeTeam?.avatar ?? "\u{1F465}"} {activeTeam?.name ?? "Jamoa tanlanmagan"}
+              </p>
+              <p className="mt-1 text-sm text-white/90">
+                Tanlangan rang: {selectedColor ?? "Tanlanmagan"}
+              </p>
+              {!selectedColor && (
+                <p className="mt-2 text-sm font-semibold text-amber-200">
+                  Rang tanlanmagan - avval rang tanlang!
+                </p>
+              )}
             </div>
 
             {/* Color Selection */}
@@ -705,18 +762,20 @@ function MagicSquare() {
             </div>
 
             {/* Teams Grids */}
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
               {teams.map((team, idx) => (
                 <div
                   key={team.id}
                   className={`
-                    relative group transform-gpu overflow-hidden rounded-2xl border-2 p-6 backdrop-blur-xl
+                    relative transform-gpu overflow-hidden rounded-2xl border-2 p-6 backdrop-blur-xl
                     ${team.isActive 
                       ? `border-purple-400/50 bg-gradient-to-br ${team.color} scale-105 shadow-2xl` 
-                      : 'border-purple-500/30 bg-purple-950/30'}
+                      : 'border-purple-500/30 bg-purple-950/30 opacity-80'}
                   `}
                 >
-                  <div className={`absolute inset-0 pointer-events-none bg-gradient-to-r ${TEAM_COLORS[idx].primary} opacity-0 group-hover:opacity-10 transition-opacity`} />
+                  {team.isActive && (
+                    <div className={`absolute inset-0 pointer-events-none bg-gradient-to-r ${TEAM_COLORS[idx].primary} opacity-0 transition-opacity group-hover:opacity-10`} />
+                  )}
                   
                   <div className="relative">
                     <div className="flex items-center gap-3 mb-4">
@@ -744,6 +803,21 @@ function MagicSquare() {
               ))}
             </div>
 
+            {/* Legend */}
+            <div className="rounded-xl border border-purple-500/30 bg-purple-950/30 p-4 backdrop-blur-sm">
+              <p className="text-sm font-bold text-purple-200">Legend</p>
+              <div className="mt-3 flex flex-col gap-3 text-sm text-white/90 md:flex-row md:items-center md:gap-6">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500 text-white">🔴</div>
+                  <span>Berilgan kataklar: o&apos;zgarmaydi</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg border-[3px] border-dashed border-purple-300/90 bg-purple-100/35 font-bold text-purple-100">?</div>
+                  <span>Chiziqli kataklar: siz to&apos;ldirasiz</span>
+                </div>
+              </div>
+            </div>
+
             {/* Game History */}
             {gameHistory.length > 0 && (
               <div className="relative group transform-gpu overflow-hidden rounded-xl border border-purple-500/30 bg-purple-950/30 p-4 backdrop-blur-sm">
@@ -769,7 +843,7 @@ function MagicSquare() {
               
               {/* Trophy */}
               <div className="relative mb-8">
-                <div className="absolute inset-0 animate-ping rounded-full bg-purple-500/30" />
+                <div className="absolute inset-0 rounded-full bg-purple-500/30" />
                 <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500 mx-auto">
                   <FaCrown className="text-5xl text-white" />
                 </div>
@@ -784,7 +858,7 @@ function MagicSquare() {
 
               {/* Results */}
               <div className="relative grid grid-cols-2 gap-4 mb-8">
-                {[...teams].sort((a, b) => b.score - a.score).map((team, idx) => (
+                {[...teams].sort((a, b) => b.score - a.score).map((team) => (
                   <div key={team.id} className="rounded-xl border border-purple-500/30 bg-purple-950/30 p-4">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{team.avatar}</span>
@@ -826,3 +900,5 @@ function MagicSquare() {
 }
 
 export default MagicSquare;
+
+

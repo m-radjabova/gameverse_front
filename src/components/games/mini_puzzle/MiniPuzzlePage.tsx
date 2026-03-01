@@ -165,7 +165,7 @@ function MiniPuzzlePage() {
                   RASMNI YIG'
                 </span>
                 <div className="ml-2 flex h-2 w-2">
-                  <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-green-400 opacity-75" />
+                  <span className="absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
                 </div>
               </div>
@@ -294,7 +294,7 @@ function MiniPuzzlePage() {
 
               <div className="relative mb-4 flex justify-center">
                 <div className="relative">
-                  <div className="absolute inset-0 animate-ping rounded-full bg-pink-500/30" />
+                  <div className="absolute inset-0 rounded-full bg-pink-500/30" />
                   <div
                     className={`relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r ${level.color} text-white text-2xl shadow-2xl border-2 border-white/30`}
                   >

@@ -139,7 +139,7 @@ function ReverseThinkingPage() {
                   TESKARI FIKR
                 </span>
                 <div className="ml-2 flex h-2 w-2">
-                  <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-green-400 opacity-75" />
+                  <span className="absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
                 </div>
               </div>

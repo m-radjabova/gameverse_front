@@ -634,7 +634,7 @@ function ReverseThinking() {
               
               <div className="flex items-center gap-3 mb-4 pb-2 border-b border-green-500/30">
                 <div className="relative">
-                  <div className="absolute -inset-1 animate-ping rounded-full bg-green-500/30" />
+                  <div className="absolute -inset-1 rounded-full bg-green-500/30" />
                   <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-green-500 to-emerald-500">
                     <FaUsers className="text-white text-sm" />
                   </div>
@@ -700,7 +700,7 @@ function ReverseThinking() {
               
               <div className="flex items-center gap-3 mb-4 pb-2 border-b border-green-500/30">
                 <div className="relative">
-                  <div className="absolute -inset-1 animate-ping rounded-full bg-green-500/30" />
+                  <div className="absolute -inset-1 rounded-full bg-green-500/30" />
                   <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-green-500 to-emerald-500">
                     <FaBrain className="text-white text-sm" />
                   </div>
@@ -978,7 +978,7 @@ function ReverseThinking() {
               
               {/* Trophy */}
               <div className="relative mb-8">
-                <div className="absolute inset-0 animate-ping rounded-full bg-green-500/30" />
+                <div className="absolute inset-0 rounded-full bg-green-500/30" />
                 <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-r from-green-500 to-emerald-500 mx-auto">
                   <FaCrown className="text-5xl text-white" />
                 </div>

@@ -600,7 +600,7 @@ function MiniPuzzle() {
               
               <div className="flex items-center gap-3 mb-4 pb-2 border-b border-pink-500/30">
                 <div className="relative">
-                  <div className="absolute -inset-1 animate-ping rounded-full bg-pink-500/30" />
+                  <div className="absolute -inset-1 rounded-full bg-pink-500/30" />
                   <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-pink-500 to-rose-500">
                     <FaUsers className="text-white text-sm" />
                   </div>
@@ -666,7 +666,7 @@ function MiniPuzzle() {
               
               <div className="flex items-center gap-3 mb-4 pb-2 border-b border-pink-500/30">
                 <div className="relative">
-                  <div className="absolute -inset-1 animate-ping rounded-full bg-pink-500/30" />
+                  <div className="absolute -inset-1 rounded-full bg-pink-500/30" />
                   <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-pink-500 to-rose-500">
                     <FaImage className="text-white text-sm" />
                   </div>
@@ -845,7 +845,7 @@ function MiniPuzzle() {
               
               {/* Trophy */}
               <div className="relative mb-8">
-                <div className="absolute inset-0 animate-ping rounded-full bg-pink-500/30" />
+                <div className="absolute inset-0 rounded-full bg-pink-500/30" />
                 <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-r from-pink-500 to-rose-500 mx-auto">
                   <FaCrown className="text-5xl text-white" />
                 </div>

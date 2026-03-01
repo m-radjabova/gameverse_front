@@ -1204,7 +1204,7 @@ function Jumanji() {
 
               <div className="flex items-center gap-3 mb-4 pb-2 border-b border-amber-500/30">
                 <div className="relative">
-                  <div className="absolute -inset-1 animate-ping rounded-full bg-amber-500/30" />
+                  <div className="absolute -inset-1 rounded-full bg-amber-500/30" />
                   <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-yellow-500">
                     <FaUsers className="text-white text-sm" />
                   </div>
@@ -1278,7 +1278,7 @@ function Jumanji() {
 
               <div className="flex items-center gap-3 mb-4 pb-2 border-b border-amber-500/30">
                 <div className="relative">
-                  <div className="absolute -inset-1 animate-ping rounded-full bg-amber-500/30" />
+                  <div className="absolute -inset-1 rounded-full bg-amber-500/30" />
                   <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-yellow-500">
                     <FaStar className="text-white text-sm" />
                   </div>
@@ -1576,7 +1576,7 @@ function Jumanji() {
                         <div className="relative mb-6 flex items-center justify-between border-b border-amber-500/30 pb-4">
                           <div className="flex items-center gap-4">
                             <div className="relative">
-                              <div className="absolute -inset-1 animate-ping rounded-full bg-amber-500/30" />
+                              <div className="absolute -inset-1 rounded-full bg-amber-500/30" />
                               <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-2xl">
                                 {currentTile?.icon}
                               </div>
@@ -1760,7 +1760,7 @@ function Jumanji() {
 
               {/* Trophy */}
               <div className="relative mb-8">
-                <div className="pointer-events-none absolute inset-0 animate-ping rounded-full bg-yellow-500/30" />
+                <div className="pointer-events-none absolute inset-0  rounded-full bg-yellow-500/30" />
                 <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-r from-yellow-500 to-amber-500 mx-auto">
                   <FaCrown className="text-5xl text-white" />
                 </div>

@@ -38,10 +38,6 @@ function Games() {
     [activeCategory],
   );
   const totalGames = gameCards.length;
-  const availableGames = useMemo(
-    () => gameCards.filter((game) => game.available).length,
-    [],
-  );
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-[#0a0618] via-[#1a0f2a] to-[#0f1a2a] [&_button]:cursor-pointer [&_button]:transition-all [&_button]:duration-200 [&_button:hover]:brightness-110 [&_button:disabled]:cursor-not-allowed">
@@ -150,14 +146,6 @@ function Games() {
               <span className="inline-flex items-center gap-2 rounded-xl border border-yellow-400/30 bg-yellow-500/10 px-3 py-1.5 text-yellow-200">
                 <FaGamepad className="text-xs" />
                 Jami: {totalGames} ta o'yin
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-3 py-1.5 text-emerald-200">
-                <FaTrophy className="text-xs" />
-                Mavjud: {availableGames} ta o'yin
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-xl border border-purple-400/30 bg-purple-500/10 px-3 py-1.5 text-purple-200">
-                <FaUsers className="text-xs" />
-                Ko'rsatilmoqda: {filteredGames.length} ta o'yin
               </span>
             </div>
           </div>

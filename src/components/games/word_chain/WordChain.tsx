@@ -278,7 +278,7 @@ function WordChain() {
               {/* Panel Header */}
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-purple-500/30">
                 <div className="relative">
-                  <div className="absolute -inset-1 animate-ping rounded-full bg-purple-500/30" />
+                  <div className="absolute -inset-1 rounded-full bg-purple-500/30" />
                   <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500">
                     <FaUsers className="text-white text-lg" />
                   </div>
@@ -582,7 +582,7 @@ function WordChain() {
             <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 rounded-3xl border-2 border-purple-500/30 p-8 backdrop-blur-sm shadow-2xl text-center">
               {/* G'olib */}
               <div className="relative mb-8">
-                <div className="absolute inset-0 animate-ping rounded-full bg-yellow-500/30" />
+                <div className="absolute inset-0 rounded-full bg-yellow-500/30" />
                 <div className="relative flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 mx-auto">
                   <FaCrown className="text-5xl text-white" />
                 </div>
