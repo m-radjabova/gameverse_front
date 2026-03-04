@@ -32,6 +32,8 @@ import JumanjiPage from "./components/games/jumanji/JumanjiPage";
 import MiniPuzzlePage from "./components/games/mini_puzzle/MiniPuzzlePage";
 import MagicSquarePage from "./components/games/magic_square/MagicSquarePage";
 import ReverseThinkingPage from "./components/games/reverse_thinking/ReverseThinkingPage";
+import HangmanPage from "./components/games/hangman/HangmanPage";
+import MillionairePage from "./components/games/millionaire/MillionairePage";
 function App() {
   const { state: { isLoading } } = useContextPro();
 
@@ -96,6 +98,8 @@ function App() {
         <Route path="/games/mini-puzzle" element={<MiniPuzzlePage />} />
         <Route path="/games/magic-square" element={<MagicSquarePage />} />
         <Route path="/games/reverse-thinking" element={<ReverseThinkingPage />} />
+        <Route path="/games/hangman" element={<HangmanPage />} />4
+        <Route path="/games/millionaire" element={<MillionairePage />} />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

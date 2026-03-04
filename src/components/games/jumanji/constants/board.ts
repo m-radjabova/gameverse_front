@@ -18,7 +18,7 @@ export type RoadPoint = { x: number; y: number };
 
 export const createRoadPoints = (tileCount: number): RoadPoint[] => {
   const total = Math.max(2, tileCount);
-  const xCenter = 43;
+  const xCenter = 50;
   const baseAmplitude = 22;
   const yStart = 90;
   const yEnd = 30;

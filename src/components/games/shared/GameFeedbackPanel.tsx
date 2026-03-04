@@ -7,7 +7,7 @@ import {
   submitMyGameFeedback,
 } from "../../../apiClient/gameFeedback";
 import useContextPro from "../../../hooks/useContextPro";
-import type { GameCommentOut, GameRatingSummary } from "../../../types/types";
+import type { GameComment, GameRatingSummary } from "../../../types/types";
 import { hasAnyRole } from "../../../utils/roles";
 import { toMediaUrl } from "../../../utils";
 
@@ -34,7 +34,7 @@ function GameFeedbackPanel({ gameKey }: Props) {
 
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<GameRatingSummary | null>(null);
-  const [comments, setComments] = useState<GameCommentOut[]>([]);
+  const [comments, setComments] = useState<GameComment[]>([]);
   const [ratingInput, setRatingInput] = useState(0);
   const [commentInput, setCommentInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -182,7 +182,7 @@ function GameFeedbackPanel({ gameKey }: Props) {
               setError("");
               setSuccess("");
             }}
-            placeholder="Comment yozing..."
+            placeholder="Comment yozing(sizning fikringiz biz uchun muhim)..."
             rows={3}
             className="w-full resize-none rounded-lg border border-white/15 bg-black/35 px-3 py-2 text-xs text-white outline-none placeholder:text-white/40 focus:border-yellow-300/60"
           />
@@ -194,9 +194,11 @@ function GameFeedbackPanel({ gameKey }: Props) {
             type="button"
             onClick={() => void handleSubmit()}
             disabled={submitting}
-            className="mt-3 w-full rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-2 text-xs font-bold text-white disabled:opacity-70"
+            className="w-full relative mt-8 mb-2 overflow-hidden rounded-full border-2 border-[#ffe24d] bg-gradient-to-b from-[#ffd966] to-[#ffb347] px-12 py-4 text-lg font-black tracking-wider text-[#1a1a1a] shadow-[0_12px_0_0_rgba(230,126,34,0.95),0_15px_25px_rgba(0,0,0,0.2)] transition-all hover:translate-y-1 hover:shadow-[0_10px_0_0_rgba(230,126,34,0.95)] active:translate-y-3 active:shadow-[0_8px_0_0_rgba(230,126,34,0.95)] animate-fade-in-up"
           >
-            {submitting ? "Yuborilmoqda..." : "Rating va comment yuborish"}
+            {submitting ? "Yuborilmoqda..." : "Reyting va comment yuborish"}
+            <span className="absolute inset-0 -translate-x-full group-hover:translate-x-0 transition-transform duration-700 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12" />
+            
           </button>
         </div>
       )}

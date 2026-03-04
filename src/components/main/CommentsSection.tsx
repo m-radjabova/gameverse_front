@@ -7,7 +7,7 @@ import "aos/dist/aos.css";
 
 import { fetchRecentGameComments } from "../../apiClient/gameFeedback";
 import { gameCards } from "../../pages/games/data";
-import type { GameCommentOut } from "../../types/types";
+import type { GameComment } from "../../types/types";
 import { toMediaUrl } from "../../utils";
 
 type CommentItem = {
@@ -76,9 +76,9 @@ function CommentsSection() {
       if (!mounted) return;
 
       const next: CommentItem[] = rows
-        .filter((item: GameCommentOut) => item.rating === 5)
+        .filter((item: GameComment) => item.rating === 5)
         .slice(0, 6)
-        .map((item: GameCommentOut, index) => ({
+        .map((item: GameComment, index) => ({
           id: item.id,
           fullName: item.username || "Teacher",
           game: gameTitleByKey[item.game_key] || item.game_key,

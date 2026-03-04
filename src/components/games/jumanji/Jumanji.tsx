@@ -430,6 +430,52 @@ function Jumanji() {
     );
   };
 
+  const moveTeamByDelta = (
+    currentTeam: Team,
+    delta: number,
+    historyEntry: string,
+    onComplete: () => void,
+  ) => {
+    const currentPosition = currentTeam.position;
+    const targetPosition = Math.min(
+      tiles.length - 1,
+      Math.max(0, currentPosition + delta),
+    );
+    const totalSteps = Math.abs(targetPosition - currentPosition);
+    const direction = targetPosition >= currentPosition ? 1 : -1;
+    const stepDuration = MOVE_STEP_DURATION_MS;
+
+    setIsMoving(true);
+    for (let step = 1; step <= totalSteps; step++) {
+      setTimeout(() => {
+        setVisualPositions((prev) => ({
+          ...prev,
+          [currentTeam.id]: currentPosition + step * direction,
+        }));
+      }, step * stepDuration);
+    }
+
+    setTimeout(
+      () => {
+        setTeams((prev) =>
+          prev.map((t) =>
+            t.id === currentTeam.id ? { ...t, position: targetPosition } : t,
+          ),
+        );
+        setIsMoving(false);
+        setGameHistory((prev) => [...prev, historyEntry]);
+
+        if (targetPosition >= tiles.length - 1) {
+          finishGame({ ...currentTeam, position: targetPosition });
+          return;
+        }
+
+        onComplete();
+      },
+      Math.max(1, totalSteps) * stepDuration + MOVE_FINISH_BUFFER_MS,
+    );
+  };
+
   // Handle tile action
   const handleTileAction = (tile: Tile) => {
     if (tile.type === "question") {
@@ -452,29 +498,24 @@ function Jumanji() {
   // Handle bonus
   const handleBonus = () => {
     const currentTeam = teams[currentTeamIndex];
-    const bonus = 15;
+    const bonusSteps = Math.random() < 0.5 ? 2 : 5;
 
-    setTeams((prev) =>
-      prev.map((t) =>
-        t.id === currentTeam.id ? { ...t, score: t.score + bonus } : t,
-      ),
-    );
-
-    setGameHistory((prev) => [
-      ...prev,
-      `🎁 ${currentTeam.name} bonus oldi: +${bonus} ball`,
-    ]);
     announceScoreChange(
       currentTeam,
-      bonus,
-      "BONUS BALL",
-      "Maxsus katak: qo'shimcha ball yutildi",
+      bonusSteps,
+      "BONUS QADAM",
+      `Maxsus katak: +${bonusSteps} qadam oldinga`,
     );
-    showToastMessage(`🎁 ${currentTeam.name} +${bonus} ball`);
+    showToastMessage(`${currentTeam.name} bonus oldi: +${bonusSteps} qadam`);
 
     setTimeout(() => {
-      checkDoubleTurn();
-    }, 2000);
+      moveTeamByDelta(
+        currentTeam,
+        bonusSteps,
+        `${currentTeam.name} bonus oldi va +${bonusSteps} qadam oldinga yurdi`,
+        advanceTurn,
+      );
+    }, 1200);
   };
 
   // Handle trap
@@ -503,7 +544,7 @@ function Jumanji() {
     showToastMessage(`🐍 ${currentTeam.name} -${penalty} ball`);
 
     setTimeout(() => {
-      checkDoubleTurn();
+      advanceTurn();
     }, 2000);
   };
 
@@ -527,13 +568,22 @@ function Jumanji() {
 
   // Handle timeout
   const handleTimeout = () => {
+    const currentTeam = teams[currentTeamIndex];
+    const backSteps = 3;
+
     playSound("wrong");
     setShowResult(true);
     setIsCorrect(false);
 
     setTimeout(() => {
-      checkDoubleTurn();
-    }, 2000);
+      resetQuestionState();
+      moveTeamByDelta(
+        currentTeam,
+        -backSteps,
+        `${currentTeam.name} vaqtida javob bermadi: -${backSteps} qadam`,
+        advanceTurn,
+      );
+    }, 1200);
   };
 
   // Handle answer
@@ -576,28 +626,21 @@ function Jumanji() {
     );
 
     setTimeout(() => {
-      checkDoubleTurn();
+      advanceTurn();
     }, 2000);
   };
 
-  // Check for double turn
-  const checkDoubleTurn = () => {
-    const resetQuestionState = () => {
-      setPhase("game");
-      setCurrentTile(null);
-      setCurrentQuestion(null);
-      setSelectedAnswer(null);
-      setShowResult(false);
-      setScoreAnnouncement(null);
-      setTimeLeft(30);
-    };
+  const resetQuestionState = () => {
+    setPhase("game");
+    setCurrentTile(null);
+    setCurrentQuestion(null);
+    setSelectedAnswer(null);
+    setShowResult(false);
+    setScoreAnnouncement(null);
+    setTimeLeft(30);
+  };
 
-    if (diceValue % 2 === 0 && currentTile?.type !== "trap") {
-      showToastMessage("🎲 Juftlik! Yana bir marta tashlash huquqi!");
-      resetQuestionState(); // modalni yopadi
-      return;
-    }
-
+  const advanceTurn = () => {
     const nextIndex = (currentTeamIndex + 1) % teams.length;
     setCurrentTeamIndex(nextIndex);
     setTeams((prev) =>
@@ -1429,7 +1472,7 @@ function Jumanji() {
                   <p className="text-xs opacity-70">
                     {isMoving
                       ? "FIGURE IS MOVING..."
-                      : "DOUBLES GET ANOTHER TURN"}
+                      : "TEAMS MOVE IN ORDER"}
                   </p>
                 </div>
               </div>
@@ -1564,4 +1607,3 @@ function Jumanji() {
 }
 
 export default Jumanji;
-
