@@ -20,9 +20,8 @@ import {
   MdGridOn,
   MdOutlineGridOn
 } from "react-icons/md";
-import { RiTeamFill} from "react-icons/ri";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
-import GamePageCta from "../shared/GamePageCta";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
 
 function WordSearchPuzzlePage() {
   const wordSearchImg = "https://media.istockphoto.com/id/2260590479/vector/vector-easter-village-placemat-spring-holiday-printable-activity-mat-with-maze-crossword.jpg?s=612x612&w=0&k=20&c=YpKwS6BpAuc6dSzcfFuBfTHFyNf9hDxWgwQXHjZOJ7E=";
@@ -161,6 +160,11 @@ function WordSearchPuzzlePage() {
                   </div>
                 ))}
               </div>
+            <GamePagePlayButton
+                to="/games/word-search/play"
+                colorClassName="from-emerald-500 to-cyan-500"
+                className="pt-2"
+              />
             </div>
 
             {/* Right Content - Image */}
@@ -269,53 +273,7 @@ function WordSearchPuzzlePage() {
 
         {/* WordSearchPuzzle Component Container */}
         <div className="relative">
-          {/* Decorative Elements */}
-          <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-cyan-500/20 blur-3xl" />
-          
-          {/* Main Game Container */}
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-900/40 via-teal-900/40 to-cyan-900/40 p-6 backdrop-blur-xl shadow-2xl md:p-8">
-            {/* Header */}
-            <div className="mb-6 flex items-center justify-between border-b border-emerald-500/30 pb-4">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-emerald-500/50 blur" />
-                  <div className="relative flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500">
-                    <FaSearch className="text-2xl text-white" />
-                  </div>
-                </div>
-                <div>
-                  <h2 className="text-xl font-black text-white">Word Search Puzzle</h2>
-                  <p className="flex items-center gap-2 text-sm text-emerald-200/80">
-                    <RiTeamFill className="text-emerald-400" />
-                    2 guruh · custom tema
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 rounded-full bg-emerald-500/20 px-3 py-1.5 border border-emerald-500/30">
-                  <GiFruitBowl className="text-emerald-400" />
-                  <span className="text-xs font-bold text-white">1-Guruh</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-emerald-500/20 px-3 py-1.5 border border-emerald-500/30">
-                  <GiBroccoli className="text-teal-400" />
-                  <span className="text-xs font-bold text-white">2-Guruh</span>
-                </div>
-              </div>
-            </div>
-
-            {/* WordSearchPuzzle Component */}
-            <GamePageCta
-              to="/games/word-search/play"
-              title="So'z qidirish o'yini alohida sahifaga o'tdi"
-              description="Endi o'yin pastda qolib ketmaydi. Boshlash tugmasi sizni to'g'ridan-to'g'ri Word Search play sahifasiga olib o'tadi."
-              icon={FaSearch}
-              colorClassName="from-emerald-500 to-cyan-500"
-            />
-            <div className="mt-6">
-              <GameFeedbackPanel gameKey="word-search" />
-            </div>
-          </div>
+          <GameFeedbackPanel gameKey="word-search" />
         </div>
 
         {/* Footer */}
@@ -332,6 +290,9 @@ function WordSearchPuzzlePage() {
 }
 
 export default WordSearchPuzzlePage;
+
+
+
 
 
 

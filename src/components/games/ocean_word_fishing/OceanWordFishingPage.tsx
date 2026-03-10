@@ -1,5 +1,4 @@
 import { 
-  FaFish,  
   FaCrown,  
   FaStar, 
   FaUsers,
@@ -13,7 +12,6 @@ import {
   GiFishing, 
   GiFishingNet,
   GiFishingHook,
-  GiWhaleTail,
   GiHook,
   GiBubbles,
   GiCoral
@@ -27,7 +25,7 @@ import {
   IoVolumeHighOutline 
 } from "react-icons/io5";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
-import GamePageCta from "../shared/GamePageCta";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
 import ocean from "../../../assets/ocean.jpg";
 
 
@@ -189,6 +187,11 @@ function OceanWordFishingPage() {
                   </div>
                 ))}
               </div>
+            <GamePagePlayButton
+                to="/games/ocean-word-fishing/play"
+                colorClassName="from-blue-500 to-cyan-500"
+                className="pt-2"
+              />
             </div>
 
             {/* Right Content - Image */}
@@ -364,59 +367,7 @@ function OceanWordFishingPage() {
         <div
           className="relative"
         >
-          {/* Decorative Elements */}
-          <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-blue-500/5 via-cyan-500/5 to-teal-500/5 blur-3xl" />
-          
-          {/* Main Game Container */}
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-6 backdrop-blur-xl shadow-2xl md:p-8">
-            {/* Header */}
-            <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
-              <div className="flex items-center gap-4">
-                <div
-                  className="relative"
-                >
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 blur" />
-                  <div className="relative flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600">
-                    <FaFish className="text-2xl text-white" />
-                  </div>
-                </div>
-                <div>
-                  <h2 className="text-xl font-black text-white">Ocean Word Fishing</h2>
-                  <p className="flex items-center gap-2 text-sm text-blue-200/70">
-                    <GiFishingHook className="text-blue-400" />
-                    Baliqlar ustidagi harflardan so'z yig'ish
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <div
-                  className="flex items-center gap-2 rounded-full bg-white/5 px-3 py-1.5 border border-white/10"
-                >
-                  <FaWaveSquare className="text-blue-400" />
-                  <span className="text-xs font-bold text-white">Okean</span>
-                </div>
-                <div
-                  className="flex items-center gap-2 rounded-full bg-white/5 px-3 py-1.5 border border-white/10"
-                >
-                  <GiWhaleTail className="text-cyan-400" />
-                  <span className="text-xs font-bold text-white">Baliqlar</span>
-                </div>
-              </div>
-            </div>
-
-            {/* OceanWordFishing Component */}
-            <GamePageCta
-              to="/games/ocean-word-fishing/play"
-              title="Ocean Word Fishing alohida play sahifada"
-              description="Baliqlar bilan so'z yig'ish o'yini uchun alohida o'ynash sahifasi tayyor."
-              icon={FaFish}
-              colorClassName="from-blue-500 to-cyan-500"
-            />
-            <div className="mt-6">
-              <GameFeedbackPanel gameKey="ocean-word-fishing" />
-            </div>
-          </div>
+          <GameFeedbackPanel gameKey="ocean-word-fishing" />
         </div>
 
         {/* Footer */}
@@ -432,80 +383,8 @@ function OceanWordFishingPage() {
           ))}
         </div>
       </div>
-
-      {/* <style>{`
-        @keyframes wave {
-          0% { transform: translateY(0) translateX(0); }
-          50% { transform: translateY(-20px) translateX(10px); }
-          100% { transform: translateY(0) translateX(0); }
-        }
-        
-        @keyframes wave-slow {
-          0% { transform: translateY(0) translateX(0); }
-          50% { transform: translateY(-30px) translateX(-10px); }
-          100% { transform: translateY(0) translateX(0); }
-        }
-        
-        @keyframes wave-slower {
-          0% { transform: translateY(0) translateX(0); }
-          50% { transform: translateY(-40px) translateX(15px); }
-          100% { transform: translateY(0) translateX(0); }
-        }
-        
-        @keyframes bubble {
-          0% { transform: translateY(100vh) scale(0); opacity: 0; }
-          20% { opacity: 0.5; }
-          100% { transform: translateY(-100px) scale(1); opacity: 0; }
-        }
-        
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-10px) rotate(3deg); }
-        }
-        
-        @keyframes gradient {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 0.6; }
-        }
-        
-        .animate-wave {
-          animation: wave 15s ease-in-out infinite;
-        }
-        
-        .animate-wave-slow {
-          animation: wave-slow 20s ease-in-out infinite;
-        }
-        
-        .animate-wave-slower {
-          animation: wave-slower 25s ease-in-out infinite;
-        }
-        
-        .animate-bubble {
-          animation: bubble 12s ease-out infinite;
-        }
-        
-        .animate-float {
-          animation: float 3s ease-in-out infinite;
-        }
-        
-        .animate-gradient {
-          background-size: 200% 200%;
-          animation: gradient 10s ease infinite;
-        }
-        
-        .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
-        }
-      `}</style> */}
     </div>
   );
 }
 
 export default OceanWordFishingPage;
-

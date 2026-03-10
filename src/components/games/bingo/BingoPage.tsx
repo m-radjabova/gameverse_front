@@ -2,7 +2,6 @@ import {
   FaUsers,
   FaTrophy,
   FaStar,
-  FaBrain,
   FaQuestion,
   FaBolt,
   FaMagic,
@@ -16,8 +15,8 @@ import {
   GiJigsawPiece
 } from "react-icons/gi";
 import {MdQuiz } from "react-icons/md";
-import {  RiMentalHealthFill } from "react-icons/ri";
-import GamePageCta from "../shared/GamePageCta";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
+import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 
 function BingoPage() {
   // const bingoImg = "https://media.istockphoto.com/id/495611580/vector/bingo-or-lottery-retro-game-illustration-with-balls-and-cards.jpg?s=612x612&w=0&k=20&c=lyncdZNnRRPcClMJuAGV10F-a-6iTutSKilAuxaHKu4=";
@@ -233,6 +232,11 @@ function BingoPage() {
                   </div>
                 ))}
               </div>
+            <GamePagePlayButton
+                to="/games/bingo/play"
+                colorClassName="from-indigo-500 to-fuchsia-500"
+                className="pt-2"
+              />
             </div>
 
             {/* Right Content - Bingo Preview */}
@@ -439,67 +443,7 @@ function BingoPage() {
 
         {/* Game Component Container */}
         <div className="relative">
-          {/* Decorative Border */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-indigo-400/30 via-purple-400/30 to-pink-400/30 rounded-3xl blur-xl" />
-
-          {/* Main Container */}
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border-2 border-indigo-400/30 bg-white/80 dark:bg-slate-900/80 p-6 shadow-2xl backdrop-blur-sm md:p-8">
-            {/* Quiz Pattern Overlay */}
-            <div
-              className="absolute inset-0 opacity-5 pointer-events-none"
-              style={{
-                backgroundImage: `repeating-linear-gradient(45deg, #6366f1 0px, #6366f1 2px, transparent 2px, transparent 10px)`,
-              }}
-            />
-
-            {/* Header */}
-            <div className="relative mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b-2 border-indigo-400/30 pb-4">
-              <div className="flex items-center gap-4">
-                {/* Icon with Glow */}
-                <div className="relative">
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-indigo-500/50 blur" />
-                  <div className="relative flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 shadow-2xl border-2 border-white/30">
-                    <GiJigsawPiece className="text-3xl text-white" />
-                  </div>
-                </div>
-
-                {/* Title */}
-                <div>
-                  <h2 className="text-2xl font-black text-gray-800 dark:text-white tracking-wider flex items-center gap-2">
-                    Quiz Challenge Bingo
-                    <span className="text-sm font-normal text-indigo-500/70">v2.0</span>
-                  </h2>
-                  <p className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                    <RiMentalHealthFill className="text-indigo-500" />
-                    O'qituvchi paneli · 16 katak · 3 xil tur
-                  </p>
-                </div>
-              </div>
-
-              {/* Badges */}
-              <div className="flex gap-2">
-                <div className="flex items-center gap-2 rounded-full bg-indigo-100 dark:bg-indigo-900/50 px-4 py-2 border-2 border-indigo-400/30">
-                  <FaBrain className="text-indigo-500 text-sm" />
-                  <span className="text-xs font-bold text-gray-700 dark:text-white">3 xil tur</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-indigo-100 dark:bg-indigo-900/50 px-4 py-2 border-2 border-indigo-400/30">
-                  <FaBolt className="text-purple-500 text-sm" />
-                  <span className="text-xs font-bold text-gray-700 dark:text-white">3 bonus</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Bingo Component */}
-            <div className="relative">
-              <GamePageCta
-                to="/games/bingo/play"
-                title="Bingo alohida play sahifada"
-                description="Bingo challenge o'yinini endi alohida sahifada boshlaysiz."
-                icon={GiJigsawPiece}
-                colorClassName="from-indigo-500 to-fuchsia-500"
-              />
-            </div>
-          </div>
+          <GameFeedbackPanel gameKey="bingo" />
         </div>
 
         {/* Footer */}
@@ -537,3 +481,6 @@ function BingoPage() {
 }
 
 export default BingoPage;
+
+
+

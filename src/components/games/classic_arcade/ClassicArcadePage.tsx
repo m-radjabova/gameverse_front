@@ -1,9 +1,9 @@
-import { FaUsers, FaTrophy, FaClock, FaBolt } from "react-icons/fa";
+import { FaUsers, FaTrophy, FaBolt } from "react-icons/fa";
 import { GiPuzzle, GiBrain, GiAchievement, GiPodium, GiConsoleController} from "react-icons/gi";
 import { MdGames, MdSportsEsports, MdTimer, MdSpeed, MdEmojiEvents } from "react-icons/md";
 import { RiTeamFill} from "react-icons/ri";
-// import GameFeedbackPanel from "../shared/GameFeedbackPanel";
-import GamePageCta from "../shared/GamePageCta";
+import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
 
 function ClassicArcadePage() {
   const classicArcadeImg =
@@ -144,6 +144,11 @@ function ClassicArcadePage() {
                   </div>
                 ))}
               </div>
+            <GamePagePlayButton
+                to="/games/classic-arcade/play"
+                colorClassName="from-fuchsia-500 to-orange-500"
+                className="pt-2"
+              />
             </div>
 
             {/* Right Content - Image */}
@@ -251,53 +256,7 @@ function ClassicArcadePage() {
 
         {/* Game Component Container */}
         <div className="relative">
-          {/* Decorative Elements */}
-          <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-fuchsia-500/20 via-rose-500/20 to-orange-500/20 blur-3xl" />
-          
-          {/* Main Game Container */}
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-fuchsia-900/30 via-rose-900/30 to-orange-900/30 p-6 backdrop-blur-xl shadow-2xl md:p-8">
-            {/* Header */}
-            <div className="mb-6 flex items-center justify-between border-b border-white/10 pb-4">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-fuchsia-500/50 blur" />
-                  <div className="relative flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-r from-fuchsia-500 to-rose-500">
-                    <MdSportsEsports className="text-2xl text-white" />
-                  </div>
-                </div>
-                <div>
-                  <h2 className="text-xl font-black text-white">Classic Arcade</h2>
-                  <p className="flex items-center gap-2 text-sm text-gray-300">
-                    <RiTeamFill className="text-fuchsise-400" />
-                    Guruhli bellashuv · Navbat bilan o'ynash
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5">
-                  <FaClock className="text-rose-400" />
-                  <span className="text-xs font-bold text-white">5-15 min</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5">
-                  <GiAchievement className="text-fuchsia-400" />
-                  <span className="text-xs font-bold text-white">Challenge</span>
-                </div>
-              </div>
-            </div>
-
-            {/* ClassicArcade Component */}
-            <GamePageCta
-              to="/games/classic-arcade/play"
-              title="Classic Arcade uchun alohida o'yin sahifasi"
-              description="Mini challenge'larni bir joyda o'ynash uchun play sahifa ajratildi. Shu tugmadan o'yinga kirasiz."
-              icon={MdSportsEsports}
-              colorClassName="from-fuchsia-500 to-orange-500"
-            />
-            {/* <div className="mt-6">
-              <GameFeedbackPanel gameKey="classic-arcade" />
-            </div> */}
-          </div>
+         <GameFeedbackPanel gameKey="classic-arcade" />
         </div>
 
         {/* Footer */}
@@ -314,6 +273,9 @@ function ClassicArcadePage() {
 }
 
 export default ClassicArcadePage;
+
+
+
 
 
 

@@ -1,7 +1,6 @@
 import {
   FaUsers,
   FaTrophy,
-  FaClock,
   FaCrown,
   FaMagic,
 } from "react-icons/fa";
@@ -15,7 +14,7 @@ import {
 import { MdTimer } from "react-icons/md";
 import { RiTeamFill } from "react-icons/ri";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
-import GamePageCta from "../shared/GamePageCta";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
 
 function MagicSquarePage() {
   const gameStats = [
@@ -186,6 +185,11 @@ function MagicSquarePage() {
                   </div>
                 ))}
               </div>
+            <GamePagePlayButton
+                to="/games/magic-square/play"
+                colorClassName="from-violet-500 to-indigo-500"
+                className="pt-2"
+              />
             </div>
 
             {/* Right Content - Magic Square Preview */}
@@ -279,58 +283,7 @@ function MagicSquarePage() {
 
         {/* Game Component Container */}
         <div className="relative">
-          {/* Decorative Border */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-purple-600/30 via-pink-600/30 to-purple-600/30 rounded-3xl blur-xl" />
-
-          {/* Main Container */}
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-br from-purple-900/40 via-pink-900/40 to-purple-900/40 p-6 backdrop-blur-xl shadow-2xl md:p-8">
-            {/* Header */}
-            <div className="relative mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-purple-500/30 pb-4">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-purple-500/50 blur" />
-                  <div className="relative flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 shadow-2xl border-2 border-purple-400/30">
-                    <GiMagicSwirl className="text-3xl text-white" />
-                  </div>
-                </div>
-
-                <div>
-                  <h2 className="text-2xl font-black text-white tracking-wider">
-                    Sehrli Kvadrat
-                  </h2>
-                  <p className="flex items-center gap-2 text-sm text-purple-200/80">
-                    <RiTeamFill className="text-purple-400" />
-                    3x3 Rangli Sudoku · 2 jamoa
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <div className="flex items-center gap-2 rounded-full bg-purple-900/50 px-4 py-2 border border-purple-500/30 backdrop-blur-sm">
-                  <FaClock className="text-purple-400 text-sm" />
-                  <span className="text-xs font-bold text-white">60 soniya</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-purple-900/50 px-4 py-2 border border-purple-500/30 backdrop-blur-sm">
-                  <GiMagicSwirl className="text-pink-400 text-sm" />
-                  <span className="text-xs font-bold text-white">3 rang</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Game Component */}
-            <div className="relative">
-              <GamePageCta
-                to="/games/magic-square/play"
-                title="Magic Square alohida play sahifada"
-                description="Magic Square o'yini endi qulay alohida sahifada ishga tushadi."
-                icon={FaMagic}
-                colorClassName="from-violet-500 to-indigo-500"
-              />
-              <div className="mt-6">
-                <GameFeedbackPanel gameKey="magic-square" />
-              </div>
-            </div>
-          </div>
+          <GameFeedbackPanel gameKey="magic-square" />
         </div>
 
         {/* Footer */}
@@ -368,3 +321,6 @@ function MagicSquarePage() {
 }
 
 export default MagicSquarePage;
+
+
+

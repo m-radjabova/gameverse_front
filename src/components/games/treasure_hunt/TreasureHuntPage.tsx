@@ -20,9 +20,9 @@ import {
   GiPirateFlag
 } from "react-icons/gi";
 import { MdEmojiEvents} from "react-icons/md";
-import { RiTreasureMapFill, RiCompassDiscoverFill } from "react-icons/ri";
+import { RiTreasureMapFill } from "react-icons/ri";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
-import GamePageCta from "../shared/GamePageCta";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
 
 import image from "../../../assets/map.png"
 
@@ -267,6 +267,11 @@ function TreasureHuntPage() {
                   </div>
                 ))}
               </div>
+            <GamePagePlayButton
+                to="/games/treasure-hunt/play"
+                colorClassName="from-amber-500 to-yellow-500"
+                className="pt-2"
+              />
             </div>
 
             {/* Right Content - Vintage Map Image */}
@@ -444,70 +449,7 @@ function TreasureHuntPage() {
 
         {/* Treasure Hunt Component Container - Vintage Chest Style */}
         <div className="relative">
-          {/* Decorative rope border */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-amber-700/30 via-yellow-700/30 to-orange-700/30 rounded-3xl blur-xl" />
-
-          {/* Main container */}
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border-2 border-amber-700/40 bg-gradient-to-br from-amber-950/80 via-amber-900/70 to-amber-950/80 p-6 shadow-2xl backdrop-blur-sm md:p-8">
-            {/* Wood texture overlay */}
-            <div
-              className="absolute inset-0 opacity-10 pointer-events-none"
-              style={{
-                backgroundImage: `repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(139,69,19,0.2) 20px, rgba(139,69,19,0.2) 22px)`,
-              }}
-            />
-
-            {/* Header with vintage style */}
-            <div className="relative mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-amber-700/30 pb-4">
-              <div className="flex items-center gap-4">
-                {/* Icon with glow */}
-                <div className="relative">
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-amber-600/50 blur" />
-                  <div className="relative flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-amber-600 to-yellow-600 shadow-2xl border-2 border-amber-400/30">
-                    <GiTreasureMap className="text-3xl text-white" />
-                  </div>
-                </div>
-
-                {/* Title */}
-                <div>
-                  <h2 className="text-2xl font-black text-white tracking-wider flex items-center gap-2">
-                    Treasure Hunt
-                    <span className="text-sm font-normal text-amber-400/70">PIRATE MODE</span>
-                  </h2>
-                  <p className="flex items-center gap-2 text-sm text-amber-200/70">
-                    <RiCompassDiscoverFill className="text-amber-400" />
-                    Xazina topish sarguzashti • 12 node
-                  </p>
-                </div>
-              </div>
-
-              {/* Badges */}
-              <div className="flex gap-2">
-                <div className="flex items-center gap-2 rounded-full bg-amber-900/50 px-4 py-2 border border-amber-500/30 backdrop-blur-sm">
-                  <FaCrown className="text-yellow-400 text-sm" />
-                  <span className="text-xs font-bold text-white">Adventure</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-amber-900/50 px-4 py-2 border border-amber-500/30 backdrop-blur-sm">
-                  <FaTrophy className="text-yellow-400 text-sm" />
-                  <span className="text-xs font-bold text-white">Top score</span>
-                </div>
-              </div>
-            </div>
-
-            {/* TreasureHunt Component */}
-            <div className="relative">
-              <GamePageCta
-                to="/games/treasure-hunt/play"
-                title="Treasure Hunt alohida o'yin sahifasida"
-                description="Xazina izlash sarguzashtini boshlash uchun endi play page ishlatiladi."
-                icon={GiTreasureMap}
-                colorClassName="from-amber-500 to-yellow-500"
-              />
-              <div className="mt-6">
-                <GameFeedbackPanel gameKey="treasure-hunt" />
-              </div>
-            </div>
-          </div>
+          <GameFeedbackPanel gameKey="treasure-hunt" />
         </div>
 
         {/* Footer with animated treasure icons */}
@@ -531,3 +473,6 @@ function TreasureHuntPage() {
 }
 
 export default TreasureHuntPage;
+
+
+

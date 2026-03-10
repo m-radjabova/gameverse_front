@@ -1,12 +1,10 @@
 import { 
   FaFlag, 
   FaUsers, 
-  FaTrophy, 
-  FaClock, 
+  FaTrophy,
   FaBolt, 
   FaCrown, 
-  FaGlobe, 
-  FaStar
+  FaGlobe
 } from "react-icons/fa";
 import { 
   GiEarthAfricaEurope, 
@@ -20,9 +18,8 @@ import {
   MdPublic,
   MdLanguage
 } from "react-icons/md";
-import { RiTeamFill } from "react-icons/ri";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
-import GamePageCta from "../shared/GamePageCta";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
 
 function FlagBattlePage() {
   const flagBattleImg = "https://media.istockphoto.com/id/1030295058/photo/flags-of-different-countries-together-us-flag-in-focus.jpg?s=612x612&w=0&k=20&c=fZ67LXjSvX6LlHflpGF5YpD8bZHNUfzcQW_DvtU3lNQ="
@@ -151,6 +148,12 @@ function FlagBattlePage() {
                   </div>
                 ))}
               </div>
+
+              <GamePagePlayButton
+                to="/games/flag-battle/play"
+                colorClassName="from-blue-500 to-teal-500"
+                className="pt-2"
+              />
             </div>
 
             <div className="relative">
@@ -254,49 +257,7 @@ function FlagBattlePage() {
 
         {/* FlagBattle Component Container */}
         <div className="relative">
-          <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-blue-500/20 via-cyan-500/20 to-teal-500/20 blur-3xl" />
-          
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border border-blue-500/30 bg-gradient-to-br from-blue-900/40 via-cyan-900/40 to-teal-900/40 p-6 backdrop-blur-xl shadow-2xl md:p-8">
-            <div className="mb-6 flex items-center justify-between border-b border-blue-500/30 pb-4">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-blue-500/50 blur" />
-                  <div className="relative flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500">
-                    <FaFlag className="text-2xl text-white" />
-                  </div>
-                </div>
-                <div>
-                  <h2 className="text-xl font-black text-white">Flag Battle</h2>
-                  <p className="flex items-center gap-2 text-sm text-blue-200/80">
-                    <RiTeamFill className="text-blue-400" />
-                    Bayroqlarni topish o'yini · 2 guruh
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 rounded-full bg-blue-500/20 px-3 py-1.5 border border-blue-500/30">
-                  <FaClock className="text-blue-400" />
-                  <span className="text-xs font-bold text-white">20s</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-blue-500/20 px-3 py-1.5 border border-blue-500/30">
-                  <FaStar className="text-yellow-400" />
-                  <span className="text-xs font-bold text-white">30+</span>
-                </div>
-              </div>
-            </div>
-
-            <GamePageCta
-              to="/games/flag-battle/play"
-              title="Flag Battle alohida play sahifada"
-              description="Bayroq topish bellashuviga kirish uchun endi bitta qulay o'ynash tugmasi bor."
-              icon={FaFlag}
-              colorClassName="from-blue-500 to-teal-500"
-            />
-            <div className="mt-6">
-              <GameFeedbackPanel gameKey="flag-battle" />
-            </div>
-          </div>
+          <GameFeedbackPanel gameKey="flag-battle" />
         </div>
 
         {/* Footer */}

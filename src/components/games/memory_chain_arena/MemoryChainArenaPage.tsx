@@ -1,7 +1,6 @@
 import {
   FaUsers,
   FaTrophy,
-  FaClock,
   FaStar,
   FaCrown,
   FaBrain,
@@ -14,9 +13,8 @@ import {
   GiBrain,
 } from "react-icons/gi";
 import { MdTimer, MdSpeed } from "react-icons/md";
-import {RiMentalHealthFill } from "react-icons/ri";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
-import GamePageCta from "../shared/GamePageCta";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
 
 import memoryChain from "../../../assets/Gemini_Generated_Image_cbujqgcbujqgcbuj.png";
 
@@ -211,6 +209,11 @@ function MemoryChainArenaPage() {
                   </div>
                 ))}
               </div>
+            <GamePagePlayButton
+                to="/games/memory-chain/play"
+                colorClassName="from-sky-500 to-blue-500"
+                className="pt-2"
+              />
             </div>
 
             {/* Right Content - Preview */}
@@ -317,58 +320,7 @@ function MemoryChainArenaPage() {
 
         {/* Game Component Container */}
         <div className="relative">
-          <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400/30 via-blue-400/30 to-indigo-400/30 rounded-3xl blur-xl" />
-
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border-2 border-cyan-400/30 bg-white/80 dark:bg-slate-900/80 p-6 shadow-2xl backdrop-blur-sm md:p-8">
-            {/* Header */}
-            <div className="relative mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b-2 border-cyan-400/30 pb-4">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-cyan-500/50 blur" />
-                  <div className="relative flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 shadow-2xl border-2 border-white/30">
-                    <GiBrain className="text-3xl text-white" />
-                  </div>
-                </div>
-
-                <div>
-                  <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-wider">
-                    Memory Chain Arena
-                  </h2>
-                  <p className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                    <RiMentalHealthFill className="text-cyan-500" />
-                    Xotira zanjiri · 2 jamoa
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <div className="flex items-center gap-2 rounded-full bg-cyan-100 dark:bg-cyan-900/50 px-4 py-2 border-2 border-cyan-400/30">
-                  <FaClock className="text-cyan-500 text-sm" />
-                  <span className="text-xs font-bold text-slate-700 dark:text-white">30 soniya</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-cyan-100 dark:bg-cyan-900/50 px-4 py-2 border-2 border-cyan-400/30">
-                  <FaBolt className="text-blue-500 text-sm" />
-                  <span className="text-xs font-bold text-slate-700 dark:text-white">Tezlik bonusi</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Game Component */}
-            <div className="relative">
-              <GamePageCta
-                to="/games/memory-chain/play"
-                title="Memory Chain Arena alohida play sahifada"
-                description="Ketma-ket xotira mashqini boshlash uchun endi alohida o'yin sahifasi bor."
-                icon={GiBrain}
-                colorClassName="from-sky-500 to-blue-500"
-              />
-              <div className="mt-6">
-                <GameFeedbackPanel gameKey="memory-chain" />
-              </div>
-            </div>
-          </div>
-
-          
+            <GameFeedbackPanel gameKey="memory-chain-arena" />
         </div>
 
         {/* Footer */}
@@ -391,3 +343,6 @@ function MemoryChainArenaPage() {
 }
 
 export default MemoryChainArenaPage;
+
+
+

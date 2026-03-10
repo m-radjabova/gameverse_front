@@ -1,12 +1,13 @@
 ﻿
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FaArrowLeft, FaCrown, FaMedal, FaPlay, FaPlus, FaTrash } from "react-icons/fa";
+import { FaArrowLeft, FaCrown, FaMedal, FaPlay, FaPlus, FaRobot, FaTrash } from "react-icons/fa";
 import { GiBroccoli, GiFruitBowl, GiPodium, GiSpinningWheel } from "react-icons/gi";
 import { MdSettings, MdTimer } from "react-icons/md";
 import { RiTeamFill } from "react-icons/ri";
 import Confetti from "react-confetti-boom";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { generateWordSearchWords } from "./ai";
 import wordSearchGameSound from "../../../assets/sounds/word_search_game_sound.m4a";
 
 type TeamId = 0 | 1;
@@ -21,6 +22,13 @@ const GRID_SIZE = 12;
 const GAME_TIME_SECONDS = 240;
 const DEFAULT_TEAM1_WORDS = ["ATOM", "PLANET", "OCEAN", "DESERT", "ROBOT", "MUSIC", "LIBRARY", "POETRY"];
 const DEFAULT_TEAM2_WORDS = ["PYTHON", "REACT", "SERVER", "DATABASE", "ALGORITHM", "NETWORK", "SECURITY", "MOBILE"];
+const AI_WORD_COUNT_OPTIONS = [6, 8, 10, 12, 14, 16] as const;
+const AI_DIFFICULTY_OPTIONS = [
+  { value: "easy", label: "Oson" },
+  { value: "medium", label: "O'rtacha" },
+  { value: "hard", label: "Qiyin" },
+  { value: "mixed", label: "Aralash" },
+] as const;
 const DIRECTIONS: Direction[] = [
   { dr: -1, dc: -1 }, { dr: -1, dc: 0 }, { dr: -1, dc: 1 },
   { dr: 0, dc: -1 }, { dr: 0, dc: 1 },
@@ -104,6 +112,10 @@ export default function WordSearchPuzzle() {
   const [draft, setDraft] = useState<TeacherDraft>({ word: "", category: "team1" });
   const [draftError, setDraftError] = useState("");
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiWordCount, setAiWordCount] = useState<number>(8);
+  const [aiDifficulty, setAiDifficulty] = useState<"easy" | "medium" | "hard" | "mixed">("medium");
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
   const [team1Grid, setTeam1Grid] = useState<CellState[][]>([]);
   const [team2Grid, setTeam2Grid] = useState<CellState[][]>([]);
@@ -126,6 +138,7 @@ export default function WordSearchPuzzle() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const allWords = useMemo(() => [...team1Words, ...team2Words], [team1Words, team2Words]);
+  const hasGeminiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY?.trim());
   const team1Found = useMemo(() => team1Words.filter((w) => w.found).length, [team1Words]);
   const team2Found = useMemo(() => team2Words.filter((w) => w.found).length, [team2Words]);
 
@@ -196,6 +209,37 @@ export default function WordSearchPuzzle() {
     if (category === "team1") setTeam1Words((p) => p.filter((w) => w.id !== id));
     else setTeam2Words((p) => p.filter((w) => w.id !== id));
     setToast("🗑️ So'z o'chirildi");
+  };
+
+  const generateWordsWithAi = async () => {
+    if (isGeneratingAi) return;
+    setDraftError("");
+    setIsGeneratingAi(true);
+
+    try {
+      const generatedWords = await generateWordSearchWords({
+        topic: aiTopic,
+        count: aiWordCount,
+        difficulty: aiDifficulty,
+      });
+
+      const midpoint = Math.ceil(generatedWords.length / 2);
+      const team1Generated = buildDefaultWords(generatedWords.slice(0, midpoint), "team1");
+      const team2Generated = buildDefaultWords(generatedWords.slice(midpoint), "team2");
+
+      if (team1Generated.length === 0 || team2Generated.length === 0) {
+        throw new Error("AI ikki guruh uchun yetarli so'z qaytarmadi.");
+      }
+
+      setTeam1Words(team1Generated);
+      setTeam2Words(team2Generated);
+      setToast(`🤖 ${generatedWords.length} ta AI so'z yuklandi`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "AI so'z yaratib bo'lmadi.";
+      setDraftError(message);
+    } finally {
+      setIsGeneratingAi(false);
+    }
   };
 
   const startGame = () => {
@@ -503,6 +547,58 @@ export default function WordSearchPuzzle() {
               <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/30 p-4">
                 <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-white"><FaPlus className="text-emerald-400" />YANGI SO'Z QO'SHISH</h3>
                 <div className="grid gap-3">
+                  <div className="rounded-xl border border-cyan-500/30 bg-cyan-950/20 p-4">
+                    <div className="mb-3 flex items-center gap-2 text-cyan-300">
+                      <FaRobot />
+                      <p className="text-sm font-bold">AI SO'Z GENERATSIYASI</p>
+                    </div>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <input
+                        value={aiTopic}
+                        onChange={(e) => setAiTopic(e.target.value)}
+                        className="w-full rounded-xl border border-cyan-500/30 bg-slate-950/70 px-4 py-3 text-white placeholder-cyan-300/40"
+                        placeholder="Mavzu: kosmos, texnologiya, hayvonlar..."
+                      />
+                      <select
+                        value={aiWordCount}
+                        onChange={(e) => setAiWordCount(Number(e.target.value))}
+                        className="w-full rounded-xl border border-cyan-500/30 bg-slate-950/70 px-4 py-3 text-white"
+                      >
+                        {AI_WORD_COUNT_OPTIONS.map((count) => (
+                          <option key={count} value={count} className="bg-slate-950">
+                            {count} ta so'z
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        value={aiDifficulty}
+                        onChange={(e) => setAiDifficulty(e.target.value as "easy" | "medium" | "hard" | "mixed")}
+                        className="w-full rounded-xl border border-cyan-500/30 bg-slate-950/70 px-4 py-3 text-white"
+                      >
+                        {AI_DIFFICULTY_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value} className="bg-slate-950">
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => void generateWordsWithAi()}
+                        disabled={!hasGeminiKey || isGeneratingAi}
+                        className="w-full rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 py-3 font-bold text-white disabled:opacity-50"
+                      >
+                        {isGeneratingAi ? `${aiWordCount} ta yaratilmoqda...` : `AI bilan ${aiWordCount} ta yaratish`}
+                      </button>
+                    </div>
+                    <p className="mt-3 text-xs text-cyan-100/70">
+                      AI yaratgan so'zlar ikki guruhga avtomatik bo'linadi. "Aralash" tanlansa oson, o'rtacha va qiyin so'zlar aralash keladi.
+                    </p>
+                    {!hasGeminiKey && (
+                      <p className="mt-2 text-xs text-amber-300">
+                        AI ishlashi uchun `.env` ichida `VITE_GEMINI_API_KEY` bo'lishi kerak.
+                      </p>
+                    )}
+                  </div>
+
                   <input value={draft.word} onChange={(e) => setDraft({ ...draft, word: e.target.value })} onKeyDown={(e) => e.key === "Enter" && addWord()} className="w-full rounded-xl border border-emerald-500/30 bg-emerald-950/30 px-4 py-3 text-white" placeholder="So'zni kiriting" />
                   <div className="grid grid-cols-2 gap-2">
                     <button onClick={() => setDraft({ ...draft, category: "team1" })} className={`rounded-xl py-2 text-sm font-bold ${draft.category === "team1" ? "bg-emerald-500 text-white" : "border border-emerald-500/30 bg-emerald-950/30 text-emerald-200/80"}`}>{teamNames[0]}</button>

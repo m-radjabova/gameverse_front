@@ -45,10 +45,11 @@ export default function GamePlayView({
 
           <Link
             to={backTo}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-white/10"
+            className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl border border-white/15 bg-black/20 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-black/25"
           >
-            <FaArrowLeft className="text-xs" />
-            <span>Ma'lumot sahifasiga qaytish</span>
+            <div className={`absolute inset-0 bg-gradient-to-r ${colorClassName} opacity-20 transition-opacity group-hover:opacity-30`} />
+            <FaArrowLeft className="relative text-xs" />
+            <span className="relative">Orqaga</span>
           </Link>
         </div>
 

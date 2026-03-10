@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import {
   FaUsers,
   FaTrophy,
@@ -7,8 +6,7 @@ import {
   FaFire,
   FaBolt,
   FaGem,
-  FaDice,
-  FaHome,
+  FaDice
 } from "react-icons/fa";
 import {
   GiAchievement,
@@ -19,8 +17,8 @@ import {
   GiPerspectiveDiceSixFacesRandom,
 } from "react-icons/gi";
 import { MdGridOn } from "react-icons/md";
-import { RiTeamFill, RiSwordFill } from "react-icons/ri";
-import GamePageCta from "../shared/GamePageCta";
+import { RiTeamFill } from "react-icons/ri";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
 import GameFeedbackPanel from '../shared/GameFeedbackPanel';
 
 function BaamboozlePage() {
@@ -186,13 +184,6 @@ function BaamboozlePage() {
                       Baamboozle
                     </span>
                   </span>
-                  <br />
-                  <span className="relative inline-block mt-2">
-                    <span className="absolute -inset-2 bg-gradient-to-r from-orange-400/30 to-red-400/30 blur-2xl" />
-                    <span className="relative bg-gradient-to-r from-orange-600 to-red-600 dark:from-orange-300 dark:to-red-300 bg-clip-text text-transparent">
-                      Showdown
-                    </span>
-                  </span>
                 </h1>
 
                 {/* Decorative Line */}
@@ -233,16 +224,11 @@ function BaamboozlePage() {
                   </div>
                 ))}
               </div>
-
-              {/* Navigation */}
-              <div className="flex gap-3">
-                <Link
-                  to="/games"
-                  className="px-5 py-2.5 bg-yellow-600/20 border-2 border-yellow-400/30 text-yellow-700 dark:text-yellow-300 rounded-xl font-bold hover:bg-yellow-600/30 transition-all flex items-center gap-2"
-                >
-                  <FaHome /> O'yinlar
-                </Link>
-              </div>
+            <GamePagePlayButton
+                to="/games/baamboozle/play"
+                colorClassName="from-yellow-500 to-red-500"
+                className="pt-2"
+              />
             </div>
 
             {/* Right Content - Preview */}
@@ -366,63 +352,7 @@ function BaamboozlePage() {
 
         {/* Game Component Container */}
         <div className="relative">
-          {/* Decorative Border */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-yellow-600/30 via-orange-600/30 to-red-600/30 rounded-3xl blur-xl" />
-
-          {/* Main Container */}
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border-2 border-yellow-400/30 bg-white/80 dark:bg-slate-900/80 p-6 shadow-2xl backdrop-blur-sm md:p-8">
-            {/* Header */}
-            <div className="relative mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b-2 border-yellow-400/30 pb-4">
-              <div className="flex items-center gap-4">
-                {/* Icon with Glow */}
-                <div className="relative">
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-yellow-500/50 blur" />
-                  <div className="relative flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-yellow-600 to-orange-600 shadow-2xl border-2 border-white/30">
-                    <GiPerspectiveDiceSixFacesRandom className="text-3xl text-white" />
-                  </div>
-                </div>
-
-                {/* Title */}
-                <div>
-                  <h2 className="text-2xl font-black text-gray-800 dark:text-white tracking-wider flex items-center gap-2">
-                    Baamboozle 
-                  </h2>
-                  <p className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                    <RiSwordFill className="text-yellow-500" />
-                    2-3 jamoa · 16/24 katak · 4 maxsus karta
-                  </p>
-                </div>
-              </div>
-
-              {/* Badges */}
-              <div className="flex gap-2">
-                <div className="flex items-center gap-2 rounded-full bg-yellow-100 dark:bg-yellow-900/50 px-4 py-2 border-2 border-yellow-400/30">
-                  <FaFire className="text-red-500 text-sm" />
-                  <span className="text-xs font-bold text-gray-700 dark:text-white">Burn</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-yellow-100 dark:bg-yellow-900/50 px-4 py-2 border-2 border-yellow-400/30">
-                  <GiSwapBag className="text-green-500 text-sm" />
-                  <span className="text-xs font-bold text-gray-700 dark:text-white">Swap</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-yellow-100 dark:bg-yellow-900/50 px-4 py-2 border-2 border-yellow-400/30">
-                  <FaBolt className="text-purple-500 text-sm" />
-                  <span className="text-xs font-bold text-gray-700 dark:text-white">Steal</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Game Component */}
-            <div className="relative">
-              <GamePageCta
-                to="/games/baamboozle/play"
-                title="Baamboozle alohida play sahifada"
-                description="Katakli savol o'yinini boshlash uchun endi maxsus play sahifa ishlatiladi."
-                icon={GiPerspectiveDiceSixFacesRandom}
-                colorClassName="from-yellow-500 to-red-500"
-              />
-              <GameFeedbackPanel gameKey="baamboozle" />
-            </div>
-          </div>
+           <GameFeedbackPanel gameKey="baamboozle" />
         </div>
 
         {/* Footer */}
@@ -460,3 +390,6 @@ function BaamboozlePage() {
 }
 
 export default BaamboozlePage;
+
+
+

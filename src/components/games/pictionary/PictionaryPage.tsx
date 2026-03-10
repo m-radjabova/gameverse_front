@@ -4,8 +4,6 @@ import {
   FaClock,
   FaStar,
   FaCrown,
-  FaBrush,
-  FaEraser,
   FaPalette,
   FaGamepad,
 } from "react-icons/fa";
@@ -15,9 +13,9 @@ import {
   GiSpinningWheel,
   GiPaintBrush
 } from "react-icons/gi";
-import { RiTeamFill, RiSwordFill } from "react-icons/ri";
+import { RiTeamFill } from "react-icons/ri";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
-import GamePageCta from "../shared/GamePageCta";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
 
 function PictionaryPage() {
   const gameStats = [
@@ -230,6 +228,11 @@ function PictionaryPage() {
                   </div>
                 ))}
               </div>
+            <GamePagePlayButton
+                to="/games/pictionary/play"
+                colorClassName="from-indigo-500 to-pink-500"
+                className="pt-2"
+              />
             </div>
 
             {/* Right Content - Preview */}
@@ -355,61 +358,7 @@ function PictionaryPage() {
 
         {/* Game Component Container */}
         <div className="relative">
-          {/* Decorative Border */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-indigo-600/30 via-purple-600/30 to-pink-600/30 rounded-3xl blur-xl" />
-
-          {/* Main Container */}
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border-2 border-indigo-400/30 bg-white/80 dark:bg-slate-900/80 p-6 shadow-2xl backdrop-blur-sm md:p-8">
-            {/* Header */}
-            <div className="relative mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b-2 border-indigo-400/30 pb-4">
-              <div className="flex items-center gap-4">
-                {/* Icon with Glow */}
-                <div className="relative">
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-indigo-500/50 blur" />
-                  <div className="relative flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 shadow-2xl border-2 border-white/30">
-                    <GiPaintBrush className="text-3xl text-white" />
-                  </div>
-                </div>
-
-                {/* Title */}
-                <div>
-                  <h2 className="text-2xl font-black text-gray-800 dark:text-white tracking-wider flex items-center gap-2">
-                    Chiz va Top!
-                </h2>
-                  <p className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                    <RiSwordFill className="text-indigo-500" />
-                    2 jamoa · 3 daraja · Hold to reveal
-                  </p>
-                </div>
-              </div>
-
-              {/* Badges */}
-              <div className="flex gap-2">
-                <div className="flex items-center gap-2 rounded-full bg-indigo-100 dark:bg-indigo-900/50 px-4 py-2 border-2 border-indigo-400/30">
-                  <FaBrush className="text-indigo-600 text-sm" />
-                  <span className="text-xs font-bold text-gray-700 dark:text-white">Ranglar</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-indigo-100 dark:bg-indigo-900/50 px-4 py-2 border-2 border-indigo-400/30">
-                  <FaEraser className="text-purple-600 text-sm" />
-                  <span className="text-xs font-bold text-gray-700 dark:text-white">O'chirg'ich</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Game Component */}
-            <div className="relative">
-              <GamePageCta
-                to="/games/pictionary/play"
-                title="Pictionary alohida play sahifada"
-                description="Rasm asosida topish o'yini endi alohida sahifada boshlanadi."
-                icon={GiPaintBrush}
-                colorClassName="from-pink-500 to-orange-500"
-              />
-              <div className="mt-6">
-                <GameFeedbackPanel gameKey="pictionary" />
-              </div>
-            </div>
-          </div>
+          <GameFeedbackPanel gameKey="pictionary" />
         </div>
 
         {/* Footer */}
@@ -447,3 +396,6 @@ function PictionaryPage() {
 }
 
 export default PictionaryPage;
+
+
+

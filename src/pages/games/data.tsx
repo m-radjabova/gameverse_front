@@ -48,10 +48,14 @@ import {
 import { MdQuiz, MdMemory, MdGames, MdNumbers } from "react-icons/md";
 import { RiBubbleChartFill } from "react-icons/ri";
 import ocean from "../../assets/ocean.jpg";
+import millionaire from "../../assets/millionare_hero.png";
 import memoryChain from "../../assets/Gemini_Generated_Image_cbujqgcbujqgcbuj.png";
 import magicSquare from "../../assets/magic_square.png";
 import reverseThinking from "../../assets/reverse_thinking.png";
 import baamboozle from "../../assets/Baamboozle_img.png";
+import truthImg from "../../assets/truth_detector_img.png";
+import jumanjiImg from "../../assets/jumanji_img.png";
+import treasureHuntimg from "../../assets/treasure_hunt_img.png";
 import { PiDetective } from "react-icons/pi";
 
 export const gameCards = [
@@ -119,8 +123,7 @@ export const gameCards = [
     available: true,
     path: "/games/treasure-hunt",
     bgPattern: "bg-gradient-to-br from-amber-700 via-orange-700 to-yellow-700",
-    image:
-      "https://media.istockphoto.com/id/1341261769/photo/treasure-map.jpg?s=612x612&w=0&k=20&c=JnZD0II52_tMPZ-U_emWhZ9GfRu92SdWsZFFy8ohKw8=",
+    image: treasureHuntimg,
     players: "1-3 o'yinchi",
     level: "Kreativ",
     levelIcon: GiCrystalShine,
@@ -456,7 +459,7 @@ export const gameCards = [
   available: true,
   path: "/games/jumanji",
   bgPattern: "bg-gradient-to-br from-amber-900 via-amber-800 to-amber-700",
-  image: "https://media.istockphoto.com/id/1401883162/vector/beautiful-jungle.jpg?s=612x612&w=0&k=20&c=zmNUPQ179Tf7vRCIWdC15I0_sFJeBppRos-L84NZoeM=",
+  image: jumanjiImg,
   players: "2 JAMOA",
   level: "BARCHA DARAJALAR",
   levelIcon: FaStar,
@@ -581,8 +584,8 @@ export const gameCards = [
   available: true,
   path: "/games/millionaire",
   bgPattern: "bg-gradient-to-br from-yellow-600 via-amber-600 to-orange-600",
-  image: "https://media.istockphoto.com/id/1423200583/vector/quiz-menu-test-questions-menu-choice-trivia-game.jpg?s=612x612&w=0&k=20&c=5D5UdhD2IEb5fKGsCV7SBphGJBJuEqbuaQA6ohdqZpI=" ,
-  players: "3-5 o'yinchi",
+  image: millionaire, 
+  players: "1 jamoa", 
   level: "4 daraja",
   levelIcon: FaStar,
   badge: "PREMIUM",
@@ -622,7 +625,7 @@ export const gameCards = [
 },
 {
   id: "truth-detector",
-  title: "Truth Detector",
+  title: "Rostmi yoki yolg‘on?",
   description: "3-5 o'yinchi. Har raundda 3 ta claim beriladi. 2 tasi TRUE, 1 tasi FAKE. FAKE'ni topgan o'yinchi +1 ball oladi.",
   mainIcon: PiDetective,
   icon: FaEye,
@@ -632,7 +635,7 @@ export const gameCards = [
   available: true,
   path: "/games/truth-detector",
   bgPattern: "bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500",
-  image: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  image: truthImg,
   players: "3-5 o'yinchi",
   level: "3 daraja",
   levelIcon: FaStar,

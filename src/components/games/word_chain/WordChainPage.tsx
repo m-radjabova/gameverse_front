@@ -15,9 +15,8 @@ import {
   GiLetterBomb,
   GiBrain,
 } from "react-icons/gi";
-import { RiTeamFill } from "react-icons/ri";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
-import GamePageCta from "../shared/GamePageCta";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
 
 function WordChainPage() {
     const rightImg = "https://media.istockphoto.com/id/1503421139/photo/multi-colored-alphabet-letters-and-magnifying-glass-on-the-yellow-background.jpg?s=612x612&w=0&k=20&c=losfLdOo6_oPE5GQmJGdfzC1haNnVSIGiAeOs7VCGDo=";
@@ -198,6 +197,11 @@ function WordChainPage() {
                   </div>
                 ))}
               </div>
+            <GamePagePlayButton
+                to="/games/word-chain/play"
+                colorClassName="from-violet-500 to-fuchsia-500"
+                className="pt-2"
+              />
             </div>
 
             {/* Right Content */}
@@ -313,54 +317,7 @@ function WordChainPage() {
 
         {/* Game Component Container */}
         <div className="relative">
-          <div className="absolute -inset-1 bg-gradient-to-r from-purple-400/30 via-pink-400/30 to-rose-400/30 rounded-3xl blur-xl" />
-
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border-2 border-purple-400/30 bg-white/80 dark:bg-slate-900/80 p-6 shadow-2xl backdrop-blur-sm md:p-8">
-            {/* Header */}
-            <div className="relative mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b-2 border-purple-400/30 pb-4">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-purple-500/50 blur" />
-                  <div className="relative flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-2xl border-2 border-white/30">
-                    <GiLetterBomb className="text-3xl text-white" />
-                  </div>
-                </div>
-
-                <div>
-                  <h2 className="text-2xl font-black text-gray-800 dark:text-white tracking-wider">
-                    So'zlar Zanjiri
-                  </h2>
-                  <p className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                    <RiTeamFill className="text-purple-500" />
-                    So'z topish o'yini · 2-6 o'quvchi
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <div className="flex items-center gap-2 rounded-full bg-purple-100 dark:bg-purple-900/50 px-4 py-2 border-2 border-purple-400/30">
-                  <FaClock className="text-purple-500 text-sm" />
-                  <span className="text-xs font-bold text-gray-700 dark:text-white">30 soniya</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-purple-100 dark:bg-purple-900/50 px-4 py-2 border-2 border-purple-400/30">
-                  <FaBook className="text-pink-500 text-sm" />
-                  <span className="text-xs font-bold text-gray-700 dark:text-white">100+ so'z</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Game Component */}
-            <GameFeedbackPanel gameKey="word-chain" />
-            <div className="relative">
-              <GamePageCta
-                to="/games/word-chain/play"
-                title="Word Chain alohida play sahifada"
-                description="So'z zanjiri o'yiniga endi shu tugma orqali kiriladi."
-                icon={GiLetterBomb}
-                colorClassName="from-violet-500 to-fuchsia-500"
-              />
-            </div>
-          </div>
+          <GameFeedbackPanel gameKey="word-chain" />
         </div>
 
         {/* Footer */}
@@ -383,3 +340,6 @@ function WordChainPage() {
 }
 
 export default WordChainPage;
+
+
+

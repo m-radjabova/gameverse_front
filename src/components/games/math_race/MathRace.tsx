@@ -5,6 +5,7 @@ import {
   FaPlay,
   FaPlus,
   FaRedo,
+  FaRobot,
   FaTrash,
   FaStar,
   FaBolt,
@@ -15,6 +16,7 @@ import {
 import { GiRaceCar, GiCheckeredFlag } from "react-icons/gi";
 import Confetti from "react-confetti-boom";
 import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
+import { generateMathRaceQuestions } from "./ai";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
 
@@ -31,6 +33,14 @@ import sfxFinish from "../../../assets/sounds/tada.mp3";
 import { BASE_MOVE_AMOUNT, DEFAULT_QUESTIONS, MATH_RACE_GAME_KEY, RACE_TRACK_LENGTH, ROUND_TIME, TIME_BONUS_MULTIPLIER } from "./constants";
 import type { Difficulty, MathQuestion, Phase, Player, PlayerId, PlayerStats, QuestionDraft } from "./types";
 import { clamp, createDefaultStats, nitroBonusFromStreak, shuffleArray, wrongPenalty } from "./utils";
+
+const AI_QUESTION_COUNT_OPTIONS = [2, 4, 6, 8, 10, 15, 20] as const;
+const AI_DIFFICULTY_OPTIONS = [
+  { value: "easy", label: "Oson" },
+  { value: "medium", label: "O'rtacha" },
+  { value: "hard", label: "Qiyin" },
+  { value: "mixed", label: "Aralash" },
+] as const;
 
 export default function MathRace() {
   const skipInitialRemoteSaveRef = useRef(true);
@@ -66,6 +76,9 @@ export default function MathRace() {
     question: "", answer: "", difficulty: "medium", points: 15,
   });
   const [draftError, setDraftError] = useState("");
+  const [aiQuestionCount, setAiQuestionCount] = useState<number>(6);
+  const [aiDifficulty, setAiDifficulty] = useState<"easy" | "medium" | "hard" | "mixed">("medium");
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [remoteLoaded, setRemoteLoaded] = useState(false);
 
   const countdownTimerRef = useRef<number | null>(null);
@@ -82,6 +95,7 @@ export default function MathRace() {
   // Track sizing
   const trackRef = useRef<HTMLDivElement | null>(null);
   const [trackWidth, setTrackWidth] = useState(0);
+  const hasGeminiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY?.trim());
 
   useEffect(() => {
     let alive = true;
@@ -287,6 +301,31 @@ export default function MathRace() {
     showToast("🗑️ Savol o'chirildi");
   };
 
+  const generateAiQuestions = async () => {
+    if (isGeneratingAi) return;
+    setDraftError("");
+    setIsGeneratingAi(true);
+
+    try {
+      const generated = await generateMathRaceQuestions({
+        count: aiQuestionCount,
+        difficulty: aiDifficulty,
+      });
+      setQuestions(
+        generated.map((item, index) => ({
+          ...item,
+          id: `ai-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 7)}`,
+        })),
+      );
+      showToast(`${generated.length} ta AI misol yuklandi`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "AI misollar yaratib bo'lmadi.";
+      setDraftError(message);
+    } finally {
+      setIsGeneratingAi(false);
+    }
+  };
+
   const updatePlayerName = (id: PlayerId, name: string) => {
     setPlayers((p) => p.map((x) => (x.id === id ? { ...x, name } : x)));
   };
@@ -481,6 +520,51 @@ export default function MathRace() {
             <h3 className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-yellow-400">
               <FaPlus /> Yangi Savol Qo'shish
             </h3>
+            <div className="mb-4 rounded-xl border border-cyan-500/30 bg-cyan-950/20 p-4">
+              <div className="mb-3 flex items-center gap-2 text-cyan-300">
+                <FaRobot />
+                <p className="text-sm font-bold">AI MISOL GENERATSIYASI</p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <select
+                  value={aiQuestionCount}
+                  onChange={(e) => setAiQuestionCount(Number(e.target.value))}
+                  className="rounded-xl border border-cyan-500/30 bg-slate-900/70 px-4 py-2.5 text-white outline-none"
+                >
+                  {AI_QUESTION_COUNT_OPTIONS.map((count) => (
+                    <option key={count} value={count} className="bg-slate-950">
+                      {count} ta misol
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={aiDifficulty}
+                  onChange={(e) => setAiDifficulty(e.target.value as "easy" | "medium" | "hard" | "mixed")}
+                  className="rounded-xl border border-cyan-500/30 bg-slate-900/70 px-4 py-2.5 text-white outline-none"
+                >
+                  {AI_DIFFICULTY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value} className="bg-slate-950">
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                onClick={() => void generateAiQuestions()}
+                disabled={!hasGeminiKey || isGeneratingAi}
+                className="mt-3 w-full rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-6 py-2.5 font-bold text-white shadow-lg transition-all hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isGeneratingAi ? `${aiQuestionCount} ta yaratilmoqda...` : `AI bilan ${aiQuestionCount} ta yaratish`}
+              </button>
+              <p className="mt-3 text-xs text-cyan-100/70">
+                AI yangi matematik misollar yaratadi. "Aralash" tanlansa easy, medium va hard misollar birga keladi.
+              </p>
+              {!hasGeminiKey && (
+                <p className="mt-2 text-xs text-amber-300">
+                  AI ishlashi uchun `.env` ichida `VITE_GEMINI_API_KEY` bo'lishi kerak.
+                </p>
+              )}
+            </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <input
                 value={draftQuestion.question}

@@ -5,7 +5,6 @@ import {
   FaUsers,  
   FaBolt,
   FaFlagCheckered,
-  FaRoad,
   FaGaugeHigh,
   FaRocket,
   FaCarBattery
@@ -14,8 +13,6 @@ import {
   GiAchievement, 
   GiPodium, 
   GiRaceCar, 
-  GiCarWheel,
-  GiSpeedometer,
   GiSteeringWheel,
   GiFinishLine
 } from "react-icons/gi";
@@ -29,7 +26,7 @@ import {
   IoFlashOutline
 } from "react-icons/io5";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
-import GamePageCta from "../shared/GamePageCta";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
 
 function MathRacePage() {
   const raceImg = "https://media.istockphoto.com/id/1409623927/vector/formula-racing-sport-car-reach-on-race-circuit-the-finish-line-cartoon-illustration-to-win.jpg?s=612x612&w=0&k=20&c=n5leemMDNJv1g_EFkTJxW9T5XiVQXx0CIA6R2z6Op1U="
@@ -202,6 +199,11 @@ function MathRacePage() {
                   </div>
                 ))}
               </div>
+            <GamePagePlayButton
+                to="/games/math-race/play"
+                colorClassName="from-yellow-500 to-red-500"
+                className="pt-2"
+              />
             </div>
 
             {/* Right Content - Image */}
@@ -393,59 +395,7 @@ function MathRacePage() {
         <div
           className="relative"
         >
-          {/* Decorative Elements */}
-          <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-amber-500/5 via-orange-500/5 to-red-500/5 blur-3xl" />
-          
-          {/* Main Game Container */}
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-6 backdrop-blur-xl shadow-2xl md:p-8">
-            {/* Header */}
-            <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
-              <div className="flex items-center gap-4">
-                <div
-                  className="relative"
-                >
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 blur" />
-                  <div className="relative flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-r from-amber-600 to-orange-600">
-                    <GiRaceCar className="text-2xl text-white" />
-                  </div>
-                </div>
-                <div>
-                  <h2 className="text-xl font-black text-white">Math Race</h2>
-                  <p className="flex items-center gap-2 text-sm text-gray-300">
-                    <GiCarWheel className="text-amber-400" />
-                    Tezkor misollar В· 2 o'yinchi
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <div
-                  className="flex items-center gap-2 rounded-full bg-white/5 px-3 py-1.5 border border-white/10"
-                >
-                  <FaRoad className="text-amber-400" />
-                  <span className="text-xs font-bold text-white">100% track</span>
-                </div>
-                <div
-                  className="flex items-center gap-2 rounded-full bg-white/5 px-3 py-1.5 border border-white/10"
-                >
-                  <GiSpeedometer className="text-orange-400" />
-                  <span className="text-xs font-bold text-white">15s</span>
-                </div>
-              </div>
-            </div>
-
-            {/* MathRace Component */}
-            <GamePageCta
-              to="/games/math-race/play"
-              title="Math Race alohida o'yin sahifasida"
-              description="Matematik poyga uchun endi to'g'ridan-to'g'ri play route mavjud."
-              icon={GiRaceCar}
-              colorClassName="from-yellow-500 to-red-500"
-            />
-            <div className="mt-6">
-              <GameFeedbackPanel gameKey="math-race" />
-            </div>
-          </div>
+          <GameFeedbackPanel gameKey="math-race" />
         </div>
 
         {/* Footer */}
@@ -516,4 +466,7 @@ function MathRacePage() {
 }
 
 export default MathRacePage;
+
+
+
 

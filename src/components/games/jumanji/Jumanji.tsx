@@ -10,6 +10,7 @@ import {
   FaVolumeUp,
   FaVolumeMute,
   FaStar,
+  FaRobot,
 } from "react-icons/fa";
 import { GiJungle } from "react-icons/gi";
 import diceSound from "../../../assets/sounds/roll_dice.mp3";
@@ -18,6 +19,7 @@ import wrongSound from "../../../assets/sounds/wrong.m4a";
 import winSound from "../../../assets/sounds/tada.mp3";
 import jumanjiSound from "../../../assets/sounds/jumanji_sound.m4a";
 import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
+import { generateJumanjiQuestions } from "./ai";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
 import type { Phase, Question, ScoreAnnouncement, Team, Tile } from "./types";
@@ -45,6 +47,14 @@ import { DEFAULT_QUESTIONS } from "./constants/questions";
 import RealisticDice from "./components/RealisticDice";
 
 const JUMANJI_GAME_KEY = "jumanji";
+const AI_QUESTION_COUNT_OPTIONS = [4, 8, 12, 16, 20, 24] as const;
+const AI_DIFFICULTY_OPTIONS = [
+  { value: "easy", label: "Oson" },
+  { value: "medium", label: "O'rtacha" },
+  { value: "hard", label: "Qiyin" },
+  { value: "mixed", label: "Aralash" },
+] as const;
+const AI_SUBJECT_OPTIONS = ["Aralash fanlar", ...SUBJECTS] as const;
 
 function Jumanji() {
   const skipInitialRemoteSaveRef = useRef(true);
@@ -73,6 +83,10 @@ function Jumanji() {
   });
   const [questionError, setQuestionError] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [aiSubject, setAiSubject] = useState<string>("Aralash fanlar");
+  const [aiQuestionCount, setAiQuestionCount] = useState<number>(8);
+  const [aiDifficulty, setAiDifficulty] = useState<"easy" | "medium" | "hard" | "mixed">("medium");
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [remoteLoaded, setRemoteLoaded] = useState(false);
 
   // Gameplay state
@@ -100,6 +114,7 @@ function Jumanji() {
     useState<ScoreAnnouncement | null>(null);
   const { countdownValue, countdownVisible, runStartCountdown } =
     useGameStartCountdown();
+  const hasGeminiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY?.trim());
 
   useEffect(() => {
     let alive = true;
@@ -324,6 +339,41 @@ function Jumanji() {
   const removeQuestion = (id: string) => {
     setQuestions((prev) => prev.filter((q) => q.id !== id));
     showToastMessage("🗑️ Savol o'chirildi");
+  };
+
+  const generateAiQuestionBank = async () => {
+    if (isGeneratingAi) return;
+    setQuestionError("");
+    setIsGeneratingAi(true);
+
+    try {
+      const generated = await generateJumanjiQuestions({
+        subject: aiSubject,
+        count: aiQuestionCount,
+        difficulty: aiDifficulty,
+      });
+      setQuestions(
+        generated.map((item, index) => ({
+          ...item,
+          id: `ai-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 8)}`,
+        })),
+      );
+      setEditingId(null);
+      setNewQuestion({
+        subject: aiSubject === "Aralash fanlar" ? "Matematika" : aiSubject,
+        question: "",
+        options: ["", "", "", ""],
+        correctAnswer: "",
+        difficulty: "easy",
+        timeLimit: 30,
+      });
+      showToastMessage(`${generated.length} ta AI savol yuklandi`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "AI savollar yaratib bo'lmadi.";
+      setQuestionError(message);
+    } finally {
+      setIsGeneratingAi(false);
+    }
   };
 
   // Start game
@@ -911,6 +961,63 @@ function Jumanji() {
               </div>
 
               <div className="space-y-3 mb-4">
+                <div className="rounded-xl border border-cyan-500/30 bg-cyan-950/20 p-4">
+                  <div className="mb-3 flex items-center gap-2 text-cyan-300">
+                    <FaRobot />
+                    <p className="text-sm font-bold">AI SAVOL GENERATSIYASI</p>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <select
+                      value={aiSubject}
+                      onChange={(e) => setAiSubject(e.target.value)}
+                      className="w-full px-4 py-2 rounded-xl border border-cyan-500/30 bg-slate-950/70 text-white"
+                    >
+                      {AI_SUBJECT_OPTIONS.map((subject) => (
+                        <option key={subject} value={subject}>
+                          {subject}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={aiQuestionCount}
+                      onChange={(e) => setAiQuestionCount(Number(e.target.value))}
+                      className="w-full px-4 py-2 rounded-xl border border-cyan-500/30 bg-slate-950/70 text-white"
+                    >
+                      {AI_QUESTION_COUNT_OPTIONS.map((count) => (
+                        <option key={count} value={count}>
+                          {count} ta savol
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={aiDifficulty}
+                      onChange={(e) => setAiDifficulty(e.target.value as "easy" | "medium" | "hard" | "mixed")}
+                      className="w-full px-4 py-2 rounded-xl border border-cyan-500/30 bg-slate-950/70 text-white"
+                    >
+                      {AI_DIFFICULTY_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => void generateAiQuestionBank()}
+                      disabled={!hasGeminiKey || isGeneratingAi}
+                      className="w-full rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-2 font-bold text-white transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isGeneratingAi ? `${aiQuestionCount} ta yaratilmoqda...` : `AI bilan ${aiQuestionCount} ta yaratish`}
+                    </button>
+                  </div>
+                  <p className="mt-3 text-xs text-cyan-100/75">
+                    AI savollar mavjud ro'yxatni yangilaydi. "Aralash fanlar" tanlansa bir nechta fanlardan savollar keladi, "Aralash" qiyinlik tanlansa easy, medium va hard savollar aralash bo'ladi.
+                  </p>
+                  {!hasGeminiKey && (
+                    <p className="mt-2 text-xs text-amber-300">
+                      AI ishlashi uchun `.env` ichida `VITE_GEMINI_API_KEY` bo'lishi kerak.
+                    </p>
+                  )}
+                </div>
+
                 <select
                   value={newQuestion.subject}
                   onChange={(e) =>

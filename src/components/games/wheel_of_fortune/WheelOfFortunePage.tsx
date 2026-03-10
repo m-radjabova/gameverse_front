@@ -19,7 +19,7 @@ import {
 } from "react-icons/md";
 import { RiTeamFill } from "react-icons/ri";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
-import GamePageCta from "../shared/GamePageCta";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
 
 function WheelOfFortunePage() {
   const wheelOfFortuneImg = "https://media.istockphoto.com/id/2177986731/photo/wheel-of-fortune-with-rewards.jpg?s=612x612&w=0&k=20&c=dkony3LqMPl7Mftei-8AkXfoGQgWsOQlqo_7NBeLOT0=";
@@ -148,6 +148,12 @@ function WheelOfFortunePage() {
                   </div>
                 ))}
               </div>
+
+              <GamePagePlayButton
+                to="/games/wheel-of-fortune/play"
+                colorClassName="from-purple-500 to-rose-500"
+                className="pt-2"
+              />
             </div>
 
             <div className="relative">
@@ -251,49 +257,7 @@ function WheelOfFortunePage() {
 
         {/* WheelOfFortune Component Container */}
         <div className="relative">
-          <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-rose-500/20 blur-3xl" />
-          
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-br from-purple-900/40 via-pink-900/40 to-rose-900/40 p-6 backdrop-blur-xl shadow-2xl md:p-8">
-            <div className="mb-6 flex items-center justify-between border-b border-purple-500/30 pb-4">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-purple-500/50 blur" />
-                  <div className="relative flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-r from-purple-500 to-pink-500">
-                    <GiSpinningWheel className="text-2xl text-white" />
-                  </div>
-                </div>
-                <div>
-                  <h2 className="text-xl font-black text-white">Wheel of Fortune</h2>
-                  <p className="flex items-center gap-2 text-sm text-purple-200/80">
-                    <RiTeamFill className="text-purple-400" />
-                    Baraban o'yini · Tasodifiy tanlov
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 rounded-full bg-purple-500/20 px-3 py-1.5 border border-purple-500/30">
-                  <FaUsers className="text-purple-400" />
-                  <span className="text-xs font-bold text-white">2-10</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-purple-500/20 px-3 py-1.5 border border-purple-500/30">
-                  <FaClock className="text-purple-400" />
-                  <span className="text-xs font-bold text-white">30s</span>
-                </div>
-              </div>
-            </div>
-
-            <GamePageCta
-              to="/games/wheel-of-fortune/play"
-              title="Wheel Of Fortune play sahifasini oching"
-              description="Baraban o'yini endi ma'lumot sahifasidan alohida ishlaydi. O'ynash tugmasi bilan darhol game mode'ga o'tasiz."
-              icon={GiSpinningWheel}
-              colorClassName="from-purple-500 to-rose-500"
-            />
-            <div className="mt-6">
-              <GameFeedbackPanel gameKey="wheel-of-fortune" />
-            </div>
-          </div>
+          <GameFeedbackPanel gameKey="wheel-of-fortune" />
         </div>
 
         {/* Footer */}

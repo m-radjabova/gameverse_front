@@ -69,6 +69,7 @@ function TreasureMapSVG({ progress }: { progress: number }) {
   // const shipX = 9 + (84) * (progress / 100);
   // Path waypoints
   const pathD = "M 9,72 C 18,58 26,78 35,65 C 44,52 52,70 62,55 C 70,43 80,48 93,30";
+  const pathGlowD = "M 8,73 C 18,57 27,79 36,66 C 45,53 53,69 63,55 C 72,42 82,47 94,29";
 
   // Compute ship position along path (approximate)
   const t = progress / 100;
@@ -115,6 +116,10 @@ function TreasureMapSVG({ progress }: { progress: number }) {
           <feGaussianBlur stdDeviation="1.5" result="blur" />
           <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
+        <filter id="routeGlow">
+          <feGaussianBlur stdDeviation="1.2" result="blur" />
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
         {/* Chest glow */}
         <filter id="chestGlow">
           <feGaussianBlur stdDeviation="2" result="blur" />
@@ -137,6 +142,10 @@ function TreasureMapSVG({ progress }: { progress: number }) {
         <radialGradient id="treasureGlow" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.6"/>
           <stop offset="100%" stopColor="#fbbf24" stopOpacity="0"/>
+        </radialGradient>
+        <radialGradient id="shipWake" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#dbeafe" stopOpacity="0.45"/>
+          <stop offset="100%" stopColor="#dbeafe" stopOpacity="0"/>
         </radialGradient>
         {/* Shimmer animation */}
         <linearGradient id="shimmer" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -179,7 +188,7 @@ function TreasureMapSVG({ progress }: { progress: number }) {
       </g>
 
       {/* ── Main Continent (left side) ── */}
-      <path d="M0,30 C5,25 12,20 18,22 C24,24 28,18 32,20 C36,22 34,30 30,35 C26,40 20,42 14,44 C8,46 2,48 0,52 Z"
+      <path d="M0,28 C7,21 16,17 23,20 C30,23 35,19 39,23 C43,27 41,36 35,42 C29,48 20,50 12,54 C6,57 2,60 0,64 Z"
         fill="url(#landGrad1)" stroke="#7a5510" strokeWidth="0.5"/>
       {/* Forest details on continent */}
       {[[8,32],[12,27],[16,24],[22,22],[26,26]].map(([x,y],i) => (
@@ -194,8 +203,8 @@ function TreasureMapSVG({ progress }: { progress: number }) {
       <polygon points="10,37 13,35 16,37" fill="white" opacity="0.6"/>
 
       {/* ── Small island (middle) ── */}
-      <ellipse cx="50" cy="68" rx="9" ry="6" fill="url(#landGrad2)" stroke="#7a5510" strokeWidth="0.4"/>
-      <ellipse cx="50" cy="68" rx="7" ry="4" fill="#b08040" opacity="0.4"/>
+      <ellipse cx="50" cy="67" rx="10.5" ry="6.8" fill="url(#landGrad2)" stroke="#7a5510" strokeWidth="0.4"/>
+      <ellipse cx="50" cy="67" rx="8.2" ry="4.8" fill="#b08040" opacity="0.4"/>
       {/* Palm tree */}
       <line x1="50" y1="69" x2="50" y2="63" stroke="#6b4226" strokeWidth="0.6"/>
       <ellipse cx="48" cy="63" rx="3" ry="1.5" fill="#2d7a2a" opacity="0.9" transform="rotate(-20,48,63)"/>
@@ -205,10 +214,10 @@ function TreasureMapSVG({ progress }: { progress: number }) {
       <circle cx="49" cy="64" r="0.5" fill="#8B4513"/>
       <circle cx="51" cy="64" r="0.5" fill="#8B4513"/>
       {/* Sandy beach ring */}
-      <ellipse cx="50" cy="70" rx="10" ry="2.5" fill="#d4aa70" opacity="0.3"/>
+      <ellipse cx="50" cy="69.8" rx="11.5" ry="2.9" fill="#d4aa70" opacity="0.35"/>
 
       {/* ── Treasure island (right side) ── */}
-      <path d="M78,18 C83,12 92,10 98,14 C104,18 104,28 100,34 C96,40 88,44 82,42 C76,40 72,34 74,26 C75,22 76,20 78,18 Z"
+      <path d="M76,16 C82,10 93,8 100,13 C107,18 107,31 101,39 C95,47 85,50 78,47 C71,44 66,35 69,25 C70,21 72,18 76,16 Z"
         fill="url(#landGrad3)" stroke="#7a5510" strokeWidth="0.5"/>
       {/* Jungle on treasure island */}
       {[[82,22],[86,18],[90,16],[94,16],[88,26]].map(([x,y],i) => (
@@ -218,25 +227,25 @@ function TreasureMapSVG({ progress }: { progress: number }) {
         </g>
       ))}
       {/* Treasure chest glow */}
-      <circle cx="91" cy="30" r="5" fill="url(#treasureGlow)">
-        <animate attributeName="r" values="4;6;4" dur="2s" repeatCount="indefinite"/>
+      <circle cx="90" cy="30" r="6.5" fill="url(#treasureGlow)">
+        <animate attributeName="r" values="5.4;8;5.4" dur="2s" repeatCount="indefinite"/>
         <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
       </circle>
       {/* Treasure chest */}
-      <g transform="translate(88,27)" filter="url(#chestGlow)">
-        <rect x="0" y="2" width="6" height="4" rx="0.5" fill="#8B4513" stroke="#4a2000" strokeWidth="0.3"/>
-        <path d="M0,2 Q3,0 6,2" fill="#a05020" stroke="#4a2000" strokeWidth="0.3"/>
-        <rect x="2.2" y="2.5" width="1.6" height="1.5" rx="0.3" fill="#fbbf24" stroke="#b8860b" strokeWidth="0.2"/>
-        <line x1="0" y1="4" x2="6" y2="4" stroke="#4a2000" strokeWidth="0.2"/>
+      <g transform="translate(87,26)" filter="url(#chestGlow)">
+        <rect x="0" y="2" width="7.5" height="4.9" rx="0.6" fill="#8B4513" stroke="#4a2000" strokeWidth="0.3"/>
+        <path d="M0,2 Q3.75,-0.5 7.5,2" fill="#a05020" stroke="#4a2000" strokeWidth="0.3"/>
+        <rect x="2.8" y="2.7" width="1.9" height="1.8" rx="0.3" fill="#fbbf24" stroke="#b8860b" strokeWidth="0.2"/>
+        <line x1="0" y1="4.5" x2="7.5" y2="4.5" stroke="#4a2000" strokeWidth="0.2"/>
         {/* Gold spill */}
-        {[[1,1.5],[4,1.8],[2.5,1.2]].map(([cx,cy],i) => (
+        {[[1.2,1.5],[5,1.8],[3.2,1.1],[6.1,1.4]].map(([cx,cy],i) => (
           <circle key={i} cx={cx} cy={cy} r="0.4" fill="#fbbf24" opacity="0.8"/>
         ))}
       </g>
       {/* X marks the spot */}
-      <g transform="translate(87,34)" opacity="0.9">
-        <line x1="0" y1="0" x2="3" y2="3" stroke="#cc0000" strokeWidth="0.8" strokeLinecap="round"/>
-        <line x1="3" y1="0" x2="0" y2="3" stroke="#cc0000" strokeWidth="0.8" strokeLinecap="round"/>
+      <g transform="translate(86,35)" opacity="0.95">
+        <line x1="0" y1="0" x2="3.7" y2="3.7" stroke="#cc0000" strokeWidth="1" strokeLinecap="round"/>
+        <line x1="3.7" y1="0" x2="0" y2="3.7" stroke="#cc0000" strokeWidth="1" strokeLinecap="round"/>
       </g>
 
       {/* ── Decorative rocks / reefs ── */}
@@ -248,6 +257,15 @@ function TreasureMapSVG({ progress }: { progress: number }) {
       ))}
 
       {/* ── Navigation route (dashed) ── */}
+      <path
+        d={pathGlowD}
+        stroke="#fde68a"
+        strokeWidth="1.9"
+        fill="none"
+        opacity="0.18"
+        strokeLinecap="round"
+        filter="url(#routeGlow)"
+      />
       {/* Completed path - bright gold */}
       <path
         d={pathD}
@@ -295,6 +313,7 @@ function TreasureMapSVG({ progress }: { progress: number }) {
       {/* ── Ship (player marker) ── */}
       <g transform={`translate(${sx}, ${sy})`} filter="url(#shipGlow)">
         {/* Wake effect */}
+        <ellipse cx="-3.6" cy="0.7" rx="4.2" ry="1.2" fill="url(#shipWake)" opacity="0.65"/>
         <ellipse cx="-2" cy="0.5" rx="2.5" ry="0.8" fill="white" opacity="0.2"/>
         {/* Ship body */}
         <path d="M-2.5,0.5 Q0,-1.5 2.5,0.5 L2,2 Q0,2.5 -2,2 Z" fill="#c8a060" stroke="#8b6914" strokeWidth="0.3"/>
@@ -314,6 +333,7 @@ function TreasureMapSVG({ progress }: { progress: number }) {
           <animate attributeName="r" values="3;4.5;3" dur="1.5s" repeatCount="indefinite"/>
           <animate attributeName="opacity" values="0.6;0.1;0.6" dur="1.5s" repeatCount="indefinite"/>
         </circle>
+        <animateTransform attributeName="transform" type="rotate" values="-3 0 0.5;3 0 0.5;-3 0 0.5" dur="3.8s" repeatCount="indefinite"/>
       </g>
 
       {/* ── START marker ── */}
@@ -785,7 +805,7 @@ export default function TreasureHunt() {
         <div className="flex min-h-screen flex-col">
           {/* ── Top status bar ── */}
           <div className="sticky top-0 z-30 border-b border-amber-800/30 bg-slate-950/90 px-4 py-2 backdrop-blur-md shadow-lg">
-            <div className="mx-auto flex max-w-5xl items-center gap-3">
+            <div className="mx-auto flex max-w-7xl items-center gap-3">
               {/* Savol */}
               <div className="rounded-xl border border-amber-700/30 bg-black/50 px-3 py-1.5 text-center shrink-0">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-amber-600">Savol</p>
@@ -829,95 +849,146 @@ export default function TreasureHunt() {
             </div>
           </div>
 
-          <div className="flex-1 space-y-4 p-4">
-            {/* ── TREASURE MAP ── */}
-            <div className="relative overflow-hidden rounded-3xl border-2 border-amber-700/50 shadow-2xl shadow-amber-900/30"
-              style={{ height: "340px" }}>
-              <TreasureMapSVG progress={pathProgressPct} />
+          <div className="flex-1 p-4">
+            <div className="mx-auto grid max-w-7xl gap-4 xl:grid-cols-[1.45fr_1fr] xl:items-start">
+              <div className="space-y-4">
+                {/* ── TREASURE MAP ── */}
+                <div className="relative overflow-hidden rounded-[32px] border-2 border-amber-700/50 bg-gradient-to-br from-slate-950/70 via-sky-950/40 to-amber-950/20 p-3 shadow-2xl shadow-amber-900/30">
+                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.16),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(14,165,233,0.12),transparent_30%)]" />
+                  <div
+                    className="relative overflow-hidden rounded-[26px] border border-amber-500/30"
+                    style={{ height: "min(68vh, 620px)" }}
+                  >
+                    <TreasureMapSVG progress={pathProgressPct} />
 
-              {/* Map title overlay */}
-              <div className="absolute top-3 left-1/2 -translate-x-1/2">
-                <div className="rounded-full border border-amber-600/50 bg-black/60 px-4 py-1.5 backdrop-blur-sm">
-                  <span className="text-xs font-black tracking-widest text-amber-400">☠ XAZINA XARITASi ☠</span>
-                </div>
-              </div>
+                    <div className="absolute left-4 top-4">
+                      <div className="rounded-2xl border border-amber-600/50 bg-black/55 px-5 py-3 shadow-lg backdrop-blur-md">
+                        <p className="text-[11px] font-bold tracking-[0.28em] text-amber-500/80">TREASURE HUNT</p>
+                        <p className="text-lg font-black tracking-[0.16em] text-amber-300">☠ XAZINA XARITASI ☠</p>
+                      </div>
+                    </div>
 
-              {/* Double reward badge */}
-              {doubleReward && (
-                <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 px-3 py-1.5 font-bold text-amber-950 shadow-lg text-xs">
-                  <FaBolt /> BONUS x2
-                </div>
-              )}
-            </div>
+                    <div className="absolute right-4 top-4 flex flex-wrap justify-end gap-2">
+                      <div className="rounded-full border border-amber-500/40 bg-black/50 px-3 py-1.5 text-xs font-bold text-amber-200 backdrop-blur-md">
+                        Sayohat: {pathProgressPct}%
+                      </div>
+                      <div className="rounded-full border border-emerald-500/40 bg-black/50 px-3 py-1.5 text-xs font-bold text-emerald-300 backdrop-blur-md">
+                        Ball: {score}
+                      </div>
+                    </div>
 
-            {/* ── Question card ── */}
-            <div className="relative overflow-hidden rounded-3xl border border-amber-700/30 bg-gradient-to-br from-amber-950/60 to-stone-900/60 p-5 shadow-xl backdrop-blur-sm">
-              <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-amber-500/10 blur-3xl" />
+                    <div className="absolute bottom-4 left-4 right-4 flex flex-wrap items-end justify-between gap-3">
+                      <div className="max-w-md rounded-2xl border border-sky-400/20 bg-slate-950/55 px-4 py-3 backdrop-blur-md">
+                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-sky-300/80">Yo'nalish</p>
+                        <p className="mt-1 text-sm text-slate-100/90">
+                          Kema xazinaga yaqinlashmoqda. Har to'g'ri javob sayohatni oldinga suradi.
+                        </p>
+                      </div>
 
-              <div className="mb-3 flex items-center justify-between">
-                <span className="rounded-full border border-amber-700/40 bg-amber-900/50 px-3 py-1 text-sm font-bold text-amber-300">
-                  {current.title}
-                </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => { if (!locked && !showHint) { setShowHint(true); setScore((s) => Math.max(0, s - HINT_PENALTY)); } }}
-                    disabled={locked || showHint}
-                    className="flex items-center gap-1.5 rounded-full border border-amber-600/40 bg-amber-900/40 px-3 py-1.5 text-xs font-bold text-amber-300 transition-all hover:bg-amber-800/60 disabled:opacity-40">
-                    <FaLightbulb className="text-yellow-400" /> Hint (-{HINT_PENALTY})
-                  </button>
-                  <div className="flex items-center gap-1 text-xs text-amber-500">
-                    <MdOutlineTimer />{questionSeconds}s
+                      {doubleReward && (
+                        <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 px-4 py-2 font-bold text-amber-950 shadow-lg text-sm">
+                          <FaBolt /> BONUS x2
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
+
+                <button
+                  onClick={() => setPhase("finish")}
+                  className="w-full rounded-2xl border border-red-800/40 bg-red-950/40 py-3 text-sm font-bold text-red-400 backdrop-blur-sm transition-all hover:bg-red-900/50"
+                >
+                  <IoMdNuclear className="mr-2 inline text-base" />
+                  Sarguzashtni yakunlash
+                </button>
               </div>
 
-              <p className="mb-2 text-sm italic text-amber-200/70">{current.story}</p>
-              <h3 className="mb-4 text-xl font-black text-white leading-tight md:text-2xl">{current.question}</h3>
+              {/* ── Question card ── */}
+              <div className="relative overflow-hidden rounded-[32px] border border-amber-700/30 bg-gradient-to-br from-amber-950/70 via-stone-950/80 to-black/80 p-5 shadow-xl backdrop-blur-sm xl:sticky xl:top-20">
+                <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-amber-500/10 blur-3xl" />
+                <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-amber-500/10 to-transparent" />
 
-              {showHint && (
-                <div className="mb-4 rounded-xl border border-amber-600/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
-                  💡 {current.hint}
+                <div className="relative mb-4 flex items-center justify-between gap-3 border-b border-amber-700/20 pb-4">
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-amber-500/80">Joriy vazifa</p>
+                    <p className="mt-1 text-lg font-black text-amber-200">Savolga javob bering va kemani oldinga suring</p>
+                  </div>
+                  <div className="rounded-2xl border border-amber-600/30 bg-amber-950/40 px-4 py-2 text-right">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500/80">Qolgan vaqt</p>
+                    <p className="text-2xl font-black text-white">{questionSeconds}s</p>
+                  </div>
                 </div>
-              )}
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                {current.options.map((opt, i) => {
-                  const isSelected = selected === i;
-                  const isCorrect = i === current.answerIndex;
-                  const showResult = locked && selected !== null;
-                  return (
-                    <button key={i} onClick={() => onAnswer(i)} disabled={locked}
-                      className={`group relative overflow-hidden rounded-2xl border-2 p-4 text-left font-bold transition-all ${
-                        showResult && isCorrect
-                          ? "border-emerald-400 bg-emerald-500/20 shadow-lg shadow-emerald-500/20 scale-[1.02]"
-                          : showResult && isSelected && !isCorrect
-                          ? "border-rose-400 bg-rose-500/20 shadow-lg shadow-rose-500/20"
-                          : "border-amber-700/40 bg-black/30 text-amber-100 hover:border-amber-500/60 hover:bg-amber-900/30 hover:scale-[1.02]"
-                      }`}>
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                      <div className="relative flex items-center justify-between gap-2">
-                        <span className="flex items-center gap-3">
-                          <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-black border ${
-                            showResult && isCorrect ? "bg-emerald-500 border-emerald-400 text-white"
-                              : showResult && isSelected && !isCorrect ? "bg-rose-500 border-rose-400 text-white"
-                              : "border-amber-600/40 bg-amber-900/40 text-amber-300"
-                          }`}>{String.fromCharCode(65+i)}</span>
-                          {opt}
-                        </span>
-                        {showResult && isCorrect && <FaCheckCircle className="shrink-0 text-xl text-emerald-400" />}
-                        {showResult && isSelected && !isCorrect && <FaTimesCircle className="shrink-0 text-xl text-rose-400" />}
-                      </div>
+                <div className="relative mb-4 flex items-start justify-between gap-3">
+                  <div>
+                    <span className="inline-flex rounded-full border border-amber-700/40 bg-amber-900/50 px-3 py-1 text-sm font-bold text-amber-300">
+                      {current.title}
+                    </span>
+                    <p className="mt-3 text-sm italic leading-relaxed text-amber-200/70">{current.story}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <button
+                      onClick={() => { if (!locked && !showHint) { setShowHint(true); setScore((s) => Math.max(0, s - HINT_PENALTY)); } }}
+                      disabled={locked || showHint}
+                      className="flex items-center gap-1.5 rounded-full border border-amber-600/40 bg-amber-900/40 px-3 py-1.5 text-xs font-bold text-amber-300 transition-all hover:bg-amber-800/60 disabled:opacity-40"
+                    >
+                      <FaLightbulb className="text-yellow-400" /> Hint (-{HINT_PENALTY})
                     </button>
-                  );
-                })}
+                    <div className="flex items-center gap-1 text-xs text-amber-500">
+                      <MdOutlineTimer />{questionSeconds}s
+                    </div>
+                  </div>
+                </div>
+
+                <h3 className="relative mb-5 text-2xl font-black leading-tight text-white md:text-3xl">
+                  {current.question}
+                </h3>
+
+                {showHint && (
+                  <div className="mb-4 rounded-2xl border border-amber-600/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                    💡 {current.hint}
+                  </div>
+                )}
+
+                <div className="grid gap-3">
+                  {current.options.map((opt, i) => {
+                    const isSelected = selected === i;
+                    const isCorrect = i === current.answerIndex;
+                    const showResult = locked && selected !== null;
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => onAnswer(i)}
+                        disabled={locked}
+                        className={`group relative overflow-hidden rounded-2xl border-2 p-4 text-left font-bold transition-all min-h-[78px] ${
+                          showResult && isCorrect
+                            ? "border-emerald-400 bg-emerald-500/20 shadow-lg shadow-emerald-500/20 scale-[1.02]"
+                          : showResult && isSelected && !isCorrect
+                              ? "border-rose-400 bg-rose-500/20 shadow-lg shadow-rose-500/20"
+                              : "border-amber-700/40 bg-black/30 text-amber-100 hover:border-amber-500/60 hover:bg-amber-900/30 hover:scale-[1.02]"
+                        }`}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                        <div className="relative flex items-center justify-between gap-2">
+                          <span className="flex items-center gap-3">
+                            <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black border ${
+                              showResult && isCorrect
+                                ? "bg-emerald-500 border-emerald-400 text-white"
+                                : showResult && isSelected && !isCorrect
+                                  ? "bg-rose-500 border-rose-400 text-white"
+                                  : "border-amber-600/40 bg-amber-900/40 text-amber-300"
+                            }`}>{String.fromCharCode(65 + i)}</span>
+                            <span className="text-base md:text-lg">{opt}</span>
+                          </span>
+                          {showResult && isCorrect && <FaCheckCircle className="shrink-0 text-xl text-emerald-400" />}
+                          {showResult && isSelected && !isCorrect && <FaTimesCircle className="shrink-0 text-xl text-rose-400" />}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-
-            <button onClick={() => setPhase("finish")}
-              className="w-full rounded-2xl border border-red-800/40 bg-red-950/40 py-3 text-sm font-bold text-red-400 backdrop-blur-sm transition-all hover:bg-red-900/50">
-              <IoMdNuclear className="mr-2 inline text-base" />
-              Sarguzashtni yakunlash
-            </button>
           </div>
         </div>
       )}

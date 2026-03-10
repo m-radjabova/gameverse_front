@@ -9,6 +9,77 @@ export default function GameLayout() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const lastScrollYRef = useRef(0);
+  const controlTheme = (() => {
+    if (location.pathname.includes("/mini-puzzle")) {
+      return {
+        button: "bg-gradient-to-r from-pink-500 to-rose-500",
+        backShadow: "hover:shadow-[0_0_30px_rgba(236,72,153,0.7)]",
+        fullscreenShadow: "hover:shadow-[0_0_30px_rgba(244,114,182,0.7)]",
+      };
+    }
+
+    if (location.pathname.includes("/reverse-thinking")) {
+      return {
+        button: "bg-gradient-to-r from-green-500 to-emerald-500",
+        backShadow: "hover:shadow-[0_0_30px_rgba(16,185,129,0.7)]",
+        fullscreenShadow: "hover:shadow-[0_0_30px_rgba(52,211,153,0.7)]",
+      };
+    }
+
+    if (
+      location.pathname.includes("/jumanji") ||
+      location.pathname.includes("/millionaire") ||
+      location.pathname.includes("/math-race") ||
+      location.pathname.includes("/quiz-battle") ||
+      location.pathname.includes("/treasure-hunt") ||
+      location.pathname.includes("/baamboozle") ||
+      location.pathname.includes("/hangman")
+    ) {
+      return {
+        button: "bg-gradient-to-r from-yellow-500 to-orange-500",
+        backShadow: "hover:shadow-[0_0_30px_rgba(245,158,11,0.7)]",
+        fullscreenShadow: "hover:shadow-[0_0_30px_rgba(249,115,22,0.7)]",
+      };
+    }
+
+    if (
+      location.pathname.includes("/truth-detector") ||
+      location.pathname.includes("/pictionary") ||
+      location.pathname.includes("/wheel-of-fortune") ||
+      location.pathname.includes("/classic-arcade") ||
+      location.pathname.includes("/word-chain") ||
+      location.pathname.includes("/word-battle") ||
+      location.pathname.includes("/bingo") ||
+      location.pathname.includes("/magic-square")
+    ) {
+      return {
+        button: "bg-gradient-to-r from-indigo-500 to-pink-500",
+        backShadow: "hover:shadow-[0_0_30px_rgba(99,102,241,0.7)]",
+        fullscreenShadow: "hover:shadow-[0_0_30px_rgba(236,72,153,0.7)]",
+      };
+    }
+
+    if (
+      location.pathname.includes("/flag-battle") ||
+      location.pathname.includes("/find-color") ||
+      location.pathname.includes("/memory-rush") ||
+      location.pathname.includes("/memory-chain") ||
+      location.pathname.includes("/word-search") ||
+      location.pathname.includes("/ocean-word-fishing")
+    ) {
+      return {
+        button: "bg-gradient-to-r from-cyan-500 to-blue-500",
+        backShadow: "hover:shadow-[0_0_30px_rgba(6,182,212,0.7)]",
+        fullscreenShadow: "hover:shadow-[0_0_30px_rgba(59,130,246,0.7)]",
+      };
+    }
+
+    return {
+      button: "bg-gradient-to-r from-purple-500 to-pink-500",
+      backShadow: "hover:shadow-[0_0_30px_rgba(168,85,247,0.7)]",
+      fullscreenShadow: "hover:shadow-[0_0_30px_rgba(236,72,153,0.7)]",
+    };
+  })();
 
   const showGameControls = location.pathname.startsWith("/games/") && location.pathname !== "/games";
 
@@ -65,7 +136,7 @@ export default function GameLayout() {
           >
             <button
               onClick={goToGames}
-              className="group relative h-14 w-14 overflow-hidden rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-2xl transition-all hover:scale-110 active:scale-95 hover:shadow-[0_0_30px_rgba(168,85,247,0.7)]"
+              className={`group relative h-14 w-14 overflow-hidden rounded-2xl ${controlTheme.button} text-white shadow-2xl transition-all hover:scale-110 active:scale-95 ${controlTheme.backShadow}`}
               aria-label="O'yinlar ro'yxatiga qaytish"
             >
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
@@ -84,7 +155,7 @@ export default function GameLayout() {
           >
             <button
               onClick={toggleFullscreen}
-              className="group relative h-14 w-14 overflow-hidden rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-2xl transition-all hover:scale-110 active:scale-95 hover:shadow-[0_0_30px_rgba(236,72,153,0.7)]"
+              className={`group relative h-14 w-14 overflow-hidden rounded-2xl ${controlTheme.button} text-white shadow-2xl transition-all hover:scale-110 active:scale-95 ${controlTheme.fullscreenShadow}`}
               aria-label={isFullscreen ? "Fullscreen dan chiqish" : "Fullscreen"}
             >
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
@@ -108,7 +179,7 @@ export default function GameLayout() {
             {/* Back to Games */}
             <button
               onClick={goToGames}
-              className="group relative h-12 w-12 overflow-hidden rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-2xl transition-all hover:scale-110 active:scale-95"
+              className={`group relative h-12 w-12 overflow-hidden rounded-xl ${controlTheme.button} text-white shadow-2xl transition-all hover:scale-110 active:scale-95`}
               aria-label="O'yinlar"
             >
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
@@ -118,7 +189,7 @@ export default function GameLayout() {
             {/* Fullscreen Toggle */}
             <button
               onClick={toggleFullscreen}
-              className="group relative h-12 w-12 overflow-hidden rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-2xl transition-all hover:scale-110 active:scale-95"
+              className={`group relative h-12 w-12 overflow-hidden rounded-xl ${controlTheme.button} text-white shadow-2xl transition-all hover:scale-110 active:scale-95`}
               aria-label={isFullscreen ? "Chiqish" : "To'liq ekran"}
             >
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />

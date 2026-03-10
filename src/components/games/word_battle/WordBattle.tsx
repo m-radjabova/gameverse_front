@@ -249,7 +249,7 @@ export default function WordBattle() {
   };
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-[#0a0f1e] via-[#1a1f35] to-[#0b1a2a]">
+    <div className="relative min-h-screen w-full overflow-hidden">
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-0 -left-4 h-96 w-96 animate-pulse rounded-full bg-purple-500/10 blur-3xl" />

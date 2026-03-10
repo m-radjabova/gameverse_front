@@ -1,4 +1,4 @@
-﻿import {
+import {
   FaDice,
   FaUsers,
   FaTrophy,
@@ -17,10 +17,9 @@ import {
   GiSnake,
 } from "react-icons/gi";
 import { MdTimer } from "react-icons/md";
-import { RiTeamFill } from "react-icons/ri";
 import img from "../../../assets/jumanji_board.png"
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
-import GamePageCta from "../shared/GamePageCta";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
 
 function JumanjiPage() {
   const JumanjiImg = img; 
@@ -95,8 +94,8 @@ function JumanjiPage() {
   ];
 
   const subjects = [
-    { name: "Matematika", icon: "🔢", color: "from-blue-500 to-cyan-500" },
-    { name: "Tarix", icon: "📜", color: "from-amber-500 to-orange-500" },
+    { name: "Matematika", icon: "🧮", color: "from-blue-500 to-cyan-500" },
+    { name: "Tarix", icon: "🏺", color: "from-amber-500 to-orange-500" },
     { name: "Geografiya", icon: "🌍", color: "from-green-500 to-emerald-500" },
     { name: "Kimyo", icon: "🧪", color: "from-purple-500 to-pink-500" },
     { name: "Ingliz tili", icon: "🇬🇧", color: "from-red-500 to-rose-500" },
@@ -105,8 +104,8 @@ function JumanjiPage() {
 
   const gameRules = [
     { text: "Kubik tashlab, jungle bo'ylab sayohat qiling", icon: "🎲" },
-    { text: "Juft tashlasangiz, yana bir marta tashlash huquqi", icon: "⚡" },
-    { text: "Marraga birinchi yetgan jamoa g'olib", icon: "🏁" },
+    { text: "Juft tashlasangiz, yana bir marta tashlash huquqi", icon: "🔁" },
+    { text: "Marraga birinchi yetgan jamoa g'olib", icon: "🏆" },
   ];
 
   return (
@@ -139,7 +138,7 @@ function JumanjiPage() {
                 transform: `rotate(${Math.random() * 360}deg)`,
               }}
             >
-              {["🌿", "🌴", "🍃", "🌱", "🌵", "🌳", "🍂", "🌺"][i % 8]}
+              {["🌿", "🐍", "🌴", "🗿", "🔥", "🪙", "🦁", "🎯"][i % 8]}
             </div>
           ))}
         </div>
@@ -229,13 +228,18 @@ function JumanjiPage() {
                   </div>
                 ))}
               </div>
+            <GamePagePlayButton
+                to="/games/jumanji/play"
+                colorClassName="from-amber-500 to-yellow-500"
+                className="pt-2"
+              />
             </div>
 
             {/* Right Content - Jungle Preview */}
             <div className="relative">
               {/* Decorative Elements */}
               <div className="absolute -top-8 -left-8 text-6xl rotate-12 animate-float">🌴</div>
-              <div className="absolute -bottom-8 -right-8 text-6xl -rotate-12 animate-float-delayed">🌿</div>
+              <div className="absolute -bottom-8 -right-8 text-6xl -rotate-12 animate-float-delayed">🐍</div>
 
               {/* Preview Board */}
               <div className="relative transform-gpu overflow-hidden rounded-2xl border-2 border-amber-500/30 bg-gradient-to-br from-amber-900/50 to-yellow-900/50 p-6 shadow-2xl">
@@ -316,58 +320,7 @@ function JumanjiPage() {
 
         {/* Game Component Container */}
         <div className="relative">
-          {/* Decorative Border */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-amber-600/30 via-yellow-600/30 to-amber-600/30 rounded-3xl blur-xl" />
-
-          {/* Main Container */}
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-900/40 via-yellow-900/40 to-amber-900/40 p-6 backdrop-blur-xl shadow-2xl md:p-8">
-            {/* Header */}
-            <div className="relative mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-amber-500/30 pb-4">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-amber-500/50 blur" />
-                  <div className="relative flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-amber-600 to-yellow-600 shadow-2xl border-2 border-amber-400/30">
-                    <GiJungle className="text-3xl text-white" />
-                  </div>
-                </div>
-
-                <div>
-                  <h2 className="text-2xl font-black text-white tracking-wider">
-                    Jumanji
-                  </h2>
-                  <p className="flex items-center gap-2 text-sm text-amber-200/80">
-                    <RiTeamFill className="text-amber-400" />
-                    Jungle sarguzashti - 4 jamoa
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <div className="flex items-center gap-2 rounded-full bg-amber-900/50 px-4 py-2 border border-amber-500/30 backdrop-blur-sm">
-                  <FaDice className="text-amber-400 text-sm" />
-                  <span className="text-xs font-bold text-white">Dinamik katak</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-amber-900/50 px-4 py-2 border border-amber-500/30 backdrop-blur-sm">
-                  <GiChest className="text-yellow-400 text-sm" />
-                  <span className="text-xs font-bold text-white">5 xil katak</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Game Component */}
-            <div className="relative">
-              <GamePageCta
-                to="/games/jumanji/play"
-                title="Jumanji alohida sarguzasht sahifasida"
-                description="Jumanji o'yinini boshlash uchun maxsus play page ajratildi."
-                icon={GiJungle}
-                colorClassName="from-amber-500 to-yellow-500"
-              />
-              <div className="mt-6">
-                <GameFeedbackPanel gameKey="jumanji" />
-              </div>
-            </div>
-          </div>
+          <GameFeedbackPanel gameKey="jumanji" />
         </div>
 
         {/* Footer */}
@@ -405,5 +358,7 @@ function JumanjiPage() {
 }
 
 export default JumanjiPage;
+
+
 
 

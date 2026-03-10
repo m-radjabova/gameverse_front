@@ -19,7 +19,7 @@ import {
 } from "react-icons/md";
 import { Link } from "react-router-dom";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
-import GamePageCta from "../shared/GamePageCta";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
 
 function FindDifferentColorPage() {
   const gameStats = [
@@ -267,6 +267,11 @@ function FindDifferentColorPage() {
                   </div>
                 ))}
               </div>
+            <GamePagePlayButton
+                to="/games/find-color/play"
+                colorClassName="from-cyan-500 to-blue-500"
+                className="pt-2"
+              />
             </div>
 
             {/* Right Content - Visual Preview */}
@@ -452,70 +457,7 @@ function FindDifferentColorPage() {
 
         {/* Game Component Container */}
         <div className="relative">
-          {/* Decorative Border */}
-          <div className="absolute bg-gradient-to-r from-cyan-600/30 via-blue-600/30 to-indigo-600/30 rounded-3xl blur-xl" />
-
-          {/* Main Container */}
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border-2 border-cyan-500/30 bg-gradient-to-br from-slate-900/90 via-indigo-900/80 to-slate-900/90 p-6 shadow-2xl backdrop-blur-sm md:p-8">
-            {/* Grid Pattern Overlay */}
-            <div
-              className="absolute inset-0 opacity-5 pointer-events-none"
-              style={{
-                backgroundImage: `repeating-linear-gradient(45deg, rgba(6,182,212,0.1) 0px, rgba(6,182,212,0.1) 2px, transparent 2px, transparent 10px)`,
-              }}
-            />
-
-            {/* Header */}
-            <div className="relative mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-cyan-500/30 pb-4">
-              <div className="flex items-center gap-4">
-                {/* Icon with Glow */}
-                <div className="relative">
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-cyan-600/50 blur" />
-                  <div className="relative flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 shadow-2xl border-2 border-cyan-400/30">
-                    <FaPalette className="text-3xl text-white" />
-                  </div>
-                </div>
-
-                {/* Title */}
-                <div>
-                  <h2 className="text-2xl font-black text-white tracking-wider flex items-center gap-2">
-                    Find Different Color
-                    <span className="text-sm font-normal text-cyan-400/70">🎨</span>
-                  </h2>
-                  <p className="flex items-center gap-2 text-sm text-slate-200/70">
-                    <FaEye className="text-cyan-400" />
-                    Farqli rangni topish · 100+ daraja
-                  </p>
-                </div>
-              </div>
-
-              {/* Badges */}
-              <div className="flex gap-2">
-                <div className="flex items-center gap-2 rounded-full bg-cyan-900/50 px-4 py-2 border border-cyan-500/30 backdrop-blur-sm">
-                  <GiBrain className="text-cyan-400 text-sm" />
-                  <span className="text-xs font-bold text-white">Diqqat</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-cyan-900/50 px-4 py-2 border border-cyan-500/30 backdrop-blur-sm">
-                  <FaBolt className="text-blue-400 text-sm" />
-                  <span className="text-xs font-bold text-white">Tezlik</span>
-                </div>
-              </div>
-            </div>
-
-            {/* FindDifferentColor Component */}
-            <div className="relative">
-              <GamePageCta
-                to="/games/find-color/play"
-                title="Find Different Color alohida sahifada"
-                description="Farqli rangni topish o'yini endi maxsus play page orqali ochiladi."
-                icon={FaPalette}
-                colorClassName="from-cyan-500 to-blue-500"
-              />
-              <div className="mt-6">
-                <GameFeedbackPanel gameKey="find-color" />
-              </div>
-            </div>
-          </div>
+          <GameFeedbackPanel gameKey="find-color" />
         </div>
 
         {/* Footer */}
@@ -553,3 +495,6 @@ function FindDifferentColorPage() {
 }
 
 export default FindDifferentColorPage;
+
+
+

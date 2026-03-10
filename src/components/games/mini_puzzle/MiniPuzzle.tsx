@@ -986,3 +986,5 @@ function MiniPuzzle() {
 
 export default MiniPuzzle;
 
+
+

@@ -1,10 +1,14 @@
-import { 
-  FaBolt, FaStar, FaCrown, FaTrophy, FaMedal, FaUsers} from "react-icons/fa";
+import {
+  FaBolt,
+  FaCrown,
+  FaStar,
+  FaTrophy,
+  FaUsers,
+} from "react-icons/fa";
 import { GiBrain, GiPodium, GiAchievement, GiBrainTentacle } from "react-icons/gi";
 import { MdQuiz, MdTimer, MdEmojiEvents, MdSpeed } from "react-icons/md";
-import { RiTeamFill } from "react-icons/ri";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
-import GamePageCta from "../shared/GamePageCta";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
 
 function QuizBattlePage() {
   const quizBattleImg = "https://media.istockphoto.com/id/1336313511/vector/vector-funny-sign-quiz-game-set-of-creative-alphabet-letters-and-numbers.jpg?s=612x612&w=0&k=20&c=V7G9_GmHnJK89C-kt1U1kGDz2uBskO1-Z5fpxph9rX8=";
@@ -144,6 +148,12 @@ function QuizBattlePage() {
                   </div>
                 ))}
               </div>
+
+              <GamePagePlayButton
+                to="/games/quiz-battle/play"
+                colorClassName="from-yellow-500 to-red-500"
+                className="pt-2"
+              />
             </div>
 
             {/* Right Content - Image */}
@@ -252,53 +262,7 @@ function QuizBattlePage() {
 
         {/* Quiz Battle Component Container */}
         <div className="relative">
-          {/* Decorative Elements */}
-          <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-yellow-500/20 via-orange-500/20 to-red-500/20 blur-3xl" />
-          
-          {/* Main Game Container */}
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border border-yellow-500/30 bg-gradient-to-br from-yellow-900/40 via-orange-900/40 to-red-900/40 p-6 backdrop-blur-xl shadow-2xl md:p-8">
-            {/* Header */}
-            <div className="mb-6 flex items-center justify-between border-b border-yellow-500/30 pb-4">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-yellow-500/50 blur" />
-                  <div className="relative flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500">
-                    <MdQuiz className="text-2xl text-white" />
-                  </div>
-                </div>
-                <div>
-                  <h2 className="text-xl font-black text-white">Quiz Battle</h2>
-                  <p className="flex items-center gap-2 text-sm text-yellow-200/80">
-                    <RiTeamFill className="text-yellow-400" />
-                    Bilimlar bellashuvi · 2 jamoa
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 rounded-full bg-yellow-500/20 px-3 py-1.5 border border-yellow-500/30">
-                  <FaCrown className="text-yellow-400" />
-                  <span className="text-xs font-bold text-white">Top 10</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-yellow-500/20 px-3 py-1.5 border border-yellow-500/30">
-                  <FaMedal className="text-yellow-400" />
-                  <span className="text-xs font-bold text-white">124</span>
-                </div>
-              </div>
-            </div>
-
-            {/* QuizBattle Component */}
-            <GamePageCta
-              to="/games/quiz-battle/play"
-              title="Quiz Battle alohida sahifada ochiladi"
-              description="O'ynash tugmasi orqali to'g'ridan-to'g'ri quiz rejimiga o'ting. Bu sahifa endi ma'lumot va tayyorgarlik uchun qoladi."
-              icon={MdQuiz}
-              colorClassName="from-yellow-500 to-red-500"
-            />
-            <div className="mt-6">
-              <GameFeedbackPanel gameKey="quiz-battle" />
-            </div>
-          </div>
+          <GameFeedbackPanel gameKey="quiz-battle" />
         </div>
 
         {/* Footer */}

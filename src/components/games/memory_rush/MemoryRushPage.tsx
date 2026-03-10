@@ -1,5 +1,5 @@
 import { 
-  FaStar, FaUsers, FaTrophy, FaHeart, FaLayerGroup, FaBolt,
+  FaStar, FaUsers, FaTrophy,FaBolt,
   FaCrown} from "react-icons/fa";
 import { 
   GiBrain, GiPodium, GiBrainStem, GiAchievement,
@@ -9,7 +9,7 @@ import {
   MdEmojiEvents} from "react-icons/md";
 import { RiBrainFill} from "react-icons/ri";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
-import GamePageCta from "../shared/GamePageCta";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
 
 function MemoryRushPage() {
   const memoryRushImg = "https://media.istockphoto.com/id/1434154110/vector/reminder-yellow-note-circled.jpg?s=612x612&w=0&k=20&c=2mfjGFRNi7htNGB47t3fzlfg5mCGLQSfUXMoWBogWL0=";
@@ -149,6 +149,11 @@ function MemoryRushPage() {
                   </div>
                 ))}
               </div>
+            <GamePagePlayButton
+                to="/games/memory-rush/play"
+                colorClassName="from-emerald-500 to-cyan-500"
+                className="pt-2"
+              />
             </div>
 
             {/* Right Content - Image */}
@@ -257,53 +262,7 @@ function MemoryRushPage() {
 
         {/* Memory Rush Component Container */}
         <div className="relative">
-          {/* Decorative Elements */}
-          <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-cyan-500/20 blur-3xl" />
-          
-          {/* Main Game Container */}
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-emerald-900/30 via-teal-900/30 to-cyan-900/30 p-6 backdrop-blur-xl shadow-2xl md:p-8">
-            {/* Header */}
-            <div className="mb-6 flex items-center justify-between border-b border-white/10 pb-4">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-emerald-500/50 blur" />
-                  <div className="relative flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500">
-                    <MdMemory className="text-2xl text-white" />
-                  </div>
-                </div>
-                <div>
-                  <h2 className="text-xl font-black text-white">Memory Rush</h2>
-                  <p className="flex items-center gap-2 text-sm text-gray-300">
-                    <RiBrainFill className="text-emerald-400" />
-                    Xotirangizni sinang · Juftlarni toping
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5">
-                  <FaLayerGroup className="text-emerald-400" />
-                  <span className="text-xs font-bold text-white">3 daraja</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5">
-                  <FaHeart className="text-teal-400" />
-                  <span className="text-xs font-bold text-white">5 hayot</span>
-                </div>
-              </div>
-            </div>
-
-            {/* MemoryRush Component */}
-            <GamePageCta
-              to="/games/memory-rush/play"
-              title="Memory Rush o'yin sahifasini ochish"
-              description="Xotira mashqi uchun alohida play page tayyorlandi. Shu yerdan o'yinni boshlaysiz."
-              icon={GiBrain}
-              colorClassName="from-emerald-500 to-cyan-500"
-            />
-            <div className="mt-6">
-              <GameFeedbackPanel gameKey="memory-rush" />
-            </div>
-          </div>
+          <GameFeedbackPanel gameKey="memory-rush" />
         </div>
 
         {/* Footer */}
@@ -320,6 +279,9 @@ function MemoryRushPage() {
 }
 
 export default MemoryRushPage;
+
+
+
 
 
 

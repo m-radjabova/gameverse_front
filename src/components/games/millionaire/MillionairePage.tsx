@@ -3,7 +3,6 @@ import {
   FaTrophy,
   FaCrown,
   FaCoins,
-  FaMoneyBillWave,
   FaQuestion
 } from "react-icons/fa";
 import {
@@ -13,10 +12,9 @@ import {
   GiBrain,
   GiMoneyStack,
 } from "react-icons/gi";
-import { RiSwordFill } from "react-icons/ri";
 import img from "../../../assets/millionaire_photo.jpg";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
-import GamePageCta from "../shared/GamePageCta";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
 
 function MillionairePage() {
   const gameStats = [
@@ -193,6 +191,11 @@ function MillionairePage() {
                   </div>
                 ))}
               </div>
+            <GamePagePlayButton
+                to="/games/millionaire/play"
+                colorClassName="from-yellow-500 to-orange-500"
+                className="pt-2"
+              />
             </div>
 
             {/* Right Content - Hero Image */}
@@ -302,62 +305,7 @@ function MillionairePage() {
 
         {/* Game Component Container */}
         <div className="relative">
-          {/* Decorative Border */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-yellow-600/30 via-amber-600/30 to-orange-600/30 rounded-3xl blur-xl" />
-
-          {/* Main Container */}
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border-2 border-yellow-500/30 bg-[#1e2b4f]/80 p-6 shadow-2xl backdrop-blur-sm md:p-8">
-            {/* Header */}
-            <div className="relative mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b-2 border-yellow-500/30 pb-4">
-              <div className="flex items-center gap-4">
-                {/* Icon with Glow */}
-                <div className="relative">
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-yellow-500/50 blur" />
-                  <div className="relative flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-yellow-600 to-amber-600 shadow-2xl border-2 border-white/30">
-                    <GiMoneyStack className="text-3xl text-white" />
-                  </div>
-                </div>
-
-                {/* Title */}
-                <div>
-                  <h2 className="text-2xl font-black text-white tracking-wider flex items-center gap-2">
-                    Kim millioner bo'lishni xohlaydi?
-                    <span className="text-sm font-normal text-yellow-500/70">v1.0</span>
-                  </h2>
-                  <p className="flex items-center gap-2 text-sm text-blue-300">
-                    <RiSwordFill className="text-yellow-500" />
-                    3-5 o'yinchi · 15 pog'ona · 4 qiyinlik
-                  </p>
-                </div>
-              </div>
-
-              {/* Badges */}
-              <div className="flex gap-2">
-                <div className="flex items-center gap-2 rounded-full bg-yellow-500/20 px-4 py-2 border-2 border-yellow-500/30">
-                  <FaMoneyBillWave className="text-yellow-400 text-sm" />
-                  <span className="text-xs font-bold text-white">15 000 000 so'm</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-yellow-500/20 px-4 py-2 border-2 border-yellow-500/30">
-                  <FaCrown className="text-yellow-400 text-sm" />
-                  <span className="text-xs font-bold text-white">Safe 5,10,15</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Game Component */}
-            <div className="relative">
-              <GamePageCta
-                to="/games/millionaire/play"
-                title="Millionaire alohida play sahifada"
-                description="Millionaire savollarini boshlash uchun endi alohida route bor."
-                icon={GiMoneyStack}
-                colorClassName="from-yellow-500 to-orange-500"
-              />
-              <div className="mt-6">
-                <GameFeedbackPanel gameKey="millionaire" />
-              </div>
-            </div>
-          </div>
+         <GameFeedbackPanel gameKey="millionaire" />
         </div>
 
         {/* Footer */}
@@ -380,3 +328,6 @@ function MillionairePage() {
 }
 
 export default MillionairePage;
+
+
+

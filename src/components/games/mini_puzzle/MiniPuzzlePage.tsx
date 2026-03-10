@@ -1,7 +1,6 @@
 import {
   FaUsers,
   FaTrophy,
-  FaClock,
   FaStar,
   FaCrown,
   FaImage,
@@ -17,7 +16,7 @@ import {
 import { MdTimer } from "react-icons/md";
 import { RiTeamFill } from "react-icons/ri";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
-import GamePageCta from "../shared/GamePageCta";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
 
 function MiniPuzzlePage() {
     // const img = "https://media.istockphoto.com/id/2249204910/photo/jigsaw-puzzle-pieces-colorful-background-with-small-puzzle-pieces-messy-some-colored-pieces.jpg?s=612x612&w=0&k=20&c=r43dtrUR7kvYbZHLZa6OVcbETVnFLOVhayJWwMwLUUc=";
@@ -213,6 +212,11 @@ function MiniPuzzlePage() {
                   </div>
                 ))}
               </div>
+            <GamePagePlayButton
+                to="/games/mini-puzzle/play"
+                colorClassName="from-pink-500 to-rose-500"
+                className="pt-2"
+              />
             </div>
 
             {/* Right Content - Puzzle Preview */}
@@ -324,58 +328,7 @@ function MiniPuzzlePage() {
 
         {/* Game Component Container */}
         <div className="relative">
-          {/* Decorative Border */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-pink-600/30 via-rose-600/30 to-pink-600/30 rounded-3xl blur-xl" />
-
-          {/* Main Container */}
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border border-pink-500/30 bg-gradient-to-br from-pink-900/40 via-rose-900/40 to-pink-900/40 p-6 backdrop-blur-xl shadow-2xl md:p-8">
-            {/* Header */}
-            <div className="relative mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-pink-500/30 pb-4">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-pink-500/50 blur" />
-                  <div className="relative flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 shadow-2xl border-2 border-pink-400/30">
-                    <GiJigsawPiece className="text-3xl text-white" />
-                  </div>
-                </div>
-
-                <div>
-                  <h2 className="text-2xl font-black text-white tracking-wider">
-                    Rasmni Yig'
-                  </h2>
-                  <p className="flex items-center gap-2 text-sm text-pink-200/80">
-                    <RiTeamFill className="text-pink-400" />
-                    Mini Puzzle · 2 jamoa
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <div className="flex items-center gap-2 rounded-full bg-pink-900/50 px-4 py-2 border border-pink-500/30 backdrop-blur-sm">
-                  <FaPuzzlePiece className="text-pink-400 text-sm" />
-                  <span className="text-xs font-bold text-white">4-9 bo'lak</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-pink-900/50 px-4 py-2 border border-pink-500/30 backdrop-blur-sm">
-                  <FaClock className="text-rose-400 text-sm" />
-                  <span className="text-xs font-bold text-white">60 soniya</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Game Component */}
-            <div className="relative">
-              <GamePageCta
-                to="/games/mini-puzzle/play"
-                title="Mini Puzzle alohida play sahifada"
-                description="Mini puzzle'larni o'ynash uchun endi qulay alohida sahifa mavjud."
-                icon={GiJigsawPiece}
-                colorClassName="from-green-500 to-lime-500"
-              />
-              <div className="mt-6">
-                <GameFeedbackPanel gameKey="mini-puzzle" />
-              </div>
-            </div>
-          </div>
+           <GameFeedbackPanel gameKey="mini-puzzle" />
         </div>
 
         {/* Footer */}
@@ -413,3 +366,6 @@ function MiniPuzzlePage() {
 }
 
 export default MiniPuzzlePage;
+
+
+

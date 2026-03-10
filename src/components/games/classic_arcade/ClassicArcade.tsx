@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { 
-  FaPlay, FaPlus, FaRedo, FaTrash, FaTrophy, FaForward, FaBackward, FaCrown, FaEdit
+import {
+  FaPlay, FaPlus, FaRedo, FaTrash, FaTrophy, FaForward, FaBackward, FaCrown, FaEdit, FaRobot
 } from "react-icons/fa";
 import { 
   GiBrain, GiPuzzle, GiAchievement, GiLightBulb, GiShield, GiSwordman 
@@ -8,6 +8,7 @@ import {
 import { 
   MdSkipNext, } from "react-icons/md";
 import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
+import { generateClassicArcadeChallenges } from "./ai";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
 
@@ -31,6 +32,13 @@ const SKIP_PENALTY = 25;
 const SHAPES = ["🔵", "🟢", "🟡", "🔴", "🟣", "🟠", "⚪", "⬛"];
 const EMPTY_DRAFT: Draft = { prompt: "", options: ["", "", "", ""], correctIndex: 0, reason: "" };
 const CLASSIC_ARCADE_GAME_KEY = "classic_arcade";
+const AI_CHALLENGE_COUNT_OPTIONS = [1, 3, 5, 8, 10, 15] as const;
+const AI_DIFFICULTY_OPTIONS = [
+  { value: "easy", label: "Oson" },
+  { value: "medium", label: "O'rta" },
+  { value: "hard", label: "Qiyin" },
+  { value: "mixed", label: "Aralash" },
+] as const;
 const BUILTIN_ODD: OddRound[] = [
   { prompt: "Qaysi biri meva emas?", options: ["Olma", "Nok", "Uzum", "Mashina"], correctIndex: 3, reason: "Mashina meva emas." },
   { prompt: "Qaysi biri toq son?", options: ["2", "4", "6", "9"], correctIndex: 3, reason: "9 toq son." },
@@ -63,6 +71,10 @@ export default function ClassicArcade() {
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [teacherRounds, setTeacherRounds] = useState<OddRound[]>([]);
   const [teacherError, setTeacherError] = useState("");
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiChallengeCount, setAiChallengeCount] = useState<number>(5);
+  const [aiDifficulty, setAiDifficulty] = useState<"easy" | "medium" | "hard" | "mixed">("medium");
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [editingTeacherRoundIndex, setEditingTeacherRoundIndex] = useState<number | null>(null);
   const [remoteLoaded, setRemoteLoaded] = useState(false);
   const [sessionLeft, setSessionLeft] = useState(SESSION_SECONDS);
@@ -90,6 +102,7 @@ export default function ClassicArcade() {
   const winner = useMemo(() => (scores[0] === scores[1] ? null : scores[0] > scores[1] ? 0 : 1), [scores]);
   const roundsLeft = useMemo(() => Math.max(0, TOTAL_ROUNDS - roundsDone), [roundsDone]);
   const teams: TeamId[] = [0, 1];
+  const hasGeminiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY?.trim());
 
   useEffect(() => { if (!toast) return; const t = window.setTimeout(() => setToast(null), 1400); return () => window.clearTimeout(t); }, [toast]);
   useEffect(() => {
@@ -190,6 +203,27 @@ export default function ClassicArcade() {
     setTeacherRounds((p) => p.filter((_, itemIdx) => itemIdx !== idx));
   };
 
+  const generateAiChallenges = async () => {
+    if (isGeneratingAi) return;
+    setTeacherError("");
+    setIsGeneratingAi(true);
+
+    try {
+      const generated = await generateClassicArcadeChallenges({
+        topic: aiTopic,
+        count: aiChallengeCount,
+        difficulty: aiDifficulty,
+      });
+      setTeacherRounds((prev) => [...prev, ...generated]);
+      setToast(`${generated.length} ta AI challenge qo'shildi`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "AI challenge yaratib bo'lmadi.";
+      setTeacherError(message);
+    } finally {
+      setIsGeneratingAi(false);
+    }
+  };
+
   const startGame = () => {
     const a = teamNames[0].trim(); const b = teamNames[1].trim();
     if (!a || !b) return setNameError("Ikkala guruh nomini kiriting.");
@@ -259,6 +293,58 @@ export default function ClassicArcade() {
               </h3>
               
               <div className="relative space-y-4">
+                <div className="rounded-2xl border border-cyan-500/30 bg-cyan-950/20 p-4">
+                  <div className="mb-3 flex items-center gap-2 text-cyan-300">
+                    <FaRobot />
+                    <p className="text-sm font-bold">AI CHALLENGE GENERATSIYASI</p>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <input
+                      value={aiTopic}
+                      onChange={(e) => setAiTopic(e.target.value)}
+                      className="w-full rounded-xl border border-cyan-500/30 bg-slate-950/70 px-4 py-3 text-white placeholder-cyan-300/40 focus:border-cyan-400 focus:outline-none"
+                      placeholder="Mavzu: matematika, tarix, ingliz tili..."
+                    />
+                    <select
+                      value={aiChallengeCount}
+                      onChange={(e) => setAiChallengeCount(Number(e.target.value))}
+                      className="w-full rounded-xl border border-cyan-500/30 bg-slate-950/70 px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
+                    >
+                      {AI_CHALLENGE_COUNT_OPTIONS.map((count) => (
+                        <option key={count} value={count} className="bg-slate-950">
+                          {count} ta challenge
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={aiDifficulty}
+                      onChange={(e) => setAiDifficulty(e.target.value as "easy" | "medium" | "hard" | "mixed")}
+                      className="w-full rounded-xl border border-cyan-500/30 bg-slate-950/70 px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
+                    >
+                      {AI_DIFFICULTY_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value} className="bg-slate-950">
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => void generateAiChallenges()}
+                      disabled={!hasGeminiKey || isGeneratingAi}
+                      className="w-full rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-3 font-bold text-white transition-all hover:from-cyan-400 hover:to-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isGeneratingAi ? `${aiChallengeCount} ta yaratilmoqda...` : `AI bilan ${aiChallengeCount} ta qo'shish`}
+                    </button>
+                  </div>
+                  <p className="mt-3 text-xs text-cyan-100/70">
+                    AI challenge'lar mavjud ro'yxatga qo'shiladi. "Aralash" tanlansa oson, o'rta va qiyin challenge'lar aralashtiriladi.
+                  </p>
+                  {!hasGeminiKey && (
+                    <p className="mt-2 text-xs text-amber-300">
+                      AI ishlashi uchun `.env` ichida `VITE_GEMINI_API_KEY` bo'lishi kerak.
+                    </p>
+                  )}
+                </div>
+
                 <input
                   value={draft.prompt}
                   onChange={(e) => setDraft((p) => ({ ...p, prompt: e.target.value }))}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   FaCheck,
   FaRobot,
@@ -7,6 +7,7 @@ import {
   FaRedo,
   FaTimes,
   FaTrash,
+  FaEdit,
   FaCrown,
   FaDice,
   FaStar,
@@ -15,6 +16,7 @@ import {
 } from "react-icons/fa";
 import { GiSwapBag } from "react-icons/gi";
 import Confetti from "react-confetti-boom";
+import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
 import { generateBaamboozleQuestions } from "./ai";
 import { DEFAULT_QUESTION_BANK } from "./data";
 
@@ -45,6 +47,7 @@ type Team = {
 };
 
 const STEAL_AMOUNTS = [5, 10, 15];
+const BAAMBOOZLE_GAME_KEY = "baamboozle";
 const AI_QUESTION_COUNT_OPTIONS = [4, 8, 12, 16, 24] as const;
 const AI_DIFFICULTY_OPTIONS = [
   { value: "easy", label: "Oson" },
@@ -112,19 +115,23 @@ interface BaamboozleProps {
   initialQuestions?: QuestionBankItem[];
 }
 
-const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions = [] }) => {
+const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
+  const skipInitialRemoteSaveRef = useRef(true);
+  const initialQuestionsRef = useRef<QuestionBankItem[]>(initialQuestions ?? []);
   const [phase, setPhase] = useState<Phase>("setup");
   const [boardSize, setBoardSize] = useState<16 | 24>(16);
   const [teamCount, setTeamCount] = useState<2 | 3>(2);
   const [teamInputs, setTeamInputs] = useState(["Jamoa 1", "Jamoa 2", "Jamoa 3"]);
 
-  const [questionBank, setQuestionBank] = useState<QuestionBankItem[]>(initialQuestions);
+  const [questionBank, setQuestionBank] = useState<QuestionBankItem[]>(initialQuestionsRef.current);
   const [draft, setDraft] = useState<QuestionBankItem>({ question: "", answer: "" });
   const [questionError, setQuestionError] = useState("");
+  const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
   const [aiSubject, setAiSubject] = useState("");
   const [aiQuestionCount, setAiQuestionCount] = useState<number>(8);
   const [aiDifficulty, setAiDifficulty] = useState<"easy" | "medium" | "hard" | "mixed">("medium");
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [remoteLoaded, setRemoteLoaded] = useState(false);
 
   const [teams, setTeams] = useState<Team[]>([]);
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
@@ -155,12 +162,54 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions = [] }) => {
     }
   }, [gameFinished]);
 
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const remoteQuestions = await fetchGameQuestions<QuestionBankItem>(BAAMBOOZLE_GAME_KEY);
+      if (!alive) return;
+      if (remoteQuestions && remoteQuestions.length > 0) {
+        setQuestionBank(remoteQuestions);
+      } else if (initialQuestionsRef.current.length > 0) {
+        setQuestionBank(initialQuestionsRef.current);
+      }
+      setRemoteLoaded(true);
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!remoteLoaded) return;
+    if (skipInitialRemoteSaveRef.current) {
+      skipInitialRemoteSaveRef.current = false;
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      void saveGameQuestions<QuestionBankItem>(BAAMBOOZLE_GAME_KEY, questionBank);
+    }, 500);
+
+    return () => window.clearTimeout(timer);
+  }, [questionBank, remoteLoaded]);
+
   const addQuestion = () => {
     const question = draft.question.trim();
     const answer = draft.answer.trim();
 
     if (!question || !answer) {
       setQuestionError("Savol va javobni to'liq kiriting.");
+      return;
+    }
+
+    if (editingQuestionIndex !== null) {
+      setQuestionBank((prev) =>
+        prev.map((item, index) => (index === editingQuestionIndex ? { question, answer } : item)),
+      );
+      setDraft({ question: "", answer: "" });
+      setEditingQuestionIndex(null);
+      setQuestionError("");
       return;
     }
 
@@ -182,6 +231,7 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions = [] }) => {
       });
       setQuestionBank(generated);
       setDraft({ question: "", answer: "" });
+      setEditingQuestionIndex(null);
     } catch (error) {
       const message = error instanceof Error ? error.message : "AI savollar yaratib bo'lmadi.";
       setQuestionError(message);
@@ -191,7 +241,23 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions = [] }) => {
   };
 
   const removeQuestion = (index: number) => {
+    setEditingQuestionIndex((prev) => {
+      if (prev === null) return prev;
+      if (prev === index) {
+        setDraft({ question: "", answer: "" });
+        return null;
+      }
+      return prev > index ? prev - 1 : prev;
+    });
     setQuestionBank((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const editQuestion = (index: number) => {
+    const item = questionBank[index];
+    if (!item) return;
+    setEditingQuestionIndex(index);
+    setDraft({ question: item.question, answer: item.answer });
+    setQuestionError("");
   };
 
   const openGame = () => {
@@ -529,8 +595,22 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions = [] }) => {
                   onClick={addQuestion}
                   className="w-full py-3 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold hover:from-yellow-400 hover:to-orange-400 transition-all flex items-center justify-center gap-2"
                 >
-                  <FaPlus /> SAVOL QO'SHISH
+                  {editingQuestionIndex !== null ? <FaEdit /> : <FaPlus />}
+                  {editingQuestionIndex !== null ? "SAVOLNI SAQLASH" : "SAVOL QO'SHISH"}
                 </button>
+
+                {editingQuestionIndex !== null && (
+                  <button
+                    onClick={() => {
+                      setEditingQuestionIndex(null);
+                      setDraft({ question: "", answer: "" });
+                      setQuestionError("");
+                    }}
+                    className="w-full py-3 rounded-xl border border-yellow-500/30 bg-yellow-950/50 text-yellow-300 font-bold hover:bg-yellow-900/50 transition-all"
+                  >
+                    BEKOR QILISH
+                  </button>
+                )}
 
                 {questionError && (
                   <div className="p-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-300 text-sm">
@@ -549,12 +629,20 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions = [] }) => {
                           <p className="text-sm font-bold text-white line-clamp-2">{item.question}</p>
                           <p className="text-xs text-yellow-300/70 mt-1">{item.answer}</p>
                         </div>
-                        <button
-                          onClick={() => removeQuestion(idx)}
-                          className="text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity ml-2"
-                        >
-                          <FaTrash />
-                        </button>
+                        <div className="ml-2 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                          <button
+                            onClick={() => editQuestion(idx)}
+                            className="text-cyan-300"
+                          >
+                            <FaEdit />
+                          </button>
+                          <button
+                            onClick={() => removeQuestion(idx)}
+                            className="text-rose-400"
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}

@@ -1,7 +1,6 @@
 import {
   FaUsers,
   FaTrophy,
-  FaClock,
   FaCrown,
   FaBrain,
 } from "react-icons/fa";
@@ -15,7 +14,7 @@ import {
 import { MdTimer } from "react-icons/md";
 import { RiTeamFill } from "react-icons/ri";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
-import GamePageCta from "../shared/GamePageCta";
+import GamePagePlayButton from "../shared/GamePagePlayButton";
 
 function ReverseThinkingPage() {
   const gameStats = [
@@ -187,6 +186,11 @@ function ReverseThinkingPage() {
                   </div>
                 ))}
               </div>
+            <GamePagePlayButton
+                to="/games/reverse-thinking/play"
+                colorClassName="from-green-500 to-emerald-500"
+                className="pt-2"
+              />
             </div>
 
             {/* Right Content - Preview */}
@@ -285,58 +289,7 @@ function ReverseThinkingPage() {
 
         {/* Game Component Container */}
         <div className="relative">
-          {/* Decorative Border */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-green-600/30 via-emerald-600/30 to-green-600/30 rounded-3xl blur-xl" />
-
-          {/* Main Container */}
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border border-green-500/30 bg-gradient-to-br from-green-900/40 via-emerald-900/40 to-green-900/40 p-6 backdrop-blur-xl shadow-2xl md:p-8">
-            {/* Header */}
-            <div className="relative mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-green-500/30 pb-4">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="absolute -inset-1 animate-pulse rounded-xl bg-green-500/50 blur" />
-                  <div className="relative flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 shadow-2xl border-2 border-green-400/30">
-                    <GiBrain className="text-3xl text-white" />
-                  </div>
-                </div>
-
-                <div>
-                  <h2 className="text-2xl font-black text-white tracking-wider">
-                    Teskari Fikr
-                  </h2>
-                  <p className="flex items-center gap-2 text-sm text-green-200/80">
-                    <RiTeamFill className="text-green-400" />
-                    Mantiqiy tuzoqlar · 2 jamoa
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <div className="flex items-center gap-2 rounded-full bg-green-900/50 px-4 py-2 border border-green-500/30 backdrop-blur-sm">
-                  <FaClock className="text-green-400 text-sm" />
-                  <span className="text-xs font-bold text-white">30 soniya</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-green-900/50 px-4 py-2 border border-green-500/30 backdrop-blur-sm">
-                  <FaBrain className="text-emerald-400 text-sm" />
-                  <span className="text-xs font-bold text-white">4 level</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Game Component */}
-            <div className="relative">
-            <GamePageCta
-              to="/games/reverse-thinking/play"
-              title="Reverse Thinking alohida play sahifada"
-              description="Teskari fikrlash bellashuvi endi maxsus o'yin sahifasida ochiladi."
-              icon={GiLightBulb}
-              colorClassName="from-pink-500 to-red-500"
-            />
-            <div className="mt-6">
-              <GameFeedbackPanel gameKey="reverse-thinking" />
-            </div>
-            </div>
-          </div>
+          <GameFeedbackPanel gameKey="reverse-thinking" />
         </div>
 
         {/* Footer */}
@@ -374,3 +327,6 @@ function ReverseThinkingPage() {
 }
 
 export default ReverseThinkingPage;
+
+
+
