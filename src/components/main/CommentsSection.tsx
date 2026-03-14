@@ -5,13 +5,11 @@ import {
   FaRegHeart, 
   FaRegSmile,
   FaGraduationCap,
-  FaRegCommentDots,
   FaChevronLeft,
   FaChevronRight
 } from "react-icons/fa";
 import { GiCherry, GiFlowerTwirl, GiCrown } from "react-icons/gi";
 import { HiSparkles } from "react-icons/hi";
-import { MdAutoAwesome } from "react-icons/md";
 
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation, EffectCoverflow } from 'swiper/modules';
@@ -33,6 +31,7 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
   };
 
   const totalComments = comments.length;
+  const shouldLoop = comments.length > 3;
 
   return (
     <section className={`relative overflow-hidden py-16 lg:py-24 ${
@@ -111,18 +110,27 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
         </div>
 
         {/* Swiper Carousel - Soft & Smooth */}
-        <div className="relative px-4 md:px-10" data-aos="fade-up" data-aos-delay="140">
+        <div className="relative px-4 md:px-10">
           <Swiper
             onSwiper={setSwiperRef}
             modules={[Autoplay, Pagination, Navigation, EffectCoverflow]}
             spaceBetween={24}
             slidesPerView={1}
             centeredSlides={false}
-            loop={true}
+            loop={shouldLoop}
+            loopAdditionalSlides={comments.length}
+            loopedSlides={comments.length}
+            watchSlidesProgress
+            observer
+            observeParents
+            slidesPerGroup={1}
+            speed={650}
             autoplay={{
               delay: 5000,
               disableOnInteraction: false,
-              pauseOnMouseEnter: true,
+              pauseOnMouseEnter: false,
+              stopOnLastSlide: false,
+              waitForTransition: false,
             }}
             pagination={{
               clickable: true,
@@ -137,22 +145,17 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
               640: { slidesPerView: 2, spaceBetween: 20 },
               1024: { slidesPerView: 3, spaceBetween: 24 },
             }}
-            className="!overflow-visible !pb-12"
+            className="comments-swiper !overflow-visible !pb-12"
           >
             {comments.map((item, index) => (
               <SwiperSlide key={item.id} className="!h-auto">
-                {({ isActive }) => (
                   <article
                     data-aos="fade-up"
                     data-aos-delay={120 + (index % 3) * 80}
-                    className={`group relative h-full transition-all duration-700 ${
-                      isActive ? 'scale-100 opacity-100' : 'scale-95 opacity-70'
-                    }`}
+                    className="group relative h-full"
                   >
                     {/* Soft glow on active */}
-                    <div className={`absolute -inset-0.5 rounded-3xl bg-gradient-to-r ${item.color} opacity-0 blur-lg transition-opacity duration-700 ${
-                      isActive ? 'opacity-20' : ''
-                    }`} />
+                    <div className={`absolute -inset-0.5 rounded-3xl bg-gradient-to-r ${item.color} opacity-10 blur-lg`} />
                     
                     {/* Main Card - Very soft */}
                     <div className={`relative h-full rounded-3xl border ${isDark ? "border-[#2b3146] bg-[#1a1a28]/88" : `border-white/60 ${item.bgColor} bg-white/40`} backdrop-blur-sm p-6 shadow-[0_8px_30px_rgba(0,0,0,0.02)] transition-all duration-500 hover:shadow-[0_15px_40px_rgba(224,124,142,0.08)]`}>
@@ -236,7 +239,6 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
                       </div>
                     </div>
                   </article>
-                )}
               </SwiperSlide>
             ))}
           </Swiper>
@@ -250,26 +252,18 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
             <FaChevronRight className={`text-xs ${isDark ? "text-[#f1f1f1]" : "text-[#a66466]"}`} />
           </button>
         </div>
-
-        {/* Bottom CTA - Minimal */}
-        <div className="text-center mt-12" data-aos="zoom-in-up" data-aos-delay="200">
-          <button
-            onClick={() => window.location.href = '/comments'}
-            className={`group inline-flex items-center gap-2 rounded-full backdrop-blur-sm border px-6 py-3 text-sm font-medium shadow-sm transition-all duration-300 hover:shadow-md ${
-              isDark
-                ? "border-[#2b3146] bg-[#1e1e2f] text-[#f1f1f1] hover:bg-[#25253a]"
-                : "border-white/60 bg-white/80 text-[#7b4f53] hover:bg-white"
-            }`}
-          >
-            <MdAutoAwesome className="text-[#e07c8e] text-base" />
-            <span>Barcha izohlar</span>
-            <FaRegCommentDots className="text-[#a66466] text-xs opacity-60" />
-          </button>
-        </div>
       </div>
 
       {/* Custom Swiper Styles */}
       <style>{`
+        .comments-swiper .swiper-wrapper {
+          align-items: stretch;
+        }
+
+        .comments-swiper .swiper-slide {
+          height: auto;
+        }
+
         .swiper-pagination {
           bottom: 0 !important;
         }

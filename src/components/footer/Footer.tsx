@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  FaArrowRight,
   FaBookOpen,
   FaCalendarAlt,
   FaEnvelope,
@@ -18,18 +17,7 @@ import { GiCherry, GiFlowerTwirl, GiTwirlyFlower } from "react-icons/gi";
 import { HiSparkles } from "react-icons/hi";
 
 function Footer({ isDark = false }: { isDark?: boolean }) {
-  const [email, setEmail] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [hoveredSocial, setHoveredSocial] = useState<string | null>(null);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) {
-      setIsSubmitted(true);
-      setEmail("");
-      setTimeout(() => setIsSubmitted(false), 3000);
-    }
-  };
 
   const quickLinks = [
     { label: "Bosh sahifa", href: "/", icon: FaBookOpen },
@@ -107,40 +95,6 @@ function Footer({ isDark = false }: { isDark?: boolean }) {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="relative max-w-md">
-              <div className="relative flex items-center">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Elektron pochtangiz"
-                  className={`h-12 w-full rounded-full border pl-5 pr-24 text-sm backdrop-blur-sm transition-all focus:outline-none ${
-                    isDark
-                      ? "border-[#2b3146] bg-[#1e1e2f] text-[#f1f1f1] placeholder:text-[#a1a1aa]/50 focus:border-[#ff6b8a]"
-                      : "border-[#f0d9d6] bg-white/80 text-[#7b4f53] placeholder:text-[#b38b8d]/50 focus:border-[#e07c8e]"
-                  }`}
-                  required
-                />
-                <button
-                  type="submit"
-                  className="absolute right-1.5 flex h-9 items-center gap-1 rounded-full bg-gradient-to-r from-[#ff6b8a] to-[#ff4f74] px-4 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
-                >
-                  <span>Obuna</span>
-                  <FaArrowRight className="text-xs" />
-                </button>
-              </div>
-
-              {isSubmitted && (
-                <div className="absolute -bottom-8 left-0 rounded-full bg-emerald-50 px-3 py-1 text-xs text-emerald-600">
-                  Muvaffaqiyatli obuna bo'ldingiz
-                </div>
-              )}
-
-              <p className={`mt-3 text-[10px] ${isDark ? "text-[#a1a1aa]" : "text-[#b38b8d]"}`}>
-                Yangiliklar va maxsus takliflar haqida xabardor bo'ling
-              </p>
-            </form>
-
             <div className="flex items-center gap-4 pt-3">
               {[
                 { value: "50+", label: "O'yinlar", icon: FaGamepad },
@@ -204,24 +158,6 @@ function Footer({ isDark = false }: { isDark?: boolean }) {
                   </li>
                 ))}
               </ul>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className={`flex items-center gap-2 text-sm font-bold uppercase tracking-wider ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
-                <span className="h-px w-6 bg-gradient-to-r from-[#ff6b8a] to-transparent" />
-                Bog'lanish
-              </h3>
-              <div className="space-y-3">
-                <p className={`text-xs ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>Toshkent, O'zbekiston</p>
-                <p className={`text-xs ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>+998 90 123 45 67</p>
-                <p className={`text-xs ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>info@bilim.uz</p>
-
-                <div className="pt-2">
-                  <p className={`text-[10px] font-medium ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>Ish vaqti:</p>
-                  <p className={`text-[9px] ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>Dushanba - Juma: 9:00 - 18:00</p>
-                  <p className={`text-[9px] ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>Shanba: 10:00 - 15:00</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FaBars,
   FaChevronRight,
@@ -26,6 +26,15 @@ type HeaderProps = {
   onThemeToggle?: () => void;
 };
 
+function getUserDisplayName(username?: string | null) {
+  const value = username?.trim();
+  return value || "User";
+}
+
+function getUserInitial(username?: string | null) {
+  return getUserDisplayName(username).charAt(0).toUpperCase();
+}
+
 function Header({
   active,
   isDark = false,
@@ -41,8 +50,16 @@ function Header({
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isUserPanelOpen, setIsUserPanelOpen] = useState(false);
+  const [hasAvatarError, setHasAvatarError] = useState(false);
 
   const canOpenTeacherPanel = hasAnyRole(user, ["teacher", "admin"]);
+  const userDisplayName = getUserDisplayName(user?.username);
+  const userInitial = getUserInitial(user?.username);
+  const userAvatarUrl = user?.avatar ? toMediaUrl(user.avatar) : "";
+
+  useEffect(() => {
+    setHasAvatarError(false);
+  }, [userAvatarUrl]);
 
   const navItems = [
     {
@@ -215,15 +232,16 @@ function Header({
                 <div className="relative">
                   <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#f7ebe0] via-[#ed97a0] to-[#e07c8e] opacity-60 blur-sm" />
                   <div className={`relative h-11 w-11 overflow-hidden rounded-full border-2 shadow ${isDark ? "border-[#1e1e2f] bg-[#ff6b8a]" : "border-white bg-[#e07c8e]"}`}>
-                    {user.avatar ? (
+                    {userAvatarUrl && !hasAvatarError ? (
                       <img
-                        src={toMediaUrl(user.avatar)}
-                        alt={user.username}
+                        src={userAvatarUrl}
+                        alt={userDisplayName}
                         className="h-full w-full object-cover"
+                        onError={() => setHasAvatarError(true)}
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-sm font-black text-white">
-                        {user.username?.charAt(0).toUpperCase() || "U"}
+                        {userInitial}
                       </div>
                     )}
                   </div>
@@ -232,7 +250,7 @@ function Header({
 
                 <div className="min-w-[148px]">
                   <p className={`truncate text-sm font-extrabold ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
-                    {user.username}
+                    {userDisplayName}
                   </p>
                   <p className={`text-[10px] font-bold uppercase tracking-[0.18em] ${isDark ? "text-[#a1a1aa]" : "text-[#d98a95]"}`}>
                     {user.roles?.[0] || "student"}
@@ -404,15 +422,16 @@ function Header({
                   <div className="relative">
                     <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#ff8ca6] to-[#ff4f74] opacity-60 blur-sm" />
                     <div className={`relative h-16 w-16 overflow-hidden rounded-full border-2 ${isDark ? "border-[#1e1e2f]" : "border-white"}`}>
-                      {user.avatar ? (
+                      {userAvatarUrl && !hasAvatarError ? (
                         <img
-                          src={toMediaUrl(user.avatar)}
-                          alt={user.username}
+                          src={userAvatarUrl}
+                          alt={userDisplayName}
                           className="h-full w-full object-cover"
+                          onError={() => setHasAvatarError(true)}
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-[#ff6b8a] text-lg font-black text-white">
-                          {user.username?.charAt(0).toUpperCase() || "U"}
+                          {userInitial}
                         </div>
                       )}
                     </div>
@@ -421,7 +440,7 @@ function Header({
 
                   <div className="min-w-0">
                     <p className={`truncate text-lg font-black ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
-                      {user.username}
+                      {userDisplayName}
                     </p>
                     <p className={`mt-1 text-[11px] font-bold uppercase tracking-[0.22em] ${isDark ? "text-[#a1a1aa]" : "text-[#d98a95]"}`}>
                       {user.roles?.[0] || "student"}

@@ -56,6 +56,7 @@ function Profile() {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [hasAvatarError, setHasAvatarError] = useState(false);
 
   const { 
     register, 
@@ -81,6 +82,12 @@ function Profile() {
   }, [user, dispatch, reset]);
 
   const avatarSrc = useMemo(() => toMediaUrl(user?.avatar), [user?.avatar]);
+  const userDisplayName = user?.username?.trim() || "Foydalanuvchi";
+  const userInitial = userDisplayName.charAt(0).toUpperCase();
+
+  useEffect(() => {
+    setHasAvatarError(false);
+  }, [avatarSrc]);
 
   const handleSave = async (data: ProfileForm) => {
     setSuccess("");
@@ -223,11 +230,18 @@ function Profile() {
                   <div className="relative group mb-4">
                     <div className="absolute -inset-2 bg-gradient-to-r from-[#e07c8e] to-[#a66466] rounded-full opacity-0 group-hover:opacity-30 blur-lg transition-opacity" />
                     
-                    <img
-                      src={avatarSrc || "https://ui-avatars.com/api/?name=User&background=fceae8&color=e07c8e&size=128"}
-                      alt={user.username || "Foydalanuvchi"}
-                      className="relative h-28 w-28 rounded-full border-4 border-white object-cover shadow-lg"
-                    />
+                    {avatarSrc && !hasAvatarError ? (
+                      <img
+                        src={avatarSrc}
+                        alt={userDisplayName}
+                        className="relative h-28 w-28 rounded-full border-4 border-white object-cover shadow-lg"
+                        onError={() => setHasAvatarError(true)}
+                      />
+                    ) : (
+                      <div className="relative flex h-28 w-28 items-center justify-center rounded-full border-4 border-white bg-gradient-to-br from-[#fceae8] via-[#f4cdd1] to-[#e07c8e] text-4xl font-semibold text-[#7b4f53] shadow-lg">
+                        {userInitial}
+                      </div>
+                    )}
                     
                     <label className="absolute bottom-2 right-2 cursor-pointer">
                       <div className="relative">
@@ -253,7 +267,7 @@ function Profile() {
                   {/* User Info */}
                   <div className="mb-4">
                     <h1 className="text-2xl font-medium text-[#7b4f53] mb-1">
-                      {user.username || "Ismsiz foydalanuvchi"}
+                      {userDisplayName}
                     </h1>
                     <div className="flex items-center justify-center gap-1 text-sm text-[#8f6d70]">
                       <FiMail className="text-[#e07c8e] text-xs" />

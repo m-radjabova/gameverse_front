@@ -25,6 +25,8 @@ import { fetchGameQuestions, saveGameQuestions } from "../../apiClient/gameQuest
 import { GiCherry, GiFlowerTwirl, GiPlanetCore } from "react-icons/gi";
 import { HiSparkles } from "react-icons/hi";
 import { MdAutoAwesome } from "react-icons/md";
+import { generateTeacherPanelQuestions, type SupportedTeacherGameKey } from "./teacherQuestionPanelAi";
+import type { GameDifficulty } from "../../apiClient/gemini";
 
 type GameRegistryItem = {
   gameKey: string;
@@ -205,6 +207,8 @@ const SUBJECT_OPTIONS = [
   "Kimyo",
   "Aralash fanlar",
 ];
+
+const AI_COUNT_OPTIONS = [1, 3, 5, 10, 15, 20] as const;
 
 function SelectField({
   label,
@@ -790,12 +794,16 @@ export default function TeacherQuestionPanel() {
   const [questionsByGame, setQuestionsByGame] = useState<Record<string, unknown[]>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [search, setSearch] = useState("");
   const [activeGameKey, setActiveGameKey] = useState(GAME_REGISTRY[0]?.gameKey ?? "");
   const [draftValue, setDraftValue] = useState<unknown>(GAME_REGISTRY[0]?.template ?? {});
   const [editorError, setEditorError] = useState("");
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [showExtraFields, setShowExtraFields] = useState(false);
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiCount, setAiCount] = useState<(typeof AI_COUNT_OPTIONS)[number]>(5);
+  const [aiDifficulty, setAiDifficulty] = useState<GameDifficulty>("mixed");
 
   const activeGame = GAME_REGISTRY.find((game) => game.gameKey === activeGameKey) ?? GAME_REGISTRY[0];
   const activeItems = questionsByGame[activeGame?.gameKey ?? ""] ?? [];
@@ -893,6 +901,32 @@ export default function TeacherQuestionPanel() {
     }
   }
 
+  async function handleGenerateAi() {
+    if (!activeGame) return;
+
+    try {
+      setIsGeneratingAi(true);
+      setEditorError("");
+      const generated = await generateTeacherPanelQuestions({
+        gameKey: activeGame.gameKey as SupportedTeacherGameKey,
+        topic: aiTopic,
+        count: aiCount,
+        difficulty: aiDifficulty,
+      });
+
+      const nextItems = [...generated.map((item) => withIdFallback(item)), ...activeItems];
+      const ok = await persistGameItems(activeGame.gameKey, nextItems);
+      if (!ok) return;
+
+      setSelectedIndex(null);
+      setDraftValue(withIdFallback(generated[0] ?? activeGame.template));
+    } catch (error) {
+      setEditorError(error instanceof Error ? error.message : "AI savol yaratishda xato bo'ldi.");
+    } finally {
+      setIsGeneratingAi(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#fff9f8] via-[#fff1f0] to-[#fae6df] px-4 py-8 sm:px-6 lg:px-8">
       
@@ -918,10 +952,8 @@ export default function TeacherQuestionPanel() {
                 </span>
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-light leading-tight">
-                <span className="text-[#7b4f53]">Savollar</span>
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#e07c8e] to-[#a66466] font-medium">
-                  Markazi
-                </span>
+                <span className="text-[#7b4f53]">Savollar Markazi</span>
+                
               </h1>
               <p className="mt-4 max-w-2xl text-sm text-[#8f6d70]">
                 Barcha o'yinlar uchun savollarni yarating, tahrirlang va boshqaring
@@ -1138,6 +1170,89 @@ export default function TeacherQuestionPanel() {
 
             <div className="mb-4 rounded-lg border border-[#f0d9d6] bg-gradient-to-r from-[#fceae8] to-[#ffe1de] px-3 py-1.5 text-xs font-medium text-[#7b4f53]">
               {activeGame.gameKey}
+            </div>
+
+            <div className="mb-4 rounded-2xl border border-[#f0d9d6] bg-gradient-to-br from-[#fff7f5] to-white p-4 shadow-sm">
+              <div className="mb-3 flex items-start gap-3">
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#e07c8e] to-[#a66466] text-white shadow-md">
+                  <FaRobot className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#b38b8d]">AI Generator</p>
+                  <h4 className="text-sm font-medium text-[#7b4f53]">Savollarni avtomatik yaratish</h4>
+                  <p className="mt-1 text-[10px] leading-4 text-[#8f6d70]">
+                    Mavzu, savollar soni va qiyinlikni tanlang. AI yangi savollarni shu o'yin ro'yxatiga qo'shadi.
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <label className="block space-y-2">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-[#8f6d70]">Mavzu</span>
+                  <input
+                    value={aiTopic}
+                    onChange={(event) => setAiTopic(event.target.value)}
+                    placeholder="Masalan: kasrlar, geografiya, hayvonlar..."
+                    className="w-full rounded-xl border border-[#f0d9d6] bg-white/90 px-4 py-3 text-sm text-[#7b4f53] placeholder:text-[#b38b8d] outline-none transition-all duration-200 focus:border-[#e07c8e] focus:shadow-[0_0_0_3px_rgba(224,124,142,0.1)]"
+                  />
+                </label>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-[#8f6d70]">Savollar soni</span>
+                    <div className="grid grid-cols-3 gap-2">
+                      {AI_COUNT_OPTIONS.map((count) => (
+                        <button
+                          key={count}
+                          type="button"
+                          onClick={() => setAiCount(count)}
+                          className={`rounded-xl px-3 py-2 text-xs font-medium transition-all ${
+                            aiCount === count
+                              ? "bg-gradient-to-r from-[#e07c8e] to-[#a66466] text-white shadow-md"
+                              : "border border-[#f0d9d6] bg-white/80 text-[#7b4f53] hover:border-[#e07c8e]"
+                          }`}
+                        >
+                          {count} ta
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-[#8f6d70]">Qiyinlik</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {Object.entries(DIFFICULTY_LABELS).map(([value, label]) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setAiDifficulty(value as GameDifficulty)}
+                          className={`rounded-xl px-3 py-2 text-xs font-medium transition-all ${
+                            aiDifficulty === value
+                              ? "bg-gradient-to-r from-[#e07c8e] to-[#a66466] text-white shadow-md"
+                              : "border border-[#f0d9d6] bg-white/80 text-[#7b4f53] hover:border-[#e07c8e]"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => void handleGenerateAi()}
+                  disabled={isGeneratingAi || saving}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7b4f53] to-[#a66466] px-4 py-3 text-sm font-medium text-white shadow-md transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
+                >
+                  <MdAutoAwesome className={`h-4 w-4 ${isGeneratingAi ? "animate-spin" : ""}`} />
+                  {isGeneratingAi ? `${aiCount} ta savol yaratilmoqda...` : `AI bilan ${aiCount} ta savol qo'shish`}
+                </button>
+
+                <p className="text-[10px] leading-4 text-[#8f6d70]">
+                  "Aralash" tanlansa easy, medium va hard darajadagi savollar birga yaratiladi. AI ishlashi uchun `.env` ichida `VITE_GEMINI_API_KEY` bo'lishi kerak.
+                </p>
+              </div>
             </div>
 
             <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">

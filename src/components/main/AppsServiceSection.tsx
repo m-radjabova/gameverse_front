@@ -4,7 +4,6 @@ import {
   FaClock,
   FaLayerGroup,
   FaRocket,
-  FaStar,
   FaUsers,
 } from "react-icons/fa";
 import { GiCherry, GiFlowerTwirl, GiTwirlyFlower } from "react-icons/gi";
@@ -27,6 +26,7 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
     () => gameCards.filter((game) => game.available),
     []
   );
+  const shouldLoop = games.length > 3;
 
   const handleLikeToggle = (gameId: string) => {
     setLikedGames((prev) =>
@@ -77,16 +77,25 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
           </p>
         </div>
 
-        <div className="relative px-4 md:px-10" data-aos="fade-up" data-aos-delay="140">
+        <div className="relative px-4 md:px-10">
           <Swiper
             modules={[Autoplay, Pagination, Navigation]}
             spaceBetween={24}
             slidesPerView={1}
-            loop={games.length > 3}
+            loop={shouldLoop}
+            loopAdditionalSlides={games.length}
+            watchSlidesProgress
+            observer
+            observeParents
+            centeredSlides={false}
+            slidesPerGroup={1}
+            speed={650}
             autoplay={{
               delay: 3500,
               disableOnInteraction: false,
-              pauseOnMouseEnter: true,
+              pauseOnMouseEnter: false,
+              stopOnLastSlide: false,
+              waitForTransition: false,
             }}
             pagination={{
               clickable: true,
@@ -100,7 +109,7 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
               640: { slidesPerView: 2, spaceBetween: 20 },
               1024: { slidesPerView: 3, spaceBetween: 24 },
             }}
-            className="!overflow-visible !pb-14"
+            className="games-swiper !overflow-visible !pb-14"
           >
             {games.map((game, index) => {
               const isLiked = likedGames.includes(game.id);
@@ -110,22 +119,17 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
 
               return (
                 <SwiperSlide key={game.id} className="!h-auto">
-                  {({ isActive }) => (
-                    <article
-                      data-aos="fade-up"
-                      data-aos-delay={120 + (index % 3) * 80}
-                      className={`group relative h-full transition-all duration-700 ${
-                        isActive ? "scale-100 opacity-100" : "scale-[0.97] opacity-80"
-                      }`}
-                    >
+                  <article
+                    data-aos="fade-up"
+                    data-aos-delay={120 + (index % 3) * 80}
+                    className="group relative h-full"
+                  >
                       <div
-                        className={`absolute -inset-0.5 rounded-[30px] bg-gradient-to-r ${game.gradient} opacity-0 blur-lg transition-opacity duration-700 ${
-                          isActive ? "opacity-20" : ""
-                        }`}
+                        className={`absolute -inset-0.5 rounded-[30px] bg-gradient-to-r ${game.gradient} opacity-10 blur-lg`}
                       />
 
                       <div
-                        className={`relative h-full overflow-hidden rounded-[30px] border p-5 backdrop-blur-md transition-all duration-500 hover:-translate-y-1 ${
+                        className={`relative h-full overflow-hidden rounded-[30px] border p-5 backdrop-blur-md ${
                           isDark
                             ? "border-[#2b3146] bg-[#1a1a28]/88 shadow-[0_12px_36px_rgba(0,0,0,0.22)] hover:shadow-[0_18px_44px_rgba(255,107,138,0.12)]"
                             : "border-white/70 bg-white/45 shadow-[0_12px_36px_rgba(166,100,102,0.08)] hover:shadow-[0_18px_44px_rgba(224,124,142,0.12)]"
@@ -256,7 +260,6 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
                         </div>
                       </div>
                     </article>
-                  )}
                 </SwiperSlide>
               );
             })}
@@ -276,22 +279,25 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
             <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-[#ff6b8a] to-[#ff4f74] opacity-50 blur-xl" />
             <button
               onClick={() => navigate("/games")}
-              className="relative inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-[#ff6b8a] to-[#ff4f74] px-8 py-4 text-base font-bold text-white shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(255,107,138,0.4)]"
+              className="relative cursor-pointer inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-[#ff6b8a] to-[#ff4f74] px-8 py-4 text-base font-bold text-white shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(255,107,138,0.4)]"
             >
               <MdAutoAwesome className="text-xl" />
               Barcha o'yinlarni ko'rish
               <FaArrowRight className="text-sm transition-transform group-hover:translate-x-1" />
             </button>
           </div>
-
-          <p className={`mt-4 text-xs ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>
-            <FaStar className="mr-1 inline text-[#ff6b8a]" />
-            {games.length}+ faol o'yinlar carousel ichida
-          </p>
         </div>
       </div>
 
       <style>{`
+        .games-swiper .swiper-wrapper {
+          align-items: stretch;
+        }
+
+        .games-swiper .swiper-slide {
+          height: auto;
+        }
+
         .swiper-pagination {
           bottom: 0 !important;
         }

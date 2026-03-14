@@ -3,7 +3,7 @@ import { GiChicken, GiPathDistance, GiPodiumWinner, GiTwoCoins } from "react-ico
 import { MdEmojiEvents, MdNumbers, MdSpeed } from "react-icons/md";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
-import matematik from "../../../assets/math_chick_preview.svg";
+import matematik from "../../../assets/math_chick_img.png";
 
 const mathChickGradient = "from-[#3b82f6] via-[#7c3aed] to-[#ec4899]";
 

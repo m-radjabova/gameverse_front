@@ -522,6 +522,11 @@ function getShortLabel(name: string, fallback: string) {
   return trimmed.slice(0, 1).toUpperCase();
 }
 
+function getTeamDisplayName(name: string, fallback: string) {
+  const trimmed = name.trim();
+  return trimmed || fallback;
+}
+
 export default function MathChickGame() {
   const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -701,7 +706,7 @@ export default function MathChickGame() {
   const updateTeamName = useCallback((player: PlayerId, value: string) => {
     setTeamNames((prev) => ({
       ...prev,
-      [player]: value || (player === "A" ? "Team A" : "Team B"),
+      [player]: value,
     }));
   }, []);
 
@@ -905,7 +910,13 @@ export default function MathChickGame() {
         ctx.font = "bold 18px Arial";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(teamNames[player].toUpperCase().slice(0, 12), 143, laneTop - 7);
+        ctx.fillText(
+          getTeamDisplayName(teamNames[player], player === "A" ? "Team A" : "Team B")
+            .toUpperCase()
+            .slice(0, 12),
+          143,
+          laneTop - 7,
+        );
 
         drawRoundedRect(ctx, FINISH_X - 4, laneTop - 12, 28, 94, 10, "rgba(255,255,255,0.08)");
         const flagColors = ["#ffffff", accent];
@@ -1089,7 +1100,7 @@ export default function MathChickGame() {
       ? "bg-amber-500/15 text-amber-200 border-amber-300/20"
       : "bg-cyan-500/15 text-cyan-200 border-cyan-300/20";
 
-    const displayName = teamNames[player];
+    const displayName = getTeamDisplayName(teamNames[player], player === "A" ? "Team A" : "Team B");
 
     return (
       <div
@@ -1147,7 +1158,7 @@ export default function MathChickGame() {
       ? "from-amber-400/90 to-orange-500/90 hover:shadow-amber-500/30"
       : "from-sky-400/90 to-cyan-500/90 hover:shadow-cyan-500/30";
     const options = playerOptions[player];
-    const displayName = teamNames[player];
+    const displayName = getTeamDisplayName(teamNames[player], player === "A" ? "Team A" : "Team B");
 
     return (
       <div className={`rounded-3xl border bg-gradient-to-br p-5 ${accentPanel}`}>
@@ -1455,7 +1466,9 @@ export default function MathChickGame() {
                       Match Complete
                     </div>
                     <div className="mt-3 text-4xl font-black text-white md:text-5xl">
-                      {winner ? `\uD83C\uDFC6 ${teamNames[winner]} Wins!` : ""}
+                      {winner
+                        ? `\uD83C\uDFC6 ${getTeamDisplayName(teamNames[winner], winner === "A" ? "Team A" : "Team B")} Wins!`
+                        : ""}
                     </div>
                     <div className="mt-2 text-slate-300">
                       Qayta start qilib yangi poyga boshlashingiz yoki teacher panelga qaytishingiz mumkin.

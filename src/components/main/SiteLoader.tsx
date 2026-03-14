@@ -124,9 +124,8 @@ function SiteLoader() {
 
               {/* Title with gradient */}
               <h1 className="text-4xl font-light text-center">
-                <span className="text-[#7b4f53]">Bilim</span>
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#e07c8e] to-[#a66466] font-medium">
-                  yuklanmoqda
+                  yuklanmoqda...
                 </span>
               </h1>
 
@@ -155,17 +154,6 @@ function SiteLoader() {
                   <span>{progress < 100 ? "Iltimos kuting..." : "Tayyor!"}</span>
                 </div>
               </div>
-
-              {/* Loading Messages */}
-              <div className="mt-6 text-center">
-                <p className="text-xs text-[#8f6d70] animate-pulse-soft">
-                  {progress < 30 && "🌸 Gul ochilmoqda..."}
-                  {progress >= 30 && progress < 60 && "🌺 Yaproqlar ochilmoqda..."}
-                  {progress >= 60 && progress < 90 && "🌼 Sayt tarqalmoqda..."}
-                  {progress >= 90 && "✨ Deyarli tayyor..."}
-                </p>
-              </div>
-
               {/* Decorative elements */}
               <div className="absolute -left-8 -top-8 opacity-20">
                 <GiFlowerEmblem className="text-6xl text-[#e07c8e]" />
@@ -175,11 +163,6 @@ function SiteLoader() {
               </div>
             </div>
           </div>
-
-          {/* Bottom text */}
-          <p className="text-center mt-4 text-[10px] text-[#b38b8d]">
-            ✨ Har bir gul yangi bilim bilan ochiladi
-          </p>
         </div>
       </div>
 

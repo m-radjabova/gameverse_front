@@ -27,6 +27,33 @@ function buildAvatar(username?: string | null): string {
   return `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(seed)}`;
 }
 
+function getInitial(username?: string | null): string {
+  const value = (username || "Teacher").trim();
+  return value.charAt(0).toUpperCase() || "T";
+}
+
+function FeedbackAvatar({ username, avatar }: { username?: string | null; avatar?: string | null }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const src = avatar ? toMediaUrl(avatar) : buildAvatar(username);
+
+  if (imageFailed || !src) {
+    return (
+      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-yellow-300 to-orange-400 text-xs font-black text-[#3a2216]">
+        {getInitial(username)}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={username || "Teacher"}
+      onError={() => setImageFailed(true)}
+      className="h-8 w-8 rounded-full object-cover"
+    />
+  );
+}
+
 function GameFeedbackPanel({ gameKey }: Props) {
   const {
     state: { user },
@@ -121,11 +148,7 @@ function GameFeedbackPanel({ gameKey }: Props) {
           {comments.slice(0, 6).map((item) => (
             <article key={item.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
               <div className="mb-2 flex items-center gap-2">
-                <img
-                  src={item.avatar ? toMediaUrl(item.avatar) : buildAvatar(item.username)}
-                  alt={item.username || "Teacher"}
-                  className="h-8 w-8 rounded-full object-cover"
-                />
+                <FeedbackAvatar username={item.username} avatar={item.avatar} />
                 <div className="min-w-0">
                   <p className="truncate text-xs font-bold text-white/85">{item.username || "Teacher"}</p>
                   <p className="text-[11px] text-white/50">{formatFeedbackDate(item.created_at)}</p>

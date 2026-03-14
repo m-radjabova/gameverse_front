@@ -50,7 +50,6 @@ function Register() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const password = watch("password");
 
   // Password strength checker
@@ -327,7 +326,7 @@ function Register() {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isSubmitting || !rememberMe}
+                  disabled={isSubmitting}
                   className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-[#e07c8e] to-[#a66466] py-3.5 text-sm font-medium text-white shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
                 >
                   <span className="relative flex items-center justify-center gap-2">
@@ -349,6 +348,7 @@ function Register() {
                 <p className="text-center text-xs text-[#b38b8d]">
                   Hisobingiz bormi?{" "}
                   <button
+                    type="button"
                     onClick={() => navigate("/login")}
                     className="text-[#e07c8e] hover:text-[#a66466] font-medium hover:underline transition-all"
                   >

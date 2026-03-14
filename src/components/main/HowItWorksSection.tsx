@@ -103,9 +103,9 @@ function HowItWorksSection({ isDark = false }: { isDark?: boolean }) {
           </div>
 
           <h2 className={`mx-auto max-w-4xl text-4xl font-black leading-[0.98] sm:text-5xl lg:text-6xl ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
-            Platformadan foydalanish
+            Platformadan qanday
             <span className="mt-2 block bg-gradient-to-r from-[#ff6b8a] via-[#ff4f74] to-[#ff8ca6] bg-clip-text text-transparent">
-              juda sodda va chiroyli
+              foydalaniladi?
             </span>
           </h2>
 
