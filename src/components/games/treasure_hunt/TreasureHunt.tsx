@@ -704,8 +704,8 @@ export default function TreasureHunt() {
               )}
               <div className="grid gap-3 md:grid-cols-2">
                 {[
-                  { val: draft.title, ph: "?? Sarlavha", key: "title" },
-                  { val: draft.story, ph: "?? Hikoya", key: "story" },
+                  { val: draft.title, ph: "🏴‍☠️ Sarlavha", key: "title" },
+                  { val: draft.story, ph: "📜 Hikoya", key: "story" },
                 ].map(({ val, ph, key }) => (
                   <input key={key} value={val}
                     onChange={(e) => setDraft((p) => ({ ...p, [key]: e.target.value }))}
@@ -734,11 +734,11 @@ export default function TreasureHunt() {
                 <input value={draft.reward}
                   onChange={(e) => setDraft((p) => ({ ...p, reward: e.target.value }))}
                   className="rounded-xl border border-amber-600/30 bg-black/40 px-4 py-3 text-amber-100 outline-none placeholder-amber-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30"
-                  placeholder="?? Ball (masalan: 120)" />
+                  placeholder="💰 Ball (masalan: 120)" />
                 <input value={draft.hint}
                   onChange={(e) => setDraft((p) => ({ ...p, hint: e.target.value }))}
                   className="rounded-xl border border-amber-600/30 bg-black/40 px-4 py-3 text-amber-100 outline-none transition-all placeholder-amber-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30 md:col-span-2"
-                  placeholder="?? Maslahat (hint)" />
+                  placeholder="💡 Maslahat (hint)" />
               </div>
               {questionError && <p className="mt-2 text-sm text-rose-400">{questionError}</p>}
               <div className="mt-4 flex gap-3">
@@ -780,26 +780,26 @@ export default function TreasureHunt() {
             <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
             <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-yellow-600/10 blur-3xl" />
 
-            {/* Decorative map preview � LARGE */}
+            {/* Decorative map preview — LARGE */}
             <div className="relative mb-6 overflow-hidden rounded-3xl border-2 border-amber-600/50 shadow-2xl shadow-amber-900/40" style={{ height: "400px" }}>
               <TreasureMapSVG progress={8} />
               {/* Bottom gradient title */}
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent px-6 pb-5 pt-12 text-center">
                 <p className="text-2xl font-black tracking-[0.18em] text-amber-300 drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]">
-                  ? XAZINA OVCHILARI ?
+                  🏴‍☠️ XAZINA OVCHILARI 🏴‍☠️
                 </p>
                 <p className="mt-1 text-xs tracking-widest text-amber-500/80">Xazinani top!</p>
               </div>
               {/* Corner badges */}
-              <div className="absolute left-4 top-4 rounded-full border border-amber-600/40 bg-black/60 px-3 py-1.5 text-lg backdrop-blur-sm">??</div>
-              <div className="absolute right-4 top-4 rounded-full border border-amber-600/40 bg-black/60 px-3 py-1.5 text-lg backdrop-blur-sm">?</div>
+              <div className="absolute left-4 top-4 rounded-full border border-amber-600/40 bg-black/60 px-3 py-1.5 text-lg backdrop-blur-sm">🏴‍☠️</div>
+              <div className="absolute right-4 top-4 rounded-full border border-amber-600/40 bg-black/60 px-3 py-1.5 text-lg backdrop-blur-sm">🗺️</div>
             </div>
 
             <div className="relative z-10 mb-6 grid gap-4 sm:grid-cols-3">
               {[
-                { icon: "??", title: "Qanday o'ynaladi?", text: "Har to'g'ri javob kemangizni xazinaga yaqinlashtiradi. Xato javob orqaga qaytaradi." },
-                { icon: "??", title: "Ballar", text: `To'g'ri: +ball+vaqt bonusi\nXato: -${WRONG_PENALTY} ball\nHint: -${HINT_PENALTY} ball` },
-                { icon: "??", title: "G'alaba", text: `${minScoreToWin}+ ball yig'ib, xazinaga yeting!` },
+                { icon: "🧭", title: "Qanday o'ynaladi?", text: "Har to'g'ri javob kemangizni xazinaga yaqinlashtiradi. Xato javob orqaga qaytaradi." },
+                { icon: "💰", title: "Ballar", text: `To'g'ri: +ball+vaqt bonusi\nXato: -${WRONG_PENALTY} ball\nHint: -${HINT_PENALTY} ball` },
+                { icon: "🏆", title: "G'alaba", text: `${minScoreToWin}+ ball yig'ib, xazinaga yeting!` },
               ].map(({ icon, title, text }) => (
                 <div key={title} className="rounded-2xl border border-amber-700/20 bg-black/30 p-4 backdrop-blur-sm">
                   <div className="mb-2 text-2xl">{icon}</div>
@@ -814,7 +814,7 @@ export default function TreasureHunt() {
               <div className="absolute inset-0 bg-white/20 translate-y-full transition-transform duration-300 group-hover:translate-y-0" />
               <span className="relative flex items-center justify-center gap-4">
                 <GiAnchor className="text-2xl" />
-                ?? SARGUZASHTNI BOSHLASH ??
+                SARGUZASHTNI BOSHLASH
                 <FaShip className="text-2xl" />
               </span>
             </button>
@@ -886,7 +886,7 @@ export default function TreasureHunt() {
                     <div className="absolute left-4 top-4">
                       <div className="rounded-2xl border border-amber-600/50 bg-black/55 px-5 py-3 shadow-lg backdrop-blur-md">
                         <p className="text-[11px] font-bold tracking-[0.28em] text-amber-500/80">TREASURE HUNT</p>
-                        <p className="text-lg font-black tracking-[0.16em] text-amber-300">? XAZINA XARITASI ?</p>
+                        <p className="text-lg font-black tracking-[0.16em] text-amber-300">🗺️ XAZINA XARITASI 🗺️</p>
                       </div>
                     </div>
 
@@ -968,7 +968,7 @@ export default function TreasureHunt() {
 
                 {showHint && (
                   <div className="mb-4 rounded-2xl border border-amber-600/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
-                    ?? {current.hint}
+                    💡 {current.hint}
                   </div>
                 )}
 
@@ -1023,7 +1023,7 @@ export default function TreasureHunt() {
               ? "border-emerald-400 bg-emerald-500/30 text-emerald-300 shadow-emerald-500/50"
               : "border-rose-400 bg-rose-500/30 text-rose-300 shadow-rose-500/50"
           }`}>
-            {answerResult === "correct" ? "?" : "?"}
+            {answerResult === "correct" ? "✓" : "✕"}
           </div>
         </div>
       )}
@@ -1037,7 +1037,7 @@ export default function TreasureHunt() {
             <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-yellow-600/10 blur-3xl" />
 
             <div className="mb-5 text-8xl drop-shadow-2xl">
-              {won ? "??" : "??"}
+              {won ? "🏆" : "💀"}
             </div>
 
             {/* Mini map preview on finish */}
@@ -1046,7 +1046,7 @@ export default function TreasureHunt() {
             </div>
 
             <h2 className="mb-4 text-3xl font-black tracking-wide text-amber-300">
-              {won ? "?? XAZINA TOPILDI! ??" : "?? MAG'LUB BO'LDINGIZ ??"}
+              {won ? "🏆 XAZINA TOPILDI! 🏆" : "💀 MAG'LUB BO'LDINGIZ 💀"}
             </h2>
 
             <div className="mb-6 space-y-3">
@@ -1102,7 +1102,7 @@ export default function TreasureHunt() {
             </div>
             <div className="rounded-full border border-amber-600/40 bg-black/60 px-6 py-2 backdrop-blur-sm">
               <p className="font-black tracking-[0.2em] text-amber-400" style={{ fontSize: "14px" }}>
-                ? BOSHLANMOQDA ?
+                BOSHLANMOQDA
               </p>
             </div>
           </div>

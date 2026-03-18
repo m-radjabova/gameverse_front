@@ -10,10 +10,10 @@ import {
 import { RiBrainFill} from "react-icons/ri";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
+import memoryRushImg from "../../../assets/reminder_image.png";
 
 function MemoryRushPage() {
-  const memoryRushImg = "https://media.istockphoto.com/id/1434154110/vector/reminder-yellow-note-circled.jpg?s=612x612&w=0&k=20&c=2mfjGFRNi7htNGB47t3fzlfg5mCGLQSfUXMoWBogWL0=";
-
+ 
   const gameStats = [
     { icon: FaUsers, label: "3.8k+ o'yinchi", value: "ONLINE", color: "from-emerald-400 to-teal-400" },
     { icon: MdTimer, label: "DAVOMIYLIK", value: "5-8 min", color: "from-teal-400 to-cyan-400" },
@@ -153,6 +153,7 @@ function MemoryRushPage() {
                 to="/games/memory-rush/play"
                 colorClassName="from-emerald-500 to-cyan-500"
                 className="pt-2"
+                modeSelectionEnabled
               />
             </div>
 
@@ -168,7 +169,7 @@ function MemoryRushPage() {
                 <img 
                   src={memoryRushImg} 
                   alt="Memory Rush Game" 
-                  className="h-[300px] w-full object-cover md:h-[400px] lg:h-[450px]"
+                  className="h-[360px] w-full object-cover md:h-[440px] lg:h-[520px]"
                 />
                 
                 {/* Overlay Content */}

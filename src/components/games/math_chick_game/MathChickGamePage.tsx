@@ -167,7 +167,7 @@ export default function MathChickGamePage() {
                 <img
                   src={matematik}
                   alt="Math Chick preview"
-                  className="h-[300px] w-full object-cover md:h-[400px] lg:h-[450px]"
+                  className="h-[360px] w-full object-cover md:h-[440px] lg:h-[520px]"
                 />
 
                 <div className="absolute bottom-4 left-4 z-20 inline-flex items-center gap-3 rounded-2xl border border-yellow-500/30 bg-black/40 px-4 py-2 backdrop-blur-md">

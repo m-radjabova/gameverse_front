@@ -1,6 +1,7 @@
 import { FaLayerGroup, FaTrophy, FaUsers } from "react-icons/fa";
 import { getGameSessionConfig } from "../../../hooks/gameSession";
 import { gameCards } from "../../../pages/games/data";
+import { DIRECT_PLAY_GAME_PATHS } from "./directPlayGames";
 import GameLeaderboardPanel from "./GameLeaderboardPanel";
 
 type Props = {
@@ -20,19 +21,25 @@ export default function GameModeShowcase({
     return null;
   }
 
+  const session = getGameSessionConfig(game.id);
+  const shouldHideLeaderboard =
+    DIRECT_PLAY_GAME_PATHS.has(game.path) ||
+    (session?.participantCount ?? 1) > 1;
+
   if (compact) {
     return (
       <div className="mt-4">
-        <GameLeaderboardPanel
-          gameKey={game.id}
-          title={`${game.title} Reytingi`}
-          limit={100}
-        />
+        {!shouldHideLeaderboard ? (
+          <GameLeaderboardPanel
+            gameKey={game.id}
+            title={`${game.title} Reytingi`}
+            limit={100}
+          />
+        ) : null}
       </div>
     );
   }
 
-  const session = getGameSessionConfig(game.id);
   const currentMode = session
     ? `${session.participantCount} ${session.participantLabel}`
     : game.players;
@@ -68,21 +75,25 @@ export default function GameModeShowcase({
           </p>
         </div>
 
-        <div className="rounded-2xl border border-white/12 bg-black/25 p-4 backdrop-blur-sm">
-          <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-yellow-500/15 text-yellow-300">
-            <FaTrophy />
+        {!shouldHideLeaderboard ? (
+          <div className="rounded-2xl border border-white/12 bg-black/25 p-4 backdrop-blur-sm">
+            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-yellow-500/15 text-yellow-300">
+              <FaTrophy />
+            </div>
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-white/45">
+              Reyting
+            </p>
+            <p className="mt-2 text-lg font-black text-white">{game.points}</p>
+            <p className="mt-1 text-xs text-white/55">
+              O'yinlar kesimida natijalar leaderboard’da chiqadi.
+            </p>
           </div>
-          <p className="text-xs font-bold uppercase tracking-[0.25em] text-white/45">
-            Reyting
-          </p>
-          <p className="mt-2 text-lg font-black text-white">{game.points}</p>
-          <p className="mt-1 text-xs text-white/55">
-            O'yinlar kesimida natijalar leaderboard’da chiqadi.
-          </p>
-        </div>
+        ) : null}
       </div>
 
-      <GameLeaderboardPanel gameKey={game.id} title={`${game.title} Reytingi`} />
+      {!shouldHideLeaderboard ? (
+        <GameLeaderboardPanel gameKey={game.id} title={`${game.title} Reytingi`} />
+      ) : null}
     </div>
   );
 }

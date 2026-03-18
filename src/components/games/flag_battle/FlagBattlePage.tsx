@@ -20,9 +20,9 @@ import {
 } from "react-icons/md";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
+import flagBattleImg from "../../../assets/flag_battle_image.png";
 
 function FlagBattlePage() {
-  const flagBattleImg = "https://media.istockphoto.com/id/1030295058/photo/flags-of-different-countries-together-us-flag-in-focus.jpg?s=612x612&w=0&k=20&c=fZ67LXjSvX6LlHflpGF5YpD8bZHNUfzcQW_DvtU3lNQ="
   const gameStats = [
     { icon: FaUsers, label: "O'YINCHILAR", value: "2 guruh", color: "from-blue-400 to-cyan-400" },
     { icon: MdTimer, label: "DAVOMIYLIK", value: "5-8 min", color: "from-cyan-400 to-teal-400" },
@@ -153,6 +153,7 @@ function FlagBattlePage() {
                 to="/games/flag-battle/play"
                 colorClassName="from-blue-500 to-teal-500"
                 className="pt-2"
+                modeSelectionEnabled
               />
             </div>
 
@@ -165,7 +166,7 @@ function FlagBattlePage() {
                 <img 
                   src={flagBattleImg} 
                   alt="Flag Battle Game" 
-                  className="h-[300px] w-full object-cover md:h-[400px] lg:h-[450px]"
+                  className="h-[360px] w-full object-cover md:h-[440px] lg:h-[520px]"
                 />
                 
                 <div className="absolute bottom-0 left-0 right-0 z-20 p-6">

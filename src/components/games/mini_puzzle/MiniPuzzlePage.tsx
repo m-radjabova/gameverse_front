@@ -17,9 +17,9 @@ import { MdTimer } from "react-icons/md";
 import { RiTeamFill } from "react-icons/ri";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
+import miniPuzzleImg from "../../../assets/mini_puzzle_image.png";
 
 function MiniPuzzlePage() {
-    // const img = "https://media.istockphoto.com/id/2249204910/photo/jigsaw-puzzle-pieces-colorful-background-with-small-puzzle-pieces-messy-some-colored-pieces.jpg?s=612x612&w=0&k=20&c=r43dtrUR7kvYbZHLZa6OVcbETVnFLOVhayJWwMwLUUc=";
   const gameStats = [
     {
       icon: <FaUsers className="text-2xl text-white" />,
@@ -216,6 +216,7 @@ function MiniPuzzlePage() {
                 to="/games/mini-puzzle/play"
                 colorClassName="from-pink-500 to-rose-500"
                 className="pt-2"
+                modeSelectionEnabled
               />
             </div>
 
@@ -226,21 +227,12 @@ function MiniPuzzlePage() {
               <div className="absolute -bottom-8 -right-8 text-6xl -rotate-12 animate-float-delayed">🎨</div>
 
               {/* Preview Puzzle */}
-              <div className="relative transform-gpu overflow-hidden rounded-2xl border-2 border-pink-500/30 bg-gradient-to-br from-pink-900/50 to-rose-900/50 p-6 shadow-2xl">
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-pink-400 to-rose-400 flex items-center justify-center">
-                    <span className="text-2xl text-white">🌸</span>
-                  </div>
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-rose-400 to-pink-400 flex items-center justify-center">
-                    <span className="text-2xl text-white">✨</span>
-                  </div>
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-pink-400 to-rose-400 flex items-center justify-center">
-                    <span className="text-2xl text-white">💮</span>
-                  </div>
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-rose-400 to-pink-400 flex items-center justify-center">
-                    <span className="text-2xl text-white">🌸</span>
-                  </div>
-                </div>
+              <div className="relative h-[360px] transform-gpu overflow-hidden rounded-2xl border-2 border-pink-500/30 bg-gradient-to-br from-pink-900/50 to-rose-900/50 p-6 shadow-2xl md:h-[440px] lg:h-[520px]">
+                <img
+                  src={miniPuzzleImg}
+                  alt="Puzzle Preview"
+                  className="h-full w-full object-cover"
+                />
 
                 {/* Overlay Badge */}
                 <div className="absolute bottom-0 left-0 right-0 z-20 p-4">

@@ -19,6 +19,7 @@ import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQue
 import { generateMathRaceQuestions } from "./ai";
 import GameLeaderboardPanel from "../shared/GameLeaderboardPanel";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
+import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 
@@ -47,6 +48,7 @@ const AI_DIFFICULTY_OPTIONS = [
 export default function MathRace() {
   const skipInitialRemoteSaveRef = useRef(true);
   const [phase, setPhase] = useState<Phase>("teacher");
+  useFinishApplause(phase === "finish");
   const [players, setPlayers] = useState<Player[]>([
     { id: 0, name: "Qora", position: 0 },
     { id: 1, name: "Ko'k", position: 0 },
@@ -987,7 +989,6 @@ export default function MathRace() {
                 <FaArrowLeft className="mr-2 inline" />O'yinlar
               </button>
             </div>
-            <GameLeaderboardPanel gameKey={MATH_RACE_RESULT_KEY} title="Math Race Reytingi" />
           </div>
         </div>
       )}

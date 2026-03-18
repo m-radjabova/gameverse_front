@@ -1,10 +1,13 @@
 import { FaCrown, FaMedal, FaTrophy } from "react-icons/fa";
-import useGameLeaderboard from "../../../hooks/useGameLeaderboard";
+import useGameLeaderboard, {
+  isSinglePlayerLeaderboardEntry,
+} from "../../../hooks/useGameLeaderboard";
 
 type Props = {
   gameKey: string;
   title?: string;
   limit?: number;
+  singlePlayerOnly?: boolean;
 };
 
 function rankIcon(rank: number) {
@@ -24,8 +27,13 @@ export default function GameLeaderboardPanel({
   gameKey,
   title = "Leaderboard",
   limit = 100,
+  singlePlayerOnly = true,
 }: Props) {
-  const { entries, topThree, loading } = useGameLeaderboard(gameKey, limit);
+  const { entries, loading } = useGameLeaderboard(gameKey, limit);
+  const visibleEntries = singlePlayerOnly
+    ? entries.filter(isSinglePlayerLeaderboardEntry)
+    : entries;
+  const visibleTopThree = visibleEntries.slice(0, 3);
 
   return (
     <section className="mt-6 rounded-2xl border border-white/15 bg-black/30 p-4 backdrop-blur-sm md:p-5">
@@ -33,19 +41,19 @@ export default function GameLeaderboardPanel({
         <h3 className="text-sm font-black uppercase tracking-wide text-white/80">
           {title}
         </h3>
-        <span className="text-xs text-white/50">Top {entries.length || 0}</span>
+        <span className="text-xs text-white/50">Top {visibleEntries.length || 0}</span>
       </div>
 
       {loading ? (
         <p className="text-xs text-white/60">Leaderboard yuklanmoqda...</p>
-      ) : entries.length === 0 ? (
+      ) : visibleEntries.length === 0 ? (
         <p className="text-xs text-white/60">
           Hozircha natijalar yo'q. Birinchi bo'lib rekord o'rnating.
         </p>
       ) : (
         <div className="space-y-3">
           <div className="grid gap-3 md:grid-cols-3">
-            {topThree.map((entry, index) => (
+            {visibleTopThree.map((entry, index) => (
               <div
                 key={entry.id}
                 className={`rounded-2xl border bg-gradient-to-br ${rankBadgeClass(index)} p-4`}
@@ -82,7 +90,7 @@ export default function GameLeaderboardPanel({
             </div>
 
             <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
-              {entries.map((entry, index) => (
+              {visibleEntries.map((entry, index) => (
                 <div
                   key={entry.id}
                   className="flex items-center justify-between rounded-xl border border-white/10 bg-black/20 px-3 py-3"

@@ -26,11 +26,10 @@ import {
 } from "react-icons/io5";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
-import ocean from "../../../assets/ocean.jpg";
+import oceanImg from "../../../assets/word_fish_image.png";
 
 
 function OceanWordFishingPage() {
-  const oceanImg = ocean;
   const gameStats = [
     { icon: FaUsers, label: "O'YINCHILAR", value: "1-4 kishi", color: "from-blue-500 to-cyan-400", bgColor: "from-blue-600/30 to-cyan-600/30" },
     { icon: MdTimer, label: "DAVOMIYLIK", value: "5-10 min", color: "from-cyan-500 to-teal-400", bgColor: "from-cyan-600/30 to-teal-600/30" },
@@ -203,7 +202,7 @@ function OceanWordFishingPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#020b1a] via-transparent to-transparent z-10" />
                 
                 {/* Ocean Video Background */}
-                <div className="relative h-[350px] md:h-[450px] lg:h-[500px]">
+                <div className="relative h-[360px] md:h-[440px] lg:h-[520px]">
                   <img 
                     src={oceanImg}
                     alt="Ocean Word Fishing"

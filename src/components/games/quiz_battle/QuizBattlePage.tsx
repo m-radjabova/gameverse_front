@@ -9,9 +9,9 @@ import { GiBrain, GiPodium, GiAchievement, GiBrainTentacle } from "react-icons/g
 import { MdQuiz, MdTimer, MdEmojiEvents, MdSpeed } from "react-icons/md";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
+import QuizBattleImg from "../../../assets/quiz_battle_image.png";
 
 function QuizBattlePage() {
-  const quizBattleImg = "https://media.istockphoto.com/id/1336313511/vector/vector-funny-sign-quiz-game-set-of-creative-alphabet-letters-and-numbers.jpg?s=612x612&w=0&k=20&c=V7G9_GmHnJK89C-kt1U1kGDz2uBskO1-Z5fpxph9rX8=";
 
   const gameStats = [
     { icon: MdTimer, label: "DAVOMIYLIK", value: "5-10 daqiqa", color: "from-yellow-400 to-orange-400" },
@@ -153,6 +153,7 @@ function QuizBattlePage() {
                 to="/games/quiz-battle/play"
                 colorClassName="from-yellow-500 to-red-500"
                 className="pt-2"
+                modeSelectionEnabled
               />
             </div>
 
@@ -166,9 +167,9 @@ function QuizBattlePage() {
               <div className="relative transform-gpu overflow-hidden rounded-2xl border-2 border-yellow-500/30 shadow-2xl transition-all group-hover:scale-[1.02] group-hover:border-yellow-400/50">
                 <div className="absolute inset-0 bg-gradient-to-t from-[#2d0a0a] via-transparent to-transparent z-10" />
                 <img 
-                  src={quizBattleImg} 
+                  src={QuizBattleImg} 
                   alt="Quiz Battle Game" 
-                  className="h-[300px] w-full object-cover md:h-[400px] lg:h-[450px]"
+                  className="h-[360px] w-full object-cover md:h-[440px] lg:h-[520px]"
                 />
                 
                 {/* Overlay Content */}

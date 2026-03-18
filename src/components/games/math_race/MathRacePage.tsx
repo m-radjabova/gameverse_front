@@ -27,9 +27,9 @@ import {
 } from "react-icons/io5";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
+import raceImg from "../../../assets/math_race-image.png";
 
 function MathRacePage() {
-  const raceImg = "https://media.istockphoto.com/id/1409623927/vector/formula-racing-sport-car-reach-on-race-circuit-the-finish-line-cartoon-illustration-to-win.jpg?s=612x612&w=0&k=20&c=n5leemMDNJv1g_EFkTJxW9T5XiVQXx0CIA6R2z6Op1U="
   const gameStats = [
     { icon: FaUsers, label: "O'YINCHILAR", value: "2 kishi", color: "from-amber-400 to-orange-400", bgColor: "from-amber-600/30 to-orange-600/30" },
     { icon: MdTimer, label: "DAVOMIYLIK", value: "5-10 min", color: "from-orange-400 to-red-400", bgColor: "from-orange-600/30 to-red-600/30" },
@@ -214,7 +214,7 @@ function MathRacePage() {
               <div className="relative transform-gpu overflow-hidden rounded-2xl border-2 border-white/10 shadow-2xl">
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent z-10" />
                 
-                <div className="relative h-[350px] md:h-[450px] lg:h-[500px]">
+                <div className="relative h-[360px] md:h-[440px] lg:h-[520px]">
                   <img 
                     src={raceImg}
                     alt="Math Race"

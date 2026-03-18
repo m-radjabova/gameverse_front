@@ -191,6 +191,7 @@ function ReverseThinkingPage() {
                 to="/games/reverse-thinking/play"
                 colorClassName="from-green-500 to-emerald-500"
                 className="pt-2"
+                modeSelectionEnabled
               />
             </div>
 
@@ -203,7 +204,7 @@ function ReverseThinkingPage() {
               {/* Preview Card */}
               <div className="relative transform-gpu overflow-hidden rounded-2xl border-2 border-green-500/30 bg-gradient-to-br from-green-900/50 to-emerald-900/50 p-5 shadow-2xl">
                 <div className="mb-4 overflow-hidden rounded-2xl border border-green-400/20 bg-green-950/30 shadow-[0_16px_40px_rgba(0,0,0,0.28)]">
-                  <div className="relative aspect-[16/10]">
+                  <div className="relative h-[360px] md:h-[440px] lg:h-[520px]">
                     <img
                       src={reverseThinkingImg}
                       alt="Teskari Fikr preview"

@@ -5,12 +5,12 @@ import Confetti from "react-confetti-boom";
 import correctSfx from "../../../assets/sounds/correct.m4a";
 import wrongSfx from "../../../assets/sounds/wrong.mp3";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
-import GameLeaderboardPanel from "../shared/GameLeaderboardPanel";
 import { getGameSessionConfig, type ParticipantType } from "../../../hooks/gameSession";
 import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { FLAG_QUESTIONS, type FlagQuestion } from "./data";
+import CountryBallCanvas from "./CountryBallCanvas";
 
 type Phase = "setup" | "play" | "round" | "finish";
 type ContinentFilter = "ALL" | "Osiyo" | "Yevropa" | "Afrika" | "Shimoliy Amerika" | "Janubiy Amerika" | "Okeaniya";
@@ -278,7 +278,11 @@ export default function FlagBattle() {
       participant_type: participantType,
     },
   }));
-  useGameResultSubmission(phase === "finish", "flag-battle", leaderboardEntries);
+  useGameResultSubmission(
+    phase === "finish",
+    "flag-battle",
+    leaderboardEntries,
+  );
   const continentOptions: Array<{ value: ContinentFilter; label: string }> = [
     { value: "ALL", label: "Barchasi" }, { value: "Osiyo", label: "Osiyo" }, { value: "Yevropa", label: "Yevropa" }, { value: "Afrika", label: "Afrika" }, { value: "Shimoliy Amerika", label: "Shimoliy Amerika" }, { value: "Janubiy Amerika", label: "Janubiy Amerika" }, { value: "Okeaniya", label: "Okeaniya" },
   ];
@@ -380,10 +384,15 @@ export default function FlagBattle() {
               {getDifficultyStars(currentQuestion.difficulty)}
             </div>
             <div className="mb-6 flex justify-center">
-              <div className="overflow-hidden rounded-2xl border border-white/20 bg-white/5 p-2 shadow-2xl">
-                <img src={currentQuestion.flag} alt={`${currentQuestion.country} bayrog'i`} className="h-40 w-64 rounded-xl object-cover sm:h-48 sm:w-80" />
-              </div>
-            </div>
+            <CountryBallCanvas
+              src={currentQuestion.flag}
+              alt={`${currentQuestion.country} bayrog'i`}
+              size={300}
+              paused={paused}
+              isCorrect={locked && roundWinner !== null}
+            />
+          </div>
+
 
             <div className={`grid gap-4 ${participantCount > 1 ? "lg:grid-cols-2" : ""}`}>
               {participantNames.map((name, index) => {
@@ -449,7 +458,6 @@ export default function FlagBattle() {
             <button onClick={handleStartGame} className="rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 px-6 py-3 font-black text-white transition-all hover:scale-105"><span className="flex items-center gap-2"><FaPlay />QAYTA O'YNASH</span></button>
             <button onClick={resetGame} className="rounded-xl border border-white/20 bg-white/10 px-6 py-3 font-bold text-white transition-all hover:bg-white/20"><span className="flex items-center gap-2"><FaRedo />BOSH SAHIFA</span></button>
           </div>
-          <GameLeaderboardPanel gameKey="flag-battle" title="Flag Battle Reytingi" />
         </div>
       )}
 

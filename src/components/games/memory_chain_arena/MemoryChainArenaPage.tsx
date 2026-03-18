@@ -16,7 +16,7 @@ import { MdTimer, MdSpeed } from "react-icons/md";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
 
-import memoryChain from "../../../assets/Gemini_Generated_Image_cbujqgcbujqgcbuj.png";
+import memoryChain from "../../../assets/memory_chain_image.png";
 
 
 function MemoryChainArenaPage() {
@@ -165,14 +165,14 @@ function MemoryChainArenaPage() {
                 <span className="relative inline-block">
                   <span className="absolute -inset-2 bg-gradient-to-r from-cyan-400/30 to-blue-400/30 blur-2xl" />
                   <span className="relative bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-300 dark:to-blue-300 bg-clip-text text-transparent">
-                    Memory
+                    Xotira
                   </span>
                 </span>
                 <br />
                 <span className="relative inline-block mt-2">
                   <span className="absolute -inset-2 bg-gradient-to-r from-blue-400/30 to-indigo-400/30 blur-2xl" />
                   <span className="relative bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-300 dark:to-indigo-300 bg-clip-text text-transparent">
-                    Chain Arena
+                    zanjiri arenasi
                   </span>
                 </span>
               </h1>
@@ -213,6 +213,7 @@ function MemoryChainArenaPage() {
                 to="/games/memory-chain/play"
                 colorClassName="from-sky-500 to-blue-500"
                 className="pt-2"
+                modeSelectionEnabled
               />
             </div>
 
@@ -223,14 +224,16 @@ function MemoryChainArenaPage() {
               <div className="absolute -bottom-8 -right-8 text-6xl -rotate-12 animate-float-delayed">⚡</div>
 
               {/* Preview Panel */}
-              <div className="relative transform-gpu overflow-hidden rounded-2xl border-2 border-cyan-400/30 bg-gradient-to-br from-cyan-900/40 to-blue-900/40 p-4 shadow-2xl">
+              <div className="relative overflow-hidden rounded-2xl border-2 border-cyan-400/30 bg-gradient-to-br from-cyan-900/40 to-blue-900/40 p-4 shadow-2xl">
                 <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-slate-950/45 via-transparent to-transparent" />
 
-                <img
-                  src={memoryChain}
-                  alt="Memory Chain Arena Preview"
-                  className="relative z-0 aspect-[16/9] w-full rounded-xl border border-cyan-300/25 object-cover object-center shadow-[0_12px_30px_rgba(8,47,73,0.45)]"
-                />
+                <div className="relative z-0 flex min-h-[360px] items-center justify-center rounded-xl border border-cyan-300/25 bg-slate-950/20 p-3 shadow-[0_12px_30px_rgba(8,47,73,0.45)] md:min-h-[440px] lg:min-h-[520px]">
+                  <img
+                    src={memoryChain}
+                    alt="Memory Chain Arena Preview"
+                    className="h-full max-h-[520px] w-full rounded-lg object-contain object-center"
+                  />
+                </div>
 
                 <div className="absolute bottom-3 left-3 z-20">
                   <div className="inline-flex items-center gap-2 rounded-xl border border-cyan-300/40 bg-slate-950/55 px-3 py-1.5 backdrop-blur-sm">

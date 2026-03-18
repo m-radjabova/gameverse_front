@@ -190,6 +190,7 @@ function MillionairePage() {
                 to="/games/millionaire/play"
                 colorClassName="from-yellow-500 to-orange-500"
                 className="pt-2"
+                modeSelectionEnabled
               />
             </div>
 
@@ -204,7 +205,7 @@ function MillionairePage() {
                 <img
                   src={img}
                   alt="Millionaire game preview"
-                  className="relative h-[360px] w-full rounded-xl object-cover md:h-[430px] lg:h-[500px]"
+                  className="relative h-[360px] w-full rounded-xl object-cover md:h-[440px] lg:h-[520px]"
                 />
                 <div className="absolute inset-x-6 bottom-5 z-10">
                   <div className="inline-flex items-center gap-3 rounded-2xl border border-yellow-500/50 bg-black/55 px-4 py-2 shadow-xl backdrop-blur-md">

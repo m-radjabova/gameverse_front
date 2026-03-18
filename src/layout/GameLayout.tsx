@@ -49,8 +49,7 @@ export default function GameLayout() {
       location.pathname.includes("/classic-arcade") ||
       location.pathname.includes("/word-chain") ||
       location.pathname.includes("/word-battle") ||
-      location.pathname.includes("/bingo") ||
-      location.pathname.includes("/magic-square")
+      location.pathname.includes("/bingo")
     ) {
       return {
         button: "bg-gradient-to-r from-indigo-500 to-pink-500",

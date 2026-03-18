@@ -13,6 +13,7 @@ import {
   FaUpload
 } from "react-icons/fa";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
+import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { TEAM_AVATARS, TEAM_COLORS, DIFFICULTY_CONFIG } from "./constants";
 import type { Phase, Puzzle, PuzzlePiece, Team } from "./types";
@@ -20,12 +21,13 @@ import { getComboBonus, getRandomViewTransform } from "./utils";
 
 
 function MiniPuzzle() {
+  const [phase, setPhase] = useState<Phase>("teacher");
+  useFinishApplause(phase === "finish");
   // Audio refs
   const correctAudioRef = useRef<HTMLAudioElement | null>(null);
   const winAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Game state
-  const [phase, setPhase] = useState<Phase>("teacher");
   const [teams, setTeams] = useState<Team[]>([]);
   const [newTeamName, setNewTeamName] = useState("");
   const [teamError, setTeamError] = useState("");

@@ -19,6 +19,7 @@ import wrongSound from "../../../assets/sounds/wrong.mp3";
 import winSound from "../../../assets/sounds/applause.mp3";
 import jumanjiSound from "../../../assets/sounds/jumanji_sound.m4a";
 import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { generateJumanjiQuestions } from "./ai";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
@@ -58,6 +59,8 @@ const AI_SUBJECT_OPTIONS = ["Aralash fanlar", ...SUBJECTS] as const;
 
 function Jumanji() {
   const skipInitialRemoteSaveRef = useRef(true);
+  const [phase, setPhase] = useState<Phase>("setup");
+  useFinishApplause(phase === "finish");
   // Audio refs
   const diceAudioRef = useRef<HTMLAudioElement | null>(null);
   const correctAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -66,7 +69,6 @@ function Jumanji() {
   const bgAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Game state
-  const [phase, setPhase] = useState<Phase>("setup");
   const [teams, setTeams] = useState<Team[]>([]);
   const [newTeamName, setNewTeamName] = useState("");
   const [teamError, setTeamError] = useState("");

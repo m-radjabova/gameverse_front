@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   FaPlay, FaPlus, FaRedo, FaTrash, FaTrophy, FaForward, FaBackward, FaCrown, FaEdit, FaRobot
 } from "react-icons/fa";
+import Confetti from "react-confetti-boom";
 import { 
   GiBrain, GiPuzzle, GiAchievement, GiLightBulb, GiShield, GiSwordman 
 } from "react-icons/gi";
@@ -12,6 +13,8 @@ import { generateClassicArcadeChallenges } from "./ai";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
+import { useGameParticipantMode } from "../../../hooks/useGameParticipantMode";
+import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
 
 type Phase = "teacher" | "teams" | "play" | "finish";
 type Mini = "math" | "pattern" | "odd";
@@ -24,7 +27,6 @@ type Draft = { prompt: string; options: [string, string, string, string]; correc
 
 const SESSION_SECONDS = 8 * 60;
 const ROUND_SECONDS = 20;
-const BETWEEN_SECONDS = 2;
 const TOTAL_ROUNDS = 15;
 const BASE_GAIN = 120;
 const STREAK_GAIN = 25;
@@ -68,6 +70,13 @@ export default function ClassicArcade() {
   const skipInitialRemoteSaveRef = useRef(true);
   const [phase, setPhase] = useState<Phase>("teacher");
   useFinishApplause(phase === "finish");
+  const { isSinglePlayer, primaryName, secondaryName, modeLabel } = useGameParticipantMode({
+    gameId: "classic-arcade",
+    fallbackPrimaryName: "O'YINCHI 1",
+    fallbackSecondaryName: "O'YINCHI 2",
+    singleModeLabel: "1 o'yinchi",
+    multiModeLabel: "2 o'yinchi",
+  });
   const [teamNames, setTeamNames] = useState<[string, string]>(["⚔️ YULDUZLAR", "🛡️ CHAQQONLAR"]);
   const [nameError, setNameError] = useState("");
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
@@ -81,7 +90,6 @@ export default function ClassicArcade() {
   const [remoteLoaded, setRemoteLoaded] = useState(false);
   const [sessionLeft, setSessionLeft] = useState(SESSION_SECONDS);
   const [roundLeft, setRoundLeft] = useState(ROUND_SECONDS);
-  const [betweenLeft, setBetweenLeft] = useState(0);
   const [mini, setMini] = useState<Mini>("math");
   const prevMiniRef = useRef<Mini>("math");
   const [activeTeam, setActiveTeam] = useState<TeamId | null>(null);
@@ -92,25 +100,61 @@ export default function ClassicArcade() {
   const [locked, setLocked] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [reveal, setReveal] = useState<{ correct: boolean; detail?: string } | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
   const [mathRound, setMathRound] = useState<MathRound>(() => buildMath());
   const [patternRound, setPatternRound] = useState<PatternRound>(() => buildPattern());
   const [oddRound, setOddRound] = useState<OddRound>(() => buildOdd([]));
   const [patternShowing, setPatternShowing] = useState(false);
   const patternTimerRef = useRef<number | null>(null);
   const betweenTimerRef = useRef<number | null>(null);
+  const confettiTimerRef = useRef<number | null>(null);
   const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
   const sessionPct = useMemo(() => Math.round((sessionLeft / SESSION_SECONDS) * 100), [sessionLeft]);
   const roundPct = useMemo(() => Math.round((roundLeft / ROUND_SECONDS) * 100), [roundLeft]);
-  const winner = useMemo(() => (scores[0] === scores[1] ? null : scores[0] > scores[1] ? 0 : 1), [scores]);
+  const winner = useMemo(() => (
+    isSinglePlayer ? 0 : scores[0] === scores[1] ? null : scores[0] > scores[1] ? 0 : 1
+  ), [isSinglePlayer, scores]);
   const roundsLeft = useMemo(() => Math.max(0, TOTAL_ROUNDS - roundsDone), [roundsDone]);
-  const teams: TeamId[] = [0, 1];
+  const teams: TeamId[] = isSinglePlayer ? [0] : [0, 1];
   const hasGeminiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY?.trim());
 
+  useGameResultSubmission(
+    phase === "finish",
+    "classic-arcade",
+    isSinglePlayer
+      ? [
+          {
+            participant_name: teamNames[0],
+            participant_mode: modeLabel,
+            score: scores[0],
+            metadata: { rounds: roundsDone, bestStreak: bestStreaks[0] },
+          },
+        ]
+      : [
+          {
+            participant_name: teamNames[0],
+            participant_mode: modeLabel,
+            score: scores[0],
+            metadata: { rounds: roundsDone, bestStreak: bestStreaks[0] },
+          },
+          {
+            participant_name: teamNames[1],
+            participant_mode: modeLabel,
+            score: scores[1],
+            metadata: { rounds: roundsDone, bestStreak: bestStreaks[1] },
+          },
+        ],
+  );
+
   useEffect(() => { if (!toast) return; const t = window.setTimeout(() => setToast(null), 1400); return () => window.clearTimeout(t); }, [toast]);
+  useEffect(() => {
+    setTeamNames([primaryName, secondaryName]);
+  }, [isSinglePlayer, primaryName, secondaryName]);
   useEffect(() => {
     return () => {
       if (patternTimerRef.current) window.clearTimeout(patternTimerRef.current);
       if (betweenTimerRef.current) window.clearTimeout(betweenTimerRef.current);
+      if (confettiTimerRef.current) window.clearTimeout(confettiTimerRef.current);
     };
   }, []);
   useEffect(() => {
@@ -139,17 +183,15 @@ export default function ClassicArcade() {
     return () => window.clearTimeout(t);
   }, [teacherRounds, remoteLoaded]);
   useEffect(() => { if (phase !== "play") return; if (sessionLeft <= 0) { setPhase("finish"); return; } const t = window.setTimeout(() => setSessionLeft((s) => s - 1), 1000); return () => window.clearTimeout(t); }, [phase, sessionLeft]);
-  useEffect(() => { if (phase !== "play" || betweenLeft > 0 || locked) return; if (roundLeft <= 0) { onSkip(true); return; } const t = window.setTimeout(() => setRoundLeft((s) => s - 1), 1000); return () => window.clearTimeout(t); }, [phase, roundLeft, betweenLeft, locked]);
-  useEffect(() => { if (phase !== "play" || betweenLeft <= 0) return; const t = window.setTimeout(() => setBetweenLeft((s) => s - 1), 1000); return () => window.clearTimeout(t); }, [phase, betweenLeft]);
+  useEffect(() => { if (phase !== "play" || locked) return; if (roundLeft <= 0) { onSkip(true); return; } const t = window.setTimeout(() => setRoundLeft((s) => s - 1), 1000); return () => window.clearTimeout(t); }, [phase, roundLeft, locked]);
   useEffect(() => {
-    if (phase !== "play" || betweenLeft !== 0) return;
-    setReveal(null); setLocked(false); setRoundLeft(ROUND_SECONDS); setActiveTeam(null);
-    const all: Mini[] = ["math", "pattern", "odd"]; const next = sh(all.filter((m) => m !== prevMiniRef.current))[0];
-    prevMiniRef.current = next; setMini(next);
-    if (next === "math") setMathRound(buildMath());
-    if (next === "pattern") { const p = buildPattern(); setPatternRound(p); setPatternShowing(true); if (patternTimerRef.current) window.clearTimeout(patternTimerRef.current); patternTimerRef.current = window.setTimeout(() => setPatternShowing(false), p.revealMs); }
-    if (next === "odd") setOddRound(buildOdd(teacherRounds));
-  }, [betweenLeft, phase, teacherRounds]);
+    if (!showConfetti) return;
+    if (confettiTimerRef.current) window.clearTimeout(confettiTimerRef.current);
+    confettiTimerRef.current = window.setTimeout(() => setShowConfetti(false), 2000);
+    return () => {
+      if (confettiTimerRef.current) window.clearTimeout(confettiTimerRef.current);
+    };
+  }, [showConfetti]);
 
   const resetTeacherDraft = () => {
     setDraft(EMPTY_DRAFT);
@@ -228,10 +270,10 @@ export default function ClassicArcade() {
 
   const startGame = () => {
     const a = teamNames[0].trim(); const b = teamNames[1].trim();
-    if (!a || !b) return setNameError("Ikkala guruh nomini kiriting.");
-    if (a.toLowerCase() === b.toLowerCase()) return setNameError("Guruh nomlari bir xil bo'lmasin.");
-    setTeamNames([a, b]); setNameError(""); setPhase("play"); setSessionLeft(SESSION_SECONDS); setScores([0, 0]); setStreaks([0, 0]); setBestStreaks([0, 0]); setRoundsDone(0); setActiveTeam(null); setLocked(false); setReveal(null);
-    const first: Mini = (["math", "pattern", "odd"] as Mini[])[r(0, 2)]; prevMiniRef.current = first; setMini(first); setRoundLeft(ROUND_SECONDS); setBetweenLeft(0);
+    if (!a || (!isSinglePlayer && !b)) return setNameError(isSinglePlayer ? "O'yinchi nomini kiriting." : "Ikkala guruh nomini kiriting.");
+    if (!isSinglePlayer && a.toLowerCase() === b.toLowerCase()) return setNameError("Guruh nomlari bir xil bo'lmasin.");
+    setTeamNames([a, isSinglePlayer ? secondaryName : b]); setNameError(""); setPhase("play"); setSessionLeft(SESSION_SECONDS); setScores([0, 0]); setStreaks([0, 0]); setBestStreaks([0, 0]); setRoundsDone(0); setActiveTeam(null); setLocked(false); setReveal(null); setShowConfetti(false);
+    const first: Mini = (["math", "pattern", "odd"] as Mini[])[r(0, 2)]; prevMiniRef.current = first; setMini(first); setRoundLeft(ROUND_SECONDS);
     if (first === "math") setMathRound(buildMath()); if (first === "pattern") { const p = buildPattern(); setPatternRound(p); setPatternShowing(true); if (patternTimerRef.current) window.clearTimeout(patternTimerRef.current); patternTimerRef.current = window.setTimeout(() => setPatternShowing(false), p.revealMs); } if (first === "odd") setOddRound(buildOdd(teacherRounds));
   };
 
@@ -239,7 +281,15 @@ export default function ClassicArcade() {
 
   const queueNextRound = () => {
     if (betweenTimerRef.current) window.clearTimeout(betweenTimerRef.current);
-    betweenTimerRef.current = window.setTimeout(() => setBetweenLeft(BETWEEN_SECONDS), 700);
+    betweenTimerRef.current = window.setTimeout(() => {
+      if (phase !== "play") return;
+      setReveal(null); setLocked(false); setRoundLeft(ROUND_SECONDS); setActiveTeam(null);
+      const all: Mini[] = ["math", "pattern", "odd"]; const next = sh(all.filter((m) => m !== prevMiniRef.current))[0];
+      prevMiniRef.current = next; setMini(next);
+      if (next === "math") setMathRound(buildMath());
+      if (next === "pattern") { const p = buildPattern(); setPatternRound(p); setPatternShowing(true); if (patternTimerRef.current) window.clearTimeout(patternTimerRef.current); patternTimerRef.current = window.setTimeout(() => setPatternShowing(false), p.revealMs); }
+      if (next === "odd") setOddRound(buildOdd(teacherRounds));
+    }, 900);
   };
 
   const settle = (team: TeamId, correct: boolean, detail?: string) => {
@@ -250,6 +300,7 @@ export default function ClassicArcade() {
       setScores((p) => { const n: [number, number] = [...p] as [number, number]; n[team] += gain; return n; });
       setStreaks((p) => { const n: [number, number] = [...p] as [number, number]; n[team] += 1; return n; });
       setBestStreaks((p) => { const n: [number, number] = [...p] as [number, number]; n[team] = Math.max(n[team], streaks[team] + 1); return n; });
+      setShowConfetti(true);
       setToast(`🎉 ${teamNames[team]} +${gain}`);
     } else {
       setScores((p) => { const n: [number, number] = [...p] as [number, number]; n[team] = Math.max(0, n[team] - WRONG_PENALTY); return n; });
@@ -282,6 +333,17 @@ export default function ClassicArcade() {
 
   return (
     <div className="relative text-white">
+      {phase === "finish" && (
+        <Confetti
+          mode="boom"
+          particleCount={100}
+          effectCount={1}
+          x={0.5}
+          y={0.35}
+          colors={["#f472b6", "#fb7185", "#f59e0b", "#22d3ee", "#a855f7"]}
+        />
+      )}
+
       {/* Teacher Panel */}
       {phase === "teacher" && (
         <div className="space-y-4">
@@ -490,9 +552,9 @@ export default function ClassicArcade() {
         <div className="relative transform-gpu overflow-hidden rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-900/30 to-rose-900/30 p-8 backdrop-blur-xl">
           <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 to-rose-500/10" />
           
-          <h3 className="relative mb-6 text-center text-2xl font-black text-white">GURUH NOMLARINI KIRITING</h3>
+          <h3 className="relative mb-6 text-center text-2xl font-black text-white">{isSinglePlayer ? "O'YINCHI NOMINI KIRITING" : "GURUH NOMLARINI KIRITING"}</h3>
           
-          <div className="relative grid gap-6 md:grid-cols-2">
+          <div className={`relative grid gap-6 ${isSinglePlayer ? "" : "md:grid-cols-2"}`}>
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-bold text-fuchsia-400">
                 <GiSwordman />
@@ -502,11 +564,11 @@ export default function ClassicArcade() {
                 value={teamNames[0]}
                 onChange={(e) => setTeamNames([e.target.value, teamNames[1]])}
                 className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-lg font-bold text-white placeholder-white/40 focus:border-fuchsia-400 focus:outline-none"
-                placeholder="Masalan: YULDUZLAR"
+                placeholder={isSinglePlayer ? "Masalan: Sardor" : "Masalan: YULDUZLAR"}
               />
             </div>
             
-            <div className="space-y-2">
+            <div className={`${isSinglePlayer ? "hidden " : ""}space-y-2`}>
               <label className="flex items-center gap-2 text-sm font-bold text-rose-400">
                 <GiShield />
                 2-GURUH (🛡️)
@@ -555,7 +617,7 @@ export default function ClassicArcade() {
       {phase === "play" && (
         <div className="space-y-6">
           {/* Stats Bar */}
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className={`grid gap-4 ${isSinglePlayer ? "md:grid-cols-2 xl:grid-cols-4" : "md:grid-cols-4"}`}>
             <div className="relative transform-gpu overflow-hidden rounded-xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-900/30 to-rose-900/30 p-4 backdrop-blur-xl">
               <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 to-rose-500/10" />
               <p className="relative text-xs font-bold text-fuchsia-400">SESSION</p>
@@ -577,7 +639,7 @@ export default function ClassicArcade() {
             <div className="relative transform-gpu overflow-hidden rounded-xl border border-orange-500/20 bg-gradient-to-br from-orange-900/30 to-amber-900/30 p-4 backdrop-blur-xl">
               <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-amber-500/10" />
               <p className="relative text-xs font-bold text-orange-400">NAVBAT</p>
-              <p className="relative text-xl font-black text-white truncate">{activeTeam === null ? "Kim birinchi bosadi?" : teamNames[activeTeam]}</p>
+              <p className="relative text-xl font-black text-white truncate">{activeTeam === null ? (isSinglePlayer ? teamNames[0] : "Kim birinchi bosadi?") : teamNames[activeTeam]}</p>
               <p className="relative text-xs text-gray-400 mt-1">Raund: {roundsDone}/{TOTAL_ROUNDS}</p>
             </div>
             
@@ -590,24 +652,33 @@ export default function ClassicArcade() {
           </div>
           
           {/* Teams Score */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className={`relative transform-gpu overflow-hidden rounded-xl border p-6 backdrop-blur-xl transition-all ${
+          <div className={`grid gap-4 ${isSinglePlayer ? "" : "md:grid-cols-2"}`}>
+            <div className={`relative transform-gpu overflow-hidden border p-6 backdrop-blur-xl transition-all ${
+              isSinglePlayer
+                ? "rounded-3xl border-fuchsia-400/30 bg-gradient-to-br from-fuchsia-500/20 via-slate-950/80 to-cyan-500/20 shadow-[0_20px_80px_rgba(217,70,239,0.22)]"
+                : "rounded-xl"
+            } ${
               activeTeam === 0 ? 'border-fuchsia-500/50 bg-fuchsia-900/40 scale-105' : 'border-white/10 bg-white/5'
             }`}>
               <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 to-rose-500/10" />
               <div className="relative flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-bold text-fuchsia-400">⚔️ 1-GURUH</p>
-                  <p className="text-2xl font-black text-white">{teamNames[0]}</p>
+                  <p className="text-sm font-bold text-fuchsia-400">{isSinglePlayer ? "SOLO ARCADE" : "1-GURUH"}</p>
+                  <p className={`${isSinglePlayer ? "text-3xl md:text-4xl" : "text-2xl"} font-black text-white`}>{teamNames[0]}</p>
+                  {isSinglePlayer && (
+                    <p className="mt-2 max-w-md text-sm text-fuchsia-100/75">
+                      Har savoldan keyin challenge avtomatik yangilanadi. Tezlik va streak ko'proq ball beradi.
+                    </p>
+                  )}
                 </div>
                 <div className="text-right">
-                  <p className="text-3xl font-black text-fuchsia-400">{scores[0]}</p>
+                  <p className={`${isSinglePlayer ? "text-5xl md:text-6xl" : "text-3xl"} font-black text-fuchsia-400`}>{scores[0]}</p>
                   <p className="text-xs text-gray-400">Streak: {streaks[0]} | Best: {bestStreaks[0]}</p>
                 </div>
               </div>
             </div>
             
-            <div className={`relative transform-gpu overflow-hidden rounded-xl border p-6 backdrop-blur-xl transition-all ${
+            <div className={`${isSinglePlayer ? "hidden " : ""}relative transform-gpu overflow-hidden rounded-xl border p-6 backdrop-blur-xl transition-all ${
               activeTeam === 1 ? 'border-rose-500/50 bg-rose-900/40 scale-105' : 'border-white/10 bg-white/5'
             }`}>
               <div className="absolute inset-0 bg-gradient-to-r from-rose-500/10 to-orange-500/10" />
@@ -651,7 +722,7 @@ export default function ClassicArcade() {
               {mini === "math" && (
                 <>
                   <p className="text-4xl font-black text-white mb-6">{mathRound.q}</p>
-                  <div className="grid gap-4 lg:grid-cols-2">
+                  <div className={`grid gap-4 ${isSinglePlayer ? "mx-auto max-w-2xl" : "lg:grid-cols-2"}`}>
                     {teams.map((team) => (
                       <div key={`math-${team}`} className={`rounded-2xl border p-4 transition-all ${activeTeam === team ? "border-fuchsia-500/50 bg-fuchsia-900/25" : "border-white/10 bg-white/5"}`}>
                         <p className={`mb-3 text-sm font-bold ${team === 0 ? "text-fuchsia-300" : "text-rose-300"}`}>{teamNames[team]}</p>
@@ -660,7 +731,7 @@ export default function ClassicArcade() {
                             <button
                               key={`${team}-${i}`}
                               onClick={() => !locked && settle(team, o === mathRound.answer)}
-                              disabled={locked || betweenLeft > 0}
+                              disabled={locked}
                               className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/5 p-4 text-2xl font-bold text-white transition-all hover:scale-105 hover:bg-white/10 disabled:opacity-50 disabled:hover:scale-100"
                             >
                               <span className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 to-rose-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -687,7 +758,7 @@ export default function ClassicArcade() {
                       <span className="text-4xl text-gray-500">🔒 🔒 🔒 🔒</span>
                     )}
                   </div>
-                  <div className="grid gap-4 lg:grid-cols-2">
+                  <div className={`grid gap-4 ${isSinglePlayer ? "mx-auto max-w-3xl" : "lg:grid-cols-2"}`}>
                     {teams.map((team) => (
                       <div key={`pattern-${team}`} className={`rounded-2xl border p-4 transition-all ${activeTeam === team ? "border-rose-500/50 bg-rose-900/25" : "border-white/10 bg-white/5"}`}>
                         <p className={`mb-3 text-sm font-bold ${team === 0 ? "text-fuchsia-300" : "text-rose-300"}`}>{teamNames[team]}</p>
@@ -696,7 +767,7 @@ export default function ClassicArcade() {
                             <button
                               key={`${team}-${i}`}
                               onClick={() => !locked && settle(team, o === patternRound.answer)}
-                              disabled={locked || betweenLeft > 0 || patternShowing}
+                              disabled={locked || patternShowing}
                               className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/5 p-4 text-lg font-bold text-white transition-all hover:scale-105 hover:bg-white/10 disabled:opacity-50 disabled:hover:scale-100"
                             >
                               <span className="absolute inset-0 bg-gradient-to-r from-rose-500/20 to-orange-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -713,7 +784,7 @@ export default function ClassicArcade() {
               {mini === "odd" && (
                 <>
                   <p className="text-2xl font-bold text-white mb-6">{oddRound.prompt}</p>
-                  <div className="grid gap-4 lg:grid-cols-2">
+                  <div className={`grid gap-4 ${isSinglePlayer ? "mx-auto max-w-3xl" : "lg:grid-cols-2"}`}>
                     {teams.map((team) => (
                       <div key={`odd-${team}`} className={`rounded-2xl border p-4 transition-all ${activeTeam === team ? "border-orange-500/50 bg-orange-900/25" : "border-white/10 bg-white/5"}`}>
                         <p className={`mb-3 text-sm font-bold ${team === 0 ? "text-fuchsia-300" : "text-rose-300"}`}>{teamNames[team]}</p>
@@ -722,7 +793,7 @@ export default function ClassicArcade() {
                             <button
                               key={`${team}-${i}`}
                               onClick={() => !locked && settle(team, i === oddRound.correctIndex, i === oddRound.correctIndex ? undefined : oddRound.reason)}
-                              disabled={locked || betweenLeft > 0}
+                              disabled={locked}
                               className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/5 p-4 text-lg font-bold text-white transition-all hover:scale-105 hover:bg-white/10 disabled:opacity-50 disabled:hover:scale-100"
                             >
                               <span className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-amber-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -749,6 +820,9 @@ export default function ClassicArcade() {
               {reveal.detail && (
                 <p className="text-sm text-gray-300 mt-1">{reveal.detail}</p>
               )}
+              <p className="mt-2 text-xs font-bold uppercase tracking-[0.25em] text-white/60">
+                Keyingi savol avtomatik ochiladi
+              </p>
             </div>
           )}
           
@@ -756,7 +830,7 @@ export default function ClassicArcade() {
           <div className="flex justify-center gap-4">
             <button
               onClick={() => onSkip(false)}
-              disabled={locked || betweenLeft > 0}
+              disabled={locked}
               className="group relative overflow-hidden rounded-xl bg-white/10 px-6 py-3 font-bold text-white border border-white/20 transition-all hover:bg-white/20 disabled:opacity-50"
             >
               <span className="relative flex items-center gap-2">
@@ -794,7 +868,7 @@ export default function ClassicArcade() {
           </div>
           
           <h2 className="relative mb-4 text-4xl font-black bg-gradient-to-r from-fuchsia-400 via-rose-400 to-orange-400 bg-clip-text text-transparent">
-            {winner === null ? "DURRANG!" : `${teamNames[winner]} G'OLIB!`}
+            {isSinglePlayer ? `${teamNames[0]} natijasi` : winner === null ? "DURRANG!" : `${teamNames[winner]} G'OLIB!`}
           </h2>
           
           <div className="relative mx-auto mb-8 max-w-md rounded-xl border border-white/10 bg-white/5 p-6">
@@ -802,10 +876,12 @@ export default function ClassicArcade() {
               <span className="text-fuchsia-400 font-bold">{teamNames[0]}</span>
               <span className="text-2xl font-black text-white">{scores[0]}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-rose-400 font-bold">{teamNames[1]}</span>
-              <span className="text-2xl font-black text-white">{scores[1]}</span>
-            </div>
+            {!isSinglePlayer && (
+              <div className="flex items-center justify-between">
+                <span className="text-rose-400 font-bold">{teamNames[1]}</span>
+                <span className="text-2xl font-black text-white">{scores[1]}</span>
+              </div>
+            )}
             <div className="mt-4 text-sm text-gray-400">
               Raundlar: {roundsDone}/{TOTAL_ROUNDS}
             </div>
@@ -836,21 +912,32 @@ export default function ClassicArcade() {
         </div>
       )}
       
+      {showConfetti && (
+        <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
+          {[...Array(50)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute animate-confetti"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: "-10%",
+                width: `${8 + Math.random() * 8}px`,
+                height: `${8 + Math.random() * 8}px`,
+                backgroundColor: ["#f472b6", "#fb7185", "#f59e0b", "#22d3ee", "#a855f7"][i % 5],
+                animationDelay: `${Math.random() * 0.4}s`,
+                animationDuration: `${1.6 + Math.random() * 1.1}s`,
+                transform: `rotate(${Math.random() * 360}deg)`,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       {/* Toast Notification */}
       {toast && (
         <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50">
           <div className="rounded-full bg-gradient-to-r from-fuchsia-600 to-rose-600 px-6 py-3 text-white font-bold shadow-2xl animate-bounce">
             {toast}
-          </div>
-        </div>
-      )}
-      
-      {/* Between Round Indicator */}
-      {betweenLeft > 0 && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center">
-          <div className="rounded-2xl bg-gradient-to-r from-fuchsia-600 to-rose-600 p-8 text-center shadow-2xl animate-pulse">
-            <p className="text-2xl font-black text-white mb-2">KEYINGI RAUND</p>
-            <p className="text-6xl font-black text-white">{betweenLeft}</p>
           </div>
         </div>
       )}

@@ -4,10 +4,10 @@ import { RiSwordFill } from "react-icons/ri";
 import { GiBrain, GiLightBulb, GiSwordsEmblem } from "react-icons/gi";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
+import wordBattleImg from "../../../assets/word_battle_image.png";
+
 
 function WordBattlePage() {
-  const bannerImg = 
-  "https://media.istockphoto.com/id/1983032364/vector/word-cloud-for-adventure.jpg?s=612x612&w=0&k=20&c=RReFvKQXqSlPGKrR1Dnx2_6F4WeT2dfxKuRkuTOJGNw=";
   const stats = [
     { icon: FaUsers, label: "2 JAMOA", color: "from-blue-500 to-cyan-500" },
     { icon: MdTimer, label: "35s RAUND", color: "from-yellow-500 to-orange-500" },
@@ -128,6 +128,7 @@ function WordBattlePage() {
                 to="/games/word-battle/play"
                 colorClassName="from-cyan-500 to-pink-500"
                 className="pt-2"
+                modeSelectionEnabled
               />
             </div>
 
@@ -141,9 +142,9 @@ function WordBattlePage() {
               <div className="relative transform-gpu overflow-hidden rounded-2xl border-2 border-white/20 shadow-2xl transition-all ">
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a0618] via-transparent to-transparent z-10" />
                 <img 
-                  src={bannerImg} 
+                  src={wordBattleImg} 
                   alt="Word Battle Arena" 
-                  className="h-[300px] w-full object-cover md:h-[400px] lg:h-[450px]"
+                  className="h-[360px] w-full object-cover md:h-[440px] lg:h-[520px]"
                 />
                 
                 {/* Overlay Content */}

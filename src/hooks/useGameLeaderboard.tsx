@@ -21,34 +21,89 @@ function getLocalKey(gameKey: string) {
   return `${LOCAL_KEY_PREFIX}${gameKey}`;
 }
 
-function readLocalEntries(gameKey: string): GameLeaderboardEntry[] {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  const raw = window.localStorage.getItem(getLocalKey(gameKey));
-  if (!raw) {
-    return [];
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as GameLeaderboardEntry[];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveLocalEntries(gameKey: string, entries: GameLeaderboardEntry[]) {
+function clearLocalEntries(gameKey: string) {
   if (typeof window === "undefined") {
     return;
   }
 
-  window.localStorage.setItem(getLocalKey(gameKey), JSON.stringify(entries));
+  window.localStorage.removeItem(getLocalKey(gameKey));
 }
 
 function normalizeKeyPart(value: string | undefined) {
   return (value ?? "").trim().toLowerCase();
+}
+
+function getParticipantCountFromMode(mode: string | undefined) {
+  const normalized = normalizeKeyPart(mode);
+  const match = normalized.match(/\d+/);
+
+  if (!match) {
+    return null;
+  }
+
+  const count = Number.parseInt(match[0], 10);
+  return Number.isNaN(count) ? null : count;
+}
+
+function getEntryMetadataValue(
+  entry: GameLeaderboardEntry,
+  key: string,
+): unknown {
+  return entry.metadata && typeof entry.metadata === "object"
+    ? entry.metadata[key]
+    : undefined;
+}
+
+export function isSinglePlayerLeaderboardEntry(entry: GameLeaderboardEntry) {
+  const metadataSingle = getEntryMetadataValue(entry, "is_single_player");
+  if (typeof metadataSingle === "boolean") {
+    return metadataSingle;
+  }
+
+  const metadataCount = getEntryMetadataValue(entry, "participant_count");
+  if (typeof metadataCount === "number") {
+    return metadataCount === 1;
+  }
+
+  const mode = normalizeKeyPart(entry.participant_mode);
+  const count = getParticipantCountFromMode(mode);
+
+  if (count !== null) {
+    return count === 1;
+  }
+
+  return (
+    mode.includes("solo") ||
+    mode.includes("single") ||
+    mode.includes("individual") ||
+    mode.includes("yakka")
+  );
+}
+
+function normalizeSubmittedEntry(
+  entry: SubmitGameResultPayload,
+): SubmitGameResultPayload {
+  const participantCountFromMode = getParticipantCountFromMode(entry.participant_mode);
+  const metadata = {
+    ...(entry.metadata ?? {}),
+  };
+
+  if (typeof metadata.participant_count !== "number" && participantCountFromMode !== null) {
+    metadata.participant_count = participantCountFromMode;
+  }
+
+  if (typeof metadata.is_single_player !== "boolean") {
+    if (typeof metadata.participant_count === "number") {
+      metadata.is_single_player = metadata.participant_count === 1;
+    } else if (participantCountFromMode !== null) {
+      metadata.is_single_player = participantCountFromMode === 1;
+    }
+  }
+
+  return {
+    ...entry,
+    metadata,
+  };
 }
 
 function getBestEntries(entries: GameLeaderboardEntry[]) {
@@ -91,12 +146,10 @@ export async function fetchGameLeaderboard(
       return items.slice(0, limit);
     }
   } catch {
-    // fall back to local cache
+    return [];
   }
 
-  return readLocalEntries(gameKey)
-    .sort((left, right) => right.score - left.score)
-    .slice(0, limit);
+  return [];
 }
 
 export async function submitGameResult(
@@ -104,22 +157,12 @@ export async function submitGameResult(
   payload: SubmitGameResultPayload,
 ): Promise<boolean> {
   try {
-    await apiClient.post(toSubmitPath(gameKey), payload);
+    await apiClient.post(toSubmitPath(gameKey), normalizeSubmittedEntry(payload));
+    clearLocalEntries(gameKey);
     return true;
   } catch {
-    const nextEntry: GameLeaderboardEntry = {
-      id: `${gameKey}-${Date.now()}`,
-      game_key: gameKey,
-      participant_name: payload.participant_name,
-      participant_mode: payload.participant_mode,
-      score: payload.score,
-      metadata: payload.metadata ?? null,
-      created_at: new Date().toISOString(),
-    };
-
-    const localEntries = readLocalEntries(gameKey);
-    saveLocalEntries(gameKey, [...localEntries, nextEntry]);
-    return true;
+    clearLocalEntries(gameKey);
+    return false;
   }
 }
 
@@ -139,6 +182,7 @@ export default function useGameLeaderboard(gameKey: string, limit = 100) {
   }, [gameKey, limit]);
 
   useEffect(() => {
+    clearLocalEntries(gameKey);
     void reload();
   }, [reload]);
 

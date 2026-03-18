@@ -31,7 +31,6 @@ import WordChainPage from "./components/games/word_chain/WordChainPage";
 import MemoryChainArenaPage from "./components/games/memory_chain_arena/MemoryChainArenaPage";
 import JumanjiPage from "./components/games/jumanji/JumanjiPage";
 import MiniPuzzlePage from "./components/games/mini_puzzle/MiniPuzzlePage";
-import MagicSquarePage from "./components/games/magic_square/MagicSquarePage";
 import ReverseThinkingPage from "./components/games/reverse_thinking/ReverseThinkingPage";
 import HangmanPage from "./components/games/hangman/HangmanPage";
 import MillionairePage from "./components/games/millionaire/MillionairePage";
@@ -145,7 +144,6 @@ function App() {
         <Route path="/games/memory-chain" element={<MemoryChainArenaPage />} />
         <Route path="/games/jumanji" element={<JumanjiPage />} />
         <Route path="/games/mini-puzzle" element={<MiniPuzzlePage />} />
-        <Route path="/games/magic-square" element={<MagicSquarePage />} />
         <Route path="/games/reverse-thinking" element={<ReverseThinkingPage />} />
         <Route path="/games/hangman" element={<HangmanPage />} />
         <Route path="/games/millionaire" element={<MillionairePage />} />

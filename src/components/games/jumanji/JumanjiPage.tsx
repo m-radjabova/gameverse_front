@@ -248,7 +248,7 @@ function JumanjiPage() {
                 <img
                   src={JumanjiImg}
                   alt="Jumanji Board"
-                  className="relative z-0 w-full rounded-lg border border-amber-500/20"
+                  className="relative z-0 h-[360px] w-full rounded-lg border border-amber-500/20 object-cover md:h-[440px] lg:h-[520px]"
                 />
 
                 {/* Overlay Badge */}
@@ -358,7 +358,6 @@ function JumanjiPage() {
 }
 
 export default JumanjiPage;
-
 
 
 

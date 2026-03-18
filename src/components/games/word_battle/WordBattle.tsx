@@ -8,10 +8,10 @@ import { GiBattleGear, GiTeamIdea, GiSwordsEmblem } from "react-icons/gi";
 import { RiFlashlightFill } from "react-icons/ri";
 import { TbAlt } from "react-icons/tb";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
-import GameLeaderboardPanel from "../shared/GameLeaderboardPanel";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
+import { useGameParticipantMode } from "../../../hooks/useGameParticipantMode";
 
 type Phase = "setup" | "play" | "round" | "finish";
 type TeamId = 0 | 1;
@@ -72,9 +72,16 @@ const scrambleWord = (answer: string) => {
 const sanitizeWord = (value: string) => value.toUpperCase().replace(/[^A-Z]/g, "");
 
 export default function WordBattle() {
+  const { isSinglePlayer, primaryName, secondaryName, modeLabel } = useGameParticipantMode({
+    gameId: "word-battle",
+    fallbackPrimaryName: "1-JAMOA",
+    fallbackSecondaryName: "2-JAMOA",
+    singleModeLabel: "1 o'yinchi",
+    multiModeLabel: "2 jamoa",
+  });
   const [phase, setPhase] = useState<Phase>("setup");
   useFinishApplause(phase === "finish");
-  const [teamNames, setTeamNames] = useState<[string, string]>(["⚔️ 1-JAMOA", "🛡️ 2-JAMOA"]);
+  const [teamNames, setTeamNames] = useState<[string, string]>([primaryName, secondaryName]);
   const [nameError, setNameError] = useState("");
   const [deck, setDeck] = useState<Puzzle[]>([]);
   const [roundIndex, setRoundIndex] = useState(0);
@@ -91,27 +98,48 @@ export default function WordBattle() {
   const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
 
   const currentPuzzle = deck[roundIndex];
+  const visibleTeams: TeamId[] = isSinglePlayer ? [0] : [0, 1];
 
   const scrambled = useMemo(() => {
     if (!currentPuzzle) return "";
     return scrambleWord(currentPuzzle.answer);
   }, [currentPuzzle]);
 
-  const winner = scores[0] === scores[1] ? null : scores[0] > scores[1] ? 0 : 1;
-  useGameResultSubmission(phase === "finish", "word-battle", [
-    {
-      participant_name: teamNames[0],
-      participant_mode: "2 jamoa",
-      score: scores[0],
-      metadata: { rounds: deck.length },
-    },
-    {
-      participant_name: teamNames[1],
-      participant_mode: "2 jamoa",
-      score: scores[1],
-      metadata: { rounds: deck.length },
-    },
-  ]);
+  const winner = isSinglePlayer ? 0 : scores[0] === scores[1] ? null : scores[0] > scores[1] ? 0 : 1;
+  useGameResultSubmission(
+    phase === "finish" && isSinglePlayer,
+    "word-battle",
+    isSinglePlayer
+      ? [
+          {
+            participant_name: teamNames[0],
+            participant_mode: modeLabel,
+            score: scores[0],
+            metadata: { rounds: deck.length },
+          },
+        ]
+      : [
+          {
+            participant_name: teamNames[0],
+            participant_mode: modeLabel,
+            score: scores[0],
+            metadata: { rounds: deck.length },
+          },
+          {
+            participant_name: teamNames[1],
+            participant_mode: modeLabel,
+            score: scores[1],
+            metadata: { rounds: deck.length },
+          },
+        ],
+  );
+
+  useEffect(() => {
+    setTeamNames((prev) => [
+      prev[0].trim() || primaryName,
+      isSinglePlayer ? secondaryName : prev[1].trim() || secondaryName,
+    ]);
+  }, [isSinglePlayer, primaryName, secondaryName]);
 
   useEffect(() => {
     if (phase !== "play") return;
@@ -140,8 +168,8 @@ export default function WordBattle() {
   const startGame = () => {
     const left = teamNames[0].trim();
     const right = teamNames[1].trim();
-    if (!left || !right) {
-      setNameError("Ikkala jamoa nomini kiriting!");
+    if (!left || (!isSinglePlayer && !right)) {
+      setNameError(isSinglePlayer ? "O'yinchi nomini kiriting!" : "Ikkala jamoa nomini kiriting!");
       return;
     }
 
@@ -151,7 +179,7 @@ export default function WordBattle() {
       return;
     }
     const nextDeck = shuffle(source).slice(0, Math.min(TOTAL_ROUNDS, source.length));
-    setTeamNames([left, right]);
+    setTeamNames([left, isSinglePlayer ? secondaryName : right]);
     setNameError("");
     setDeck(nextDeck);
     setRoundIndex(0);
@@ -352,25 +380,27 @@ export default function WordBattle() {
               </div>
 
               <div className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className={`grid gap-4 ${isSinglePlayer ? "" : "sm:grid-cols-2"}`}>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-blue-300">⚔️ 1-JAMOA</label>
+                    <label className="text-sm font-bold text-blue-300">{isSinglePlayer ? "O'YINCHI" : "⚔️ 1-JAMOA"}</label>
                     <input
                       value={teamNames[0]}
                       onChange={(e) => setTeamNames([e.target.value, teamNames[1]])}
                       className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-lg font-bold text-white placeholder-white/40 backdrop-blur-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/20 transition-all"
-                      placeholder="1-JAMOA nomi"
+                      placeholder={isSinglePlayer ? "O'yinchi nomi" : "1-JAMOA nomi"}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-rose-300">🛡️ 2-JAMOA</label>
-                    <input
-                      value={teamNames[1]}
-                      onChange={(e) => setTeamNames([teamNames[0], e.target.value])}
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-lg font-bold text-white placeholder-white/40 backdrop-blur-sm focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-400/20 transition-all"
-                      placeholder="2-JAMOA nomi"
-                    />
-                  </div>
+                  {!isSinglePlayer && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-rose-300">🛡️ 2-JAMOA</label>
+                      <input
+                        value={teamNames[1]}
+                        onChange={(e) => setTeamNames([teamNames[0], e.target.value])}
+                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-lg font-bold text-white placeholder-white/40 backdrop-blur-sm focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-400/20 transition-all"
+                        placeholder="2-JAMOA nomi"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {nameError && (
@@ -387,11 +417,15 @@ export default function WordBattle() {
                   <ul className="space-y-2 text-sm text-gray-300">
                     <li className="flex items-center gap-2">
                       <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
-                      Har bir jamoa aralashtirilgan so'zni topishi kerak
+                      {isSinglePlayer
+                        ? "Aralashtirilgan so'zni imkon qadar tez toping"
+                        : "Har bir jamoa aralashtirilgan so'zni topishi kerak"}
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
-                      Birinchi to'g'ri topgan jamoa ball oladi
+                      {isSinglePlayer
+                        ? "Har bir to'g'ri javob uchun ball olasiz"
+                        : "Birinchi to'g'ri topgan jamoa ball oladi"}
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
@@ -507,17 +541,24 @@ export default function WordBattle() {
 
               {/* Scores */}
               <div className="transform-gpu overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1e2a3a]/90 to-[#1f3a4a]/90 p-4 backdrop-blur-xl">
-                <div className="flex items-center justify-between">
+                {isSinglePlayer ? (
                   <div className="text-center">
                     <p className="text-xs font-bold text-blue-400">{teamNames[0]}</p>
                     <p className="text-2xl font-black text-blue-300">{scores[0]}</p>
                   </div>
-                  <div className="text-2xl font-black text-gray-500">:</div>
-                  <div className="text-center">
-                    <p className="text-xs font-bold text-rose-400">{teamNames[1]}</p>
-                    <p className="text-2xl font-black text-rose-300">{scores[1]}</p>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="text-center">
+                      <p className="text-xs font-bold text-blue-400">{teamNames[0]}</p>
+                      <p className="text-2xl font-black text-blue-300">{scores[0]}</p>
+                    </div>
+                    <div className="text-2xl font-black text-gray-500">:</div>
+                    <div className="text-center">
+                      <p className="text-xs font-bold text-rose-400">{teamNames[1]}</p>
+                      <p className="text-2xl font-black text-rose-300">{scores[1]}</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
@@ -535,8 +576,8 @@ export default function WordBattle() {
             </div>
 
             {/* Teams Input */}
-            <div className="grid gap-6 lg:grid-cols-2">
-              {[0, 1].map((id) => {
+            <div className={`grid gap-6 ${isSinglePlayer ? "" : "lg:grid-cols-2"}`}>
+              {visibleTeams.map((id) => {
                 const team = id as TeamId;
                 const isWinner = roundWinner === team;
                 const isActive = activeTeam === team;
@@ -648,7 +689,11 @@ export default function WordBattle() {
             </div>
 
             <h2 className="mb-4 text-4xl font-black bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent md:text-5xl">
-              {winner === null ? "DURANG!" : `${teamNames[winner]} G'OLIB!`}
+              {isSinglePlayer
+                ? `${teamNames[0]} natijasi`
+                : winner === null
+                ? "DURANG!"
+                : `${teamNames[winner]} G'OLIB!`}
             </h2>
 
             <div className="mx-auto mb-8 max-w-md rounded-2xl bg-black/40 p-6 border border-white/10">
@@ -656,11 +701,15 @@ export default function WordBattle() {
                 <span className="text-blue-400">{teamNames[0]}</span>
                 <span className="text-3xl font-black text-white">{scores[0]}</span>
               </div>
-              <div className="my-3 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-              <div className="flex items-center justify-between text-lg font-bold">
-                <span className="text-rose-400">{teamNames[1]}</span>
-                <span className="text-3xl font-black text-white">{scores[1]}</span>
-              </div>
+              {!isSinglePlayer && (
+                <>
+                  <div className="my-3 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                  <div className="flex items-center justify-between text-lg font-bold">
+                    <span className="text-rose-400">{teamNames[1]}</span>
+                    <span className="text-3xl font-black text-white">{scores[1]}</span>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="flex flex-wrap justify-center gap-4">
@@ -684,7 +733,6 @@ export default function WordBattle() {
                 </span>
               </button>
             </div>
-            <GameLeaderboardPanel gameKey="word-battle" title="Word Battle Reytingi" />
           </div>
         )}
         <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue} />
@@ -692,4 +740,3 @@ export default function WordBattle() {
     </div>
   );
 }
-

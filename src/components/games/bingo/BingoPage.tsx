@@ -17,11 +17,10 @@ import {
 import {MdQuiz } from "react-icons/md";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import bingoImg from "../../../assets/quiz_challenge_image.png";
 
 function BingoPage() {
-  // const bingoImg = "https://media.istockphoto.com/id/495611580/vector/bingo-or-lottery-retro-game-illustration-with-balls-and-cards.jpg?s=612x612&w=0&k=20&c=lyncdZNnRRPcClMJuAGV10F-a-6iTutSKilAuxaHKu4=";
-
-  const gameStats = [
+   const gameStats = [
     {
       icon: <FaUsers className="text-2xl text-white" />,
       label: "O'YINCHILAR",
@@ -246,24 +245,15 @@ function BingoPage() {
               <div className="absolute -bottom-8 -right-8 text-6xl -rotate-12 animate-bounce delay-200">🏆</div>
 
               {/* Bingo Card Preview */}
-              <div className="relative transform-gpu overflow-hidden rounded-2xl border-4 border-indigo-400/30 bg-gradient-to-br from-indigo-500 to-purple-500 p-6 shadow-2xl">
-                <div className="grid grid-cols-4 gap-2">
-                  <div className="aspect-square rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl">❓</div>
-                  <div className="aspect-square rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl">✓</div>
-                  <div className="aspect-square rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl">🎯</div>
-                  <div className="aspect-square rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl">⚡</div>
-                  <div className="aspect-square rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl">✗</div>
-                  <div className="aspect-square rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl">❓</div>
-                  <div className="aspect-square rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl">🃏</div>
-                  <div className="aspect-square rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl">🎯</div>
-                  <div className="aspect-square rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl">✓</div>
-                  <div className="aspect-square rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl">❓</div>
-                  <div className="aspect-square rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl">✗</div>
-                  <div className="aspect-square rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl">🔄</div>
-                  <div className="aspect-square rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl">⚡</div>
-                  <div className="aspect-square rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl">❓</div>
-                  <div className="aspect-square rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl">🎯</div>
-                  <div className="aspect-square rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl">✓</div>
+              <div className="relative min-h-[360px] transform-gpu overflow-hidden rounded-2xl border-4 border-indigo-400/30 bg-gradient-to-br from-indigo-500 to-purple-500 p-3 shadow-2xl md:min-h-[440px] lg:min-h-[520px]">
+                {/* Background Image */}
+                <div className="absolute inset-0">
+                  <img
+                    src={bingoImg}
+                    alt="Bingo Background"
+                    className="h-full w-full object-cover object-center"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-indigo-950/70 via-indigo-950/15 to-transparent" />
                 </div>
 
                 {/* Overlay Badge */}

@@ -1,352 +1,511 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { FaBrain, FaCheck, FaClock, FaCrown, FaHome, FaRedo, FaTimes, FaUser, FaUsers } from 'react-icons/fa';
-import Confetti from 'react-confetti-boom';
-import questionDataset from './bolalar_iq_50_dataset.json';
+import { useEffect, useMemo, useState } from "react";
+import { FaBrain, FaCheck, FaCrown, FaHome, FaRedo, FaTimes, FaUser, FaUsers } from "react-icons/fa";
+import Confetti from "react-confetti-boom";
+import { getGameSessionConfig } from "../../../hooks/gameSession";
+import { useFinishApplause } from "../../../hooks/useFinishApplause";
+import useContextPro from "../../../hooks/useContextPro";
+import { IQ_QUESTIONS, type IQQuestion as Question, type QuestionType, type Difficulty } from "./questions";
 
-type Phase = 'intro' | 'game' | 'result';
+type Phase = "intro" | "game" | "result";
 type PlayerMode = 1 | 2;
-type Difficulty = 'easy' | 'medium' | 'hard';
-type QuestionType = 'pattern' | 'logic' | 'matrix' | 'word' | 'visual';
-type VisualKind = 'sequence' | 'grid' | 'cards' | 'analogy';
-
-interface QuestionVisual {
-  kind: VisualKind;
-  title?: string;
-  items?: string[];
-  rows?: string[][];
-  left?: string[];
-  right?: string[];
-}
-
-interface IQQuestion {
-  id: number;
-  type: QuestionType;
-  difficulty: Difficulty;
-  prompt: string;
-  options: string[];
-  correctIndex: number;
-  explanation: string;
-  timeLimit: number;
-  visual?: QuestionVisual;
-}
-
-const QUESTIONS = questionDataset as IQQuestion[];
-const QUESTION_COUNT = 18;
-const typeAccent = {
-  pattern: 'from-sky-500 to-blue-500',
-  logic: 'from-violet-500 to-fuchsia-500',
-  matrix: 'from-cyan-500 to-indigo-500',
-  word: 'from-emerald-500 to-teal-500',
-  visual: 'from-amber-500 to-orange-500',
-} satisfies Record<QuestionType, string>;
-const diffAccent = {
-  easy: 'from-emerald-500 to-green-500',
-  medium: 'from-amber-500 to-yellow-500',
-  hard: 'from-rose-500 to-red-500',
-} satisfies Record<Difficulty, string>;
-
+const SESSION_PLAN = { easy: 5, medium: 10, hard: 15 } as const;
+const typeAccent = { bolalar_iq: "from-sky-500 to-violet-500" } satisfies Record<QuestionType, string>;
+const diffAccent = { easy: "from-emerald-500 to-green-500", medium: "from-amber-500 to-orange-500", hard: "from-rose-500 to-fuchsia-500" } satisfies Record<Difficulty, string>;
+const difficultyWeight = { easy: 1, medium: 1.7, hard: 2.5 } satisfies Record<Difficulty, number>;
+const AUTO_ADVANCE_DELAY = 1100;
 const shuffle = <T,>(items: T[]) => {
   const copy = [...items];
-  for (let i = copy.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
   }
   return copy;
 };
+const QUESTIONS = IQ_QUESTIONS;
+const difficultyLabel = { easy: "Oson", medium: "O'rtacha", hard: "Qiyin" } satisfies Record<Difficulty, string>;
+const calcIq = (weightedCorrect: number, totalWeight: number) =>
+  Math.max(70, Math.min(160, Math.round(70 + (weightedCorrect / Math.max(totalWeight, 1)) * 90)));
+const iqLevel = (iq: number) => (iq >= 135 ? "Daho daraja" : iq >= 125 ? "A'lo natija" : iq >= 115 ? "Juda kuchli" : iq >= 100 ? "O'rtachadan yuqori" : iq >= 90 ? "O'rtacha" : "Yana mashq qiling");
+const iqGradient = (iq: number) => (iq >= 135 ? "from-fuchsia-300 via-violet-300 to-pink-300" : iq >= 125 ? "from-cyan-300 via-sky-300 to-blue-300" : iq >= 115 ? "from-emerald-300 via-green-300 to-lime-300" : iq >= 100 ? "from-amber-300 via-yellow-300 to-orange-300" : "from-orange-300 via-rose-300 to-red-300");
 
-const calcIq = (correct: number, total: number, seconds: number) => {
-  if (!total) return 70;
-  const accuracy = correct / total;
-  const speed = Math.min((total * 18) / Math.max(seconds, total * 8), 1.35);
-  return Math.max(70, Math.min(160, Math.round(72 + accuracy * 62 + speed * 16)));
-};
-
-const iqLevel = (iq: number) => {
-  if (iq >= 135) return 'Genius level';
-  if (iq >= 125) return 'Excellent';
-  if (iq >= 115) return 'Very strong';
-  if (iq >= 100) return 'Above average';
-  if (iq >= 90) return 'Average';
-  return 'Needs more practice';
-};
-
-const iqGradient = (iq: number) => {
-  if (iq >= 135) return 'from-fuchsia-400 via-violet-400 to-pink-400';
-  if (iq >= 125) return 'from-sky-400 via-blue-400 to-cyan-400';
-  if (iq >= 115) return 'from-emerald-400 via-green-400 to-lime-400';
-  if (iq >= 100) return 'from-amber-400 via-yellow-400 to-orange-400';
-  return 'from-orange-400 via-rose-400 to-red-400';
-};
-
-const tone = (value: string) => {
-  const v = value.toLowerCase();
-  if (v.includes('qizil')) return 'from-rose-500/25 to-red-500/25 border-rose-300/30';
-  if (v.includes("ko'k")) return 'from-sky-500/25 to-blue-500/25 border-sky-300/30';
-  if (v.includes('yashil')) return 'from-emerald-500/25 to-green-500/25 border-emerald-300/30';
-  if (v.includes('sariq')) return 'from-amber-500/25 to-yellow-500/25 border-amber-300/30';
-  return 'from-white/10 to-white/5 border-white/10';
-};
-
-function Visual({ visual }: { visual?: QuestionVisual }) {
-  if (!visual) return null;
+function VisualBoard({ question, compact = false }: { question: Question; compact?: boolean }) {
   return (
-    <div className="mb-6 rounded-3xl border border-white/10 bg-slate-950/70 p-5">
-      {visual.title ? <p className="mb-4 text-center text-sm font-semibold uppercase tracking-[0.28em] text-sky-200/80">{visual.title}</p> : null}
-      {visual.kind === 'sequence' && visual.items ? (
-        <div className="flex flex-wrap justify-center gap-3">
-          {visual.items.map((item, index) => (
-            <div key={`${item}-${index}`} className={`min-w-20 rounded-2xl border bg-gradient-to-br px-4 py-4 text-center text-sm font-black text-white ${tone(item)}`}>{item}</div>
-          ))}
+    <div className={`rounded-[2rem] border border-white/10 bg-slate-950/85 ${compact ? "p-3 lg:p-4" : "p-4 lg:p-5"}`}>
+      <p className={`text-center text-xs font-bold uppercase tracking-[0.28em] text-sky-200/75 ${compact ? "mb-3" : "mb-4"}`}>Rasmli savol</p>
+      <div className={`mx-auto max-w-3xl overflow-hidden rounded-[1.5rem] border border-white/10 bg-white ${compact ? "p-2" : "p-2 lg:p-3"}`}>
+        <img
+          src={question.image}
+          alt={question.question}
+          className={`mx-auto h-auto w-full rounded-[1rem] object-contain ${compact ? "max-h-[24vh] lg:max-h-[27vh]" : "max-h-[28vh] lg:max-h-[32vh]"}`}
+        />
+      </div>
+    </div>
+  );
+}
+
+function Panel({ player, playerIndex, answers, question, showExplanation, onAnswer, accent, compact = false }: { 
+  player: string; 
+  playerIndex: number; 
+  answers: Array<number | null>; 
+  question: Question; 
+  showExplanation: boolean; 
+  onAnswer: (playerIndex: number, optionIndex: number) => void; 
+  accent: string;
+  compact?: boolean;
+}) {
+  return (
+    <div className={`rounded-[2rem] border border-white/10 bg-gradient-to-b ${accent} ${compact ? "p-3 lg:p-4" : "p-4 lg:p-5"}`}>
+      <div className={`flex items-center justify-between gap-3 ${compact ? "mb-3" : "mb-5"}`}>
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.28em] text-slate-300">Javob paneli</p>
+          <h3 className={`font-black text-white ${compact ? "mt-1 text-xl lg:text-2xl" : "mt-2 text-2xl"}`}>{player}</h3>
         </div>
-      ) : null}
-      {visual.kind === 'cards' && visual.items ? (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {visual.items.map((item, index) => (
-            <div key={`${item}-${index}`} className={`rounded-2xl border bg-gradient-to-br px-4 py-5 text-center text-sm font-bold text-white ${tone(item)}`}>{item}</div>
-          ))}
-        </div>
-      ) : null}
-      {visual.kind === 'grid' && visual.rows ? (
-        <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${visual.rows[0]?.length ?? 3}, minmax(0, 1fr))` }}>
-          {visual.rows.flat().map((cell, index) => (
-            <div key={`${cell}-${index}`} className={`flex min-h-20 items-center justify-center rounded-2xl border bg-gradient-to-br px-3 py-4 text-center text-sm font-black text-white ${tone(cell)}`}>{cell}</div>
-          ))}
-        </div>
-      ) : null}
-      {visual.kind === 'analogy' ? (
-        <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr] md:items-stretch">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">{(visual.left ?? []).map((item, index) => <div key={`${item}-${index}`} className="rounded-xl bg-sky-500/10 px-4 py-3 text-center font-bold text-sky-100">{item}</div>)}</div>
-          <div className="flex items-center justify-center text-3xl font-black text-white/70">::</div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">{(visual.right ?? []).map((item, index) => <div key={`${item}-${index}`} className="rounded-xl bg-violet-500/10 px-4 py-3 text-center font-bold text-violet-100">{item}</div>)}</div>
-        </div>
-      ) : null}
+        {showExplanation ? (
+          <div className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold uppercase tracking-[0.2em] ${
+            question.options[answers[playerIndex] ?? -1]?.id === question.correctAnswer 
+              ? "bg-emerald-500/15 text-emerald-200" 
+              : "bg-rose-500/15 text-rose-200"
+          }`}>
+            {question.options[answers[playerIndex] ?? -1]?.id === question.correctAnswer ? <FaCheck /> : <FaTimes />}
+            {answers[playerIndex] === null ? "Javob yo'q" : question.options[answers[playerIndex]]?.id === question.correctAnswer ? "To'g'ri" : "Noto'g'ri"}
+          </div>
+        ) : null}
+      </div>
+      <div className={`grid sm:grid-cols-2 ${compact ? "gap-2.5" : "gap-3"}`}>
+        {question.options.map((option, optionIndex) => { 
+          const selected = answers[playerIndex] === optionIndex; 
+          const correct = option.id === question.correctAnswer; 
+          const disabled = showExplanation || answers[playerIndex] !== null; 
+          const state = showExplanation && correct 
+            ? "border-emerald-300/40 bg-emerald-500/15 text-emerald-100" 
+            : showExplanation && selected 
+            ? "border-rose-300/40 bg-rose-500/15 text-rose-100" 
+            : selected 
+            ? "border-sky-300/40 bg-sky-500/15 text-sky-100" 
+            : "border-white/10 bg-slate-950/80 text-white hover:border-sky-300/30 hover:bg-sky-500/10"; 
+          
+          return (
+            <button 
+              key={`${player}-${option.id}`} 
+              type="button" 
+              disabled={disabled} 
+              onClick={() => onAnswer(playerIndex, optionIndex)} 
+              className={`rounded-2xl border text-left transition ${compact ? "p-2.5" : "p-3"} ${state}`}
+            >
+              <span className={`block text-xs font-bold uppercase tracking-[0.24em] text-slate-400 ${compact ? "mb-1.5" : "mb-2"}`}>
+                Variant {option.id}
+              </span>
+              <div className={`overflow-hidden rounded-xl border border-white/10 bg-white ${compact ? "p-1.5" : "p-2"}`}>
+                <img src={option.image} alt={`Variant ${option.id}`} className={`w-full object-contain ${compact ? "h-16 sm:h-20 lg:h-[5.5rem]" : "h-20 sm:h-24 lg:h-28"}`} />
+              </div>
+            </button>
+          ); 
+        })}
+      </div>
     </div>
   );
 }
 
 function IQGame() {
-  const [phase, setPhase] = useState<Phase>('intro');
+  const { state: { user } } = useContextPro();
+  const session = getGameSessionConfig("iq-game");
+  const registeredName = user?.username?.trim() || "O'YINCHI 1";
+  const [phase, setPhase] = useState<Phase>("intro");
+  useFinishApplause(phase === "result");
   const [playerMode, setPlayerMode] = useState<PlayerMode>(1);
-  const [playerNames, setPlayerNames] = useState(['Player 1', 'Player 2']);
-  const [questions, setQuestions] = useState<IQQuestion[]>([]);
+  const [playerNames, setPlayerNames] = useState<[string, string]>([registeredName, "O'YINCHI 2"]);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [scores, setScores] = useState([0, 0]);
+  const [scores, setScores] = useState<[number, number]>([0, 0]);
+  const [weightedScores, setWeightedScores] = useState<[number, number]>([0, 0]);
   const [answers, setAnswers] = useState<Array<number | null>>([null, null]);
-  const [timer, setTimer] = useState(20);
   const [showExplanation, setShowExplanation] = useState(false);
-  const [startedAt, setStartedAt] = useState<number | null>(null);
-  const [finishedAt, setFinishedAt] = useState<number | null>(null);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  useEffect(() => { 
+    if (phase === "intro" && playerMode === 1) {
+      setPlayerNames((prev) => [registeredName, prev[1]]); 
+    }
+  }, [phase, playerMode, registeredName]);
+  
   const activePlayers = useMemo(() => playerNames.slice(0, playerMode), [playerMode, playerNames]);
   const currentQuestion = questions[currentIndex];
-  const totalSeconds = startedAt && finishedAt ? Math.max(1, Math.round((finishedAt - startedAt) / 1000)) : 0;
-  const iqScores = activePlayers.map((_, index) => calcIq(scores[index] ?? 0, questions.length, totalSeconds || questions.length * 18));
+  const availablePool = useMemo(
+    () => ({
+      easy: QUESTIONS.filter((question) => question.difficulty === "easy").length,
+      medium: QUESTIONS.filter((question) => question.difficulty === "medium").length,
+      hard: QUESTIONS.filter((question) => question.difficulty === "hard").length,
+    }),
+    [],
+  );
+  const totalWeight = useMemo(
+    () => questions.reduce((sum, question) => sum + difficultyWeight[question.difficulty], 0),
+    [questions],
+  );
+  const iqScores = activePlayers.map((_, index) => calcIq(weightedScores[index] ?? 0, totalWeight));
   const topScore = Math.max(...scores.slice(0, playerMode), 0);
   const winners = activePlayers.filter((_, index) => scores[index] === topScore);
+  const progress = Math.round(((currentIndex + 1) / Math.max(questions.length, 1)) * 100);
 
   useEffect(() => {
-    if (phase !== 'game' || !currentQuestion || showExplanation) return;
-    timerRef.current = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          timerRef.current = null;
-          setShowExplanation(true);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = null;
-    };
-  }, [phase, currentQuestion, showExplanation]);
+    if (phase !== "game" || !showExplanation) return;
+    const timeout = window.setTimeout(() => {
+      const nextIndex = currentIndex + 1;
+      if (nextIndex >= questions.length) {
+        setPhase("result");
+        return;
+      }
+      setCurrentIndex(nextIndex);
+      setAnswers([null, null]);
+      setShowExplanation(false);
+    }, AUTO_ADVANCE_DELAY);
+    return () => window.clearTimeout(timeout);
+  }, [currentIndex, phase, questions.length, showExplanation]);
 
+  const setName = (index: number, value: string) => {
+    setPlayerNames((prev) => { 
+      const next: [string, string] = [...prev] as [string, string]; 
+      next[index] = value.trimStart().slice(0, 18) || (index === 0 ? registeredName : `O'YINCHI ${index + 1}`); 
+      return next; 
+    });
+  };
+  
   const startGame = (mode: PlayerMode) => {
-    const selected = shuffle(QUESTIONS).slice(0, QUESTION_COUNT);
+    const selected = (["easy", "medium", "hard"] as Difficulty[])
+      .flatMap((difficulty) =>
+        shuffle(QUESTIONS.filter((question) => question.difficulty === difficulty))
+          .slice(0, SESSION_PLAN[difficulty])
+          .map((question) => ({ ...question, options: shuffle(question.options) })),
+      );
     setPlayerMode(mode);
     setQuestions(selected);
     setCurrentIndex(0);
     setScores([0, 0]);
+    setWeightedScores([0, 0]);
     setAnswers([null, null]);
     setShowExplanation(false);
-    setTimer(selected[0]?.timeLimit ?? 20);
-    setStartedAt(Date.now());
-    setFinishedAt(null);
-    setPhase('game');
+    setPhase("game");
   };
-
-  const setName = (index: number, value: string) => {
-    setPlayerNames((prev) => {
-      const next = [...prev];
-      next[index] = value.trimStart().slice(0, 18) || `Player ${index + 1}`;
-      return next;
-    });
-  };
-
-  const answer = (playerIndex: number, optionIndex: number) => {
-    if (!currentQuestion || showExplanation || answers[playerIndex] !== null) return;
-    const nextAnswers = [...answers];
-    nextAnswers[playerIndex] = optionIndex;
-    setAnswers(nextAnswers);
-    if (optionIndex === currentQuestion.correctIndex) {
-      setScores((prev) => {
-        const next = [...prev];
-        next[playerIndex] += 1;
+  
+  const answer = (playerIndex: number, optionIndex: number) => { 
+    if (!currentQuestion || showExplanation || answers[playerIndex] !== null) return; 
+    const nextAnswers = [...answers]; 
+    nextAnswers[playerIndex] = optionIndex; 
+    setAnswers(nextAnswers); 
+    if (currentQuestion.options[optionIndex]?.id === currentQuestion.correctAnswer) {
+      setScores((prev) => { 
+        const next: [number, number] = [...prev] as [number, number]; 
+        next[playerIndex] += 1; 
+        return next; 
+      });
+      setWeightedScores((prev) => {
+        const next: [number, number] = [...prev] as [number, number];
+        next[playerIndex] += difficultyWeight[currentQuestion.difficulty];
         return next;
       });
     }
     if (playerMode === 1 || nextAnswers.slice(0, playerMode).every((item) => item !== null)) {
-      setShowExplanation(true);
+      setShowExplanation(true); 
     }
   };
 
-  const nextQuestion = () => {
-    const nextIndex = currentIndex + 1;
-    if (nextIndex >= questions.length) {
-      setFinishedAt(Date.now());
-      setPhase('result');
-      return;
-    }
-    setCurrentIndex(nextIndex);
-    setAnswers([null, null]);
-    setShowExplanation(false);
-    setTimer(questions[nextIndex].timeLimit);
-  };
+  useEffect(() => {
+    if (phase !== "intro") return;
+    const mode = session?.participantCount === 2 ? 2 : 1;
+    const labels = session?.participantLabels?.length
+      ? [
+          session.participantLabels[0] || registeredName,
+          session.participantLabels[1] || "O'YINCHI 2",
+        ]
+      : [registeredName, "O'YINCHI 2"];
+    setPlayerNames(labels as [string, string]);
+    startGame(mode);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, session?.participantCount, session?.participantLabels, registeredName]);
 
-  const progress = Math.round(((currentIndex + 1) / Math.max(questions.length, 1)) * 100);
-
-  if (phase === 'intro') {
+  if (phase === "intro") {
     return (
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.28),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(168,85,247,0.22),_transparent_30%),linear-gradient(135deg,_#020617,_#111827_40%,_#172554_100%)] p-4 text-white">
-        <div className="mx-auto max-w-6xl grid gap-8 xl:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-6 md:p-8">
-            <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-sky-300/20 bg-sky-400/10 px-4 py-2 text-sm font-semibold uppercase tracking-[0.28em] text-sky-100"><FaBrain />IQ Challenge</div>
-            <h1 className="text-4xl font-black leading-tight md:text-6xl">Rasmli IQ test, endi 1 yoki 2 o'yinchi uchun.</h1>
-            <p className="mt-5 max-w-2xl text-lg text-slate-300">Savollar alohida JSON faylga ko'chirildi. 2 o'yinchida bitta savolga ikkita alohida javob kartasi chiqadi va natija alohida hisoblanadi.</p>
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-5"><p className="text-sm uppercase tracking-[0.24em] text-slate-400">Dataset</p><p className="mt-2 text-3xl font-black">{QUESTIONS.length}</p><p className="mt-1 text-sm text-slate-300">ta savol</p></div>
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-5"><p className="text-sm uppercase tracking-[0.24em] text-slate-400">Session</p><p className="mt-2 text-3xl font-black">{QUESTION_COUNT}</p><p className="mt-1 text-sm text-slate-300">ta random savol</p></div>
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-5"><p className="text-sm uppercase tracking-[0.24em] text-slate-400">Mode</p><p className="mt-2 text-3xl font-black">1 / 2</p><p className="mt-1 text-sm text-slate-300">o'yinchi</p></div>
-            </div>
-            <div className="mt-8 grid gap-4 md:grid-cols-2">
-              <button type="button" onClick={() => setPlayerMode(1)} className={`rounded-[1.75rem] border p-6 text-left transition ${playerMode === 1 ? 'border-sky-300/40 bg-sky-500/15' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}><div className="mb-4 flex items-center gap-3 text-2xl font-black"><FaUser className="text-sky-300" />Single player</div><p className="text-sm text-slate-300">Bir kishi uchun bitta javob paneli.</p></button>
-              <button type="button" onClick={() => setPlayerMode(2)} className={`rounded-[1.75rem] border p-6 text-left transition ${playerMode === 2 ? 'border-violet-300/40 bg-violet-500/15' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}><div className="mb-4 flex items-center gap-3 text-2xl font-black"><FaUsers className="text-violet-300" />Two players</div><p className="text-sm text-slate-300">Savol bitta, javob kartalari ikkita.</p></button>
-            </div>
-            <div className="mt-8 grid gap-4 md:grid-cols-2">
-              <label className="rounded-3xl border border-white/10 bg-white/5 p-4"><span className="mb-2 block text-sm uppercase tracking-[0.24em] text-slate-400">Player 1</span><input value={playerNames[0]} onChange={(e) => setName(0, e.target.value)} className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none" /></label>
-              <label className={`rounded-3xl border p-4 ${playerMode === 2 ? 'border-white/10 bg-white/5' : 'border-white/5 bg-white/0 opacity-50'}`}><span className="mb-2 block text-sm uppercase tracking-[0.24em] text-slate-400">Player 2</span><input value={playerNames[1]} onChange={(e) => setName(1, e.target.value)} disabled={playerMode !== 2} className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none disabled:opacity-60" /></label>
-            </div>
-            <button type="button" onClick={() => startGame(playerMode)} className="mt-8 inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 px-7 py-4 text-lg font-black text-white"><FaBrain />Start IQ Test</button>
+      <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+        <div className="rounded-[2rem] border border-white/10 bg-slate-950/80 p-6 md:p-8">
+          <div className="inline-flex items-center gap-3 rounded-full border border-sky-300/20 bg-sky-500/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.32em] text-sky-100">
+            <FaBrain />IQ Maydoni
           </div>
-          <div className="space-y-4">
-            <div className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-6">
-              <p className="text-sm uppercase tracking-[0.24em] text-slate-400">Savol turlari</p>
-              <div className="mt-5 grid gap-3">
-                {(['pattern', 'logic', 'matrix', 'word', 'visual'] as QuestionType[]).map((item) => (
-                  <div key={item} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                    <div className={`mb-2 inline-flex rounded-full bg-gradient-to-r px-3 py-1 text-xs font-bold uppercase tracking-[0.24em] text-white ${typeAccent[item]}`}>{item}</div>
-                    <p className="text-sm text-slate-300">{item === 'pattern' ? 'Son va shakl ketma-ketliklari.' : item === 'logic' ? 'Mantiqiy savollar.' : item === 'matrix' ? "Jadval va bo'sh kataklar." : item === 'word' ? "Analogiya va so'z mantig'i." : 'Kartali rasmli topshiriqlar.'}</p>
-                  </div>
-                ))}
+          <h2 className="mt-6 text-4xl font-black leading-tight text-white md:text-5xl">
+            Rangli animatsion IQ o'yini.
+            <span className="block bg-gradient-to-r from-sky-300 via-cyan-300 to-violet-300 bg-clip-text text-transparent">
+              5 oson, keyin tobora qiyinlashadigan challenge.
+            </span>
+          </h2>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300">
+            Bir kishilik rejimda ro'yxatdan o'tgan foydalanuvchi o'ynaydi. Ikki kishilik rejimda esa ikkala ismni ham o'zgartirish mumkin. 
+            Session ichida savollar bosqichma-bosqich qiyinlashib boradi va hammasi rasmli animatsion SVG ko'rinishida chiqadi.
+          </p>
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
+            <button 
+              type="button" 
+              onClick={() => setPlayerMode(1)} 
+              className={`rounded-[1.75rem] border p-6 text-left transition ${
+                playerMode === 1 ? "border-sky-300/40 bg-sky-500/15" : "border-white/10 bg-white/5 hover:bg-white/10"
+              }`}
+            >
+              <div className="mb-4 flex items-center gap-3 text-2xl font-black text-white">
+                <FaUser className="text-sky-300" />1 kishilik
               </div>
+              <p className="text-sm text-slate-300">Ro'yxatdan o'tgan foydalanuvchi avtomatik qatnashadi.</p>
+            </button>
+            <button 
+              type="button" 
+              onClick={() => setPlayerMode(2)} 
+              className={`rounded-[1.75rem] border p-6 text-left transition ${
+                playerMode === 2 ? "border-violet-300/40 bg-violet-500/15" : "border-white/10 bg-white/5 hover:bg-white/10"
+              }`}
+            >
+              <div className="mb-4 flex items-center gap-3 text-2xl font-black text-white">
+                <FaUsers className="text-violet-300" />2 kishilik
+              </div>
+              <p className="text-sm text-slate-300">Savol markazda chiqadi, ikki tomonda alohida javob panellari bo'ladi.</p>
+            </button>
+          </div>
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
+            <label className="rounded-3xl border border-white/10 bg-white/5 p-4">
+              <span className="mb-2 block text-xs font-bold uppercase tracking-[0.28em] text-slate-400">1-o'yinchi</span>
+              <input 
+                value={playerNames[0]} 
+                onChange={(event) => setName(0, event.target.value)} 
+                disabled={playerMode === 1} 
+                className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none disabled:opacity-70" 
+              />
+            </label>
+            <label className={`rounded-3xl border p-4 ${
+              playerMode === 2 ? "border-white/10 bg-white/5" : "border-white/5 bg-transparent opacity-50"
+            }`}>
+              <span className="mb-2 block text-xs font-bold uppercase tracking-[0.28em] text-slate-400">2-o'yinchi</span>
+              <input 
+                value={playerNames[1]} 
+                onChange={(event) => setName(1, event.target.value)} 
+                disabled={playerMode !== 2} 
+                className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none disabled:opacity-70" 
+              />
+            </label>
+          </div>
+          <button 
+            type="button" 
+            onClick={() => startGame(playerMode)} 
+            className="mt-8 inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-500 to-violet-500 px-7 py-4 text-sm font-black uppercase tracking-[0.2em] text-white"
+          >
+            <FaBrain />IQ testni boshlash
+          </button>
+        </div>
+        <div className="space-y-4">
+          <div className="rounded-[2rem] border border-white/10 bg-slate-950/80 p-6">
+            <p className="text-xs font-bold uppercase tracking-[0.32em] text-slate-400">O'yin rejasi</p>
+            <div className="mt-5 space-y-3 text-sm text-slate-300">
+              <p>1. Faqat boshida 5 ta oson savol keladi.</p>
+              <p>2. Keyingi bloklarda savollar tezroq murakkablashadi.</p>
+              <p>3. Oxirgi savollar kuchliroq mantiq va pattern tahlilini talab qiladi.</p>
+              <p>4. Javob tanlangach o'yin avtomatik keyingi savolga o'tadi.</p>
             </div>
-            <div className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-6"><p className="text-sm uppercase tracking-[0.24em] text-slate-400">2 o'yinchi oqimi</p><div className="mt-4 space-y-3 text-sm text-slate-300"><p>1. Savol ekranga bitta chiqadi.</p><p>2. Har o'yinchi o'z panelida javob beradi.</p><p>3. Ikkalasi tugatgach izoh ochiladi.</p><p>4. Ball va IQ alohida hisoblanadi.</p></div></div>
+          </div>
+          <div className="rounded-[2rem] border border-white/10 bg-slate-950/80 p-6">
+            <p className="text-xs font-bold uppercase tracking-[0.32em] text-slate-400">Savollar bazasi</p>
+            <p className="mt-4 text-base leading-7 text-slate-300">
+              {QUESTIONS.length} ta unikal rasmli savol lokal SVG bazadan yuklanadi.
+            </p>
+            <p className="mt-3 text-sm text-slate-400">
+              Jami: {availablePool.easy} oson, {availablePool.medium} o'rtacha, {availablePool.hard} qiyin savol.
+            </p>
           </div>
         </div>
       </div>
     );
   }
 
-  if (phase === 'game' && currentQuestion) {
+  if (phase === "game" && currentQuestion) {
     return (
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(168,85,247,0.18),_transparent_32%),linear-gradient(160deg,_#020617,_#111827_45%,_#1e1b4b_100%)] p-4 text-white">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-6 flex flex-col gap-4 rounded-[2rem] border border-white/10 bg-slate-950/70 p-5 lg:flex-row lg:items-center lg:justify-between">
-            <button type="button" onClick={() => setPhase('intro')} className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold"><FaHome />Menu</button>
-            <div className="flex flex-wrap items-center gap-3">
-              <div className={`rounded-full bg-gradient-to-r px-4 py-2 text-sm font-black uppercase tracking-[0.24em] text-white ${typeAccent[currentQuestion.type]}`}>{currentQuestion.type}</div>
-              <div className={`rounded-full bg-gradient-to-r px-4 py-2 text-sm font-black uppercase tracking-[0.24em] text-white ${diffAccent[currentQuestion.difficulty]}`}>{currentQuestion.difficulty}</div>
+      <div className="space-y-4 lg:space-y-6">
+        <div className="flex flex-col gap-4 rounded-[2rem] border border-white/10 bg-slate-950/80 p-5 lg:flex-row lg:items-center lg:justify-between">
+          <button type="button" onClick={() => setPhase("intro")} className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-white">
+            <FaHome />Menyu
+          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className={`rounded-full bg-gradient-to-r px-4 py-2 text-xs font-black uppercase tracking-[0.24em] text-white ${typeAccent[currentQuestion.type]}`}>
+              IQ test
             </div>
-            <div className="flex flex-wrap gap-3">{activePlayers.map((player, index) => <div key={player} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3"><p className="text-xs uppercase tracking-[0.24em] text-slate-400">{player}</p><p className="text-2xl font-black">{scores[index]}</p></div>)}</div>
-          </div>
-
-          <div className="mb-6 rounded-[2rem] border border-white/10 bg-slate-950/70 p-5">
-            <div className="mb-3 flex items-center justify-between text-sm font-semibold uppercase tracking-[0.24em] text-slate-300"><span>Question {currentIndex + 1} / {questions.length}</span><span>{progress}%</span></div>
-            <div className="h-3 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 transition-all duration-500" style={{ width: `${progress}%` }} /></div>
-          </div>
-
-          <div className="mb-6 rounded-2xl border border-white/10 bg-black/30 p-4">
-            <div className="mb-2 flex items-center justify-between text-white"><span className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.28em] text-sky-100/80"><FaClock />Timer</span><span className={`text-2xl font-black ${timer <= 5 ? 'text-rose-400' : 'text-white'}`}>{timer}s</span></div>
-            <div className="h-3 overflow-hidden rounded-full bg-white/10"><div className={`h-full rounded-full transition-all duration-1000 ${timer <= 5 ? 'bg-gradient-to-r from-orange-500 to-rose-500' : 'bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500'}`} style={{ width: `${Math.max(0, (timer / currentQuestion.timeLimit) * 100)}%` }} /></div>
-          </div>
-
-          <div className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-6">
-            <Visual visual={currentQuestion.visual} />
-            <div className="mb-6 text-center"><p className="text-sm font-semibold uppercase tracking-[0.28em] text-slate-400">Savol</p><h2 className="mt-3 text-2xl font-black leading-tight md:text-4xl">{currentQuestion.prompt}</h2></div>
-            <div className={`grid gap-5 ${playerMode === 2 ? 'xl:grid-cols-2' : ''}`}>
-              {activePlayers.map((player, playerIndex) => (
-                <div key={player} className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5">
-                  <div className="mb-4 flex items-center justify-between">
-                    <div><p className="text-xs uppercase tracking-[0.24em] text-slate-400">Answer panel</p><p className="text-2xl font-black">{player}</p></div>
-                    {showExplanation ? <div className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold ${answers[playerIndex] === currentQuestion.correctIndex ? 'bg-emerald-500/15 text-emerald-300' : 'bg-rose-500/15 text-rose-300'}`}>{answers[playerIndex] === currentQuestion.correctIndex ? <FaCheck /> : <FaTimes />}{answers[playerIndex] === null ? 'No answer' : answers[playerIndex] === currentQuestion.correctIndex ? 'Correct' : 'Wrong'}</div> : null}
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {currentQuestion.options.map((option, optionIndex) => {
-                      const selected = answers[playerIndex] === optionIndex;
-                      const correct = optionIndex === currentQuestion.correctIndex;
-                      const disabled = showExplanation || answers[playerIndex] !== null;
-                      const state = showExplanation && correct ? 'border-emerald-300/40 bg-emerald-500/15 text-emerald-200' : showExplanation && selected ? 'border-rose-300/40 bg-rose-500/15 text-rose-200' : selected ? 'border-sky-300/40 bg-sky-500/15 text-sky-100' : 'border-white/10 bg-slate-950/70 text-white hover:border-sky-300/30 hover:bg-sky-500/10';
-                      return <button key={`${player}-${option}`} type="button" disabled={disabled} onClick={() => answer(playerIndex, optionIndex)} className={`rounded-2xl border px-4 py-4 text-left text-sm font-bold transition ${state}`}><span className="mb-2 block text-xs uppercase tracking-[0.24em] text-slate-400">Variant {String.fromCharCode(65 + optionIndex)}</span><span className="text-base">{option}</span></button>;
-                    })}
-                  </div>
-                </div>
-              ))}
+            <div className={`rounded-full bg-gradient-to-r px-4 py-2 text-xs font-black uppercase tracking-[0.24em] text-white ${diffAccent[currentQuestion.difficulty]}`}>
+              {difficultyLabel[currentQuestion.difficulty]}
             </div>
-            {showExplanation ? <div className="mt-6 rounded-[1.75rem] border border-sky-300/20 bg-sky-500/10 p-5"><div className="mb-2 flex items-center gap-2 text-sky-200"><FaBrain /><p className="text-sm font-semibold uppercase tracking-[0.24em]">Izoh</p></div><p className="text-base text-slate-200">{currentQuestion.explanation}</p><button type="button" onClick={nextQuestion} className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 px-6 py-3 text-sm font-black uppercase tracking-[0.18em] text-white">{currentIndex + 1 >= questions.length ? 'See results' : 'Next question'}</button></div> : null}
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {activePlayers.map((player, index) => (
+              <div key={player} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                <p className="text-xs uppercase tracking-[0.24em] text-slate-400">{player}</p>
+                <p className="mt-2 text-2xl font-black text-white">{scores[index]}</p>
+              </div>
+            ))}
           </div>
         </div>
+        
+        <div className="grid gap-4">
+          <div className="rounded-[2rem] border border-white/10 bg-slate-950/80 p-4 lg:p-5">
+            <div className="mb-3 flex items-center justify-between text-xs font-bold uppercase tracking-[0.28em] text-slate-300">
+              <span>Savol {currentIndex + 1} / {questions.length}</span>
+              <span>{progress}%</span>
+            </div>
+            <div className="h-3 overflow-hidden rounded-full bg-white/10">
+              <div className="h-full rounded-full bg-gradient-to-r from-sky-500 via-cyan-500 to-violet-500 transition-all duration-500" style={{ width: `${progress}%` }} />
+            </div>
+          </div>
+        </div>
+        
+        {playerMode === 2 ? (
+          <div className="grid gap-4 xl:grid-cols-[minmax(260px,1fr)_minmax(0,1.25fr)_minmax(260px,1fr)]">
+            <Panel 
+              player={activePlayers[0]} 
+              playerIndex={0} 
+              answers={answers} 
+              question={currentQuestion} 
+              showExplanation={showExplanation} 
+              onAnswer={answer} 
+              accent="from-sky-500/10 to-transparent" 
+            />
+            <div className="rounded-[2rem] border border-white/10 bg-slate-950/80 p-6">
+              <div className="mb-5 text-center">
+                <p className="text-xs font-bold uppercase tracking-[0.32em] text-slate-400">Asosiy savol</p>
+                <h2 className="mt-3 text-2xl font-black leading-tight text-white md:text-3xl">{currentQuestion.question}</h2>
+              </div>
+              <VisualBoard question={currentQuestion} />
+              {showExplanation ? (
+                <div className="mt-5 rounded-[1.75rem] border border-sky-300/20 bg-sky-500/10 p-5">
+                  <p className="text-xs font-bold uppercase tracking-[0.28em] text-sky-200">Natija</p>
+                  <p className="mt-3 text-base leading-7 text-slate-200">
+                    To'g'ri javob: <span className="font-black">{currentQuestion.correctAnswer}</span>
+                  </p>
+                  <p className="mt-4 text-sm text-sky-100/80">Keyingi savol avtomatik ochiladi.</p>
+                </div>
+              ) : null}
+            </div>
+            <Panel 
+              player={activePlayers[1]} 
+              playerIndex={1} 
+              answers={answers} 
+              question={currentQuestion} 
+              showExplanation={showExplanation} 
+              onAnswer={answer} 
+              accent="from-violet-500/10 to-transparent" 
+            />
+          </div>
+        ) : (
+          <div className="rounded-[2rem] border border-white/10 bg-slate-950/80 p-3 lg:p-4">
+            <div className="grid gap-3 xl:grid-cols-[minmax(0,1.08fr)_minmax(330px,0.92fr)] xl:items-start">
+              <div className="rounded-[2rem] border border-white/10 bg-slate-950/65 p-3 lg:p-4">
+                <div className="text-center">
+                  <p className="text-xs font-bold uppercase tracking-[0.32em] text-slate-400">{activePlayers[0]}</p>
+                  <h2 className="mt-2 text-xl font-black leading-tight text-white md:text-2xl xl:text-[1.8rem]">{currentQuestion.question}</h2>
+                </div>
+                <div className="mt-3 lg:mt-4">
+                  <VisualBoard question={currentQuestion} compact />
+                </div>
+              </div>
+              <Panel 
+                player={activePlayers[0]} 
+                playerIndex={0} 
+                answers={answers} 
+                question={currentQuestion} 
+                showExplanation={showExplanation} 
+                onAnswer={answer} 
+                accent="from-sky-500/10 to-transparent"
+                compact
+              />
+            </div>
+            {showExplanation ? (
+              <div className="mt-4 rounded-[1.75rem] border border-sky-300/20 bg-sky-500/10 p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.28em] text-sky-200">Natija</p>
+                <p className="mt-2 text-sm leading-6 text-slate-200 lg:text-base">
+                  To'g'ri javob: <span className="font-black">{currentQuestion.correctAnswer}</span>
+                </p>
+                <p className="mt-2 text-sm text-sky-100/80">Keyingi savol avtomatik ochiladi.</p>
+              </div>
+            ) : null}
+          </div>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.22),_transparent_25%),radial-gradient(circle_at_bottom_right,_rgba(236,72,153,0.18),_transparent_30%),linear-gradient(155deg,_#020617,_#111827_45%,_#1e1b4b_100%)] p-4 text-white">
-      {iqScores.some((value) => value >= 135) ? <Confetti mode="boom" effectCount={1} particleCount={160} x={0.5} y={0.25} /> : null}
-      <div className="mx-auto max-w-6xl rounded-[2rem] border border-white/10 bg-slate-950/75 p-6 md:p-8">
-        <div className="text-center">
-          <div className="mx-auto mb-5 inline-flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-400/20 to-yellow-500/20 text-4xl text-amber-300"><FaCrown /></div>
-          <p className="text-sm uppercase tracking-[0.28em] text-slate-400">Final result</p>
-          <h2 className="mt-3 text-4xl font-black md:text-5xl">IQ Test Completed</h2>
-          <p className="mt-3 text-base text-slate-300">{playerMode === 1 ? `${activePlayers[0]} testni tugatdi.` : winners.length === 1 ? `${winners[0]} bu raundda g'olib bo'ldi.` : "Ikki o'yinchi teng natija ko'rsatdi."}</p>
+    <div className="rounded-[2rem] border border-white/10 bg-slate-950/80 p-6 md:p-8">
+      {iqScores.some((value) => value >= 135) ? (
+        <Confetti mode="boom" effectCount={1} particleCount={160} x={0.5} y={0.28} />
+      ) : null}
+      <div className="text-center">
+        <div className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-400/20 to-yellow-500/20 text-4xl text-amber-300">
+          <FaCrown />
         </div>
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-center"><p className="text-sm uppercase tracking-[0.24em] text-slate-400">Questions</p><p className="mt-2 text-4xl font-black">{questions.length}</p></div>
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-center"><p className="text-sm uppercase tracking-[0.24em] text-slate-400">Time spent</p><p className="mt-2 text-4xl font-black">{totalSeconds}s</p></div>
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-center"><p className="text-sm uppercase tracking-[0.24em] text-slate-400">Mode</p><p className="mt-2 text-4xl font-black">{playerMode}</p></div>
-        </div>
-        <div className={`mt-8 grid gap-5 ${playerMode === 2 ? 'lg:grid-cols-2' : ''}`}>
-          {activePlayers.map((player, index) => {
-            const accuracy = questions.length ? Math.round(((scores[index] ?? 0) / questions.length) * 100) : 0;
-            const iq = iqScores[index];
-            return (
-              <div key={player} className="rounded-[1.75rem] border border-white/10 bg-white/5 p-6">
-                <div className="mb-4 flex items-center justify-between"><div><p className="text-xs uppercase tracking-[0.24em] text-slate-400">Player card</p><p className="text-3xl font-black">{player}</p></div>{playerMode === 2 && scores[index] === topScore ? <span className="rounded-full bg-amber-400/15 px-3 py-2 text-sm font-bold text-amber-200">Top score</span> : null}</div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4"><p className="text-sm text-slate-400">Correct</p><p className="mt-2 text-3xl font-black">{scores[index]} / {questions.length}</p></div>
-                  <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4"><p className="text-sm text-slate-400">Accuracy</p><p className="mt-2 text-3xl font-black">{accuracy}%</p></div>
+        <p className="mt-5 text-xs font-bold uppercase tracking-[0.32em] text-slate-400">Yakuniy natija</p>
+        <h2 className="mt-3 text-4xl font-black text-white md:text-5xl">IQ test yakunlandi</h2>
+        <p className="mt-4 text-base text-slate-300">
+          {playerMode === 1 
+            ? `${activePlayers[0]} testni tugatdi.` 
+            : winners.length === 1 
+            ? `${winners[0]} bu raundda ustun keldi.` 
+            : "Ikki o'yinchi teng natija ko'rsatdi."}
+        </p>
+      </div>
+      
+      <div className={`mt-8 grid gap-5 ${playerMode === 2 ? "lg:grid-cols-2" : ""}`}>
+        {activePlayers.map((player, index) => { 
+          const accuracy = questions.length ? Math.round(((scores[index] ?? 0) / questions.length) * 100) : 0; 
+          const iq = iqScores[index]; 
+          return (
+            <div key={player} className="rounded-[1.75rem] border border-white/10 bg-white/5 p-6">
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.24em] text-slate-400">O'yinchi natijasi</p>
+                  <p className="mt-2 text-3xl font-black text-white">{player}</p>
                 </div>
-                <div className="mt-5 rounded-[1.5rem] border border-white/10 bg-slate-950/70 p-5 text-center"><p className="text-sm uppercase tracking-[0.24em] text-slate-400">Estimated IQ</p><div className={`mt-3 bg-gradient-to-r ${iqGradient(iq)} bg-clip-text text-6xl font-black text-transparent`}>{iq}</div><p className="mt-2 text-lg font-semibold">{iqLevel(iq)}</p></div>
+                {playerMode === 2 && scores[index] === topScore ? (
+                  <span className="rounded-full bg-amber-400/15 px-3 py-2 text-sm font-bold text-amber-200">Eng yuqori ball</span>
+                ) : null}
               </div>
-            );
-          })}
-        </div>
-        <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-          <button type="button" onClick={() => startGame(playerMode)} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 px-6 py-4 text-sm font-black uppercase tracking-[0.18em] text-white"><FaRedo />Play again</button>
-          <button type="button" onClick={() => setPhase('intro')} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-sm font-black uppercase tracking-[0.18em] text-white"><FaHome />Back to menu</button>
-        </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
+                  <p className="text-sm text-slate-400">To'g'ri javoblar</p>
+                  <p className="mt-2 text-3xl font-black text-white">{scores[index]} / {questions.length}</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
+                  <p className="text-sm text-slate-400">Aniqlik</p>
+                  <p className="mt-2 text-3xl font-black text-white">{accuracy}%</p>
+                </div>
+              </div>
+              <div className="mt-5 rounded-[1.5rem] border border-white/10 bg-slate-950/70 p-5 text-center">
+                <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Taxminiy IQ</p>
+                <div className={`mt-3 bg-gradient-to-r ${iqGradient(iq)} bg-clip-text text-6xl font-black text-transparent`}>
+                  {iq}
+                </div>
+                <p className="mt-2 text-lg font-semibold text-white">{iqLevel(iq)}</p>
+                <p className="mt-2 text-sm text-slate-400">
+                  Qiyinlik balli: {weightedScores[index].toFixed(1)} / {totalWeight.toFixed(1)}
+                </p>
+              </div>
+            </div>
+          ); 
+        })}
+      </div>
+      
+      <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+        <button 
+          type="button" 
+          onClick={() => startGame(playerMode)} 
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-500 to-violet-500 px-6 py-4 text-sm font-black uppercase tracking-[0.18em] text-white"
+        >
+          <FaRedo />Qayta o'ynash
+        </button>
+        <button 
+          type="button" 
+          onClick={() => setPhase("intro")} 
+          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-sm font-black uppercase tracking-[0.18em] text-white"
+        >
+          <FaHome />Menyuga qaytish
+        </button>
       </div>
     </div>
   );

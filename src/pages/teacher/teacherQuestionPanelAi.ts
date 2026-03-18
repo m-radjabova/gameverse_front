@@ -5,6 +5,7 @@ export type SupportedTeacherGameKey =
   | "classic_arcade"
   | "wheel_of_fortune"
   | "math_race"
+  | "math_chick"
   | "baamboozle"
   | "jumanji"
   | "millionaire"
@@ -82,6 +83,17 @@ function buildPrompt(gameKey: SupportedTeacherGameKey, topic: string, count: num
         "- answer butun son bo'lsin.",
         "- difficulty faqat easy, medium yoki hard bo'lsin.",
         "- points easy=10, medium=15, hard=20 qoidaga mos bo'lsin.",
+        ...shared,
+      ].join("\n");
+    case "math_chick":
+      return [
+        `Math Chick uchun ${count} ta matematik savol yarating.`,
+        'JSON: [{"question":"12 + 8 = ?","answer":20,"options":[18,20,22,24],"difficulty":"easy"}]',
+        "- Har bir elementda question, answer, options, difficulty bo'lsin.",
+        "- answer butun son bo'lsin.",
+        "- options aniq 4 ta son bo'lsin.",
+        "- options ichida answer bo'lishi shart.",
+        "- difficulty faqat easy, medium yoki hard bo'lsin.",
         ...shared,
       ].join("\n");
     case "baamboozle":
@@ -186,6 +198,19 @@ function validateItems(gameKey: SupportedTeacherGameKey, payload: unknown, expec
           if (!question || !Number.isInteger(answer) || !difficulty) return null;
           const points = difficulty === "easy" ? 10 : difficulty === "medium" ? 15 : 20;
           return { question, answer, difficulty, points };
+        }
+        case "math_chick": {
+          const question = String(body.question ?? "").trim();
+          const answer = Number(body.answer);
+          const difficulty = normalizeDifficulty(body.difficulty);
+          const rawOptions = Array.isArray(body.options) ? body.options.slice(0, 4) : [];
+          const options = rawOptions
+            .map((item) => Number(item))
+            .filter((item) => Number.isInteger(item));
+          if (!question || !Number.isInteger(answer) || !difficulty || options.length !== 4) return null;
+          if (!options.includes(answer)) return null;
+          if (new Set(options).size !== 4) return null;
+          return { question, answer, options, difficulty };
         }
         case "baamboozle": {
           const question = String(body.question ?? "").trim();

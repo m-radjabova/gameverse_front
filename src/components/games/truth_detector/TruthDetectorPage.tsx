@@ -227,6 +227,7 @@ function TruthDetectorPage() {
                 to="/games/truth-detector/play"
                 colorClassName="from-indigo-500 to-purple-500"
                 className="pt-2"
+                modeSelectionEnabled
               />
             </div>
 

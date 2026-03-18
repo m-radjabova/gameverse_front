@@ -271,6 +271,7 @@ function TreasureHuntPage() {
                 to="/games/treasure-hunt/play"
                 colorClassName="from-amber-500 to-yellow-500"
                 className="pt-2"
+                modeSelectionEnabled
               />
             </div>
 
@@ -295,7 +296,7 @@ function TreasureHuntPage() {
                 <img
                   src={treasureHuntImg}
                   alt="Treasure Hunt Game"
-                  className="h-[300px] w-full object-cover md:h-[400px] lg:h-[450px] transition-transform duration-700 group-hover:scale-110"
+                  className="h-[360px] w-full object-cover md:h-[440px] lg:h-[520px] transition-transform duration-700 group-hover:scale-110"
                 />
 
                 {/* Vintage overlay */}

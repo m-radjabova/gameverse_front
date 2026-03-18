@@ -165,18 +165,6 @@ function Hero({
               <FaArrowRight className="text-xs transition-transform duration-300 group-hover:translate-x-1" />
             </button>
           </div>
-
-          <div
-            data-aos="fade-up"
-            data-aos-delay="360"
-            className={`mx-auto mt-8 max-w-xl rounded-full border px-5 py-3 text-center text-xs font-semibold tracking-[0.08em] shadow-[0_8px_20px_rgba(166,100,102,0.06)] backdrop-blur-md sm:text-sm ${
-              isDark
-                ? "border-[#ff6b8a]/20 bg-[#1a1a28]/75 text-[#a1a1aa]"
-                : "border-[#f0d9d6] bg-white/70 text-[#a07b7e]"
-            }`}
-          >
-            Bilim • Qulay boshqaruv • Chiroyli tajriba
-          </div>
         </div>
       </div>
     </section>

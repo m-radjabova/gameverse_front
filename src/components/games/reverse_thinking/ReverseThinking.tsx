@@ -18,20 +18,52 @@ import {
 import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
+import { useGameParticipantMode } from "../../../hooks/useGameParticipantMode";
+import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
+import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { MORE_QUESTIONS } from "./data";
 
 import { REVERSE_THINKING_GAME_KEY, TEAM_AVATARS, TEAM_COLORS } from "./constants";
 import type { Phase, Question, Team } from "./types";
 
+const createConfiguredTeams = (
+  isSinglePlayer: boolean,
+  primaryName: string,
+  secondaryName: string,
+): Team[] => {
+  const names = isSinglePlayer ? [primaryName] : [primaryName, secondaryName];
+
+  return names.map((name, idx) => ({
+    id: Date.now() + Math.random() + idx,
+    name,
+    color: TEAM_COLORS[idx].primary,
+    avatar: TEAM_AVATARS[idx],
+    score: 0,
+    isActive: idx === 0,
+    streak: 0,
+    timeLeft: 30,
+  }));
+};
+
 function ReverseThinking() {
   const skipInitialRemoteSaveRef = useRef(true);
+  const { isSinglePlayer, primaryName, secondaryName, modeLabel } = useGameParticipantMode({
+    gameId: "reverse-thinking",
+    fallbackPrimaryName: "1-Jamoa",
+    fallbackSecondaryName: "2-Jamoa",
+    singleModeLabel: "1 o'yinchi",
+    multiModeLabel: "2 jamoa",
+  });
   // Audio refs
   const correctAudioRef = useRef<HTMLAudioElement | null>(null);
   const winAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Game state
   const [phase, setPhase] = useState<Phase>("teacher");
-  const [teams, setTeams] = useState<Team[]>([]);
+  useFinishApplause(phase === "finish");
+  const [teams, setTeams] = useState<Team[]>(() =>
+    createConfiguredTeams(isSinglePlayer, primaryName, secondaryName),
+  );
   const [newTeamName, setNewTeamName] = useState("");
   const [teamError, setTeamError] = useState("");
   
@@ -66,6 +98,27 @@ function ReverseThinking() {
   const [isTimerActive, setIsTimerActive] = useState(false);
   const { countdownValue, countdownVisible, runStartCountdown } =
     useGameStartCountdown();
+  const requiredTeamCount = isSinglePlayer ? 1 : 2;
+
+  useGameResultSubmission(
+    phase === "finish" && teams.length > 0,
+    "reverse-thinking",
+    teams.map((team) => ({
+      participant_name: team.name,
+      participant_mode: modeLabel,
+      score: team.score,
+      metadata: {
+        questions: questions.length,
+        streak: team.streak,
+      },
+    })),
+  );
+
+  useEffect(() => {
+    if (phase !== "teacher") return;
+    setTeams(createConfiguredTeams(isSinglePlayer, primaryName, secondaryName));
+    setTeamError("");
+  }, [isSinglePlayer, primaryName, secondaryName, phase]);
 
   useEffect(() => {
     let alive = true;
@@ -152,6 +205,10 @@ function ReverseThinking() {
 
   // Add team
   const addTeam = () => {
+    if (isSinglePlayer) {
+      setTeamError("1 kishilik rejimda jamoa qo'shilmaydi.");
+      return;
+    }
     const name = newTeamName.trim();
     if (!name) {
       setTeamError("Jamoa nomini kiriting!");
@@ -185,6 +242,7 @@ function ReverseThinking() {
 
   // Remove team
   const removeTeam = (id: number) => {
+    if (isSinglePlayer) return;
     const team = teams.find(t => t.id === id);
     setTeams(teams.filter(t => t.id !== id));
     showToast(`🗑️ ${team?.name} o'chirildi`);
@@ -268,12 +326,18 @@ function ReverseThinking() {
     setRoundTimer(30);
     setIsTimerActive(true);
     setPhase("game");
-    showToast("🎮 O'yin boshlandi! 1-jamoa boshlaydi");
+    showToast(
+      isSinglePlayer
+        ? `O'yin boshlandi! ${primaryName} boshlaydi`
+        : "O'yin boshlandi! 1-jamoa boshlaydi",
+    );
   };
 
   const startGame = () => {
-    if (teams.length !== 2) {
-      showToast("2 ta jamoa bo'lishi kerak!");
+    if (teams.length !== requiredTeamCount) {
+      showToast(
+        isSinglePlayer ? "1 ta o'yinchi bo'lishi kerak!" : "2 ta jamoa bo'lishi kerak!",
+      );
       return;
     }
     if (questions.length < 5) {
@@ -351,7 +415,7 @@ function ReverseThinking() {
         setIsTimerActive(true);
         
         // Switch active team
-        const nextActive = (teams.findIndex(t => t.isActive) + 1) % 2;
+        const nextActive = isSinglePlayer ? 0 : (teams.findIndex(t => t.isActive) + 1) % teams.length;
         setTeams(prev => prev.map((t, idx) => ({ ...t, isActive: idx === nextActive })));
       } else {
         finishGame();
@@ -390,7 +454,7 @@ function ReverseThinking() {
         setRoundTimer(30);
         setIsTimerActive(true);
         
-        const nextActive = (teams.findIndex(t => t.isActive) + 1) % 2;
+        const nextActive = isSinglePlayer ? 0 : (teams.findIndex(t => t.isActive) + 1) % teams.length;
         setTeams(prev => prev.map((t, idx) => ({ ...t, isActive: idx === nextActive })));
       } else {
         finishGame();
@@ -413,7 +477,7 @@ function ReverseThinking() {
   // Reset game
   const resetGame = () => {
     setPhase("teacher");
-    setTeams([]);
+    setTeams(createConfiguredTeams(isSinglePlayer, primaryName, secondaryName));
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
     setShowResult(false);
@@ -521,30 +585,38 @@ function ReverseThinking() {
                 <h2 className="text-xl font-black text-white">JAMOALAR</h2>
               </div>
 
-              <div className="mb-4">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newTeamName}
-                    onChange={(e) => setNewTeamName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        addTeam();
-                      }
-                    }}
-                    placeholder="Jamoa nomi..."
-                    className="flex-1 px-4 py-2 rounded-xl border border-green-500/30 bg-green-950/30 text-white placeholder-green-300/50 focus:border-green-400 focus:outline-none"
-                  />
-                  <button
-                    onClick={addTeam}
-                    className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold hover:scale-105 transition-all"
-                  >
-                    Qo'shish
-                  </button>
+              {!isSinglePlayer ? (
+                <div className="mb-4">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newTeamName}
+                      onChange={(e) => setNewTeamName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addTeam();
+                        }
+                      }}
+                      placeholder="Jamoa nomi..."
+                      className="flex-1 px-4 py-2 rounded-xl border border-green-500/30 bg-green-950/30 text-white placeholder-green-300/50 focus:border-green-400 focus:outline-none"
+                    />
+                    <button
+                      onClick={addTeam}
+                      className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold hover:scale-105 transition-all"
+                    >
+                      Qo'shish
+                    </button>
+                  </div>
+                  {teamError && <p className="mt-2 text-sm text-red-400">{teamError}</p>}
                 </div>
-                {teamError && <p className="mt-2 text-sm text-red-400">{teamError}</p>}
-              </div>
+              ) : (
+                <div className="mb-4 rounded-xl border border-green-500/30 bg-green-950/30 p-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-green-300/70">Solo rejim</p>
+                  <p className="mt-1 text-lg font-black text-white">{primaryName}</p>
+                  <p className="text-sm text-green-300/70">Natija leaderboardga individual hisobda saqlanadi.</p>
+                </div>
+              )}
 
               <div className="space-y-3">
                 {teams.map((team, idx) => (
@@ -558,15 +630,19 @@ function ReverseThinking() {
                         <span className="text-2xl">{team.avatar}</span>
                         <div>
                           <p className="text-sm font-bold text-white">{team.name}</p>
-                          <p className="text-xs text-green-300/70">{idx === 0 ? "CHAP JAMOA" : "O'NG JAMOA"}</p>
+                          <p className="text-xs text-green-300/70">
+                            {isSinglePlayer ? "YAKKA O'YINCHI" : idx === 0 ? "CHAP JAMOA" : "O'NG JAMOA"}
+                          </p>
                         </div>
                       </div>
-                      <button
-                        onClick={() => removeTeam(team.id)}
-                        className="text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <FaTimesCircle size={16} />
-                      </button>
+                      {!isSinglePlayer ? (
+                        <button
+                          onClick={() => removeTeam(team.id)}
+                          className="text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <FaTimesCircle size={16} />
+                        </button>
+                      ) : null}
                     </div>
                   </div>
                 ))}
@@ -688,7 +764,7 @@ function ReverseThinking() {
             </div>
 
             {/* Start Button */}
-            {teams.length === 2 && questions.length >= 5 && (
+            {teams.length === requiredTeamCount && questions.length >= 5 && (
               <div className="lg:col-span-2 text-center">
                 <button
                   onClick={startGame}
@@ -722,6 +798,10 @@ function ReverseThinking() {
                 <div className={`bg-gradient-to-r ${getLevelColor(level)} px-4 py-2 rounded-xl border-2 border-white/30`}>
                   <p className="text-xs text-white/80">Level {level}</p>
                   <p className="text-sm font-bold text-white">{getLevelName(level)}</p>
+                </div>
+                <div className="bg-green-900/30 border-2 border-green-500/30 rounded-xl px-4 py-2">
+                  <p className="text-xs text-green-300">Rejim</p>
+                  <p className="text-lg font-bold text-white">{modeLabel}</p>
                 </div>
               </div>
 
@@ -801,7 +881,7 @@ function ReverseThinking() {
             </div>
 
             {/* Teams Score */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className={`grid gap-4 ${isSinglePlayer ? "grid-cols-1" : "grid-cols-2"}`}>
               {teams.map((team) => (
                 <div
                   key={team.id}
@@ -864,15 +944,15 @@ function ReverseThinking() {
               </div>
 
               <h2 className="relative text-4xl font-black text-transparent bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text mb-2">
-                {winner.name} G'OLIB!
+                {isSinglePlayer ? `${winner.name} natijasi` : `${winner.name} G'OLIB!`}
               </h2>
               <p className="relative text-xl text-green-300 mb-8">
                 {winner.score} ball to'pladi
               </p>
 
               {/* Results */}
-              <div className="relative grid grid-cols-2 gap-4 mb-8">
-                {teams.sort((a, b) => b.score - a.score).map((team) => (
+              <div className={`relative grid gap-4 mb-8 ${isSinglePlayer ? "grid-cols-1" : "grid-cols-2"}`}>
+                {[...teams].sort((a, b) => b.score - a.score).map((team) => (
                   <div key={team.id} className="rounded-xl border border-green-500/30 bg-green-950/30 p-4">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{team.avatar}</span>
@@ -894,11 +974,11 @@ function ReverseThinking() {
                   QAYTA O'YNASH
                 </button>
                 <button
-                  onClick={() => window.location.reload()}
+                  onClick={() => setPhase("teacher")}
                   className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-xl font-bold hover:scale-105 transition-all"
                 >
                   <FaTimesCircle className="inline mr-2" />
-                  YOPISH
+                  SOZLAMALAR
                 </button>
               </div>
             </div>

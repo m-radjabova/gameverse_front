@@ -10,6 +10,26 @@ import CreateContextPro from "./hooks/CreateContextPro.tsx";
 
 const queryClient = new QueryClient();
 
+if (typeof window !== "undefined") {
+  const legacyPrefixes = [
+    "game-session:",
+    "game-leaderboard:",
+  ];
+  const legacyExactKeys = new Set([
+    "games.quiz_battle.questions.v1",
+    "games.wheel_of_fortune.questions.v1",
+  ]);
+
+  for (const key of Object.keys(window.localStorage)) {
+    if (
+      legacyPrefixes.some((prefix) => key.startsWith(prefix)) ||
+      legacyExactKeys.has(key)
+    ) {
+      window.localStorage.removeItem(key);
+    }
+  }
+}
+
 createRoot(document.getElementById("root")!).render(
   <>
     <QueryClientProvider client={queryClient}>

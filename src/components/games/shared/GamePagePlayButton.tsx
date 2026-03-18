@@ -7,18 +7,21 @@ import {
   saveGameSessionConfig,
 } from "../../../hooks/gameSession";
 import { gameCards } from "../../../pages/games/data";
+import { DIRECT_PLAY_GAME_PATHS } from "./directPlayGames";
 import GameModeShowcase from "./GameModeShowcase";
 
 type GamePagePlayButtonProps = {
   to: string;
   colorClassName: string;
   className?: string;
+  modeSelectionEnabled?: boolean;
 };
 
 export default function GamePagePlayButton({
   to,
   colorClassName,
   className = "",
+  modeSelectionEnabled = false,
 }: GamePagePlayButtonProps) {
   const navigate = useNavigate();
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
@@ -30,6 +33,8 @@ export default function GamePagePlayButton({
     () => gameCards.find((item) => item.path === to.replace(/\/play$/, "")),
     [to]
   );
+  const gamePath = game?.path ?? to.replace(/\/play$/, "");
+  const shouldBypassModeSelection = DIRECT_PLAY_GAME_PATHS.has(gamePath);
 
   const participantOptions = useMemo(
     () => (game ? buildParticipantOptions(game.players) : []),
@@ -47,7 +52,7 @@ export default function GamePagePlayButton({
           participantType: option.participantType,
           participantLabel: option.participantLabel,
           participantLabels: Array.from({ length: option.count }, (_, index) => {
-            if (option.count === 1 && option.participantType === "player") {
+            if (option.count === 1) {
               return user?.username?.trim() || "O'YINCHI 1";
             }
 
@@ -63,7 +68,12 @@ export default function GamePagePlayButton({
   };
 
   const handleClick = () => {
-    if (!game || participantOptions.length <= 1) {
+    if (
+      shouldBypassModeSelection ||
+      !modeSelectionEnabled ||
+      !game ||
+      participantOptions.length <= 1
+    ) {
       handleNavigate(participantOptions[0]?.count);
       return;
     }
@@ -124,7 +134,7 @@ export default function GamePagePlayButton({
                     <p className="text-sm text-white/60">
                       {option.count === 1
                         ? "Yakka tartibda o'ynash"
-                        : "Har bir ishtirokchi uchun alohida o'yin kartasi"}
+                        : "Jamoaviy o'ynash"}
                     </p>
                   </div>
                   <FaArrowRight className="text-white/60" />

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   FaClock,
@@ -17,6 +17,10 @@ import {
 import {GiLevelFour } from "react-icons/gi";
 import { MdTimer } from "react-icons/md";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
+import useGameLeaderboard, {
+  submitGameResult,
+} from "../../../hooks/useGameLeaderboard";
+import type { GameLeaderboardEntry } from "../../../types/types";
 
 type RoundState = {
   count: number;
@@ -28,13 +32,6 @@ type RoundState = {
 
 type EndReason = "time" | "wrong";
 
-type Leader = {
-  name: string;
-  score: number;
-  level: number;
-  time: string;
-};
-
 const GRID_SEQUENCE = [
   4, 9, 9, 16, 16, 25, 25, 36, 36, 49, 49, 64, 64, 64, 64, 81, 81, 81, 100,
   100, 100, 100,
@@ -44,19 +41,18 @@ const START_TIME = 20;
 const SCORE_PER_HIT = 10;
 const BONUS_TIME_PER_HIT = 2;
 const BEST_SCORE_KEY = "edu_study_find_color_best_score";
-
-const baseLeaders: Leader[] = [
-  { name: "Muslima", score: 510, level: 31, time: "27s" },
-  { name: "Madina", score: 290, level: 29, time: "29s" },
-  { name: "Sardor", score: 270, level: 27, time: "31s" },
-  { name: "Husan", score: 240, level: 24, time: "34s" },
-  { name: "Dilshod", score: 220, level: 22, time: "38s" },
-  { name: "Nodira", score: 200, level: 20, time: "41s" },
-  { name: "Shahzod", score: 170, level: 17, time: "47s" },
-];
+const FIND_COLOR_GAME_KEY = "find-color";
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
+}
+
+function getMetadataNumber(entry: GameLeaderboardEntry, key: string) {
+  const value = entry.metadata && typeof entry.metadata === "object"
+    ? entry.metadata[key]
+    : undefined;
+
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
 function getGridCount(level: number) {
@@ -89,6 +85,7 @@ function getRound(level: number): RoundState {
 }
 
 function FindDifferentColor() {
+  const submissionFingerprintRef = useRef<string | null>(null);
   const [playerName, setPlayerName] = useState("");
   const [hasStarted, setHasStarted] = useState(false);
   const [nameError, setNameError] = useState(false);
@@ -113,24 +110,24 @@ function FindDifferentColor() {
   const [shakeBoard, setShakeBoard] = useState(false);
   const [isClickLocked, setIsClickLocked] = useState(false);
   const [round, setRound] = useState<RoundState>(() => getRound(1));
+  const { entries, loading, reload } = useGameLeaderboard(FIND_COLOR_GAME_KEY, 20);
 
   const progressPercent = useMemo(
     () => (timeLeft / START_TIME) * 100,
     [timeLeft]
   );
 
-  const leaderboard = useMemo(() => {
-    const list = [...baseLeaders];
-    if (playerName.trim()) {
-      list.push({
-        name: playerName.trim(),
-        score,
-        level,
-        time: `${elapsed}s`,
-      });
-    }
-    return list.sort((a, b) => b.score - a.score).slice(0, 10);
-  }, [elapsed, level, playerName, score]);
+  const leaderboard = useMemo(() => entries.slice(0, 10), [entries]);
+  const currentPlayerName = playerName.trim();
+  const currentPlayerRank = useMemo(
+    () =>
+      currentPlayerName
+        ? leaderboard.findIndex(
+            (entry) => entry.participant_name.trim().toLowerCase() === currentPlayerName.toLowerCase(),
+          ) + 1
+        : 0,
+    [currentPlayerName, leaderboard],
+  );
 
   useEffect(() => {
     if (isGameOver || !hasStarted) return;
@@ -159,6 +156,44 @@ function FindDifferentColor() {
       setIsClickLocked(false);
     }
   }, [level, isGameOver, hasStarted]);
+
+  useEffect(() => {
+    if (!isGameOver || !currentPlayerName) {
+      submissionFingerprintRef.current = null;
+      return;
+    }
+
+    const fingerprint = JSON.stringify({
+      name: currentPlayerName,
+      score,
+      level,
+      elapsed,
+      reason: endReason,
+    });
+
+    if (submissionFingerprintRef.current === fingerprint) {
+      return;
+    }
+
+    submissionFingerprintRef.current = fingerprint;
+
+    void (async () => {
+      const saved = await submitGameResult(FIND_COLOR_GAME_KEY, {
+        participant_name: currentPlayerName,
+        participant_mode: "1 o'yinchi",
+        score,
+        metadata: {
+          level,
+          elapsed_seconds: elapsed,
+          end_reason: endReason,
+        },
+      });
+
+      if (saved) {
+        void reload();
+      }
+    })();
+  }, [currentPlayerName, elapsed, endReason, isGameOver, level, reload, score]);
 
   const start = () => {
     if (playerName.trim().length < 2) {
@@ -537,9 +572,24 @@ function FindDifferentColor() {
               </p>
 
               <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
-                {leaderboard.map((item, index) => (
+                {loading ? (
+                  <div className="rounded-xl border border-slate-700 bg-slate-900/50 p-4 text-sm text-slate-400">
+                    Leaderboard yuklanmoqda...
+                  </div>
+                ) : leaderboard.length === 0 ? (
+                  <div className="rounded-xl border border-slate-700 bg-slate-900/50 p-4 text-sm text-slate-400">
+                    Hozircha natijalar yo'q. Birinchi rekordni o'rnating.
+                  </div>
+                ) : leaderboard.map((item, index) => {
+                  const itemLevel = getMetadataNumber(item, "level");
+                  const elapsedSeconds = getMetadataNumber(item, "elapsed_seconds");
+                  const isCurrentPlayer =
+                    currentPlayerName.length > 0 &&
+                    item.participant_name.trim().toLowerCase() === currentPlayerName.toLowerCase();
+
+                  return (
                   <div
-                    key={`${item.name}-${index}`}
+                    key={item.id}
                     className={`group relative overflow-hidden rounded-xl p-4 transition-all hover:scale-[1.02] ${
                       index === 0
                         ? 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30'
@@ -547,6 +597,8 @@ function FindDifferentColor() {
                         ? 'bg-gradient-to-r from-slate-500/20 to-slate-400/20 border border-slate-500/30'
                         : index === 2
                         ? 'bg-gradient-to-r from-orange-500/20 to-amber-500/20 border border-orange-500/30'
+                        : isCurrentPlayer
+                        ? 'bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/30'
                         : 'bg-slate-900/50 border border-slate-700'
                     }`}
                   >
@@ -566,17 +618,21 @@ function FindDifferentColor() {
                       </div>
                       
                       <div className="flex-1">
-                        <p className="text-sm font-black text-white">{item.name}</p>
-                        <p className="text-xs text-slate-400">Daraja {item.level}</p>
+                        <p className="text-sm font-black text-white">{item.participant_name}</p>
+                        <p className="text-xs text-slate-400">
+                          Daraja {itemLevel ?? "?"}
+                        </p>
                       </div>
                       
                       <div className="text-right">
                         <p className="text-xl font-black text-cyan-400">{item.score}</p>
-                        <p className="text-xs text-slate-400">{item.time}</p>
+                        <p className="text-xs text-slate-400">
+                          {elapsedSeconds !== null ? `${elapsedSeconds}s` : "vaqt yo'q"}
+                        </p>
                       </div>
                     </div>
                   </div>
-                ))}
+                )})}
               </div>
 
               {/* Current Player Stats */}
@@ -589,6 +645,9 @@ function FindDifferentColor() {
                       <span className="text-sm font-bold text-white">{playerName}</span>
                     </div>
                     <div className="flex items-center gap-3">
+                      {currentPlayerRank > 0 ? (
+                        <span className="text-sm text-slate-400">#{currentPlayerRank}</span>
+                      ) : null}
                       <span className="text-sm text-slate-400">Ball:</span>
                       <span className="text-lg font-black text-cyan-400">{score}</span>
                     </div>

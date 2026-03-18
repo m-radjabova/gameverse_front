@@ -82,6 +82,16 @@ const GAME_REGISTRY: GameRegistryItem[] = [
     description: "Matematik poyga",
   },
   {
+    gameKey: "math_chick",
+    title: "Math Chick",
+    path: "/games/math-chick",
+    emoji: "🐥",
+    accent: "from-[#f59e0b] to-[#38bdf8]",
+    bg: "bg-gradient-to-br from-[#f59e0b]/10 to-[#38bdf8]/10",
+    template: { question: "", answer: 0, options: ["", "", "", ""], difficulty: "easy" },
+    description: "Jo'jacha uchun matematik savollar",
+  },
+  {
     gameKey: "baamboozle",
     title: "Baamboozle",
     path: "/games/baamboozle",
@@ -241,6 +251,22 @@ function validateDraftItem(gameKey: string, draftValue: unknown) {
   if (!draftValue || typeof draftValue !== "object") return "Savol formati noto'g'ri.";
   const value = draftValue as Record<string, unknown>;
 
+  if (gameKey === "math_chick") {
+    const question = String(value.question ?? "").trim();
+    const answer = Number(value.answer);
+    const rawOptions = Array.isArray(value.options) ? value.options : [];
+    const options = rawOptions
+      .map((item) => Number(String(item ?? "").trim()))
+      .filter((item) => Number.isInteger(item));
+
+    if (!question) return "Math Chick uchun savol matnini kiriting.";
+    if (!Number.isInteger(answer)) return "Math Chick uchun to'g'ri javob son bo'lishi kerak.";
+    if (options.length !== 4) return "Math Chick uchun aniq 4 ta variant kiriting.";
+    if (!options.includes(answer)) return "Math Chick variantlari ichida to'g'ri javob bo'lishi kerak.";
+    if (new Set(options).size !== 4) return "Math Chick variantlari takrorlanmasin.";
+    return "";
+  }
+
   if (gameKey === "baamboozle") {
     const question = String(value.question ?? "").trim();
     const answer = String(value.answer ?? "").trim();
@@ -324,6 +350,23 @@ function extractMeta(item: unknown) {
     typeof value.category === "string" ? value.category : null,
     typeof value.points === "number" ? `${value.points} ball` : null,
   ].filter((meta): meta is string => Boolean(meta));
+}
+
+function normalizeDraftForGame(gameKey: string, draftValue: unknown) {
+  if (!draftValue || typeof draftValue !== "object") return draftValue;
+  const value = draftValue as Record<string, unknown>;
+
+  if (gameKey === "math_chick") {
+    return {
+      ...value,
+      answer: Number(value.answer),
+      options: Array.isArray(value.options)
+        ? value.options.map((item) => Number(String(item ?? "").trim()))
+        : [],
+    };
+  }
+
+  return draftValue;
 }
 
 function withIdFallback(item: unknown) {
@@ -636,6 +679,13 @@ function SpecializedEditor({
         {"question" in value && (
           <FormField label="question" value={value.question} path={["question"]} onChange={onChange} icon={<FaRegLightbulb />} />
         )}
+        {gameKey === "math_chick" && Array.isArray(value.options) && (
+          <OptionListEditor
+            options={(value.options as unknown[]).map((item) => String(item ?? ""))}
+            path={["options"]}
+            onChange={onChange}
+          />
+        )}
         {"answer" in value && (
           <FormField label="answer" value={value.answer} path={["answer"]} onChange={onChange} icon={<FaCheck />} />
         )}
@@ -939,7 +989,7 @@ export default function TeacherQuestionPanel() {
       setEditorError(validationError);
       return;
     }
-    const nextItem = withIdFallback(draftValue);
+    const nextItem = withIdFallback(normalizeDraftForGame(activeGame.gameKey, draftValue));
     const nextItems = [...activeItems];
 
     if (selectedIndex === null) {

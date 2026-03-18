@@ -15,7 +15,6 @@ import {
 } from "react-icons/fa";
 import { MdQuiz} from "react-icons/md";
 import Confetti from "react-confetti-boom";
-import GameLeaderboardPanel from "../shared/GameLeaderboardPanel";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { getGameSessionConfig } from "../../../hooks/gameSession";
 import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
@@ -26,6 +25,10 @@ import useGameQuestions from "../../../hooks/useGameQuestions";
 
 import { BASE_POINTS, createEmptyDraft, QUIZ_BATTLE_GAME_KEY, QUIZ_BATTLE_RESULT_KEY, SECONDS_PER_QUESTION, STREAK_BONUS } from "./constants";
 import type { Phase, Question, QuestionDraft, TeamId } from "./types";
+
+function getDefaultTeamNames(isSinglePlayer: boolean, singlePlayerName: string): [string, string] {
+  return [isSinglePlayer ? singlePlayerName : "YULDUZLAR", "CHAQQONLAR"];
+}
 
 function QuizBattle() {
   const session = getGameSessionConfig("quiz-battle");
@@ -67,8 +70,7 @@ function QuizBattle() {
   const question = questions[current];
   const progressPct = questions.length > 0 ? Math.round(((current + 1) / questions.length) * 100) : 0;
   const timePct = Math.max(0, Math.round((timeLeft / SECONDS_PER_QUESTION) * 100));
-  // const maxScore = Math.max(1, questions.length * BASE_POINTS * 2);
-
+  
   const winner = useMemo(() => {
     if (isSinglePlayer) return 0;
     if (scores[0] === scores[1]) return null;
@@ -133,11 +135,21 @@ function QuizBattle() {
   }, [phase]);
 
   useEffect(() => {
+    if (phase === "play" || phase === "finish") return;
+    setTeamNames((prev) => {
+      const defaults = getDefaultTeamNames(isSinglePlayer, singlePlayerName);
+      const firstName = prev[0].trim() ? prev[0] : defaults[0];
+      const secondName = isSinglePlayer ? defaults[1] : prev[1].trim() ? prev[1] : defaults[1];
+      return [firstName, secondName];
+    });
+  }, [isSinglePlayer, phase, singlePlayerName]);
+
+  useEffect(() => {
     let alive = true;
     (async () => {
       const remoteQuestions = await loadQuestions(QUIZ_BATTLE_GAME_KEY, {
         teacherScoped: Boolean(
-          user?.id && user.roles?.some((role) => role === "teacher" || role === "admin"),
+          user?.id && user.roles?.some((role : string) => role === "teacher" || role === "admin"),
         ),
       });
       if (!alive) return;
@@ -149,6 +161,18 @@ function QuizBattle() {
       alive = false;
     };
   }, [loadQuestions, user?.id, user?.roles]);
+
+  useEffect(() => {
+    if (phase !== "play") return;
+    if (questions.length < 2) {
+      setPhase("question-setup");
+      setQuestionError("Savollar topilmadi. Kamida 2 ta savol bo'lishi kerak.");
+      return;
+    }
+    if (!questions[current]) {
+      setCurrent(0);
+    }
+  }, [current, phase, questions]);
 
   const resetQuestionDraft = () => {
     setDraft(createEmptyDraft());
@@ -761,6 +785,21 @@ function QuizBattle() {
         </div>
       )}
 
+      {phase === "play" && !question && (
+        <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-6 text-center text-white">
+          <h3 className="text-xl font-black">Savol topilmadi</h3>
+          <p className="mt-2 text-sm text-rose-100/80">
+            2 kishilik rejim uchun savollar yuklanmagan yoki savol indeksi noto'g'ri bo'lib qoldi.
+          </p>
+          <button
+            onClick={resetEverything}
+            className="mt-4 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 px-6 py-3 font-black text-white transition-all hover:scale-105 active:scale-95"
+          >
+            QAYTADAN BOSHLASH
+          </button>
+        </div>
+      )}
+
       {/* Finish Phase */}
       {phase === "finish" && (
         <div ref={finishViewRef} className="relative transform-gpu overflow-hidden rounded-2xl border border-yellow-500/20 bg-gradient-to-br from-yellow-900/30 via-orange-900/30 to-red-900/30 p-8 backdrop-blur-xl text-center">
@@ -822,12 +861,10 @@ function QuizBattle() {
               className="group relative overflow-hidden rounded-xl bg-yellow-500/20 px-6 py-3 font-bold text-white border border-yellow-500/30 transition-all hover:bg-yellow-500/30"
             >
               <span className="relative flex items-center gap-2">
-                <FaTrash />
                 BOSH SAHIFA
               </span>
             </button>
           </div>
-          <GameLeaderboardPanel gameKey={QUIZ_BATTLE_RESULT_KEY} title="Quiz Battle Reytingi" />
         </div>
       )}
       <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue} />

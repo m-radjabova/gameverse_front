@@ -17,6 +17,7 @@ type ParsedPlayersInfo = {
 };
 
 const STORAGE_KEY_PREFIX = "game-session:";
+const sessionCache = new Map<string, GameSessionConfig>();
 
 const PARTICIPANT_LABELS: Record<ParticipantType, string> = {
   player: "o'yinchi",
@@ -65,30 +66,37 @@ export function buildParticipantOptions(playersLabel: string) {
 }
 
 export function getGameSessionConfig(gameId: string): GameSessionConfig | null {
+  const cached = sessionCache.get(gameId);
+  if (cached) {
+    return cached;
+  }
+
   if (typeof window === "undefined") {
     return null;
   }
 
   const raw = window.localStorage.getItem(`${STORAGE_KEY_PREFIX}${gameId}`);
-
   if (!raw) {
     return null;
   }
 
   try {
-    return JSON.parse(raw) as GameSessionConfig;
+    const parsed = JSON.parse(raw) as GameSessionConfig;
+    sessionCache.set(gameId, parsed);
+    return parsed;
   } catch {
+    window.localStorage.removeItem(`${STORAGE_KEY_PREFIX}${gameId}`);
     return null;
   }
 }
 
 export function saveGameSessionConfig(config: GameSessionConfig) {
-  if (typeof window === "undefined") {
-    return;
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(
+      `${STORAGE_KEY_PREFIX}${config.gameId}`,
+      JSON.stringify(config),
+    );
   }
 
-  window.localStorage.setItem(
-    `${STORAGE_KEY_PREFIX}${config.gameId}`,
-    JSON.stringify(config),
-  );
+  sessionCache.set(config.gameId, config);
 }

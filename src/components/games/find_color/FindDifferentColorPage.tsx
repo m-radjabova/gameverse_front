@@ -20,6 +20,7 @@ import {
 import { Link } from "react-router-dom";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
+import findColorImg from "../../../assets/color_find_image.png";
 
 function FindDifferentColorPage() {
   const gameStats = [
@@ -208,7 +209,7 @@ function FindDifferentColorPage() {
           <div className="absolute bottom-0 left-0 h-20 w-20 border-l-4 border-b-4 border-indigo-400/30 rounded-bl-3xl" />
           <div className="absolute bottom-0 right-0 h-20 w-20 border-r-4 border-b-4 border-indigo-400/30 rounded-br-3xl" />
 
-          <div className="relative grid gap-8 lg:grid-cols-2 lg:gap-12 lg:items-center">
+          <div className="relative grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 lg:items-center">
             {/* Left Content */}
             <div className="space-y-6">
               {/* Title */}
@@ -286,30 +287,12 @@ function FindDifferentColorPage() {
               <div className="relative transform-gpu overflow-hidden rounded-2xl border-4 border-cyan-500/30 shadow-2xl transition-all duration-500 hover:scale-[1.02] group-hover:border-cyan-400/50">
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/20 to-transparent z-10" />
 
-                <div className="bg-slate-900 p-6">
-                  <div className="grid grid-cols-4 gap-3">
-                    {Array.from({ length: 16 }).map((_, i) => {
-                      const isOdd = i === 7;
-                      const baseColor = "hsl(200 70% 50%)";
-                      const oddColor = "hsl(200 70% 42%)";
-                      
-                      return (
-                        <div
-                          key={i}
-                          className="aspect-square rounded-lg border border-white/10 shadow-lg transition-transform hover:scale-105"
-                          style={{
-                            background: isOdd ? oddColor : baseColor,
-                          }}
-                        >
-                          {isOdd && (
-                            <div className="absolute -top-2 -right-2 text-xs bg-yellow-400 text-slate-900 rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                              !
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+                <div className="bg-slate-900">
+                  <img
+                    src={findColorImg}
+                    alt="Color Grid Preview"
+                    className="h-[360px] w-full object-cover md:h-[440px] lg:h-[520px]"
+                  />
                 </div>
 
                 {/* Overlay Badge */}

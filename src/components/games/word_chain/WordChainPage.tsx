@@ -17,10 +17,10 @@ import {
 } from "react-icons/gi";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
+import rightImg from "../../../assets/word_chain_image.png";
 
 function WordChainPage() {
-    const rightImg = "https://media.istockphoto.com/id/1503421139/photo/multi-colored-alphabet-letters-and-magnifying-glass-on-the-yellow-background.jpg?s=612x612&w=0&k=20&c=losfLdOo6_oPE5GQmJGdfzC1haNnVSIGiAeOs7VCGDo=";
-  const gameStats = [
+    const gameStats = [
     {
       icon: <FaUsers className="text-2xl text-white" />,
       label: "O'QUVCHILAR",
@@ -217,7 +217,7 @@ function WordChainPage() {
                             <img
                               src={rightImg}
                               alt="So'zlar Zanjiri O'yini"
-                              className="h-[300px] w-full object-cover md:h-[400px] lg:h-[450px] transition-transform duration-700 group-hover:scale-110"
+                              className="h-[360px] w-full object-cover md:h-[440px] lg:h-[520px] transition-transform duration-700 group-hover:scale-110"
                             />
             
                             {/* Overlay Badge */}

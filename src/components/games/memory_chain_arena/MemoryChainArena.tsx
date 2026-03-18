@@ -11,8 +11,11 @@ import {
 import { GiBrain } from "react-icons/gi";
 import Confetti from "react-confetti-boom";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
+import GameLeaderboardPanel from "../shared/GameLeaderboardPanel";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
+import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
+import { useGameParticipantMode } from "../../../hooks/useGameParticipantMode";
 
 type Difficulty = "Oson" | "O'rta" | "Qiyin";
 type Side = "left" | "right";
@@ -135,10 +138,20 @@ function MemoryChainArena({
   rightTeamName = "2-Jamoa",
   initialDifficulty = "O'rta",
 }: MemoryChainArenaProps) {
+  const { isSinglePlayer, primaryName, secondaryName, modeLabel } = useGameParticipantMode({
+    gameId: "memory-chain",
+    fallbackPrimaryName: leftTeamName,
+    fallbackSecondaryName: rightTeamName,
+    singleModeLabel: "1 o'yinchi",
+    multiModeLabel: "2 jamoa",
+  });
   const config = DIFFICULTY_CONFIG[initialDifficulty];
   const totalRounds = config.rounds;
-  const leftLabel = leftTeamName.trim() || "1-Jamoa";
-  const rightLabel = rightTeamName.trim() || "2-Jamoa";
+  const leftLabel = primaryName.trim() || leftTeamName.trim() || "1-Jamoa";
+  const rightLabel = secondaryName.trim() || rightTeamName.trim() || "2-Jamoa";
+  const statusIntro = isSinglePlayer
+    ? "Start tugmasini bosing, zanjirni eslab qoling va yakka tartibda rekord qo'ying."
+    : "Start tugmasini bosing, zanjirni eslab qoling va tez toping.";
 
   const [round, setRound] = useState(1);
   const [phase, setPhase] = useState<Phase>("ready");
@@ -149,7 +162,7 @@ function MemoryChainArena({
   const [rightSequence, setRightSequence] = useState<number[]>([]);
   const [leftFlash, setLeftFlash] = useState<number | null>(null);
   const [rightFlash, setRightFlash] = useState<number | null>(null);
-  const [statusText, setStatusText] = useState("Start tugmasini bosing, zanjirni eslab qoling va tez toping.");
+  const [statusText, setStatusText] = useState(statusIntro);
   const [winner, setWinner] = useState<Winner | null>(null);
   const [showWinnerModal, setShowWinnerModal] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -159,14 +172,63 @@ function MemoryChainArena({
   const progressRounds = phase === "ready" ? 0 : phase === "finished" ? totalRounds : Math.max(0, round - 1);
   const progressPercent = Math.round((progressRounds / totalRounds) * 100);
   const roundLabel = `${round}/${totalRounds}`;
+  const visibleSides: Side[] = isSinglePlayer ? ["left"] : ["left", "right"];
+
+  useGameResultSubmission(
+    phase === "finished",
+    "memory-chain",
+    isSinglePlayer
+      ? [
+          {
+            participant_name: leftLabel,
+            participant_mode: modeLabel,
+            score: leftTeam.score,
+            metadata: {
+              rounds: totalRounds,
+              roundsWon: leftTeam.roundsWon,
+              bestStreak: leftTeam.bestStreak,
+              difficulty: initialDifficulty,
+            },
+          },
+        ]
+      : [
+          {
+            participant_name: leftLabel,
+            participant_mode: modeLabel,
+            score: leftTeam.score,
+            metadata: {
+              rounds: totalRounds,
+              roundsWon: leftTeam.roundsWon,
+              bestStreak: leftTeam.bestStreak,
+              difficulty: initialDifficulty,
+            },
+          },
+          {
+            participant_name: rightLabel,
+            participant_mode: modeLabel,
+            score: rightTeam.score,
+            metadata: {
+              rounds: totalRounds,
+              roundsWon: rightTeam.roundsWon,
+              bestStreak: rightTeam.bestStreak,
+              difficulty: initialDifficulty,
+            },
+          },
+        ],
+  );
 
   const resolveWinner = useCallback((): Winner => {
+    if (isSinglePlayer) return "left";
     if (leftTeam.score > rightTeam.score) return "left";
     if (rightTeam.score > leftTeam.score) return "right";
     if (leftTeam.roundsWon > rightTeam.roundsWon) return "left";
     if (rightTeam.roundsWon > leftTeam.roundsWon) return "right";
     return "draw";
-  }, [leftTeam.score, rightTeam.score, leftTeam.roundsWon, rightTeam.roundsWon]);
+  }, [isSinglePlayer, leftTeam.score, rightTeam.score, leftTeam.roundsWon, rightTeam.roundsWon]);
+
+  useEffect(() => {
+    setStatusText(statusIntro);
+  }, [statusIntro]);
 
   const openRound = useCallback(
     (nextRound: number) => {
@@ -180,9 +242,13 @@ function MemoryChainArena({
       setLeftTeam((prev) => ({ ...prev, input: [], status: "waiting", timeLeft: config.inputSeconds }));
       setRightTeam((prev) => ({ ...prev, input: [], status: "waiting", timeLeft: config.inputSeconds }));
       setPhase("preview");
-      setStatusText(`${nextRound}-raund: zanjirni eslab qoling.`);
+      setStatusText(
+        isSinglePlayer
+          ? `${nextRound}-raund: ${leftLabel}, zanjirni eslab qoling.`
+          : `${nextRound}-raund: zanjirni eslab qoling.`,
+      );
     },
-    [config.startLength, config.inputSeconds],
+    [config.startLength, config.inputSeconds, isSinglePlayer, leftLabel],
   );
 
   const startMatchNow = () => {
@@ -208,12 +274,12 @@ function MemoryChainArena({
     setWinner(null);
     setShowWinnerModal(false);
     setShowConfetti(false);
-    setStatusText("Start tugmasini bosing, zanjirni eslab qoling va tez toping.");
+    setStatusText(statusIntro);
   };
 
   const evaluatePress = (side: Side, padId: number) => {
     if (phase !== "input") return;
-    if (leftTeam.status === "correct" || rightTeam.status === "correct") return;
+    if (leftTeam.status === "correct" || (!isSinglePlayer && rightTeam.status === "correct")) return;
 
     if (side === "left") {
       if (leftTeam.status !== "waiting") return;
@@ -221,7 +287,11 @@ function MemoryChainArena({
 
       if (padId !== expected) {
         setLeftTeam((prev) => ({ ...prev, status: "wrong", streak: 0 }));
-        setStatusText(`${leftLabel} xato bosdi. Raund yakunini kuting.`);
+        setStatusText(
+          isSinglePlayer
+            ? `${leftLabel} xato bosdi. Keyingi raundga o'tiladi.`
+            : `${leftLabel} xato bosdi. Raund yakunini kuting.`,
+        );
         return;
       }
 
@@ -250,6 +320,7 @@ function MemoryChainArena({
       return;
     }
 
+    if (isSinglePlayer) return;
     if (rightTeam.status !== "waiting") return;
     const expected = rightSequence[rightTeam.input.length];
 
@@ -299,7 +370,11 @@ function MemoryChainArena({
         setLeftFlash(null);
         setRightFlash(null);
         setPhase("input");
-        setStatusText(`Raund ${roundLabel}: ${leftLabel} va ${rightLabel}, ketma-ketlikni qaytaring.`);
+        setStatusText(
+          isSinglePlayer
+            ? `Raund ${roundLabel}: ${leftLabel}, ketma-ketlikni qaytaring.`
+            : `Raund ${roundLabel}: ${leftLabel} va ${rightLabel}, ketma-ketlikni qaytaring.`,
+        );
         return;
       }
 
@@ -325,7 +400,7 @@ function MemoryChainArena({
       cancelled = true;
       timerIds.forEach((id) => window.clearTimeout(id));
     };
-  }, [phase, leftSequence, rightSequence, config.showStepMs, config.gapMs, roundLabel, leftLabel, rightLabel]);
+  }, [phase, leftSequence, rightSequence, config.showStepMs, config.gapMs, roundLabel, leftLabel, rightLabel, isSinglePlayer]);
 
   useEffect(() => {
     if (phase !== "input") return;
@@ -336,6 +411,7 @@ function MemoryChainArena({
         if (prev.timeLeft <= 1) return { ...prev, timeLeft: 0, status: "timeout", streak: 0 };
         return { ...prev, timeLeft: prev.timeLeft - 1 };
       });
+      if (isSinglePlayer) return;
       setRightTeam((prev) => {
         if (prev.status !== "waiting") return prev;
         if (prev.timeLeft <= 1) return { ...prev, timeLeft: 0, status: "timeout", streak: 0 };
@@ -344,25 +420,35 @@ function MemoryChainArena({
     }, 1000);
 
     return () => window.clearInterval(timer);
-  }, [phase]);
+  }, [phase, isSinglePlayer]);
 
   useEffect(() => {
     if (phase !== "input") return;
-    const someoneCorrect = leftTeam.status === "correct" || rightTeam.status === "correct";
-    const bothResolved = leftTeam.status !== "waiting" && rightTeam.status !== "waiting";
+    const someoneCorrect = leftTeam.status === "correct" || (!isSinglePlayer && rightTeam.status === "correct");
+    const bothResolved = isSinglePlayer
+      ? leftTeam.status !== "waiting"
+      : leftTeam.status !== "waiting" && rightTeam.status !== "waiting";
     if (!someoneCorrect && !bothResolved) return;
 
     setPhase("result");
     if (leftTeam.status === "correct") {
-      setStatusText(`${leftLabel} birinchi bo'lib to'g'ri topdi va raundni yutdi.`);
+      setStatusText(
+        isSinglePlayer
+          ? `${leftLabel} raundni muvaffaqiyatli yakunladi.`
+          : `${leftLabel} birinchi bo'lib to'g'ri topdi va raundni yutdi.`,
+      );
       return;
     }
-    if (rightTeam.status === "correct") {
+    if (!isSinglePlayer && rightTeam.status === "correct") {
       setStatusText(`${rightLabel} birinchi bo'lib to'g'ri topdi va raundni yutdi.`);
       return;
     }
-    setStatusText("Ikkala jamoa ham topa olmadi. Keyingi zanjirga o'tiladi.");
-  }, [phase, leftTeam.status, rightTeam.status, leftLabel, rightLabel]);
+    setStatusText(
+      isSinglePlayer
+        ? `${leftLabel} bu raundda topa olmadi. Keyingi zanjirga o'tiladi.`
+        : "Ikkala jamoa ham topa olmadi. Keyingi zanjirga o'tiladi.",
+    );
+  }, [phase, leftTeam.status, rightTeam.status, leftLabel, rightLabel, isSinglePlayer]);
 
   useEffect(() => {
     if (phase !== "result") return;
@@ -374,6 +460,11 @@ function MemoryChainArena({
         setShowWinnerModal(true);
         setPhase("finished");
 
+        if (isSinglePlayer) {
+          setStatusText(`${leftLabel} o'yinni ${leftTeam.score} ball bilan yakunladi.`);
+          setShowConfetti(true);
+          return;
+        }
         if (resolved === "left") {
           setStatusText(`${leftLabel} g'olib bo'ldi.`);
           setShowConfetti(true);
@@ -391,7 +482,7 @@ function MemoryChainArena({
     }, config.nextRoundMs);
 
     return () => window.clearTimeout(timer);
-  }, [phase, round, totalRounds, resolveWinner, leftLabel, rightLabel, openRound, config.nextRoundMs]);
+  }, [phase, round, totalRounds, resolveWinner, leftLabel, rightLabel, openRound, config.nextRoundMs, isSinglePlayer, leftTeam.score]);
 
   useEffect(() => {
     if (!showConfetti) return;
@@ -505,7 +596,9 @@ function MemoryChainArena({
           </p>
           <h2 className="mt-1 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl dark:text-white">{gameTitle} Arena</h2>
           <p className="mt-1 text-sm font-semibold text-slate-600 dark:text-slate-300">
-            Bolalar uchun qulay rejim: tugmalar yirik, ranglar aniq, katta ekranlarga mos.
+            {isSinglePlayer
+              ? "Yakka tartib rejimi: zanjirni eslab qoling, combo qiling va leaderboardga chiqing."
+              : "Ikki jamoali duel: tugmalar yirik, ranglar aniq, katta ekranlarga mos."}
           </p>
         </div>
       </div>
@@ -520,13 +613,19 @@ function MemoryChainArena({
           <p className="mt-1 text-base font-extrabold text-cyan-700 dark:text-cyan-200">{initialDifficulty}</p>
         </div>
         <div className="rounded-2xl border border-cyan-300/35 bg-white/70 px-4 py-3 backdrop-blur dark:border-white/15 dark:bg-white/5">
+          <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-300">Rejim</p>
+          <p className="mt-1 text-base font-extrabold text-slate-900 dark:text-white">{modeLabel}</p>
+        </div>
+        <div className="rounded-2xl border border-cyan-300/35 bg-white/70 px-4 py-3 backdrop-blur dark:border-white/15 dark:bg-white/5">
           <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-300">{leftLabel}</p>
           <p className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">{leftTeam.score} ball</p>
         </div>
-        <div className="rounded-2xl border border-cyan-300/35 bg-white/70 px-4 py-3 backdrop-blur dark:border-white/15 dark:bg-white/5">
-          <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-300">{rightLabel}</p>
-          <p className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">{rightTeam.score} ball</p>
-        </div>
+        {!isSinglePlayer ? (
+          <div className="rounded-2xl border border-cyan-300/35 bg-white/70 px-4 py-3 backdrop-blur dark:border-white/15 dark:bg-white/5">
+            <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-300">{rightLabel}</p>
+            <p className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">{rightTeam.score} ball</p>
+          </div>
+        ) : null}
         <div className="rounded-2xl border border-cyan-300/35 bg-white/70 px-4 py-3 backdrop-blur dark:border-white/15 dark:bg-white/5">
           <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-300">Uzunlik</p>
           <p className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">{currentLength} belgi</p>
@@ -545,9 +644,11 @@ function MemoryChainArena({
         </div>
       </div>
 
-      <div className="relative mt-4 grid gap-4 xl:grid-cols-2">
+      <div className={`relative mt-4 grid gap-4 ${isSinglePlayer ? "xl:grid-cols-1" : "xl:grid-cols-2"}`}>
         {renderTeamPanel("left", leftLabel, leftTeam, leftFlash, "border-cyan-400/45 bg-cyan-100/55 dark:bg-cyan-500/8", gameTone)}
-        {renderTeamPanel("right", rightLabel, rightTeam, rightFlash, "border-indigo-400/45 bg-indigo-100/55 dark:bg-indigo-500/8", "from-indigo-500 to-blue-500")}
+        {!isSinglePlayer
+          ? renderTeamPanel("right", rightLabel, rightTeam, rightFlash, "border-indigo-400/45 bg-indigo-100/55 dark:bg-indigo-500/8", "from-indigo-500 to-blue-500")
+          : null}
       </div>
 
       <div className="relative mt-5 flex flex-wrap justify-center gap-3">
@@ -571,6 +672,13 @@ function MemoryChainArena({
         {statusText}
       </div>
 
+      {isSinglePlayer ? (
+        <GameLeaderboardPanel
+          gameKey="memory-chain"
+          title="Memory Chain Solo Leaderboard"
+        />
+      ) : null}
+
       {showWinnerModal ? (
         <div className="fixed inset-0 z-[95] grid place-items-center bg-slate-950/70 p-4 backdrop-blur-sm">
           <div className="relative w-full max-w-2xl overflow-hidden rounded-[2rem] border border-cyan-300/35 bg-[linear-gradient(160deg,#020617,#111827,#1e1b4b)] p-5 shadow-2xl sm:p-6">
@@ -581,22 +689,34 @@ function MemoryChainArena({
               <p className="inline-flex rounded-full border border-emerald-300/30 bg-emerald-500/20 px-3 py-1 text-xs font-extrabold uppercase tracking-[0.12em] text-emerald-200">
                 Xotira zanjiri yakunlandi
               </p>
-              <h3 className="mt-3 text-4xl font-black text-white sm:text-5xl">{winnerLabel === "Durang" ? "Durang natija" : `G'olib: ${winnerLabel}`}</h3>
+              <h3 className="mt-3 text-4xl font-black text-white sm:text-5xl">
+                {isSinglePlayer
+                  ? `${winnerLabel} natijasi`
+                  : winnerLabel === "Durang"
+                    ? "Durang natija"
+                    : `G'olib: ${winnerLabel}`}
+              </h3>
               <p className="mt-1 text-base font-bold text-slate-300">
-                {winnerLabel === "Durang" ? "Ikkala jamoa ham teng natija ko'rsatdi." : `${winnerLabel} eng kuchli xotira natijasini ko'rsatdi.`}
+                {isSinglePlayer
+                  ? `${winnerLabel} eng yuqori xotira seriyasini ko'rsatdi.`
+                  : winnerLabel === "Durang"
+                    ? "Ikkala jamoa ham teng natija ko'rsatdi."
+                    : `${winnerLabel} eng kuchli xotira natijasini ko'rsatdi.`}
               </p>
 
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className={`mt-4 grid gap-3 ${isSinglePlayer ? "sm:grid-cols-1" : "sm:grid-cols-2"}`}>
                 <div className="rounded-2xl border border-white/15 bg-white/5 p-3 text-center">
                   <p className="text-xs font-extrabold uppercase tracking-[0.1em] text-slate-400">{leftLabel}</p>
                   <p className="mt-1 text-2xl font-extrabold text-white">{leftTeam.score}</p>
                   <p className="text-sm font-bold text-slate-300">{leftTeam.roundsWon} raund | combo {leftTeam.bestStreak}</p>
                 </div>
-                <div className="rounded-2xl border border-white/15 bg-white/5 p-3 text-center">
-                  <p className="text-xs font-extrabold uppercase tracking-[0.1em] text-slate-400">{rightLabel}</p>
-                  <p className="mt-1 text-2xl font-extrabold text-white">{rightTeam.score}</p>
-                  <p className="text-sm font-bold text-slate-300">{rightTeam.roundsWon} raund | combo {rightTeam.bestStreak}</p>
-                </div>
+                {!isSinglePlayer ? (
+                  <div className="rounded-2xl border border-white/15 bg-white/5 p-3 text-center">
+                    <p className="text-xs font-extrabold uppercase tracking-[0.1em] text-slate-400">{rightLabel}</p>
+                    <p className="mt-1 text-2xl font-extrabold text-white">{rightTeam.score}</p>
+                    <p className="text-sm font-bold text-slate-300">{rightTeam.roundsWon} raund | combo {rightTeam.bestStreak}</p>
+                  </div>
+                ) : null}
               </div>
 
               <div className="mt-4 flex flex-wrap justify-end gap-2">

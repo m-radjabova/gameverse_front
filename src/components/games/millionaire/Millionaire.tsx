@@ -21,6 +21,10 @@ import Confetti from "react-confetti-boom";
 import millionaireSound from "../../../assets/sounds/millionaire_sound.m4a";
 import tadaSound from "../../../assets/sounds/applause.mp3";
 import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import GameLeaderboardPanel from "../shared/GameLeaderboardPanel";
+import { useFinishApplause } from "../../../hooks/useFinishApplause";
+import { useGameParticipantMode } from "../../../hooks/useGameParticipantMode";
+import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
 import { QUESTION_BANK } from "./data";
 
 type OptionKey = "A" | "B" | "C" | "D";
@@ -87,6 +91,15 @@ const MONEY_LADDER: number[] = [
 
 const SAFE_LEVELS = new Set<number>([4, 9, 14]);
 
+function buildInitialNames(count: number, labels: string[]) {
+  const next = Array.from({ length: Math.max(1, Math.min(5, count)) }, (_, index) => {
+    const label = labels[index]?.trim();
+    return label || "";
+  });
+
+  return next;
+}
+
 function difficultyForStepIndex(stepIndex: number): Difficulty {
   if (stepIndex <= 3) return "easy";
   if (stepIndex <= 7) return "medium";
@@ -119,13 +132,23 @@ function pickQuestion(
 }
 
 function Millionaire() {
+  const { session, isSinglePlayer, participantCount, primaryName, modeLabel } = useGameParticipantMode({
+    gameId: "millionaire",
+    fallbackPrimaryName: "O'YINCHI 1",
+    fallbackSecondaryName: "O'YINCHI 2",
+    singleModeLabel: "1 o'yinchi",
+    multiModeLabel: "Jamoaviy",
+  });
   const bgAudioRef = useRef<HTMLAudioElement | null>(null);
   const winAudioRef = useRef<HTMLAudioElement | null>(null);
   const ladderContainerRef = useRef<HTMLDivElement | null>(null);
   const ladderItemRefs = useRef<Array<HTMLDivElement | null>>([]);
   const skipInitialRemoteSaveRef = useRef(true);
   const [phase, setPhase] = useState<"setup" | "play" | "end">("setup");
-  const [names, setNames] = useState<string[]>(["", "", ""]);
+  useFinishApplause(phase === "end");
+  const [names, setNames] = useState<string[]>(() =>
+    buildInitialNames(participantCount, session?.participantLabels ?? [primaryName]),
+  );
   const [questionBank, setQuestionBank] = useState<Question[]>(QUESTION_BANK);
   const [remoteLoaded, setRemoteLoaded] = useState(false);
   const [players, setPlayers] = useState<PlayerState[]>([]);
@@ -160,6 +183,7 @@ function Millionaire() {
     category: "",
   });
   const [draftError, setDraftError] = useState("");
+  const requiredPlayers = Math.max(1, Math.min(5, participantCount));
 
   useEffect(() => {
     bgAudioRef.current = new Audio(millionaireSound);
@@ -218,6 +242,26 @@ function Millionaire() {
     return players[currentPlayerIndex] || null;
   }, [players, currentPlayerIndex]);
 
+  useEffect(() => {
+    if (phase !== "setup") return;
+    setNames(buildInitialNames(requiredPlayers, session?.participantLabels ?? [primaryName]));
+  }, [requiredPlayers, session, primaryName, phase]);
+
+  useGameResultSubmission(
+    phase === "end" && players.length > 0,
+    "millionaire",
+    players.map((player) => ({
+      participant_name: player.name,
+      participant_mode: modeLabel,
+      score: player.totalMoney,
+      metadata: {
+        correctAnswers: player.correctAnswers,
+        wrongAnswers: player.wrongAnswers,
+        safeLevel: player.safeLevel,
+      },
+    })),
+  );
+
   const currentMoneyLevel = useMemo(() => {
     if (!currentPlayer) return 0;
     return MONEY_LADDER[currentPlayer.currentQuestionIndex] || 0;
@@ -247,10 +291,10 @@ function Millionaire() {
     });
   }, [currentPlayer, phase]);
 
-  function clamp3to5(arr: string[]) {
-    let a = arr.slice(0, 5);
-    while (a.length < 3) a.push("");
-    return a;
+  function normalizeNames(arr: string[]) {
+    let next = arr.slice(0, requiredPlayers);
+    while (next.length < requiredPlayers) next.push("");
+    return next;
   }
 
   function addTeacherQuestion() {
@@ -301,9 +345,13 @@ function Millionaire() {
   }
 
   function start() {
-    const cleaned = clamp3to5(names).map((x) => x.trim()).filter(Boolean);
-    if (cleaned.length < 3) {
-      setMessage("❌ Kamida 3 ta o'yinchi ismi kiriting.");
+    const cleaned = normalizeNames(names).map((x) => x.trim()).filter(Boolean);
+    if (cleaned.length < requiredPlayers) {
+      setMessage(
+        isSinglePlayer
+          ? "❌ O'yinchi ismini kiriting."
+          : `❌ Kamida ${requiredPlayers} ta o'yinchi ismi kiriting.`,
+      );
       return;
     }
     
@@ -321,11 +369,15 @@ function Millionaire() {
     
     setPlayers(init);
     setCurrentPlayerIndex(0);
-    setAnsweringPlayerIndex(null);
+    setAnsweringPlayerIndex(isSinglePlayer ? 0 : null);
     setAttemptedPlayerIds(new Set());
     setSelectedAnswer(null);
     setReveal(false);
-    setMessage("👆 Savol uchun birinchi bo'lib o'yinchi tanlang.");
+    setMessage(
+      isSinglePlayer
+        ? `${cleaned[0]} savolga javob beradi.`
+        : "👆 Savol uchun birinchi bo'lib o'yinchi tanlang.",
+    );
     setShowConfetti(false);
     setWinners([]);
     setDisabledOptions([]);
@@ -473,10 +525,14 @@ function Millionaire() {
     }
 
     setCurrentPlayerIndex(activeIndex);
-    setAnsweringPlayerIndex(null);
+    setAnsweringPlayerIndex(isSinglePlayer ? activeIndex : null);
     setSelectedAnswer(null);
     setReveal(false);
-    setMessage("👆 Savol uchun birinchi bo'lib o'yinchi tanlang.");
+    setMessage(
+      isSinglePlayer
+        ? `${sourcePlayers[activeIndex].name} savolga javob beradi.`
+        : "👆 Savol uchun birinchi bo'lib o'yinchi tanlang.",
+    );
 
     setLifelines({
       fiftyFifty: true,
@@ -493,6 +549,7 @@ function Millionaire() {
   }
 
   function claimQuestion(playerIndex: number) {
+    if (isSinglePlayer) return;
     if (phase !== "play" || answeringPlayerIndex !== null || reveal || modalType || resultModal) return;
     const player = players[playerIndex];
     if (!player || !player.isActive || player.hasLost) return;
@@ -605,7 +662,7 @@ function Millionaire() {
     setSelectedAnswer(null);
     setReveal(false);
     setMessage("");
-    setNames(["", "", ""]);
+    setNames(buildInitialNames(requiredPlayers, session?.participantLabels ?? [primaryName]));
     setShowConfetti(false);
     setWinners([]);
     setDisabledOptions([]);
@@ -622,7 +679,7 @@ function Millionaire() {
   }
 
   function removePlayer() {
-    setNames((p) => (p.length > 3 ? p.slice(0, -1) : p));
+    setNames((p) => (p.length > 1 ? p.slice(0, -1) : p));
   }
 
   function walkAway() {
@@ -788,52 +845,36 @@ function Millionaire() {
                   <div className="p-3 bg-gradient-to-r from-yellow-500 to-amber-500 rounded-xl">
                     <FaUsers className="text-2xl text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-yellow-400">O'YINCHILAR (3-5 TA)</h2>
+                  <h2 className="text-2xl font-bold text-yellow-400">
+                    {isSinglePlayer ? "O'YINCHI" : `O'YINCHILAR (${requiredPlayers} TA)`}
+                  </h2>
+                </div>
+
+                <div className="mb-5 rounded-2xl border-2 border-blue-500/40 bg-blue-900/20 px-5 py-4 backdrop-blur-sm">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-300">Rejim</p>
+                  <p className="mt-1 text-xl font-black text-yellow-400">{isSinglePlayer ? "Solo Millionaire" : `${requiredPlayers} kishilik jamoaviy o'yin`}</p>
                 </div>
 
                 <div className="space-y-4 mb-8">
-                  {clamp3to5(names).map((val, idx) => (
+                  {normalizeNames(names).map((val, idx) => (
                     <div key={idx} className="group relative">
                       <div className="absolute -left-2 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-yellow-500 to-amber-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
                       <label className="text-sm font-semibold text-blue-300 ml-2 mb-1 block">
                         <FaCrown className={`inline mr-1 ${idx === 0 ? 'text-yellow-400' : 'text-gray-400'}`} />
-                        O'yinchi {idx + 1}
+                        {isSinglePlayer ? "Asosiy o'yinchi" : `O'yinchi ${idx + 1}`}
                       </label>
                       <input
                         value={val}
                         onChange={(e) => {
                           const copy = [...names];
                           copy[idx] = e.target.value;
-                          setNames(clamp3to5(copy));
+                          setNames(normalizeNames(copy));
                         }}
-                        placeholder={`O'yinchi ${idx + 1} ismi...`}
+                        placeholder={isSinglePlayer ? "O'yinchi ismi..." : `O'yinchi ${idx + 1} ismi...`}
                         className="w-full px-6 py-4 rounded-xl border-2 border-blue-500/50 bg-blue-900/20 text-white placeholder-blue-300/50 focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 transition-all text-lg backdrop-blur-sm"
                       />
                     </div>
                   ))}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <button
-                    onClick={addPlayer}
-                    disabled={names.length >= 5}
-                    className="group relative py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold hover:from-blue-500 hover:to-blue-400 transition-all disabled:opacity-50 border-2 border-blue-400 overflow-hidden"
-                  >
-                    <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
-                    <span className="relative flex items-center justify-center gap-2">
-                      <FaUserPlus /> QO'SHISH
-                    </span>
-                  </button>
-                  <button
-                    onClick={removePlayer}
-                    disabled={names.length <= 3}
-                    className="group relative py-3 rounded-xl bg-gradient-to-r from-orange-600 to-orange-500 text-white font-bold hover:from-orange-500 hover:to-orange-400 transition-all disabled:opacity-50 border-2 border-orange-400 overflow-hidden"
-                  >
-                    <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
-                    <span className="relative flex items-center justify-center gap-2">
-                      <FaUserMinus /> O'CHIRISH
-                    </span>
-                  </button>
                 </div>
 
                 <button
@@ -968,6 +1009,15 @@ function Millionaire() {
                 </div>
               </div>
             </div>
+
+            {isSinglePlayer ? (
+              <div className="mt-8">
+                <GameLeaderboardPanel
+                  gameKey="millionaire"
+                  title="Millionaire Solo Leaderboard"
+                />
+              </div>
+            ) : null}
           </div>
         )}
 
@@ -1030,20 +1080,20 @@ function Millionaire() {
                   <div className="text-center">
                     <div className="text-sm text-blue-300 mb-1">HOZIRGI O'YINCHI</div>
                     <div className="text-2xl font-bold text-yellow-400">
-                      {answeringPlayerIndex === null ? "⚡ TANLANMAGAN" : currentPlayer.name}
+                      {answeringPlayerIndex === null ? (isSinglePlayer ? currentPlayer.name : "⚡ TANLANMAGAN") : currentPlayer.name}
                     </div>
                   </div>
                   <div className="text-center border-x-2 border-yellow-500/30">
                     <div className="text-sm text-blue-300 mb-1">JORIY PUL</div>
                     <div className="text-2xl font-bold text-white">
-                      {answeringPlayerIndex === null ? "—" : formatUZS(currentMoneyLevel)}
+                      {answeringPlayerIndex === null && !isSinglePlayer ? "—" : formatUZS(currentMoneyLevel)}
                     </div>
                   </div>
                   <div className="text-center">
                     <div className="text-sm text-blue-300 mb-1">XAVFSIZ YUTUQ</div>
                     <div className="text-2xl font-bold text-green-400 flex items-center justify-center gap-2">
                       <FaShieldAlt className="text-purple-400" />
-                      {answeringPlayerIndex === null ? "—" : formatUZS(safeMoney)}
+                      {answeringPlayerIndex === null && !isSinglePlayer ? "—" : formatUZS(safeMoney)}
                     </div>
                   </div>
                 </div>
@@ -1175,8 +1225,34 @@ function Millionaire() {
               <div className="bg-gradient-to-b from-[#1a2639] to-[#0f1a2f] rounded-2xl p-4 border-2 border-yellow-500/50 sticky top-4 shadow-2xl">
                 <h3 className="text-lg font-bold text-yellow-400 mb-4 text-center flex items-center justify-center gap-2">
                   <FaUsers />
-                  O'YINCHILAR
+                  {isSinglePlayer ? "SOLO PROFILE" : "O'YINCHILAR"}
                 </h3>
+                {isSinglePlayer && currentPlayer ? (
+                  <div className="space-y-4">
+                    <div className="rounded-2xl border-2 border-yellow-500/60 bg-gradient-to-br from-yellow-500/15 to-amber-500/10 p-5 text-center">
+                      <div className="text-sm uppercase tracking-[0.2em] text-blue-300">Asosiy o'yinchi</div>
+                      <div className="mt-2 text-2xl font-black text-yellow-400">{currentPlayer.name}</div>
+                      <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                        <div className="rounded-xl border border-blue-500/40 bg-blue-900/20 p-3">
+                          <div className="text-blue-300">To'g'ri</div>
+                          <div className="mt-1 text-xl font-bold text-white">{currentPlayer.correctAnswers}</div>
+                        </div>
+                        <div className="rounded-xl border border-red-500/40 bg-red-900/10 p-3">
+                          <div className="text-red-300">Xato</div>
+                          <div className="mt-1 text-xl font-bold text-white">{currentPlayer.wrongAnswers}</div>
+                        </div>
+                        <div className="rounded-xl border border-emerald-500/40 bg-emerald-900/10 p-3">
+                          <div className="text-emerald-300">Yutuq</div>
+                          <div className="mt-1 text-lg font-bold text-white">{formatUZS(currentPlayer.totalMoney)}</div>
+                        </div>
+                        <div className="rounded-xl border border-purple-500/40 bg-purple-900/10 p-3">
+                          <div className="text-purple-300">Safe</div>
+                          <div className="mt-1 text-lg font-bold text-white">{formatUZS(safeMoney)}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
                 <div className="space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar pr-2">
                   {players.map((player, idx) => {
                     const alreadyAttempted = attemptedPlayerIds.has(player.id);
@@ -1241,6 +1317,7 @@ function Millionaire() {
                     );
                   })}
                 </div>
+                )}
 
                 {/* Control Buttons */}
                 <div className="mt-4 space-y-3">
@@ -1280,11 +1357,11 @@ function Millionaire() {
                 <div className="text-8xl mb-8 animate-bounce">🏆</div>
 
                 <h2 className="text-5xl md:text-7xl font-black text-transparent bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-400 bg-clip-text mb-12">
-                  O'YIN TUGADI!
+                  {isSinglePlayer ? "SOLO NATIJA" : "O'YIN TUGADI!"}
                 </h2>
 
                 {/* Winners Podium */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 items-end">
+                <div className={`grid grid-cols-1 gap-6 mb-12 items-end ${isSinglePlayer ? "md:grid-cols-1 max-w-md mx-auto" : "md:grid-cols-3"}`}>
                   {winners.map((player, idx) => (
                     <div
                       key={player.id}
@@ -1320,9 +1397,9 @@ function Millionaire() {
                 {/* All Players */}
                 <div className="bg-blue-900/30 rounded-xl p-6 border-2 border-blue-500 mb-8">
                   <h3 className="text-sm font-bold text-yellow-400 mb-4 flex items-center justify-center gap-2">
-                    <FaUsers /> BARCHA O'YINCHILAR
+                    <FaUsers /> {isSinglePlayer ? "SOLO STATISTIKA" : "BARCHA O'YINCHILAR"}
                   </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  <div className={`grid gap-3 ${isSinglePlayer ? "grid-cols-1 max-w-sm mx-auto" : "grid-cols-2 md:grid-cols-5"}`}>
                     {[...players]
                       .sort((a, b) => b.totalMoney - a.totalMoney)
                       .map((player, idx) => (

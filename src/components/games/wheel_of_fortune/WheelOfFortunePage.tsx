@@ -20,9 +20,9 @@ import {
 import { RiTeamFill } from "react-icons/ri";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
+import wheelOfFortuneImg from "../../../assets/wheel_of_fortune_image.png";
 
 function WheelOfFortunePage() {
-  const wheelOfFortuneImg = "https://media.istockphoto.com/id/2177986731/photo/wheel-of-fortune-with-rewards.jpg?s=612x612&w=0&k=20&c=dkony3LqMPl7Mftei-8AkXfoGQgWsOQlqo_7NBeLOT0=";
   const gameStats = [
     { icon: FaUsers, label: "O'QUVCHILAR", value: "2-10 kishi", color: "from-purple-400 to-pink-400" },
     { icon: MdTimer, label: "DAVOMIYLIK", value: "10-15 min", color: "from-pink-400 to-rose-400" },
@@ -165,7 +165,7 @@ function WheelOfFortunePage() {
                 <img 
                   src={wheelOfFortuneImg} 
                   alt="Wheel of Fortune Game" 
-                  className="h-[300px] w-full object-cover md:h-[400px] lg:h-[450px]"
+                  className="h-[360px] w-full object-cover md:h-[440px] lg:h-[520px]"
                 />
                 
                 <div className="absolute bottom-0 left-0 right-0 z-20 p-6">

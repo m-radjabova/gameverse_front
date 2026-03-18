@@ -22,9 +22,9 @@ import {
 } from "react-icons/md";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
+import wordSearchImg from "../../../assets/word_search_image.png";
 
 function WordSearchPuzzlePage() {
-  const wordSearchImg = "https://media.istockphoto.com/id/2260590479/vector/vector-easter-village-placemat-spring-holiday-printable-activity-mat-with-maze-crossword.jpg?s=612x612&w=0&k=20&c=YpKwS6BpAuc6dSzcfFuBfTHFyNf9hDxWgwQXHjZOJ7E=";
   const gameStats = [
     { icon: FaUsers, label: "GURUHLAR", value: "2 jamoa", color: "from-emerald-400 to-teal-400" },
     { icon: MdTimer, label: "DAVOMIYLIK", value: "10-15 min", color: "from-teal-400 to-cyan-400" },
@@ -164,6 +164,7 @@ function WordSearchPuzzlePage() {
                 to="/games/word-search/play"
                 colorClassName="from-emerald-500 to-cyan-500"
                 className="pt-2"
+                modeSelectionEnabled
               />
             </div>
 
@@ -179,7 +180,7 @@ function WordSearchPuzzlePage() {
                 <img 
                   src={wordSearchImg} 
                   alt="Word Search Puzzle Game" 
-                  className="h-[300px] w-full object-cover md:h-[400px] lg:h-[450px]"
+                  className="h-[360px] w-full object-cover md:h-[440px] lg:h-[520px]"
                 />
                 
                 {/* Overlay Content */}

@@ -7,6 +7,8 @@ import Confetti from "react-confetti-boom";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
+import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
+import { useGameParticipantMode } from "../../../hooks/useGameParticipantMode";
 
 import {
   DIFFICULTY_GAME_TIME_SECONDS,
@@ -38,12 +40,17 @@ function DiffButton({ active, onClick, label, color }: { active: boolean; onClic
 }
 
 export default function MemoryRush() {
+  const { isSinglePlayer, primaryName, secondaryName, modeLabel } = useGameParticipantMode({
+    gameId: "memory-rush",
+    fallbackPrimaryName: "YULDUZ",
+    fallbackSecondaryName: "SHAMS",
+  });
   const finishViewRef = useRef<HTMLDivElement | null>(null);
   const [phase, setPhase] = useState<Phase>("setup");
   useFinishApplause(phase === "finish");
 
   const [difficulty, setDifficulty] = useState<Difficulty>("normal");
-  const [playerNames, setPlayerNames] = useState<[string, string]>(["⚔️ YULDUZ", "🛡️ SHAMS"]);
+  const [playerNames, setPlayerNames] = useState<[string, string]>([primaryName, secondaryName]);
   const [nameError, setNameError] = useState("");
 
   const [deck, setDeck] = useState<CardItem[]>([]);
@@ -88,6 +95,16 @@ export default function MemoryRush() {
   }, [pairs, streak, gameTimeLeft]);
 
   const currentPlayer = playerNames[active];
+  useEffect(() => {
+    setPlayerNames((prev) => [
+      prev[0].trim() || primaryName,
+      isSinglePlayer ? secondaryName : prev[1].trim() || secondaryName,
+    ]);
+    if (isSinglePlayer) {
+      setActive(0);
+    }
+  }, [isSinglePlayer, primaryName, secondaryName]);
+
 
   useEffect(() => {
     if (!toast) return;
@@ -139,16 +156,16 @@ export default function MemoryRush() {
   const initGame = () => {
     const a = playerNames[0].trim() || "⚔️ YULDUZ";
     const b = playerNames[1].trim() || "🛡️ SHAMS";
-    if (!a || !b) {
-      setNameError("Ikkala o'yinchi nomini kiriting!");
+    if (!a || (!isSinglePlayer && !b)) {
+      setNameError(isSinglePlayer ? "O'yinchi nomini kiriting!" : "Ikkala o'yinchi nomini kiriting!");
       return;
     }
-    if (a.toLowerCase() === b.toLowerCase()) {
+    if (!isSinglePlayer && a.toLowerCase() === b.toLowerCase()) {
       setNameError("Nomlar bir xil bo'lmasligi kerak!");
       return;
     }
     
-    setPlayerNames([a, b]);
+    setPlayerNames([a, isSinglePlayer ? secondaryName : b]);
     setNameError("");
 
     const newDeck = buildDeck(totalCards);
@@ -195,7 +212,7 @@ export default function MemoryRush() {
       prev.map((c) => (c.isMatched ? c : { ...c, isFaceUp: false, shake: false }))
     );
 
-    setActive((p) => (p === 0 ? 1 : 0));
+    setActive((p) => (isSinglePlayer ? 0 : p === 0 ? 1 : 0));
     if (forced) {
       setStreak((prev) => {
         const n: [number, number] = [...prev] as [number, number];
@@ -308,7 +325,7 @@ export default function MemoryRush() {
           setSecondPick(null);
           setLockInput(false);
 
-          setActive((p) => (p === 0 ? 1 : 0));
+          setActive((p) => (isSinglePlayer ? 0 : p === 0 ? 1 : 0));
           if (TURN_TIME_LIMIT_SECONDS > 0) setTurnTimeLeft(TURN_TIME_LIMIT_SECONDS);
         }, 250);
       }, 650);
@@ -316,19 +333,49 @@ export default function MemoryRush() {
   };
 
   const winner = useMemo(() => {
+    if (isSinglePlayer) return 0;
     if (pairs[0] === pairs[1]) return null;
     return pairs[0] > pairs[1] ? 0 : 1;
-  }, [pairs]);
+  }, [isSinglePlayer, pairs]);
 
   const winnerText = useMemo(() => {
+    if (isSinglePlayer) return `${playerNames[0]} yakuniy natijasi`;
     if (winner === null) return "Durrang 🤝";
     return `${playerNames[winner]} g'olib! 🏆`;
-  }, [winner, playerNames]);
+  }, [isSinglePlayer, winner, playerNames]);
 
   const finalScore = useMemo(() => {
     const timeBonus = Math.round(gameTimeLeft * 2);
     return (pairs[0] + pairs[1]) * 120 + (streak[0] + streak[1]) * 25 + timeBonus;
   }, [pairs, streak, gameTimeLeft]);
+
+  useGameResultSubmission(
+    phase === "finish",
+    "memory-rush",
+    isSinglePlayer
+      ? [
+          {
+            participant_name: playerNames[0],
+            participant_mode: modeLabel,
+            score: finalScore,
+            metadata: { pairs: pairs[0], difficulty },
+          },
+        ]
+      : [
+          {
+            participant_name: playerNames[0],
+            participant_mode: modeLabel,
+            score: pairs[0] * 120 + streak[0] * 25,
+            metadata: { pairs: pairs[0], difficulty, winner: winner === 0 },
+          },
+          {
+            participant_name: playerNames[1],
+            participant_mode: modeLabel,
+            score: pairs[1] * 120 + streak[1] * 25,
+            metadata: { pairs: pairs[1], difficulty, winner: winner === 1 },
+          },
+        ],
+  );
 
   const rank = useMemo(() => {
     if (finalScore >= 1200) return { label: "Afsonaviy", icon: <FaCrown className="text-yellow-300" /> };
@@ -374,11 +421,11 @@ export default function MemoryRush() {
 
               <div className="relative space-y-4">
                 {/* Player Names */}
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className={`grid gap-4 ${isSinglePlayer ? "" : "md:grid-cols-2"}`}>
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-bold text-emerald-400">
                       <FaArrowLeft />
-                      1-O'YINCHI
+                      {isSinglePlayer ? "O'YINCHI" : "1-O'YINCHI"}
                     </label>
                     <input
                       value={playerNames[0]}
@@ -387,18 +434,20 @@ export default function MemoryRush() {
                       placeholder="⚔️ YULDUZ"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-bold text-teal-400">
-                      <FaArrowRight />
-                      2-O'YINCHI
-                    </label>
-                    <input
-                      value={playerNames[1]}
-                      onChange={(e) => setPlayerNames([playerNames[0], e.target.value])}
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-teal-400 focus:outline-none"
-                      placeholder="🛡️ SHAMS"
-                    />
-                  </div>
+                  {!isSinglePlayer && (
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-sm font-bold text-teal-400">
+                        <FaArrowRight />
+                        2-O'YINCHI
+                      </label>
+                      <input
+                        value={playerNames[1]}
+                        onChange={(e) => setPlayerNames([playerNames[0], e.target.value])}
+                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-teal-400 focus:outline-none"
+                        placeholder="🛡️ SHAMS"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {nameError && (
@@ -552,7 +601,7 @@ export default function MemoryRush() {
             </div>
 
             {/* Players */}
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className={`grid gap-4 ${isSinglePlayer ? "" : "md:grid-cols-2"}`}>
               {/* Player 1 */}
               <div className={`relative transform-gpu overflow-hidden rounded-xl border-2 p-6 backdrop-blur-xl transition-all ${
                 active === 0 
@@ -567,7 +616,7 @@ export default function MemoryRush() {
                       <FaArrowLeft className="text-xl text-white" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-emerald-400">⚔️ 1-O'YINCHI</p>
+                      <p className="text-xs font-bold text-emerald-400">{isSinglePlayer ? "O'YINCHI" : "⚔️ 1-O'YINCHI"}</p>
                       <p className="text-lg font-black text-white">{playerNames[0]}</p>
                     </div>
                   </div>
@@ -594,46 +643,47 @@ export default function MemoryRush() {
                 </div>
               </div>
 
-              {/* Player 2 */}
-              <div className={`relative transform-gpu overflow-hidden rounded-xl border-2 p-6 backdrop-blur-xl transition-all ${
-                active === 1 
-                  ? 'border-teal-400/50 bg-teal-900/40 scale-105' 
-                  : 'border-white/10 bg-white/5'
-              }`}>
-                <div className="absolute inset-0 bg-gradient-to-r from-teal-500/10 to-cyan-500/10" />
-                
-                <div className="relative flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500">
-                      <FaArrowRight className="text-xl text-white" />
+              {!isSinglePlayer && (
+                <div className={`relative transform-gpu overflow-hidden rounded-xl border-2 p-6 backdrop-blur-xl transition-all ${
+                  active === 1 
+                    ? 'border-teal-400/50 bg-teal-900/40 scale-105' 
+                    : 'border-white/10 bg-white/5'
+                }`}>
+                  <div className="absolute inset-0 bg-gradient-to-r from-teal-500/10 to-cyan-500/10" />
+                  
+                  <div className="relative flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500">
+                        <FaArrowRight className="text-xl text-white" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-teal-400">🛡️ 2-O'YINCHI</p>
+                        <p className="text-lg font-black text-white">{playerNames[1]}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs font-bold text-teal-400">🛡️ 2-O'YINCHI</p>
-                      <p className="text-lg font-black text-white">{playerNames[1]}</p>
+                    <div className="text-right">
+                      <p className="text-3xl font-black text-teal-400">{pairs[1]}</p>
+                      <p className="text-xs text-gray-400">juft</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-3xl font-black text-teal-400">{pairs[1]}</p>
-                    <p className="text-xs text-gray-400">juft</p>
+                  
+                  <div className="relative mt-4 flex items-center justify-between">
+                    <div className="flex gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        i < lives[1] 
+                          ? <FaHeart key={i} className="text-rose-400 animate-pulse" />
+                          : <FaRegHeart key={i} className="text-gray-600" />
+                      ))}
+                    </div>
+                    {streak[1] > 0 && (
+                      <div className="flex items-center gap-1 text-yellow-300">
+                        <FaBolt />
+                        <span className="text-sm font-bold">{streak[1]}x Combo</span>
+                      </div>
+                    )}
                   </div>
                 </div>
-                
-                <div className="relative mt-4 flex items-center justify-between">
-                  <div className="flex gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      i < lives[1] 
-                        ? <FaHeart key={i} className="text-rose-400 animate-pulse" />
-                        : <FaRegHeart key={i} className="text-gray-600" />
-                    ))}
-                  </div>
-                  {streak[1] > 0 && (
-                    <div className="flex items-center gap-1 text-yellow-300">
-                      <FaBolt />
-                      <span className="text-sm font-bold">{streak[1]}x Combo</span>
-                    </div>
-                  )}
-                </div>
-              </div>
+              )}
             </div>
 
             {/* Board */}

@@ -1,10 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Confetti from "react-confetti-boom";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
+import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
+import useGameQuestions from "../../../hooks/useGameQuestions";
+import { useMeQuery } from "../../../hooks/useProfile";
+import { generateGeminiJson, type GameDifficulty } from "../../../apiClient/gemini";
 import mathChickGameSound from "../../../assets/sounds/math_chick_game.m4a";
 import wrongSound from "../../../assets/sounds/wrong.mp3";
 import finishSound from "../../../assets/sounds/applause.mp3";
+import { getAccessToken } from "../../../utils/auth";
 
 type Difficulty = "easy" | "medium" | "hard" | "mixed";
 type PlayerId = "A" | "B";
@@ -56,6 +61,8 @@ const QUESTION_PANEL_H = 72;
 const CHICK_SCALE = 1.18;
 const ROUND_DELAY = 850;
 const EXPLOSION_COLORS = ["#fef3c7", "#fde68a", "#fbbf24", "#f97316", "#ffffff"];
+const MATH_CHICK_GAME_KEY = "math_chick";
+const AI_COUNT_OPTIONS = [1, 3, 5, 10] as const;
 
 function rand(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -491,6 +498,85 @@ function buildTeacherProblem(draft: TeacherDraft): Problem | null {
   };
 }
 
+function normalizeAiDifficulty(value: unknown): "easy" | "medium" | "hard" | null {
+  const raw = String(value ?? "").trim().toLowerCase();
+  if (raw === "easy" || raw === "medium" || raw === "hard") {
+    return raw;
+  }
+  return null;
+}
+
+async function generateMathChickAiProblems({
+  topic,
+  count,
+  difficulty,
+}: {
+  topic: string;
+  count: number;
+  difficulty: GameDifficulty;
+}): Promise<Problem[]> {
+  const safeCount = Math.max(1, Math.min(10, Math.floor(count)));
+  const safeTopic = topic.trim() || "boshlang'ich matematika";
+  const prompt = [
+    `Math Chick Game uchun ${safeCount} ta matematik savol yarating.`,
+    `Mavzu: ${safeTopic}.`,
+    `Qiyinlik: ${difficulty}.`,
+    'Javob faqat JSON array bo\'lsin: [{"question":"12 + 8 = ?","answer":20,"options":[18,20,22,24],"difficulty":"easy"}]',
+    "- Har bir elementda question, answer, options, difficulty bo'lsin.",
+    "- options aniq 4 ta butun son bo'lsin.",
+    "- options ichida answer ham bo'lsin.",
+    "- Savollar maktab o'quvchilari uchun tushunarli bo'lsin.",
+    "- Takror savollar bo'lmasin.",
+    "- Matn Uzbek (Latin) tilida bo'lsin.",
+  ].join("\n");
+
+  const parsed = await generateGeminiJson(prompt);
+  if (!Array.isArray(parsed)) {
+    throw new Error("AI javobi ro'yxat formatida kelmadi.");
+  }
+
+  const items = parsed
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const body = item as Record<string, unknown>;
+      const question = String(body.question ?? "").trim();
+      const answer = Number(body.answer);
+      const difficultyValue = normalizeAiDifficulty(body.difficulty) ?? "medium";
+      const optionsRaw = Array.isArray(body.options) ? body.options : [];
+      const optionSet = new Set<number>([answer]);
+
+      optionsRaw.forEach((value) => {
+        const numeric = Number(value);
+        if (!Number.isNaN(numeric)) {
+          optionSet.add(numeric);
+        }
+      });
+
+      if (!question || !Number.isFinite(answer)) {
+        return null;
+      }
+
+      if (optionSet.size < 4) {
+        uniqueOptions(answer, difficultyValue === "easy" ? 5 : difficultyValue === "medium" ? 8 : 12).forEach(
+          (value) => optionSet.add(value),
+        );
+      }
+
+      return {
+        question,
+        answer,
+        options: shuffle([...optionSet]).slice(0, 4),
+      } satisfies Problem;
+    })
+    .filter((item): item is Problem => Boolean(item));
+
+  if (items.length < safeCount) {
+    throw new Error(`AI ${safeCount} ta emas, ${items.length} ta savol qaytardi.`);
+  }
+
+  return items.slice(0, safeCount);
+}
+
 function takeNextRound(mode: Difficulty, customProblems: Problem[]) {
   if (customProblems.length > 0) {
     const [problem, ...remaining] = customProblems;
@@ -529,6 +615,14 @@ function getTeamDisplayName(name: string, fallback: string) {
 
 export default function MathChickGame() {
   const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
+  const hasAuth = Boolean(getAccessToken());
+  const { data: user } = useMeQuery(hasAuth);
+  const {
+    loadQuestions,
+    saveQuestionsForGame,
+    loadingByGame,
+    savingByGame,
+  } = useGameQuestions<Problem>({ teacherId: user?.id });
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationRef = useRef<number | null>(null);
   const startTimeRef = useRef<number>(0);
@@ -542,11 +636,13 @@ export default function MathChickGame() {
   const bgAudioRef = useRef<HTMLAudioElement | null>(null);
   const wrongAudioRef = useRef<HTMLAudioElement | null>(null);
   const finishAudioRef = useRef<HTMLAudioElement | null>(null);
+  const loadedTeacherIdRef = useRef<string | null>(null);
 
   const initialRound = useMemo(() => createRound("easy"), []);
 
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
   const [phase, setPhase] = useState<Phase>("setup");
+  useFinishApplause(phase === "finish");
   const [winner, setWinner] = useState<PlayerId | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [currentProblem, setCurrentProblem] = useState<Problem>(initialRound.problem);
@@ -563,8 +659,16 @@ export default function MathChickGame() {
     answer: "",
     wrongAnswers: "",
   });
+  const [savedProblems, setSavedProblems] = useState<Problem[]>([]);
   const [customProblems, setCustomProblems] = useState<Problem[]>([]);
   const [teacherMessage, setTeacherMessage] = useState<string>("");
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiDifficulty, setAiDifficulty] = useState<GameDifficulty>("medium");
+  const [aiCount, setAiCount] = useState<(typeof AI_COUNT_OPTIONS)[number]>(3);
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+
+  const isLoadingSavedQuestions = loadingByGame[MATH_CHICK_GAME_KEY] ?? false;
+  const isSavingSavedQuestions = savingByGame[MATH_CHICK_GAME_KEY] ?? false;
 
   useEffect(() => {
     playerProgressRef.current = playerProgress;
@@ -573,6 +677,22 @@ export default function MathChickGame() {
   useEffect(() => {
     customProblemsRef.current = customProblems;
   }, [customProblems]);
+
+  useEffect(() => {
+    if (!hasAuth || !user?.id || loadedTeacherIdRef.current === user.id) {
+      return;
+    }
+
+    loadedTeacherIdRef.current = user.id;
+    void loadQuestions(MATH_CHICK_GAME_KEY, { force: true, teacherScoped: true }).then((items) => {
+      setSavedProblems(items);
+      setCustomProblems(items);
+      customProblemsRef.current = items;
+      if (items.length > 0) {
+        setTeacherMessage("Saqlangan custom savollar yuklandi.");
+      }
+    });
+  }, [hasAuth, loadQuestions, user?.id]);
 
   useEffect(() => {
     winnerRef.current = winner;
@@ -647,11 +767,12 @@ export default function MathChickGame() {
     }, ROUND_DELAY);
   }, []);
 
-  const restartGame = useCallback((mode: Difficulty) => {
+  const restartGame = useCallback((mode: Difficulty, seededProblems?: Problem[]) => {
     if (roundTimerRef.current) {
       window.clearTimeout(roundTimerRef.current);
     }
-    const next = takeNextRound(mode, customProblemsRef.current);
+    const sourceProblems = seededProblems ?? customProblemsRef.current;
+    const next = takeNextRound(mode, sourceProblems);
     customProblemsRef.current = next.remaining;
     setDifficulty(mode);
     setPhase("game");
@@ -683,9 +804,39 @@ export default function MathChickGame() {
     burstsRef.current = [...burstsRef.current, createExplosionBurst(player)];
   }, []);
 
+  const persistCustomProblems = useCallback(
+    async (nextProblems: Problem[], successMessage: string) => {
+      if (!hasAuth || !user?.id) {
+        setSavedProblems(nextProblems);
+        setCustomProblems(nextProblems);
+        customProblemsRef.current = nextProblems;
+        setTeacherMessage("Backendga saqlash uchun avval tizimga kiring.");
+        return false;
+      }
+
+      const ok = await saveQuestionsForGame(MATH_CHICK_GAME_KEY, nextProblems, true);
+      if (!ok) {
+        setTeacherMessage("Savollarni backendga saqlab bo'lmadi.");
+        return false;
+      }
+
+      setSavedProblems(nextProblems);
+      if (phase === "setup") {
+        setCustomProblems(nextProblems);
+        customProblemsRef.current = nextProblems;
+      }
+      setTeacherMessage(successMessage);
+      return true;
+    },
+    [hasAuth, phase, saveQuestionsForGame, user?.id],
+  );
+
   const handleStartGame = useCallback(() => {
-    runStartCountdown(() => restartGame(difficulty));
-  }, [difficulty, restartGame, runStartCountdown]);
+    const queueSnapshot = [...savedProblems];
+    setCustomProblems(queueSnapshot);
+    customProblemsRef.current = queueSnapshot;
+    runStartCountdown(() => restartGame(difficulty, queueSnapshot));
+  }, [difficulty, restartGame, runStartCountdown, savedProblems]);
 
   const handleBackToSetup = useCallback(() => {
     if (roundTimerRef.current) {
@@ -698,10 +849,12 @@ export default function MathChickGame() {
     setLockedBy(null);
     setSelectedAnswers({ A: null, B: null });
     setFeedback({ A: "idle", B: "idle" });
+    setCustomProblems(savedProblems);
+    customProblemsRef.current = savedProblems;
     burstsRef.current = [];
     stopAudio(bgAudioRef);
     stopAudio(finishAudioRef);
-  }, [stopAudio]);
+  }, [savedProblems, stopAudio]);
 
   const updateTeamName = useCallback((player: PlayerId, value: string) => {
     setTeamNames((prev) => ({
@@ -710,17 +863,53 @@ export default function MathChickGame() {
     }));
   }, []);
 
-  const addTeacherProblem = useCallback(() => {
+  const addTeacherProblem = useCallback(async () => {
     const nextProblem = buildTeacherProblem(teacherDraft);
     if (!nextProblem) {
       setTeacherMessage("Savol va to'g'ri javobni to'ldiring.");
       return;
     }
 
-    setCustomProblems((prev) => [...prev, nextProblem]);
+    const nextProblems = [...savedProblems, nextProblem];
+    const ok = await persistCustomProblems(nextProblems, "Custom savol backendga saqlandi.");
+    if (!ok && hasAuth) {
+      return;
+    }
     setTeacherDraft({ question: "", answer: "", wrongAnswers: "" });
-    setTeacherMessage("Custom savol navbatga qo'shildi.");
-  }, [teacherDraft]);
+  }, [hasAuth, persistCustomProblems, savedProblems, teacherDraft]);
+
+  const removeSavedProblem = useCallback(
+    async (index: number) => {
+      const nextProblems = savedProblems.filter((_, itemIndex) => itemIndex !== index);
+      await persistCustomProblems(nextProblems, "Custom savol o'chirildi va backend yangilandi.");
+    },
+    [persistCustomProblems, savedProblems],
+  );
+
+  const handleGenerateAiQuestions = useCallback(async () => {
+    setTeacherMessage("");
+    setIsGeneratingAi(true);
+
+    try {
+      const generated = await generateMathChickAiProblems({
+        topic: aiTopic,
+        count: aiCount,
+        difficulty: aiDifficulty,
+      });
+      const nextProblems = [...savedProblems, ...generated];
+      const ok = await persistCustomProblems(
+        nextProblems,
+        `AI bilan ${generated.length} ta savol yaratildi va backendga saqlandi.`,
+      );
+      if (ok || !hasAuth) {
+        setAiTopic("");
+      }
+    } catch (error) {
+      setTeacherMessage(error instanceof Error ? error.message : "AI savollarini yaratib bo'lmadi.");
+    } finally {
+      setIsGeneratingAi(false);
+    }
+  }, [aiCount, aiDifficulty, aiTopic, hasAuth, persistCustomProblems, savedProblems]);
 
   const handleAnswer = useCallback(
     (player: PlayerId, value: number) => {
@@ -1265,15 +1454,15 @@ export default function MathChickGame() {
                     Teacher Panel
                   </div>
                   <div className="mt-2 text-xl font-black text-white">
-                    Jamoa nomlari va custom savollar
+                    Jamoa nomlari, AI va custom savollar
                   </div>
                 </div>
                 <div className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-bold text-cyan-100">
-                  Navbatdagi custom savollar: {customProblems.length}
+                  {isLoadingSavedQuestions ? "Savollar yuklanmoqda..." : `Saqlangan custom savollar: ${savedProblems.length}`}
                 </div>
               </div>
 
-              <div className="grid gap-6 xl:grid-cols-[1.1fr_1.4fr]">
+              <div className="grid gap-6 xl:grid-cols-[0.9fr_1.5fr]">
                 <div className="grid gap-4 md:grid-cols-2">
                   <label className="rounded-3xl border border-amber-400/15 bg-amber-500/5 p-4">
                     <div className="text-xs font-black uppercase tracking-[0.3em] text-amber-200">Team A</div>
@@ -1299,6 +1488,91 @@ export default function MathChickGame() {
                 </div>
 
                 <div className="grid gap-4">
+                  <div className="rounded-3xl border border-cyan-400/15 bg-cyan-500/5 p-4">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                      <div>
+                        <div className="text-xs font-black uppercase tracking-[0.3em] text-cyan-200">
+                          AI Savol Generator
+                        </div>
+                        <div className="mt-2 text-sm text-slate-300">
+                          Baamboozle dagidek mavzu, soni va qiyinlik bo'yicha savollar yaratib backendga saqlaydi.
+                        </div>
+                      </div>
+                      <div className="rounded-full border border-cyan-300/20 bg-slate-950/50 px-4 py-2 text-xs font-bold uppercase tracking-[0.25em] text-cyan-100">
+                        {user?.username ? `Teacher: ${user.username}` : "Login kerak"}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_0.9fr]">
+                      <label className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+                        <div className="text-xs font-black uppercase tracking-[0.28em] text-slate-400">Mavzu</div>
+                        <input
+                          type="text"
+                          value={aiTopic}
+                          onChange={(event) => setAiTopic(event.target.value)}
+                          className="mt-3 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-300/40"
+                          placeholder="Masalan: ko'paytirish, kasrlar, bo'lish"
+                        />
+                      </label>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+                          <div className="text-xs font-black uppercase tracking-[0.28em] text-slate-400">Soni</div>
+                          <div className="mt-3 grid grid-cols-2 gap-2">
+                            {AI_COUNT_OPTIONS.map((count) => (
+                              <button
+                                key={count}
+                                type="button"
+                                onClick={() => setAiCount(count)}
+                                className={`rounded-2xl border px-3 py-2 text-xs font-black uppercase tracking-[0.2em] transition ${
+                                  aiCount === count
+                                    ? "border-cyan-300/30 bg-cyan-400/15 text-cyan-100"
+                                    : "border-white/10 bg-slate-950/70 text-slate-300"
+                                }`}
+                              >
+                                {count} ta
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+                          <div className="text-xs font-black uppercase tracking-[0.28em] text-slate-400">Qiyinlik</div>
+                          <div className="mt-3 grid grid-cols-2 gap-2">
+                            {(["easy", "medium", "hard", "mixed"] as const).map((mode) => (
+                              <button
+                                key={mode}
+                                type="button"
+                                onClick={() => setAiDifficulty(mode)}
+                                className={`rounded-2xl border px-3 py-2 text-xs font-black uppercase tracking-[0.2em] transition ${
+                                  aiDifficulty === mode
+                                    ? "border-cyan-300/30 bg-cyan-400/15 text-cyan-100"
+                                    : "border-white/10 bg-slate-950/70 text-slate-300"
+                                }`}
+                              >
+                                {mode}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                      <div className="text-sm text-slate-400">
+                        AI ishlashi uchun `.env` ichida `VITE_GEMINI_API_KEY` bo'lishi kerak.
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void handleGenerateAiQuestions()}
+                        disabled={isGeneratingAi || isSavingSavedQuestions}
+                        className="rounded-2xl bg-gradient-to-r from-cyan-400 via-sky-500 to-blue-600 px-5 py-3 text-sm font-black uppercase tracking-[0.25em] text-white shadow-lg shadow-cyan-500/20 transition duration-200 hover:scale-[1.03] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isGeneratingAi ? "AI yaratmoqda..." : `AI bilan ${aiCount} ta savol qo'shish`}
+                      </button>
+                    </div>
+                  </div>
+
                   <label className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
                     <div className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Savol / Misol</div>
                     <input
@@ -1355,15 +1629,64 @@ export default function MathChickGame() {
                     </div>
                     <button
                       type="button"
-                      onClick={addTeacherProblem}
-                      className="rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-cyan-500 px-5 py-3 text-sm font-black uppercase tracking-[0.25em] text-white shadow-lg shadow-orange-500/20 transition duration-200 hover:scale-[1.03] active:scale-[0.98]"
+                      onClick={() => void addTeacherProblem()}
+                      disabled={isSavingSavedQuestions}
+                      className="rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-cyan-500 px-5 py-3 text-sm font-black uppercase tracking-[0.25em] text-white shadow-lg shadow-orange-500/20 transition duration-200 hover:scale-[1.03] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      Savol Qo'shish
+                      {isSavingSavedQuestions ? "Saqlanmoqda..." : "Savol Qo'shish"}
                     </button>
                   </div>
 
-                  <div className={`text-sm font-semibold ${teacherMessage.includes("qo'shildi") ? "text-emerald-300" : "text-amber-200"}`}>
-                    {teacherMessage || "O'qituvchi shu joydan savol qo'shishi va jamoa nomini almashtirishi mumkin."}
+                  <div className={`text-sm font-semibold ${
+                    teacherMessage.includes("backendga saqlandi") ||
+                    teacherMessage.includes("yaratildi") ||
+                    teacherMessage.includes("yuklandi") ||
+                    teacherMessage.includes("yangilandi")
+                      ? "text-emerald-300"
+                      : "text-amber-200"
+                  }`}>
+                    {teacherMessage || "O'qituvchi shu joydan savol qo'shishi, AI bilan yaratishi va backendga saqlashi mumkin."}
+                  </div>
+
+                  <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <div className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">
+                        Saqlangan Savollar
+                      </div>
+                      <div className="rounded-full border border-white/10 bg-slate-950/50 px-3 py-1 text-xs font-bold text-slate-300">
+                        {savedProblems.length} ta
+                      </div>
+                    </div>
+
+                    <div className="max-h-64 space-y-2 overflow-auto pr-1">
+                      {savedProblems.length === 0 ? (
+                        <div className="rounded-2xl border border-dashed border-white/10 bg-slate-950/35 px-4 py-5 text-sm text-slate-400">
+                          Hozircha backendda saqlangan custom savol yo'q.
+                        </div>
+                      ) : (
+                        savedProblems.map((problem, index) => (
+                          <div
+                            key={`${problem.question}-${index}`}
+                            className="flex items-start justify-between gap-3 rounded-2xl border border-white/10 bg-slate-950/35 px-4 py-3"
+                          >
+                            <div>
+                              <div className="text-sm font-semibold text-white">{problem.question}</div>
+                              <div className="mt-1 text-xs text-slate-400">
+                                Javob: {problem.answer} | Variantlar: {problem.options.join(", ")}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => void removeSavedProblem(index)}
+                              disabled={isSavingSavedQuestions}
+                              className="rounded-xl border border-rose-300/20 bg-rose-500/10 px-3 py-2 text-xs font-black uppercase tracking-[0.18em] text-rose-200 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              O'chirish
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

@@ -4,11 +4,10 @@ import { MdGames, MdSportsEsports, MdTimer, MdSpeed, MdEmojiEvents } from "react
 import { RiTeamFill} from "react-icons/ri";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
+import classicArcadeImg from "../../../assets/classic_arcade_image.png";
 
 function ClassicArcadePage() {
-  const classicArcadeImg =
-    "https://media.istockphoto.com/id/1582151789/vector/vector-arcade-premium-alphabet-in-purple-violet-blue-colors-vector-3d-font-text-elements.jpg?s=612x612&w=0&k=20&c=x6f1QrMBy4O6ac6IFTWDG13A9D3vQFK8cIPXGrvA6aA=";
-
+  
   const gameStats = [
     { icon: FaUsers, label: "2 GURUH", value: "JAMOAVIY", color: "from-fuchsia-400 to-pink-400" },
     { icon: MdTimer, label: "DAVOMIYLIK", value: "5-15 min", color: "from-rose-400 to-red-400" },
@@ -148,6 +147,7 @@ function ClassicArcadePage() {
                 to="/games/classic-arcade/play"
                 colorClassName="from-fuchsia-500 to-orange-500"
                 className="pt-2"
+                modeSelectionEnabled
               />
             </div>
 
@@ -163,7 +163,7 @@ function ClassicArcadePage() {
                 <img 
                   src={classicArcadeImg} 
                   alt="Classic Arcade Game" 
-                  className="h-[300px] w-full object-cover md:h-[400px] lg:h-[450px]"
+                  className="h-[360px] w-full object-cover md:h-[440px] lg:h-[520px]"
                 />
                 
                 {/* Overlay Content */}

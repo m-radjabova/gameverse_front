@@ -16,13 +16,13 @@ import WordChain from "../word_chain/WordChain";
 import MemoryChainArena from "../memory_chain_arena/MemoryChainArena";
 import Jumanji from "../jumanji/Jumanji";
 import MiniPuzzle from "../mini_puzzle/MiniPuzzle";
-import MagicSquare from "../magic_square/MagicSquare";
 import ReverseThinking from "../reverse_thinking/ReverseThinking";
 import Hangman from "../hangman/Hangman";
 import Millionaire from "../millionaire/Millionaire";
 import Pictionary from "../pictionary/Pictionary";
 import TruthDetector from "../truth_detector/TruthDetector";
 import MathChickGame from "../math_chick_game/MathChickGame";
+import IQGame from "../iq_game/IQGame";
 
 type GamePlayRoute = {
   path: string;
@@ -130,11 +130,6 @@ export const gamePlayRoutes: GamePlayRoute[] = [
     element: <MiniPuzzle />,
   },
   {
-    path: "/games/magic-square/play",
-    colorClassName: "from-violet-500 via-purple-500 to-indigo-500",
-    element: <MagicSquare />,
-  },
-  {
     path: "/games/reverse-thinking/play",
     colorClassName: "from-green-500 via-emerald-500 to-teal-500",
     element: <ReverseThinking />,
@@ -158,5 +153,10 @@ export const gamePlayRoutes: GamePlayRoute[] = [
     path: "/games/truth-detector/play",
     colorClassName: "from-indigo-500 via-purple-500 to-blue-500",
     element: <TruthDetector />,
+  },
+  {
+    path: "/games/iq-game/play",
+    colorClassName: "from-sky-500 via-cyan-500 to-violet-500",
+    element: <IQGame />,
   },
 ];

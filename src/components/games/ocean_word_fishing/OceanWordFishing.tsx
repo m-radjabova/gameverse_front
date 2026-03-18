@@ -537,7 +537,7 @@ export default function OceanWordFishing() {
         perfectBonus ? `+${perfectBonus} PERFECT` : null,
       ]
         .filter(Boolean)
-        .join(" • ");
+        .join(" \u2022 ");
 
       setScore((prev) => prev + earned);
 
@@ -635,7 +635,7 @@ export default function OceanWordFishing() {
                   O'qituvchi so'zlarni kiritsin, bolalar baliq tutib so'z yig'adi.
                 </p>
                 <p className="mt-1 text-xs text-cyan-100/70">
-                  Unlock: {unlockedFish.length}/3 fish • Level: {playerLevel}
+                  Unlock: {unlockedFish.length}/3 fish {"\u2022"} Level: {playerLevel}
                 </p>
               </div>
             </div>
@@ -879,27 +879,27 @@ export default function OceanWordFishing() {
             <h2 className="mb-3 text-4xl font-black text-white">Tabriklaymiz!</h2>
             <p className="mb-3 text-xl text-cyan-100">Yakuniy ball: {score}</p>
 
-            {/* ? stars */}
+            {/* Stars */}
             <div className="mb-3 flex justify-center gap-2">
               {[0, 1, 2].map((i) => (
                 <span
                   key={i}
                   className={`text-3xl ${i < stars ? "opacity-100" : "opacity-30"}`}
                 >
-                  ?
+                  {"\u2B50"}
                 </span>
               ))}
             </div>
 
-            {/* ? medal + level + unlock */}
+            {/* Medal + level + unlock */}
             {medal && (
               <p className="mb-2 text-lg font-bold text-cyan-100">
                 Medal:{" "}
-                {medal === "gold" ? "?? Gold" : medal === "silver" ? "?? Silver" : "?? Bronze"}
+                {medal === "gold" ? "\u{1F947} Gold" : medal === "silver" ? "\u{1F948} Silver" : "\u{1F949} Bronze"}
               </p>
             )}
             <p className="mb-5 text-sm text-cyan-100/85">
-              Level: <span className="font-black text-white">{playerLevel}</span> • Unlock:
+              Level: <span className="font-black text-white">{playerLevel}</span> {"\u2022"} Unlock:
               <span className="ml-1 font-black text-white">{unlockedFish.length}/3</span>
             </p>
 
@@ -944,4 +944,3 @@ export default function OceanWordFishing() {
     </div>
   );
 }
-

@@ -20,7 +20,6 @@ import {
   FaPalette,
   FaBook,
   FaDice,
-  FaMagic,
   FaSkull,
   FaKeyboard,
   FaBrush,
@@ -39,7 +38,6 @@ import {
   GiLetterBomb,
   GiBrain,
   GiJungle,
-  GiMagicSwirl,
   GiJigsawPiece,
   GiMoneyStack,
   GiPaintBrush,
@@ -48,10 +46,8 @@ import {
 } from "react-icons/gi";
 import { MdQuiz, MdMemory, MdGames, MdNumbers } from "react-icons/md";
 import { RiBubbleChartFill } from "react-icons/ri";
-import ocean from "../../assets/ocean.jpg";
 import millionaire from "../../assets/millionare_hero.png";
-import memoryChain from "../../assets/Gemini_Generated_Image_cbujqgcbujqgcbuj.png";
-import magicSquare from "../../assets/magic_square.png";
+import memoryChain from "../../assets/memory_chain_image.png";
 import reverseThinking from "../../assets/reverse_thinking.png";
 import baamboozle from "../../assets/Baamboozle_img.png";
 import truthImg from "../../assets/truth_detector_img.png";
@@ -59,6 +55,22 @@ import jumanjiImg from "../../assets/jumanji_img.png";
 import treasureHuntimg from "../../assets/treasure_hunt_img.png";
 import mathChickImg from "../../assets/math_chick_img.png";
 import { PiDetective } from "react-icons/pi";
+import QuizBattleImg from "../../assets/quiz_battle_image.png";
+import memoryRushImg from "../../assets/reminder_image.png";
+import wordBattleImg from "../../assets/word_battle_image.png";
+import classicArcadeImg from "../../assets/classic_arcade_image.png";
+import iqTestImg from "../../assets/iq_test_image.png";
+import flagBattleImg from "../../assets/flag_battle_image.png";
+import wheelFortuneImg from "../../assets/wheel_of_fortune_image.png";
+import wordSearchImg from "../../assets/word_search_image.png";
+import wordFishImg from "../../assets/word_fish_image.png";
+import mathRaceImg from "../../assets/math_race-image.png";
+import findColorImg from "../../assets/color_find_image.png";
+import quizChallengeImg from "../../assets/quiz_challenge_image.png";
+import wordChainImg from "../../assets/word_chain_image.png";
+import miniPuzzleImg from "../../assets/mini_puzzle_image.png"
+import hangmanImg from "../../assets/hangman_image.png";
+
 
 export const gameCards = [
   {
@@ -73,8 +85,7 @@ export const gameCards = [
     available: true,
     path: "/games/quiz-battle",
     bgPattern: "bg-gradient-to-br from-yellow-600 via-orange-600 to-red-600",
-    image:
-      "https://media.istockphoto.com/id/1336313511/vector/vector-funny-sign-quiz-game-set-of-creative-alphabet-letters-and-numbers.jpg?s=612x612&w=0&k=20&c=V7G9_GmHnJK89C-kt1U1kGDz2uBskO1-Z5fpxph9rX8=",
+    image: QuizBattleImg,
     players: "1-2 o'yinchi",
     level: "Boshlang'ich",
     levelIcon: FaStar,
@@ -99,8 +110,7 @@ export const gameCards = [
     available: true,
     path: "/games/memory-rush",
     bgPattern: "bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600",
-    image:
-      "https://media.istockphoto.com/id/1434154110/vector/reminder-yellow-note-circled.jpg?s=612x612&w=0&k=20&c=2mfjGFRNi7htNGB47t3fzlfg5mCGLQSfUXMoWBogWL0=",
+    image: memoryRushImg,
     players: "1-2 o'yinchi",
     level: "Osson - O'rtacha - Qiyin",
     levelIcon: FaMedal,
@@ -150,8 +160,7 @@ export const gameCards = [
     available: true,
     path: "/games/word-battle",
     bgPattern: "bg-gradient-to-br from-blue-600 via-cyan-600 to-sky-600",
-    image:
-      "https://media.istockphoto.com/id/2186075604/vector/comic-vs-versus-logo-pop-art-style-isolated-on-white-background.jpg?s=612x612&w=0&k=20&c=fWIxFgaBpU7jGhTBSxF_5dLwDYywLDzA7VrfKIPDS2Q=",
+    image: wordBattleImg,
     players: "1-2 o'yinchi",
     level: "Boshlang'ich",
     levelIcon: FaStar,
@@ -176,8 +185,7 @@ export const gameCards = [
     available: true,
     path: "/games/classic-arcade",
     bgPattern: "bg-gradient-to-br from-purple-600 via-pink-600 to-rose-600",
-    image:
-      "https://media.istockphoto.com/id/1582151789/vector/vector-arcade-premium-alphabet-in-purple-violet-blue-colors-vector-3d-font-text-elements.jpg?s=612x612&w=0&k=20&c=x6f1QrMBy4O6ac6IFTWDG13A9D3vQFK8cIPXGrvA6aA=",
+    image: classicArcadeImg,
     players: "1-2 o'yinchi",
     level: "Professional",
     levelIcon: FaTrophy,
@@ -204,8 +212,7 @@ export const gameCards = [
     path: "/games/flag-battle",
     bgPattern: "bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600",
     players: "1-2 o'yinchi",
-    image:
-      "https://media.istockphoto.com/id/1030295058/photo/flags-of-different-countries-together-us-flag-in-focus.jpg?s=612x612&w=0&k=20&c=fZ67LXjSvX6LlHflpGF5YpD8bZHNUfzcQW_DvtU3lNQ=",
+    image: flagBattleImg,
     level: "Boshlang'ich - Professional",
     levelIcon: FaStar,
     badge: "YANGI",
@@ -230,8 +237,7 @@ export const gameCards = [
     available: true,
     path: "/games/wheel-of-fortune",
     bgPattern: "bg-gradient-to-br from-purple-600 via-pink-600 to-rose-600",
-    image:
-      "https://media.istockphoto.com/id/2177986731/photo/wheel-of-fortune-with-rewards.jpg?s=612x612&w=0&k=20&c=dkony3LqMPl7Mftei-8AkXfoGQgWsOQlqo_7NBeLOT0=",
+    image: wheelFortuneImg,
     players: "1- 25 o'yinchi",
     level: "Boshlang'ich - Professional",
     levelIcon: FaStar,
@@ -257,8 +263,7 @@ export const gameCards = [
     available: true,
     path: "/games/word-search",
     bgPattern: "bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600",
-    image:
-      "https://media.istockphoto.com/id/2260590479/vector/vector-easter-village-placemat-spring-holiday-printable-activity-mat-with-maze-crossword.jpg?s=612x612&w=0&k=20&c=YpKwS6BpAuc6dSzcfFuBfTHFyNf9hDxWgwQXHjZOJ7E=",
+    image: wordSearchImg,
     players: "1-2 o'yinchi",
     level: "Boshlang'ich - Professional",
     levelIcon: FaStar,
@@ -284,7 +289,7 @@ export const gameCards = [
     available: true,
     path: "/games/ocean-word-fishing",
     bgPattern: "bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600",
-    image: ocean,
+    image: wordFishImg,
     players: "1 o'yinchi",
     level: "Boshlang'ich - Professional",
     levelIcon: FaStar,
@@ -310,8 +315,7 @@ export const gameCards = [
     available: true,
     path: "/games/math-race",
     bgPattern: "bg-gradient-to-br from-yellow-600 via-orange-600 to-red-600",
-    image:
-      "https://media.istockphoto.com/id/1409623927/vector/formula-racing-sport-car-reach-on-race-circuit-the-finish-line-cartoon-illustration-to-win.jpg?s=612x612&w=0&k=20&c=n5leemMDNJv1g_EFkTJxW9T5XiVQXx0CIA6R2z6Op1U=",
+    image: mathRaceImg,
     players: "1-2 o'yinchi",
     level: "Boshlang'ich - Professional",
     levelIcon: FaStar,
@@ -363,8 +367,7 @@ export const gameCards = [
     available: true,
     path: "/games/find-color",
     bgPattern: "bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600",
-    image:
-      "https://media.istockphoto.com/id/2190265535/photo/colorful-paint-cans-forming-a-vibrant-and-inspiring-palette.jpg?s=612x612&w=0&k=20&c=ur_StZRvNfu592Znu3_a0EnzceZZctp11Z4gHk5gsJg=",
+    image: findColorImg,
     players: "1 o'yinchi",
     level: "Boshlang'ich - Afsonaviy",
     levelIcon: FaStar,
@@ -390,8 +393,7 @@ export const gameCards = [
     available: true,
     path: "/games/bingo",
     bgPattern: "bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500",
-    image:
-      "https://media.istockphoto.com/id/495611580/vector/bingo-or-lottery-retro-game-illustration-with-balls-and-cards.jpg?s=612x612&w=0&k=20&c=lyncdZNnRRPcClMJuAGV10F-a-6iTutSKilAuxaHKu4=",
+    image: quizChallengeImg,
     players: "1-3 guruh",
     level: "3 xil qiyinlik",
     levelIcon: FaStar,
@@ -417,9 +419,8 @@ export const gameCards = [
     available: true,
     path: "/games/word-chain",
     bgPattern: "bg-gradient-to-br from-purple-500 via-pink-500 to-rose-500",
-    image:
-      "https://media.istockphoto.com/id/1503421139/photo/multi-colored-alphabet-letters-and-magnifying-glass-on-the-yellow-background.jpg?s=612x612&w=0&k=20&c=losfLdOo6_oPE5GQmJGdfzC1haNnVSIGiAeOs7VCGDo=",
-    players: "1-2 o'yinchi",
+    image: wordChainImg,
+    players: "2 o'yinchi",
     level: "Boshlang'ich - Professional",
     levelIcon: FaStar,
     badge: "YANGI",
@@ -433,7 +434,7 @@ export const gameCards = [
   },
   {
     id: "memory-chain",
-    title: "Memory Chain Arena",
+    title: "Xotira zanjiri arenasi",
     description:
       "2 jamoa navbat bilan zanjirni eslab qoladi va tezda takrorlaydi. Xotira va tezkorlik o'yini.",
     mainIcon: GiBrain,
@@ -496,8 +497,7 @@ export const gameCards = [
     available: true,
     path: "/games/mini-puzzle",
     bgPattern: "bg-gradient-to-br from-pink-500 via-rose-500 to-pink-500",
-    image:
-      "https://media.istockphoto.com/id/2249204910/photo/jigsaw-puzzle-pieces-colorful-background-with-small-puzzle-pieces-messy-some-colored-pieces.jpg?s=612x612&w=0&k=20&c=r43dtrUR7kvYbZHLZa6OVcbETVnFLOVhayJWwMwLUUc=",
+    image: miniPuzzleImg,
     players: "1-2 o'yinchi",
     level: "Oson - Qiyin",
     levelIcon: FaStar,
@@ -505,36 +505,10 @@ export const gameCards = [
     badgeIcon: FaRocket,
     time: "5-10 min",
     points: "500+",
-    category: "Puzzle",
+    category: "Boshqotirma",
     categoryIcon: FaPuzzlePiece,
     gradient: "from-pink-400 to-rose-400",
     borderGlow: "hover:border-pink-400/50",
-  },
-  {
-    id: "magic-square",
-    title: "Sehrli Kvadrat",
-    description:
-      "3x3 rangli sudoku. Har bir qator va ustunda barcha 3 rang bo'lishi kerak. Jamoalar navbat bilan o'ynaydi!",
-    mainIcon: GiMagicSwirl,
-    icon: FaMagic,
-    iconBg: "from-purple-500 to-pink-500",
-    iconColor: "text-purple-300",
-    shadowColor: "purple",
-    available: true,
-    path: "/games/magic-square",
-    bgPattern: "bg-gradient-to-br from-purple-500 via-pink-500 to-purple-500",
-    image: magicSquare,
-    players: "1-2 jamoa",
-    level: "Oson - O'rtacha",
-    levelIcon: FaStar,
-    badge: "YANGI",
-    badgeIcon: FaRocket,
-    time: "5-8 min",
-    points: "300+",
-    category: "Mantiq",
-    categoryIcon: GiMagicSwirl,
-    gradient: "from-purple-400 to-pink-400",
-    borderGlow: "hover:border-purple-400/50",
   },
   {
     id: "reverse-thinking",
@@ -575,8 +549,7 @@ export const gameCards = [
     available: true,
     path: "/games/hangman",
     bgPattern: "bg-gradient-to-br from-amber-500 via-red-500 to-rose-500",
-    image:
-      "https://media.istockphoto.com/id/1367166428/photo/bankrupt-says-the-solution-to-a-traditional-word-game-of-hangman.jpg?s=612x612&w=0&k=20&c=Ddquk--5soZs7KtdY4vudhul8BMuNFu-0gBwU1_gE4w=",
+    image: hangmanImg,
     players: "1-2 jamoa",
     level: "Oson - Qiyin",
     levelIcon: FaStar,
@@ -670,7 +643,7 @@ export const gameCards = [
   },
   {
     id: "math-chick",
-    title: "Math Chick Game",
+    title: "Matematik Jo'jacha",
     description:
       "Jo'jacha bilan matematik sarguzasht! Tangalarni yig'ing, misollarni yeching va eng yuqori ballga erishing.",
     mainIcon: GiChicken,
@@ -703,10 +676,10 @@ export const gameCards = [
   iconBg: "from-blue-500 to-purple-500",
   iconColor: "text-blue-300",
   shadowColor: "blue",
-  available: false,
+  available: true,
   path: "/games/iq-game",
   bgPattern: "bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600",
-  image: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  image: iqTestImg,
   players: "1-2 o'yinchi",
   level: "Easy - Genius",
   levelIcon: FaStar,
