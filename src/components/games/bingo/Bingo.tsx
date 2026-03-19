@@ -11,11 +11,12 @@ import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { SAMPLE_16_LINES } from "./data";
-import type { BingoCell, CellInputRow, Student } from "./types";
+import type { BingoCell, BonusType, CellInputRow, CellType, Difficulty, Student } from "./types";
 import {
   LINES_4x4,
   basePointsByDifficulty,
   createEmptyRows,
+  defaultCorrectByType,
   parseCards,
   parseTextToRows,
   rowsToText,

@@ -10,7 +10,7 @@ type Props = {
 export default function FlagBall({
   src,
   size = 260,
-  showHat = true,
+  showHat: _showHat = true,
   hatType: _hatType = "cowboy",
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);

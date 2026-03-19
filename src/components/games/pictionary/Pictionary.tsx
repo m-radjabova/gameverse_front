@@ -125,6 +125,8 @@ function Pictionary() {
   // ==================== UI STATE ====================
   const [isSoundOn, setIsSoundOn] = useState(true);
   const [showInvite, setShowInvite] = useState(false);
+  const [, setShowWord] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   // ==================== CANVAS STATE ====================
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);

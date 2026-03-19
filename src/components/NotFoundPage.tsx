@@ -16,7 +16,7 @@ import { MdAutoAwesome, MdOutlineRocketLaunch } from "react-icons/md";
 function NotFoundPage() {
   const navigate = useNavigate();
   const [countdown, setCountdown] = useState(10);
-  const [isHovered, setIsHovered] = useState(false);
+  const [, setIsHovered] = useState(false);
   
   useEffect(() => {
     if (countdown > 0) {
