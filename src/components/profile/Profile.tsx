@@ -25,7 +25,6 @@ import {
   FiCheckCircle, 
   FiAlertCircle,
   FiUpload,
-  FiShield,
   FiEdit2,
   FiLoader,
   FiCalendar,

@@ -1399,7 +1399,7 @@ export default function TeacherQuestionPanel() {
                     gameKey={activeGame.gameKey}
                     draftValue={draftValue}
                     onChange={(path, valueAtPath) => {
-                      setDraftValue((prev) => updateValueAtPath(prev, path, valueAtPath));
+                      setDraftValue((prev: unknown) => updateValueAtPath(prev, path, valueAtPath));
                     }}
                   />
                   
@@ -1430,7 +1430,7 @@ export default function TeacherQuestionPanel() {
                             value={value}
                             path={[key]}
                             onChange={(path, valueAtPath) => {
-                              setDraftValue((prev) => updateValueAtPath(prev, path, valueAtPath));
+                              setDraftValue((prev: unknown) => updateValueAtPath(prev, path, valueAtPath));
                             }}
                           />
                         );

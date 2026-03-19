@@ -86,7 +86,6 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
             slidesPerView={1}
             loop={shouldLoop}
             loopAdditionalSlides={carouselGames.length}
-            loopedSlides={carouselGames.length}
             watchSlidesProgress
             observer
             observeParents

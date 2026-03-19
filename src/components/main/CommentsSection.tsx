@@ -121,7 +121,6 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
             centeredSlides={false}
             loop={shouldLoop}
             loopAdditionalSlides={carouselComments.length}
-            loopedSlides={carouselComments.length}
             watchSlidesProgress
             observer
             observeParents

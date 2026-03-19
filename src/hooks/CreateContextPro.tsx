@@ -1,4 +1,4 @@
-import { useEffect, useReducer, type ReactNode } from "react";
+import { useEffect, useReducer, type Dispatch, type ReactNode } from "react";
 import { MyContext } from "../context/MyContext";
 import type { User } from "../types/types";
 import { useNavigate } from "react-router-dom";
@@ -25,6 +25,11 @@ type Action =
   | SET_LOADING
   | REMOVE_FROM_CART
   | UPDATE_USER;
+
+export type ContextType = {
+  state: TypeState;
+  dispatch: Dispatch<Action>;
+};
 
 function reducer(state: TypeState, action: Action): TypeState {
   switch (action.type) {

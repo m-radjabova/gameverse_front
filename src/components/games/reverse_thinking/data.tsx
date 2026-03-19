@@ -1,4 +1,4 @@
-import type { Question } from "./ReverseThinking";
+import type { Question } from "./types";
 
 export const MORE_QUESTIONS: Question[] = [
   // Level 1 - Oddiy chalg'ituvchi

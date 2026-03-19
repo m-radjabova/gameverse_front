@@ -10,6 +10,12 @@ export type TruthDetectorGeneratedPack = {
   ];
 };
 
+type TruthDetectorPackCandidate = {
+  title: string | undefined;
+  difficulty: "easy" | "medium" | "hard";
+  claims: TruthDetectorGeneratedPack["claims"];
+} | null;
+
 function buildTruthDetectorPrompt(topic: string, count: number, difficulty: GameDifficulty): string {
   const difficultyInstruction =
     difficulty === "easy"
@@ -83,7 +89,7 @@ function toValidatedTruthDetectorPacks(payload: unknown, expectedCount: number):
         claims: claims as TruthDetectorGeneratedPack["claims"],
       };
     })
-    .filter((item): item is TruthDetectorGeneratedPack => Boolean(item));
+    .filter((item): item is Exclude<TruthDetectorPackCandidate, null> => item !== null);
 
   if (packs.length === 0) {
     throw new Error("AI fact pack qaytarmadi.");
