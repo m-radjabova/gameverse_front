@@ -19,7 +19,7 @@ import MiniPuzzle from "../mini_puzzle/MiniPuzzle";
 import ReverseThinking from "../reverse_thinking/ReverseThinking";
 import Hangman from "../hangman/Hangman";
 import Millionaire from "../millionaire/Millionaire";
-import Pictionary from "../pictionary/Pictionary";
+// import Pictionary from "../pictionary/Pictionary";
 import TruthDetector from "../truth_detector/TruthDetector";
 import MathChickGame from "../math_chick_game/MathChickGame";
 import IQGame from "../iq_game/IQGame";
@@ -144,11 +144,11 @@ export const gamePlayRoutes: GamePlayRoute[] = [
     colorClassName: "from-yellow-500 via-amber-500 to-orange-500",
     element: <Millionaire />,
   },
-  {
-    path: "/games/pictionary/play",
-    colorClassName: "from-indigo-500 via-purple-500 to-pink-500",
-    element: <Pictionary />,
-  },
+  // {
+  //   path: "/games/pictionary/play",
+  //   colorClassName: "from-indigo-500 via-purple-500 to-pink-500",
+  //   element: <Pictionary />,
+  // },
   {
     path: "/games/truth-detector/play",
     colorClassName: "from-indigo-500 via-purple-500 to-blue-500",

@@ -44,7 +44,7 @@ export default function GameLayout() {
 
     if (
       location.pathname.includes("/truth-detector") ||
-      location.pathname.includes("/pictionary") ||
+      // location.pathname.includes("/pictionary") ||
       location.pathname.includes("/wheel-of-fortune") ||
       location.pathname.includes("/classic-arcade") ||
       location.pathname.includes("/word-chain") ||

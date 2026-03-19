@@ -34,7 +34,7 @@ import MiniPuzzlePage from "./components/games/mini_puzzle/MiniPuzzlePage";
 import ReverseThinkingPage from "./components/games/reverse_thinking/ReverseThinkingPage";
 import HangmanPage from "./components/games/hangman/HangmanPage";
 import MillionairePage from "./components/games/millionaire/MillionairePage";
-import PictionaryPage from "./components/games/pictionary/PictionaryPage";
+// import PictionaryPage from "./components/games/pictionary/PictionaryPage";
 import TruthDetectorPage from "./components/games/truth_detector/TruthDetectorPage";
 import GamePlayView from "./components/games/shared/GamePlayView";
 import { gamePlayRoutes } from "./components/games/shared/gamePlayRoutes";
@@ -149,7 +149,7 @@ function App() {
         <Route path="/games/reverse-thinking" element={<ReverseThinkingPage />} />
         <Route path="/games/hangman" element={<HangmanPage />} />
         <Route path="/games/millionaire" element={<MillionairePage />} />
-        <Route path="/games/pictionary" element={<PictionaryPage />} />
+        {/* <Route path="/games/pictionary" element={<PictionaryPage />} /> */}
         <Route path="/games/truth-detector" element={<TruthDetectorPage />} />
         <Route path="/games/math-chick" element={<MathChickGamePage />} />
         <Route path="/games/iq-game" element={<IQGamePage />} />
