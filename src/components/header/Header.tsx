@@ -5,6 +5,7 @@ import {
   FaEnvelope,
   FaGamepad,
   FaGraduationCap,
+  FaHeart,
   FaMoon,
   FaSignOutAlt,
   FaSun,
@@ -16,6 +17,7 @@ import { MdStars } from "react-icons/md";
 import { NavLink, useNavigate } from "react-router-dom";
 import useContextPro from "../../hooks/useContextPro";
 import { toMediaUrl } from "../../utils";
+import { getFavoriteGameIds, subscribeFavoriteGames } from "../../utils/gameFavorites";
 import { logoutRequest } from "../../utils/auth";
 import { hasAnyRole } from "../../utils/roles";
 
@@ -51,6 +53,7 @@ function Header({
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isUserPanelOpen, setIsUserPanelOpen] = useState(false);
   const [hasAvatarError, setHasAvatarError] = useState(false);
+  const [favoriteCount, setFavoriteCount] = useState(0);
 
   const canOpenTeacherPanel = hasAnyRole(user, ["teacher", "admin"]);
   const userDisplayName = getUserDisplayName(user?.username);
@@ -60,6 +63,11 @@ function Header({
   useEffect(() => {
     setHasAvatarError(false);
   }, [userAvatarUrl]);
+
+  useEffect(() => {
+    setFavoriteCount(getFavoriteGameIds().length);
+    return subscribeFavoriteGames((ids) => setFavoriteCount(ids.length));
+  }, []);
 
   const navItems = [
     {
@@ -204,6 +212,24 @@ function Header({
           </nav>
 
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate("/favorites")}
+              className={`relative hidden h-11 w-11 items-center justify-center rounded-full border transition-all hover:-translate-y-0.5 sm:flex ${
+                isDark
+                  ? "border-[#ff6b8a]/20 bg-[#25253a] text-[#ff8ca6] hover:bg-[#2e2e45]"
+                  : "border-[#f0d9d6] bg-white text-[#d45c7d] hover:bg-[#fff4f3]"
+              }`}
+              aria-label="Open favourites"
+            >
+              <FaHeart className="text-sm" />
+              {favoriteCount > 0 ? (
+                <span className="absolute -right-1 -top-1 min-w-[20px] rounded-full bg-gradient-to-r from-[#ff6b8a] to-[#ff4f74] px-1.5 py-0.5 text-[10px] font-black text-white shadow-lg">
+                  {favoriteCount}
+                </span>
+              ) : null}
+            </button>
+
             {onThemeToggle && (
               <button
                 type="button"
@@ -309,6 +335,27 @@ function Header({
                   {isDark ? "Light Mode" : "Dark Mode"}
                 </button>
               )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  navigate("/favorites");
+                  setIsMobileOpen(false);
+                }}
+                className={`flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
+                  isDark
+                    ? "bg-[#25253a] text-[#f1f1f1]"
+                    : "bg-[#fff5f4] text-[#7b4f53]"
+                }`}
+              >
+                <span className="flex items-center">
+                  <FaHeart className="mr-2 text-[13px] text-[#ff6b8a]" />
+                  Favourite Games
+                </span>
+                <span className="rounded-full bg-[#ff6b8a] px-2 py-0.5 text-[10px] font-black text-white">
+                  {favoriteCount}
+                </span>
+              </button>
 
               {navItems.map((item) => {
                 const isActive = active === item.label;

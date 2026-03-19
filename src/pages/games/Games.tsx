@@ -2,7 +2,11 @@ import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaArrowRight,
+  FaChevronLeft,
+  FaChevronRight,
+  FaHeart,
   FaLock,
+  FaRegHeart,
   FaStar,
   FaCrown,
   FaUsers,
@@ -22,18 +26,31 @@ import {
 } from "react-icons/gi";
 import { IoMdTimer } from "react-icons/io";
 import { gameCards } from "./data";
+import {
+  getFavoriteGameIds,
+  subscribeFavoriteGames,
+  toggleFavoriteGame,
+} from "../../utils/gameFavorites";
 
 type Game = typeof gameCards[number];
 
 function Games() {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState("Barchasi");
+  const [likedGames, setLikedGames] = useState<string[]>([]);
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   useEffect(() => {
     setIsVisible(true);
+  }, []);
+
+  useEffect(() => {
+    setLikedGames(getFavoriteGameIds());
+    return subscribeFavoriteGames(setLikedGames);
   }, []);
 
   useEffect(() => {
@@ -59,11 +76,30 @@ function Games() {
         : gameCards.filter((game) => game.category === activeCategory),
     [activeCategory],
   );
+  const totalPages = Math.max(1, Math.ceil(filteredGames.length / itemsPerPage));
+  const paginatedGames = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredGames.slice(start, start + itemsPerPage);
+  }, [currentPage, filteredGames]);
   const totalGames = gameCards.length;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeCategory]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   // Har bir karta uchun gradient va iconBg ni saqlab qolamiz
   const getCardGradient = (game: Game) => {
     return game.gradient || 'from-purple-500 to-pink-500';
+  };
+
+  const handleLikeToggle = (gameId: string) => {
+    setLikedGames(toggleFavoriteGame(gameId));
   };
 
   return (
@@ -119,7 +155,7 @@ function Games() {
         {/* Orqaga qaytish tugmasi */}
         <button
           onClick={() => navigate("/")}
-          className="group relative mb-8 inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-white/5 to-white/10 px-6 py-3 text-sm font-bold text-white border border-white/10 backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:border-white/20 hover:shadow-[0_0_30px_rgba(168,85,247,0.3)]"
+          className="group cursor-pointer relative mb-8 inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-white/5 to-white/10 px-6 py-3 text-sm font-bold text-white border border-white/10 backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:border-white/20 hover:shadow-[0_0_30px_rgba(168,85,247,0.3)]"
         >
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-600/20 to-pink-600/20 opacity-0 group-hover:opacity-100 blur-xl transition-opacity" />
           <FaHome className="text-base transition-transform group-hover:-translate-x-1" />
@@ -217,10 +253,11 @@ function Games() {
 
         {/* Statistik ma'lumotlar */}
         <div className="mb-12 flex justify-center">
-          <div className="relative group">
+          <div className="relative group w-full max-w-6xl">
             <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl blur-2xl opacity-30 group-hover:opacity-50 transition-opacity" />
-            <div className="relative overflow-hidden rounded-2xl border border-white/20 bg-black/40 backdrop-blur-xl px-8 py-4">
-              <div className="flex flex-wrap items-center justify-center gap-8">
+            <div className="relative overflow-hidden rounded-2xl border border-white/20 bg-black/40 px-6 py-4 backdrop-blur-xl lg:px-8">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-12 xl:gap-20">
+                <div className="flex flex-wrap items-center justify-center gap-8 lg:flex-1 lg:justify-start">
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <div className="absolute inset-0 bg-yellow-400 rounded-full blur-md " />
@@ -255,16 +292,67 @@ function Games() {
                   </span>
                 </div>
               </div>
+
+                {totalPages > 1 && (
+                  <div className="flex flex-wrap items-center justify-center gap-3 lg:ml-auto lg:shrink-0 lg:justify-end">
+
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="group inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:-translate-x-0.5 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-35"
+                      aria-label="Oldingi sahifa"
+                    >
+                      <FaChevronLeft className="text-sm transition-transform group-hover:-translate-x-0.5" />
+                    </button>
+
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                      {Array.from({ length: totalPages }, (_, index) => {
+                        const page = index + 1;
+                        const active = page === currentPage;
+                        return (
+                          <button
+                            key={page}
+                            type="button"
+                            onClick={() => setCurrentPage(page)}
+                            className={`relative h-12 min-w-12 overflow-hidden rounded-2xl border px-4 text-sm font-black transition-all duration-300 ${
+                              active
+                                ? "border-pink-300/60 bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 text-white shadow-[0_0_30px_rgba(217,70,239,0.35)]"
+                                : "border-white/10 bg-white/5 text-white/75 hover:-translate-y-0.5 hover:bg-white/10 hover:text-white"
+                            }`}
+                          >
+                            {active && (
+                              <span className="absolute inset-0 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.22),transparent)]" />
+                            )}
+                            <span className="relative">{page}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                      className="group inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:translate-x-0.5 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-35"
+                      aria-label="Keyingi sahifa"
+                    >
+                      <FaChevronRight className="text-sm transition-transform group-hover:translate-x-0.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
         {/* O'yin kartochkalari */}
         <div className="relative z-10 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:gap-10">
-          {filteredGames.map((game, index) => {
+          {paginatedGames.map((game, index) => {
             const isHovered = hoveredCard === game.id;
             const delay = index * 0.1;
             const cardGradient = getCardGradient(game);
+            const isLiked = likedGames.includes(game.id);
 
             return (
               <div
@@ -327,6 +415,22 @@ function Games() {
                         </div>
                       </div>
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleLikeToggle(game.id);
+                      }}
+                      className={`absolute right-4 bottom-4 z-50 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] backdrop-blur-md transition-all ${
+                        isLiked
+                          ? "border-rose-200/60 bg-white text-[#ff5f87] shadow-[0_0_25px_rgba(255,95,135,0.35)]"
+                          : "border-white/20 bg-black/45 text-white hover:bg-black/60"
+                      }`}
+                    >
+                      {isLiked ? <FaHeart className="text-[12px]" /> : <FaRegHeart className="text-[12px]" />}
+                      {isLiked ? "Favourite" : "Like"}
+                    </button>
 
                     {/* O'yin iconkasi - endi bu gradient ustida va ko'rinadi */}
                     <div className="absolute bottom-4 left-6 z-50">

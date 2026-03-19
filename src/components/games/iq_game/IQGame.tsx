@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { FaBrain, FaCheck, FaCrown, FaHome, FaRedo, FaTimes, FaUser, FaUsers } from "react-icons/fa";
 import Confetti from "react-confetti-boom";
+import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { getGameSessionConfig } from "../../../hooks/gameSession";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
+import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import useContextPro from "../../../hooks/useContextPro";
 import { IQ_QUESTIONS, type IQQuestion as Question, type QuestionType, type Difficulty } from "./questions";
 
@@ -120,6 +122,7 @@ function IQGame() {
   const [weightedScores, setWeightedScores] = useState<[number, number]>([0, 0]);
   const [answers, setAnswers] = useState<Array<number | null>>([null, null]);
   const [showExplanation, setShowExplanation] = useState(false);
+  const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
 
   useEffect(() => { 
     if (phase === "intro" && playerMode === 1) {
@@ -185,6 +188,10 @@ function IQGame() {
     setShowExplanation(false);
     setPhase("game");
   };
+
+  const handleStartGame = (mode: PlayerMode) => {
+    runStartCountdown(() => startGame(mode));
+  };
   
   const answer = (playerIndex: number, optionIndex: number) => { 
     if (!currentQuestion || showExplanation || answers[playerIndex] !== null) return; 
@@ -218,12 +225,13 @@ function IQGame() {
         ]
       : [registeredName, "O'YINCHI 2"];
     setPlayerNames(labels as [string, string]);
-    startGame(mode);
+    handleStartGame(mode);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, session?.participantCount, session?.participantLabels, registeredName]);
 
   if (phase === "intro") {
     return (
+      <>
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <div className="rounded-[2rem] border border-white/10 bg-slate-950/80 p-6 md:p-8">
           <div className="inline-flex items-center gap-3 rounded-full border border-sky-300/20 bg-sky-500/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.32em] text-sky-100">
@@ -289,7 +297,7 @@ function IQGame() {
           </div>
           <button 
             type="button" 
-            onClick={() => startGame(playerMode)} 
+            onClick={() => handleStartGame(playerMode)} 
             className="mt-8 inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-500 to-violet-500 px-7 py-4 text-sm font-black uppercase tracking-[0.2em] text-white"
           >
             <FaBrain />IQ testni boshlash
@@ -316,16 +324,16 @@ function IQGame() {
           </div>
         </div>
       </div>
+      <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue} />
+      </>
     );
   }
 
   if (phase === "game" && currentQuestion) {
     return (
+      <>
       <div className="space-y-4 lg:space-y-6">
         <div className="flex flex-col gap-4 rounded-[2rem] border border-white/10 bg-slate-950/80 p-5 lg:flex-row lg:items-center lg:justify-between">
-          <button type="button" onClick={() => setPhase("intro")} className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-white">
-            <FaHome />Menyu
-          </button>
           <div className="flex flex-wrap items-center gap-3">
             <div className={`rounded-full bg-gradient-to-r px-4 py-2 text-xs font-black uppercase tracking-[0.24em] text-white ${typeAccent[currentQuestion.type]}`}>
               IQ test
@@ -428,10 +436,13 @@ function IQGame() {
           </div>
         )}
       </div>
+      <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue} />
+      </>
     );
   }
 
   return (
+    <>
     <div className="rounded-[2rem] border border-white/10 bg-slate-950/80 p-6 md:p-8">
       {iqScores.some((value) => value >= 135) ? (
         <Confetti mode="boom" effectCount={1} particleCount={160} x={0.5} y={0.28} />
@@ -494,7 +505,7 @@ function IQGame() {
       <div className="mt-8 flex flex-col gap-4 sm:flex-row">
         <button 
           type="button" 
-          onClick={() => startGame(playerMode)} 
+          onClick={() => handleStartGame(playerMode)} 
           className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-500 to-violet-500 px-6 py-4 text-sm font-black uppercase tracking-[0.18em] text-white"
         >
           <FaRedo />Qayta o'ynash
@@ -508,6 +519,8 @@ function IQGame() {
         </button>
       </div>
     </div>
+    <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue} />
+    </>
   );
 }
 

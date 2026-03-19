@@ -42,6 +42,7 @@ import MathChickGamePage from "./components/games/math_chick_game/MathChickGameP
 import TeacherQuestionPanel from "./pages/teacher/TeacherQuestionPanel";
 import TeacherLayout from "./layout/TeacherLayout";
 import IQGamePage from "./components/games/iq_game/IQGamePage";
+import FavoritesPage from "./pages/favorites/FavoritesPage";
 
 function App() {
   const {
@@ -104,6 +105,7 @@ function App() {
       >
         <Route index path="/" element={<Home />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/favorites" element={<FavoritesPage />} />
       </Route>
 
       <Route

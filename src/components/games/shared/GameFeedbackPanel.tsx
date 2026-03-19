@@ -60,6 +60,7 @@ function GameFeedbackPanel({ gameKey }: Props) {
   const [success, setSuccess] = useState("");
 
   const canLeaveFeedback = hasAnyRole(user, ["teacher"]);
+  const hasOverflowComments = comments.length > 6;
 
   useEffect(() => {
     if (summary?.my_rating) {
@@ -99,15 +100,18 @@ function GameFeedbackPanel({ gameKey }: Props) {
   };
 
   return (
-    <section className="mb-8 mt-4 rounded-2xl border border-white/15 bg-black/30 p-4 backdrop-blur-sm md:p-5">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h3 className="text-sm font-black uppercase tracking-wide text-white/80">Reyting va Izohlar</h3>
-        <p className="text-xs font-semibold text-white/75">
+    <section className="mb-8 mt-4 overflow-hidden rounded-[1.75rem] border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.03))] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.18)] backdrop-blur-md md:p-5">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-black uppercase tracking-[0.24em] text-white/90">Reyting va Izohlar</h3>
+          <p className="mt-1 text-xs text-white/50">O'yin bo'yicha teacher feedbacklari va umumiy baho</p>
+        </div>
+        <p className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/75">
           {(summary?.average_rating ?? 0).toFixed(1)} / 5 ({summary?.ratings_count ?? 0})
         </p>
       </div>
 
-      <div className="mb-4 flex items-center gap-1">
+      <div className="mb-4 flex items-center gap-1.5">
         {[1, 2, 3, 4, 5].map((star) => (
           <FaStar
             key={`summary-star-${star}`}
@@ -121,37 +125,65 @@ function GameFeedbackPanel({ gameKey }: Props) {
       {loading ? (
         <p className="mb-4 text-xs text-white/60">Feedback yuklanmoqda...</p>
       ) : comments.length ? (
-        <div className="mb-4 grid grid-cols-1 gap-2 md:grid-cols-2">
-          {comments.slice(0, 6).map((item) => (
-            <article key={item.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
-              <div className="mb-2 flex items-center gap-2">
-                <FeedbackAvatar username={item.username} avatar={item.avatar} />
-                <div className="min-w-0">
-                  <p className="truncate text-xs font-bold text-white/85">{item.username || "Teacher"}</p>
-                  <p className="text-[11px] text-white/50">{formatFeedbackDate(item.created_at)}</p>
-                </div>
+        <div className="mb-5">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/45">
+              So'nggi izohlar
+            </p>
+            {hasOverflowComments ? (
+              <p className="text-[11px] text-white/40">Yana ko'rish uchun yon tomonga suring</p>
+            ) : null}
+          </div>
+          <div className="relative">
+            {hasOverflowComments ? (
+              <>
+                <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-8 rounded-l-2xl bg-gradient-to-r from-[rgba(27,14,10,0.92)] via-[rgba(27,14,10,0.55)] to-transparent" />
+                <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 rounded-r-2xl bg-gradient-to-l from-[rgba(27,14,10,0.92)] via-[rgba(27,14,10,0.55)] to-transparent" />
+              </>
+            ) : null}
+            <div className="feedback-scroll -mx-1 overflow-x-auto px-1 pb-1">
+              <div className="flex min-w-full snap-x snap-mandatory gap-3">
+              {comments.map((item) => (
+                <article
+                  key={item.id}
+                  className="min-h-[148px] w-[calc((100%-0rem)/1.15)] shrink-0 snap-start rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-transform duration-200 hover:-translate-y-0.5 sm:w-[280px] lg:w-[240px] xl:w-[210px]"
+                >
+                  <div className="mb-3 flex items-center gap-2.5">
+                    <FeedbackAvatar username={item.username} avatar={item.avatar} />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold text-white/90">{item.username || "Teacher"}</p>
+                      <p className="text-[11px] text-white/45">{formatFeedbackDate(item.created_at)}</p>
+                    </div>
+                  </div>
+                  <div className="mb-2 flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <FaStar
+                        key={`${item.id}-star-${star}`}
+                        className={`text-[11px] ${star <= item.rating ? "text-yellow-300" : "text-white/20"}`}
+                      />
+                    ))}
+                  </div>
+                  <p className="line-clamp-4 text-xs leading-5 text-white/72">{item.comment}</p>
+                </article>
+              ))}
               </div>
-              <div className="mb-1 flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <FaStar
-                    key={`${item.id}-star-${star}`}
-                    className={`text-[10px] ${star <= item.rating ? "text-yellow-300" : "text-white/20"}`}
-                  />
-                ))}
-              </div>
-              <p className="text-xs leading-5 text-white/75">{item.comment}</p>
-            </article>
-          ))}
+            </div>
+          </div>
         </div>
       ) : (
         <p className="mb-4 text-xs text-white/60">Hozircha comment yo'q.</p>
       )}
 
       {canLeaveFeedback && (
-        <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-white/70">Teacher feedback</p>
+        <div className="rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.03))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/72">Teacher feedback</p>
+            <span className="rounded-full border border-white/10 bg-black/15 px-2.5 py-1 text-[11px] text-white/45">
+              Baho + izoh
+            </span>
+          </div>
 
-          <div className="mb-2 flex items-center gap-1">
+          <div className="mb-3 flex items-center gap-1.5">
             {[1, 2, 3, 4, 5].map((star) => {
               const selected = star <= ratingInput;
               return (
@@ -163,12 +195,12 @@ function GameFeedbackPanel({ gameKey }: Props) {
                     setError("");
                     setSuccess("");
                   }}
-                  className="rounded p-1 hover:scale-110"
+                  className="rounded-xl border border-transparent bg-white/0 p-2 transition hover:scale-110 hover:border-white/10 hover:bg-white/5"
                 >
                   {selected ? (
-                    <FaStar className="text-base text-yellow-300" />
+                    <FaStar className="text-lg text-yellow-300" />
                   ) : (
-                    <FaRegStar className="text-base text-white/45" />
+                    <FaRegStar className="text-lg text-white/45" />
                   )}
                 </button>
               );
@@ -184,7 +216,7 @@ function GameFeedbackPanel({ gameKey }: Props) {
             }}
             placeholder="Comment yozing(sizning fikringiz biz uchun muhim)..."
             rows={3}
-            className="w-full resize-none rounded-lg border border-white/15 bg-black/35 px-3 py-2 text-xs text-white outline-none placeholder:text-white/40 focus:border-yellow-300/60"
+            className="w-full resize-none rounded-2xl border border-white/12 bg-black/20 px-4 py-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-yellow-300/60 focus:bg-black/25"
           />
 
           {error && <p className="mt-2 text-xs text-red-300">{error}</p>}
@@ -194,14 +226,26 @@ function GameFeedbackPanel({ gameKey }: Props) {
             type="button"
             onClick={() => void handleSubmit()}
             disabled={submitting}
-            className="w-full relative mt-8 mb-2 overflow-hidden rounded-full border-2 border-[#ffe24d] bg-gradient-to-b from-[#ffd966] to-[#ffb347] px-12 py-4 text-lg font-black tracking-wider text-[#1a1a1a] shadow-[0_12px_0_0_rgba(230,126,34,0.95),0_15px_25px_rgba(0,0,0,0.2)] transition-all hover:translate-y-1 hover:shadow-[0_10px_0_0_rgba(230,126,34,0.95)] active:translate-y-3 active:shadow-[0_8px_0_0_rgba(230,126,34,0.95)] animate-fade-in-up"
+            className="mt-5 w-full rounded-2xl border border-yellow-300/60 bg-gradient-to-r from-yellow-300 via-amber-300 to-orange-300 px-5 py-3.5 text-sm font-black uppercase tracking-[0.18em] text-[#2b160b] shadow-[0_12px_30px_rgba(255,191,64,0.22)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_34px_rgba(255,191,64,0.28)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting ? "Yuborilmoqda..." : "Reyting va comment yuborish"}
-            <span className="absolute inset-0 -translate-x-full group-hover:translate-x-0 transition-transform duration-700 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12" />
-            
           </button>
         </div>
       )}
+      <style>{`
+        .feedback-scroll {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+          scroll-behavior: smooth;
+          cursor: grab;
+        }
+        .feedback-scroll::-webkit-scrollbar {
+          display: none;
+        }
+        .feedback-scroll:active {
+          cursor: grabbing;
+        }
+      `}</style>
     </section>
   );
 }

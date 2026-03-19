@@ -6,6 +6,7 @@ import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import useGameQuestions from "../../../hooks/useGameQuestions";
 import { useMeQuery } from "../../../hooks/useProfile";
 import { generateGeminiJson, type GameDifficulty } from "../../../apiClient/gemini";
+import cuteChickenSprite from "../../../assets/cute_chicken.svg";
 import mathChickGameSound from "../../../assets/sounds/math_chick_game.m4a";
 import wrongSound from "../../../assets/sounds/wrong.mp3";
 import finishSound from "../../../assets/sounds/applause.mp3";
@@ -46,6 +47,13 @@ type TeacherDraft = {
 };
 
 type PlayerMap<T> = Record<PlayerId, T>;
+
+type ChickPalette = {
+  shadow: string;
+  badge: string;
+  badgeGlow: string;
+  badgeText: string;
+};
 
 const CANVAS_W = 1280;
 const CANVAS_H = 420;
@@ -262,203 +270,50 @@ function drawChick(
   scale: number,
   t: number,
   active: boolean,
-  palette: {
-    bodyOuter: string;
-    bodyInner: string;
-    wing: string;
-    wingStroke: string;
-    outline: string;
-    tail: string;
-    comb: string;
-    beak: string;
-    cheek: string;
-    leg: string;
-    eye: string;
-    shadow: string;
-    jersey: string;
-  },
+  palette: ChickPalette,
   label: string,
+  sprite: CanvasImageSource | null,
 ) {
   const phaseShift = label === "B" ? 0.75 : 0;
   const walkPhase = Math.sin(t * 4.2 + phaseShift);
   const secondaryWalk = Math.cos(t * 4.2 + phaseShift);
-  const bounce = active ? Math.abs(walkPhase) * 1.15 : 0.38;
-  const eyeLook = Math.sin(t * 1.35 + phaseShift * 0.5) * 0.65;
-  const blink = Math.abs(Math.sin(t * 1.1 + phaseShift)) > 0.985 ? 0.16 : 1;
-  const wingTilt = active ? secondaryWalk * 0.05 : -0.015;
-  const bodyLean = active ? walkPhase * 0.022 : 0;
-  const headBob = active ? Math.abs(secondaryWalk) * 0.7 : 0.25;
-  const leftStep = active ? walkPhase * 2.2 : 0.15;
-  const rightStep = active ? -walkPhase * 2.2 : -0.15;
-  const tailLift = active ? secondaryWalk * 0.25 : 0.08;
+  const bounce = active ? Math.abs(walkPhase) * 1.4 : 0.35;
+  const bodyLean = active ? walkPhase * 0.03 : 0;
+  const squash = active ? 1 - Math.abs(secondaryWalk) * 0.035 : 1;
 
   ctx.fillStyle = palette.shadow;
   ctx.beginPath();
-  ctx.ellipse(x + 6, y + 37, 31 * scale, 8.5 * scale, 0, 0, Math.PI * 2);
+  ctx.ellipse(x + 8, y + 40, 34 * scale, 9.5 * scale, 0, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.save();
   ctx.translate(x, y + bounce);
-  ctx.scale(scale, scale);
   ctx.rotate(bodyLean);
+  ctx.scale(scale * squash, scale * (2 - squash));
 
-  const drawLeg = (baseX: number, lift: number, back: boolean) => {
-    const kneeX = baseX + lift * 0.24;
-    const kneeY = 22 - Math.abs(lift) * 0.08;
-    const footX = baseX + lift * 0.62;
-    const footY = 33 + Math.abs(lift) * 0.12;
-
-    ctx.strokeStyle = palette.leg;
-    ctx.lineCap = "round";
-    ctx.lineWidth = back ? 2.6 : 3;
+  if (sprite) {
+    ctx.drawImage(sprite, -34, -54, 72, 78);
+  } else {
+    ctx.fillStyle = "#fde68a";
     ctx.beginPath();
-    ctx.moveTo(baseX, 15);
-    ctx.lineTo(kneeX, kneeY);
-    ctx.lineTo(footX, footY);
-    ctx.stroke();
-
-    ctx.lineWidth = 1.6;
-    [-4.4, 0, 4.4].forEach((toeOffset, toeIndex) => {
-      ctx.beginPath();
-      ctx.moveTo(footX, footY);
-      ctx.lineTo(footX + toeOffset, footY + (toeIndex === 1 ? 1.2 : 0.2));
-      ctx.stroke();
-    });
-  };
-
-  drawLeg(-2, rightStep, true);
+    ctx.arc(0, -8, 22, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
   ctx.save();
-  ctx.translate(-16, -2 + tailLift);
-  ctx.rotate(-0.42 + tailLift * 0.04);
-  ctx.fillStyle = palette.tail;
+  ctx.shadowColor = palette.badgeGlow;
+  ctx.shadowBlur = 16;
+  ctx.fillStyle = palette.badge;
   ctx.beginPath();
-  ctx.moveTo(-4, 2);
-  ctx.quadraticCurveTo(-12, -8, -2, -17);
-  ctx.quadraticCurveTo(6, -13, 3, 0);
-  ctx.closePath();
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(0, 4);
-  ctx.quadraticCurveTo(-9, -2, 1, -14);
-  ctx.quadraticCurveTo(7, -10, 5, 1);
-  ctx.closePath();
+  ctx.roundRect(-6, -6, 21, 18, 9);
   ctx.fill();
   ctx.restore();
 
-  const bodyGrad = ctx.createRadialGradient(8, -10, 4, 0, 1, 34);
-  bodyGrad.addColorStop(0, palette.bodyInner);
-  bodyGrad.addColorStop(0.45, palette.bodyOuter);
-  bodyGrad.addColorStop(1, palette.tail);
-  ctx.fillStyle = bodyGrad;
-  ctx.beginPath();
-  ctx.ellipse(1, 2, 22, 18, -0.05, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = palette.outline;
-  ctx.lineWidth = 1.2;
-  ctx.stroke();
-
-  ctx.save();
-  ctx.translate(0, 4);
-  ctx.rotate(-0.18 + wingTilt);
-  const wingGrad = ctx.createLinearGradient(-2, -2, 12, 12);
-  wingGrad.addColorStop(0, palette.bodyInner);
-  wingGrad.addColorStop(1, palette.wing);
-  ctx.fillStyle = wingGrad;
-  ctx.beginPath();
-  ctx.moveTo(-1, -3);
-  ctx.quadraticCurveTo(11, -8, 13, 3);
-  ctx.quadraticCurveTo(10, 13, -1, 9);
-  ctx.quadraticCurveTo(-7, 3, -1, -3);
-  ctx.closePath();
-  ctx.fill();
-  ctx.strokeStyle = palette.wingStroke;
-  ctx.lineWidth = 1;
-  ctx.stroke();
-  ctx.strokeStyle = "rgba(255,255,255,0.35)";
-  ctx.beginPath();
-  ctx.moveTo(1, 0);
-  ctx.quadraticCurveTo(6, 2, 7, 8);
-  ctx.stroke();
-  ctx.restore();
-
-  ctx.fillStyle = palette.jersey;
-  ctx.beginPath();
-  ctx.roundRect(-5, -1, 12, 10, 4);
-  ctx.fill();
-
-  ctx.save();
-  ctx.translate(11, -12 - headBob * 0.16);
-  ctx.rotate(0.08 + bodyLean * 0.4);
-
-  const headGrad = ctx.createRadialGradient(2, -5, 2, 2, 0, 15);
-  headGrad.addColorStop(0, palette.bodyInner);
-  headGrad.addColorStop(0.58, palette.bodyOuter);
-  headGrad.addColorStop(1, palette.tail);
-  ctx.fillStyle = headGrad;
-  ctx.beginPath();
-  ctx.arc(0, 0, 12.5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = palette.outline;
-  ctx.lineWidth = 1.15;
-  ctx.stroke();
-
-  ctx.fillStyle = palette.comb;
-  ctx.beginPath();
-  ctx.arc(-5.4, -9.6, 3.2, 0, Math.PI * 2);
-  ctx.arc(0.8, -12.6, 4.4, 0, Math.PI * 2);
-  ctx.arc(6.6, -9.8, 3.1, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = palette.beak;
-  ctx.beginPath();
-  ctx.moveTo(9.5, -0.8);
-  ctx.lineTo(19.8, 2.2);
-  ctx.lineTo(10.2, 5.4);
-  ctx.quadraticCurveTo(12, 2.2, 10.2, -0.2);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.fillStyle = palette.cheek;
-  ctx.beginPath();
-  ctx.ellipse(-2.4, 2.4, 3.2, 2.3, -0.2, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = palette.eye;
-  ctx.beginPath();
-  ctx.ellipse(-2.8, -1.8, 4.1, 4.1 * blink, 0, 0, Math.PI * 2);
-  ctx.ellipse(4.6, -0.6, 4, 4 * blink, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#ffffff";
-  ctx.beginPath();
-  ctx.ellipse(-2.8, -1.8, 2.4, 2.4 * blink, 0, 0, Math.PI * 2);
-  ctx.ellipse(4.6, -0.6, 2.25, 2.25 * blink, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#0f172a";
-  ctx.beginPath();
-  ctx.arc(-2.4 + eyeLook, -1.6, 1.15, 0, Math.PI * 2);
-  ctx.arc(5 + eyeLook, -0.45, 1.1, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#ffffff";
-  ctx.beginPath();
-  ctx.arc(-1.8 + eyeLook, -2.2, 0.45, 0, Math.PI * 2);
-  ctx.arc(5.6 + eyeLook, -1.1, 0.45, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.strokeStyle = "#b45309";
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.arc(1.4, 5.5, 2.8, 0.15, Math.PI - 0.2);
-  ctx.stroke();
-  ctx.restore();
-
-  drawLeg(8, leftStep, false);
-
-  ctx.fillStyle = "rgba(255,255,255,0.92)";
-  ctx.font = "bold 11px Arial";
+  ctx.fillStyle = palette.badgeText;
+  ctx.font = "bold 12px Arial";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(label, 1, 4);
+  ctx.fillText(label, 4.5, 3);
   ctx.restore();
 }
 
@@ -662,6 +517,7 @@ export default function MathChickGame() {
   const [savedProblems, setSavedProblems] = useState<Problem[]>([]);
   const [customProblems, setCustomProblems] = useState<Problem[]>([]);
   const [teacherMessage, setTeacherMessage] = useState<string>("");
+  const [chickSprite, setChickSprite] = useState<HTMLImageElement | null>(null);
   const [aiTopic, setAiTopic] = useState("");
   const [aiDifficulty, setAiDifficulty] = useState<GameDifficulty>("medium");
   const [aiCount, setAiCount] = useState<(typeof AI_COUNT_OPTIONS)[number]>(3);
@@ -677,6 +533,12 @@ export default function MathChickGame() {
   useEffect(() => {
     customProblemsRef.current = customProblems;
   }, [customProblems]);
+
+  useEffect(() => {
+    const sprite = new Image();
+    sprite.src = cuteChickenSprite;
+    sprite.onload = () => setChickSprite(sprite);
+  }, []);
 
   useEffect(() => {
     if (!hasAuth || !user?.id || loadedTeacherIdRef.current === user.id) {
@@ -977,36 +839,18 @@ export default function MathChickGame() {
 
     const palettes = {
       A: {
-        bodyOuter: "#f4dd78",
-        bodyInner: "#fffdf5",
-        wing: "#fff1b8",
-        wingStroke: "#e4c962",
-        outline: "#e6d378",
-        tail: "#fff7da",
-        comb: "#ef4444",
-        beak: "#f59e0b",
-        cheek: "rgba(251, 191, 36, 0.45)",
-        leg: "#f59e0b",
-        eye: "#7c4a11",
         shadow: "rgba(14,16,29,0.26)",
-        jersey: "#f59e0b",
+        badge: "#f59e0b",
+        badgeGlow: "rgba(245,158,11,0.45)",
+        badgeText: "#fff7ed",
       },
       B: {
-        bodyOuter: "#d8f2ff",
-        bodyInner: "#ffffff",
-        wing: "#c4e9ff",
-        wingStroke: "#7cc7f0",
-        outline: "#92d2f6",
-        tail: "#eefaff",
-        comb: "#fb7185",
-        beak: "#38bdf8",
-        cheek: "rgba(56, 189, 248, 0.28)",
-        leg: "#38bdf8",
-        eye: "#0f3d56",
         shadow: "rgba(14,16,29,0.22)",
-        jersey: "#0ea5e9",
+        badge: "#0ea5e9",
+        badgeGlow: "rgba(14,165,233,0.38)",
+        badgeText: "#eff6ff",
       },
-    } satisfies Record<PlayerId, Parameters<typeof drawChick>[6]>;
+    } satisfies Record<PlayerId, ChickPalette>;
 
     const drawScene = (timestamp: number) => {
       if (!startTimeRef.current) startTimeRef.current = timestamp;
@@ -1208,6 +1052,7 @@ export default function MathChickGame() {
         movingA && phase === "game" && !winnerRef.current,
         palettes.A,
         getShortLabel(teamNames.A, "A"),
+        chickSprite,
       );
       drawChick(
         ctx,
@@ -1218,6 +1063,7 @@ export default function MathChickGame() {
         movingB && phase === "game" && !winnerRef.current,
         palettes.B,
         getShortLabel(teamNames.B, "B"),
+        chickSprite,
       );
 
       if (winnerRef.current) {
@@ -1243,7 +1089,7 @@ export default function MathChickGame() {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [currentProblem.question, difficulty, phase, roundLocked, teamNames]);
+  }, [chickSprite, currentProblem.question, difficulty, phase, roundLocked, teamNames]);
 
   const categoryButton = (mode: Difficulty, label: string, accent: string) => {
     const active = difficulty === mode;
