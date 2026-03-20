@@ -12,6 +12,7 @@ import {
   FaTimes,
   FaTrophy,
   FaUser,
+  FaUserShield,
 } from "react-icons/fa";
 import { MdStars } from "react-icons/md";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -37,6 +38,14 @@ function getUserInitial(username?: string | null) {
   return getUserDisplayName(username).charAt(0).toUpperCase();
 }
 
+function getPrimaryRoleLabel(roles?: string[] | null) {
+  const normalized = (roles ?? []).map((role) => role.toLowerCase());
+  if (normalized.includes("admin")) return "ADMIN";
+  if (normalized.includes("teacher")) return "TEACHER";
+  if (normalized.includes("user") || normalized.includes("student")) return "STUDENT";
+  return "STUDENT";
+}
+
 function Header({
   active,
   isDark = false,
@@ -56,9 +65,11 @@ function Header({
   const [favoriteCount, setFavoriteCount] = useState(0);
 
   const canOpenTeacherPanel = hasAnyRole(user, ["teacher", "admin"]);
+  const canOpenAdminPanel = hasAnyRole(user, ["admin"]);
   const userDisplayName = getUserDisplayName(user?.username);
   const userInitial = getUserInitial(user?.username);
   const userAvatarUrl = user?.avatar ? toMediaUrl(user.avatar) : "";
+  const primaryRoleLabel = getPrimaryRoleLabel(user?.roles);
 
   useEffect(() => {
     setHasAvatarError(false);
@@ -104,6 +115,12 @@ function Header({
       to: "/teacher-panel",
       icon: <FaGraduationCap className="text-sm" />,
       visible: canOpenTeacherPanel,
+    },
+    {
+      label: "Admin Panel",
+      to: "/admin",
+      icon: <FaUserShield className="text-sm" />,
+      visible: canOpenAdminPanel,
     },
   ];
 
@@ -279,7 +296,7 @@ function Header({
                     {userDisplayName}
                   </p>
                   <p className={`text-[10px] font-bold uppercase tracking-[0.18em] ${isDark ? "text-[#a1a1aa]" : "text-[#d98a95]"}`}>
-                    {user.roles?.[0] || "student"}
+                    {primaryRoleLabel}
                   </p>
                 </div>
 
@@ -490,7 +507,7 @@ function Header({
                       {userDisplayName}
                     </p>
                     <p className={`mt-1 text-[11px] font-bold uppercase tracking-[0.22em] ${isDark ? "text-[#a1a1aa]" : "text-[#d98a95]"}`}>
-                      {user.roles?.[0] || "student"}
+                      {primaryRoleLabel}
                     </p>
                   </div>
                 </div>

@@ -20,18 +20,18 @@ export default function GamePlayView({
   const session = game ? getGameSessionConfig(game.id) : null;
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#050816] px-4 py-6 md:px-6 md:py-8">
+    <div className="relative min-h-screen overflow-hidden bg-[#050816] px-3 py-4 sm:px-4 sm:py-5 md:px-6 md:py-8">
       <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${colorClassName} opacity-15`} />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1600px] flex-col">
+      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-[440px] flex-col sm:max-w-3xl md:min-h-[calc(100vh-4rem)] md:max-w-[1600px]">
         {game && (
-          <div className="mb-4 rounded-3xl border border-white/12 bg-white/6 p-4 backdrop-blur-xl md:p-5">
-            <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="mb-3 rounded-[28px] border border-white/12 bg-white/6 p-4 backdrop-blur-xl md:mb-4 md:rounded-3xl md:p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.25em] text-white/45">
                   Tanlangan Game Mode
                 </p>
-                <h2 className="mt-1 text-2xl font-black text-white">
+                <h2 className="mt-1 text-xl font-black text-white sm:text-2xl">
                   {game.title}
                 </h2>
                 <p className="mt-1 text-sm text-white/60">
@@ -41,7 +41,7 @@ export default function GamePlayView({
                 </p>
               </div>
 
-              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white/80">
+              <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white/80 sm:w-auto">
                 <div
                   className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-r ${colorClassName}`}
                 >
@@ -59,7 +59,7 @@ export default function GamePlayView({
             </div>
           </div>
         )}
-        <div className="rounded-3xl border border-white/12 bg-white/5 p-4 backdrop-blur-xl md:p-6">
+        <div className="rounded-[28px] border border-white/12 bg-white/5 p-3 backdrop-blur-xl sm:p-4 md:rounded-3xl md:p-6">
           {children}
         </div>
       </div>

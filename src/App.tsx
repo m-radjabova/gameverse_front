@@ -5,7 +5,7 @@ import Home from "./pages/home/Home";
 import AuthLayout from "./layout/AuthLayout";
 import MainLayout from "./layout/MainLayout";
 import AdminLayout from "./layout/AdminLayout";
-import HelloAdmin from "./pages/admin/HelloAdmin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import useContextPro from "./hooks/useContextPro";
 import LoginForm from "./pages/login/Login";
 import Register from "./pages/login/Register";
@@ -93,7 +93,7 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<HelloAdmin />} />
+        <Route index element={<AdminDashboard />} />
       </Route>
 
       <Route

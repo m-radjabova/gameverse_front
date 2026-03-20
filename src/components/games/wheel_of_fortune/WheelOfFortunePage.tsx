@@ -24,7 +24,7 @@ import wheelOfFortuneImg from "../../../assets/wheel_of_fortune_image.png";
 
 function WheelOfFortunePage() {
   const gameStats = [
-    { icon: FaUsers, label: "O'QUVCHILAR", value: "2-10 kishi", color: "from-purple-400 to-pink-400" },
+    { icon: FaUsers, label: "O'QUVCHILAR", value: "2-20 o'quvchi", color: "from-purple-400 to-pink-400" },
     { icon: MdTimer, label: "DAVOMIYLIK", value: "10-15 min", color: "from-pink-400 to-rose-400" },
     { icon: GiSpinningWheel, label: "BARABAN", value: "Tasodifiy", color: "from-rose-400 to-purple-400" },
     { icon: FaTrophy, label: "BALL", value: "500+", color: "from-purple-400 to-rose-400" },
@@ -37,7 +37,7 @@ function WheelOfFortunePage() {
       desc: "Baraban aylanadi va o'quvchi tanlanadi",
       color: "from-purple-400 to-pink-400",
       bgIcon: RiTeamFill,
-      stats: "2-10 o'quvchi"
+      stats: "2-20 o'quvchi"
     },
     { 
       icon: MdQuiz, 
@@ -187,17 +187,6 @@ function WheelOfFortunePage() {
                   <div className="rounded-full bg-gradient-to-r from-pink-600 to-rose-600 px-3 py-1 text-xs font-bold text-white shadow-lg">
                     2-10 O'QUVCHI
                   </div>
-                </div>
-              </div>
-
-              <div className="absolute -bottom-4 -left-4 z-30 flex gap-2">
-                <div className="rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2 shadow-2xl">
-                  <p className="text-xs font-bold text-white/80">BONUS</p>
-                  <p className="text-lg font-black text-white">+50</p>
-                </div>
-                <div className="rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 px-4 py-2 shadow-2xl">
-                  <p className="text-xs font-bold text-white/80">VAQT</p>
-                  <p className="text-lg font-black text-white">30s</p>
                 </div>
               </div>
             </div>

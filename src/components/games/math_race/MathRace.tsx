@@ -656,8 +656,7 @@ export default function MathRace() {
       {/* ===== PLAY PHASE ===== */}
       {phase === "play" && (
         <div
-          className={`flex h-screen flex-col overflow-hidden ${screenShake ? "animate-pulse" : ""}`}
-          style={{ maxHeight: "100vh" }}
+          className={`flex min-h-[70dvh] flex-col overflow-hidden lg:h-screen ${screenShake ? "animate-pulse" : ""}`}
         >
           {/* ── TOP BAR ── */}
           <div className="relative z-30 flex shrink-0 items-center gap-3 bg-slate-950/95 px-4 py-2.5 shadow-lg shadow-black/50 backdrop-blur-md border-b border-slate-800">
@@ -700,7 +699,7 @@ export default function MathRace() {
             ref={trackRef}
             className="relative shrink-0 overflow-hidden"
             style={{
-              height: "320px",
+              height: typeof window !== "undefined" && window.innerWidth < 640 ? "220px" : "320px",
               backgroundImage: `url(${trackImg})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
@@ -813,9 +812,9 @@ export default function MathRace() {
           )}
 
           {/* ── PLAYER PANELS ── flex-1 so they fill remaining space */}
-          <div className="flex flex-1 overflow-hidden">
+          <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
             {/* Player 0 Panel */}
-            <div className="flex flex-1 flex-col border-r-2 border-slate-800 bg-slate-900/80 p-3">
+            <div className="flex flex-1 flex-col border-b-2 border-slate-800 bg-slate-900/80 p-3 lg:border-b-0 lg:border-r-2">
               {/* Player header */}
               <div className="mb-2 flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -862,7 +861,7 @@ export default function MathRace() {
                   <button key={`p0-${idx}`}
                     onClick={() => !locked && handleAnswer(0, option)}
                     disabled={locked}
-                    className="rounded-xl border-2 border-purple-600/30 bg-gradient-to-b from-purple-600/50 to-purple-800/60 text-xl font-black text-white shadow-lg transition-all hover:from-purple-500/60 hover:to-purple-700/70 hover:scale-[1.02] hover:border-purple-400/50 disabled:opacity-50 disabled:scale-100 active:scale-95">
+                    className="rounded-xl border-2 border-purple-600/30 bg-gradient-to-b from-purple-600/50 to-purple-800/60 px-2 py-4 text-lg font-black text-white shadow-lg transition-all hover:from-purple-500/60 hover:to-purple-700/70 hover:border-purple-400/50 disabled:opacity-50 disabled:scale-100 active:scale-95 sm:text-xl">
                     {option}
                   </button>
                 ))}
@@ -917,7 +916,7 @@ export default function MathRace() {
                   <button key={`p1-${idx}`}
                     onClick={() => !locked && handleAnswer(1, option)}
                     disabled={locked}
-                    className="rounded-xl border-2 border-blue-600/30 bg-gradient-to-b from-blue-600/50 to-blue-800/60 text-xl font-black text-white shadow-lg transition-all hover:from-blue-500/60 hover:to-blue-700/70 hover:scale-[1.02] hover:border-blue-400/50 disabled:opacity-50 disabled:scale-100 active:scale-95">
+                    className="rounded-xl border-2 border-blue-600/30 bg-gradient-to-b from-blue-600/50 to-blue-800/60 px-2 py-4 text-lg font-black text-white shadow-lg transition-all hover:from-blue-500/60 hover:to-blue-700/70 hover:border-blue-400/50 disabled:opacity-50 disabled:scale-100 active:scale-95 sm:text-xl">
                     {option}
                   </button>
                 ))}

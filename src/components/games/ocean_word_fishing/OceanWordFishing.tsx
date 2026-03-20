@@ -560,7 +560,7 @@ export default function OceanWordFishing() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-[100dvh] overflow-hidden bg-[#06233a]">
       {/* Okean foni */}
       <div
         className="absolute inset-0 bg-gradient-to-b from-[#56c9ff] via-[#1e7ed8] to-[#0b3d91]"
@@ -708,35 +708,35 @@ export default function OceanWordFishing() {
 
       {/* O'yin jarayoni */}
       {phase === "play" && currentWord && (
-        <div className="relative z-10 min-h-screen">
+        <div className="relative z-10 flex min-h-[calc(100dvh-1rem)] flex-col px-2 pb-4 sm:px-0 sm:pb-0">
           {/* Yuqori panel */}
-          <div className="absolute left-0 right-0 top-0 z-20 bg-gradient-to-b from-sky-950/85 to-transparent p-4">
-            <div className="mx-auto flex max-w-7xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-3">
-                <div className="rounded-xl border border-cyan-200/30 bg-white/15 px-4 py-2 backdrop-blur-md">
+          <div className="sticky top-0 z-20 px-2 pt-2 sm:px-0 sm:pt-0">
+            <div className="mx-auto flex max-w-7xl flex-col gap-3 rounded-[28px] border border-cyan-200/20 bg-gradient-to-b from-sky-950/90 via-sky-950/80 to-sky-900/35 p-3 backdrop-blur-md sm:rounded-[32px] sm:p-4 md:flex-row md:items-center md:justify-between">
+              <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
+                <div className="rounded-xl border border-cyan-200/30 bg-white/15 px-3 py-2 backdrop-blur-md sm:px-4">
                   <p className="text-xs text-cyan-100">Ball</p>
-                  <p className="text-2xl font-black text-white">{score}</p>
+                  <p className="text-xl font-black text-white sm:text-2xl">{score}</p>
                 </div>
-                <div className="rounded-xl border border-cyan-200/30 bg-white/15 px-4 py-2 backdrop-blur-md">
+                <div className="rounded-xl border border-cyan-200/30 bg-white/15 px-3 py-2 backdrop-blur-md sm:px-4">
                   <p className="text-xs text-cyan-100">Vaqt</p>
-                  <p className="text-2xl font-black text-white">{timeLeft}s</p>
+                  <p className="text-xl font-black text-white sm:text-2xl">{timeLeft}s</p>
                 </div>
 
                 {/* ? Combo/Streak panel */}
-                <div className="rounded-xl border border-cyan-200/30 bg-white/15 px-4 py-2 backdrop-blur-md">
+                <div className="rounded-xl border border-cyan-200/30 bg-white/15 px-3 py-2 backdrop-blur-md sm:px-4">
                   <p className="text-xs text-cyan-100">Combo</p>
-                  <p className="text-2xl font-black text-white">{streak}</p>
+                  <p className="text-xl font-black text-white sm:text-2xl">{streak}</p>
                   <p className="text-[10px] text-cyan-100/70">Best: {bestStreak}</p>
                 </div>
               </div>
 
-              <div className="max-w-3xl flex-1 rounded-xl border border-cyan-200/25 bg-white/10 p-3 backdrop-blur-md">
+              <div className="w-full flex-1 rounded-xl border border-cyan-200/25 bg-white/10 p-3 backdrop-blur-md">
                 <div className="mb-2 flex flex-wrap items-center gap-2">
                   <span className="text-sm text-cyan-100">Topiladigan so'z:</span>
                   {currentWord.letters.map((letter, i) => (
                     <span
                       key={`${letter}-${i}`}
-                      className={`flex h-10 w-10 items-center justify-center rounded-lg border-2 text-lg font-black ${
+                      className={`flex h-9 w-9 items-center justify-center rounded-lg border-2 text-base font-black sm:h-10 sm:w-10 sm:text-lg ${
                         i < selectedLetters.length
                           ? "border-emerald-300 bg-emerald-500 text-white"
                           : "border-cyan-100/35 bg-white/15 text-cyan-100/65"
@@ -748,7 +748,7 @@ export default function OceanWordFishing() {
 
                   {/* ? Perfect hint */}
                   {!hadMistakeThisRound && (
-                    <span className="ml-2 rounded-full border border-emerald-200/30 bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-100">
+                    <span className="rounded-full border border-emerald-200/30 bg-emerald-500/15 px-3 py-1 text-[11px] font-bold text-emerald-100 sm:ml-2 sm:text-xs">
                       PERFECT ACTIVE
                     </span>
                   )}
@@ -762,7 +762,7 @@ export default function OceanWordFishing() {
                 </div>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex justify-end gap-2">
                 <button
                   onClick={toggleMute}
                   className="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-200/30 bg-white/15 text-white transition-all hover:bg-white/25"
@@ -781,7 +781,7 @@ export default function OceanWordFishing() {
 
           {/* Baliqlar maydoni */}
           <div
-            className={`relative h-screen w-full overflow-hidden pt-28 ${
+            className={`relative mt-3 min-h-[58dvh] w-full flex-1 overflow-hidden rounded-[30px] border border-cyan-200/20 bg-black/10 pt-4 sm:pt-6 ${
               screenShake ? "screen-shake" : ""
             }`}
           >
@@ -830,7 +830,7 @@ export default function OceanWordFishing() {
                           fish.caught && caughtFxId === fish.id ? "fish-caught" : ""
                         }`}
                       >
-                        <span className="absolute -inset-5" />
+                        <span className="absolute -inset-4 sm:-inset-5" />
                         <FishImage fish={fish} />
                       </button>
                     </div>
@@ -841,22 +841,22 @@ export default function OceanWordFishing() {
           </div>
 
           {/* Pastki panel - yig'ilgan harflar */}
-          <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2">
-            <div className="rounded-2xl border border-cyan-100/30 bg-sky-950/65 p-4 backdrop-blur-lg">
+          <div className="sticky bottom-3 z-20 mt-3 px-2 sm:px-0">
+            <div className="mx-auto w-full max-w-fit rounded-2xl border border-cyan-100/30 bg-sky-950/80 p-3 backdrop-blur-lg sm:p-4">
               <p className="mb-2 text-center text-xs text-cyan-100/80">Yig'ilgan harflar</p>
-              <div className="flex min-h-11 gap-2">
+              <div className="flex min-h-11 flex-wrap justify-center gap-2">
                 {selectedLetters.length > 0 ? (
                   selectedLetters.map((letter, i) => (
                     <span
                       key={`${letter}-${i}`}
-                      className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 text-xl font-black text-white animate-bounce"
+                      className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 text-lg font-black text-white animate-bounce sm:h-11 sm:w-11 sm:text-xl"
                       style={{ animationDelay: `${i * 0.1}s` }}
                     >
                       {letter}
                     </span>
                   ))
                 ) : (
-                  <span className="px-3 py-2 text-sm text-cyan-100/60">
+                  <span className="px-3 py-2 text-center text-sm text-cyan-100/60">
                     Baliqlarni bosib so'zni yig'ing
                   </span>
                 )}

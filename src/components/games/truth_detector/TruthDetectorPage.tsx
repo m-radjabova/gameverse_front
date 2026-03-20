@@ -3,8 +3,6 @@ import {
   FaTrophy,
   FaCrown,
   FaStar,
-  FaCheck,
-  FaTimes,
   FaEye,
   FaQuestion,
 } from "react-icons/fa";
@@ -17,6 +15,7 @@ import {
 import { PiDetective } from "react-icons/pi";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import TruthImg from "../../../assets/truth_detector_img.png"
 
 function TruthDetectorPage() {
   const gameStats = [
@@ -173,7 +172,7 @@ function TruthDetectorPage() {
                   <span className="relative inline-block">
                     <span className="absolute -inset-2 bg-gradient-to-r from-indigo-400/30 to-purple-400/30 blur-2xl" />
                     <span className="relative bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-300 dark:to-purple-300 bg-clip-text text-transparent">
-                      FAKE'ni
+                      Yolg'onni
                     </span>
                   </span>
                   <br />
@@ -238,31 +237,19 @@ function TruthDetectorPage() {
               <div className="absolute -bottom-8 -right-8 text-6xl -rotate-12 animate-bounce delay-200">🕵️</div>
 
               {/* Preview Cards */}
-              <div className="relative transform-gpu overflow-hidden rounded-2xl border-4 border-indigo-400/30 bg-gradient-to-br from-indigo-500 to-purple-500 p-4 shadow-2xl">
-                <div className="space-y-3">
-                  <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4 border border-white/30">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center text-white font-bold">A</div>
-                      <span className="text-white font-semibold">Quyosh sharqdan chiqadi.</span>
-                      <FaCheck className="text-green-300 ml-auto" />
-                    </div>
-                  </div>
-                  <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4 border border-white/30">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center text-white font-bold">B</div>
-                      <span className="text-white font-semibold">Bir hafta 8 kundan iborat.</span>
-                      <FaTimes className="text-red-300 ml-auto" />
-                    </div>
-                  </div>
-                  <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4 border border-white/30">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center text-white font-bold">C</div>
-                      <span className="text-white font-semibold">Suv qattiq, suyuq va gaz holatida bo'ladi.</span>
-                      <FaCheck className="text-green-300 ml-auto" />
-                    </div>
-                  </div>
-                </div>
+              <div className="relative transform-gpu overflow-hidden rounded-2xl border-4 border-indigo-400/30 bg-gradient-to-br from-indigo-500 to-purple-500 shadow-2xl">
+                <div
+                  className="absolute inset-0 z-10 opacity-30 mix-blend-multiply pointer-events-none"
+                  style={{
+                    backgroundImage: `linear-gradient(145deg, rgba(139,69,19,0.3) 0%, transparent 30%, transparent 70%, rgba(139,69,19,0.3) 100%)`,
+                  }}
+                />
 
+                <img
+                  src={TruthImg}
+                  alt="Treasure Hunt Game"
+                  className="h-[360px] w-full object-cover md:h-[440px] lg:h-[520px] transition-transform duration-700 group-hover:scale-110"
+                />
                 {/* Overlay Badge */}
                 <div className="absolute bottom-0 left-0 right-0 z-20 p-4">
                   <div className="inline-flex items-center gap-3 rounded-2xl bg-black/50 backdrop-blur-md px-4 py-2 border-2 border-indigo-400/50 shadow-xl">

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FaBrain, FaCheck, FaCrown, FaHome, FaRedo, FaTimes, FaUser, FaUsers } from "react-icons/fa";
 import Confetti from "react-confetti-boom";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
@@ -111,6 +111,7 @@ function Panel({ player, playerIndex, answers, question, showExplanation, onAnsw
 function IQGame() {
   const { state: { user } } = useContextPro();
   const session = getGameSessionConfig("iq-game");
+  const sessionDefaultsAppliedRef = useRef(false);
   const registeredName = user?.username?.trim() || "O'YINCHI 1";
   const [phase, setPhase] = useState<Phase>("intro");
   useFinishApplause(phase === "result");
@@ -217,6 +218,8 @@ function IQGame() {
 
   useEffect(() => {
     if (phase !== "intro") return;
+    if (sessionDefaultsAppliedRef.current) return;
+
     const mode = session?.participantCount === 2 ? 2 : 1;
     const labels = session?.participantLabels?.length
       ? [
@@ -224,9 +227,10 @@ function IQGame() {
           session.participantLabels[1] || "O'YINCHI 2",
         ]
       : [registeredName, "O'YINCHI 2"];
+
+    sessionDefaultsAppliedRef.current = true;
+    setPlayerMode(mode);
     setPlayerNames(labels as [string, string]);
-    handleStartGame(mode);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, session?.participantCount, session?.participantLabels, registeredName]);
 
   if (phase === "intro") {
@@ -300,7 +304,7 @@ function IQGame() {
             onClick={() => handleStartGame(playerMode)} 
             className="mt-8 inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-500 to-violet-500 px-7 py-4 text-sm font-black uppercase tracking-[0.2em] text-white"
           >
-            <FaBrain />IQ testni boshlash
+            <FaBrain />O'yinni boshlash
           </button>
         </div>
         <div className="space-y-4">

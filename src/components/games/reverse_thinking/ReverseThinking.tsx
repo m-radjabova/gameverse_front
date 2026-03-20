@@ -75,6 +75,7 @@ function ReverseThinking() {
   const [isCorrect, setIsCorrect] = useState(false);
   const [, setRoundWinner] = useState<number | null>(null);
   const [level, setLevel] = useState(1);
+  const [buzzedTeamId, setBuzzedTeamId] = useState<number | null>(null);
   
   // Teacher panel
   const [newQuestion, setNewQuestion] = useState<Partial<Question>>({
@@ -313,7 +314,7 @@ function ReverseThinking() {
     setTeams(prev => prev.map((t, idx) => ({
       ...t,
       score: 0,
-      isActive: idx === 0,
+      isActive: isSinglePlayer ? idx === 0 : false,
       streak: 0,
       timeLeft: 30,
     })));
@@ -323,6 +324,7 @@ function ReverseThinking() {
     setSelectedAnswer(null);
     setShowResult(false);
     setRoundWinner(null);
+    setBuzzedTeamId(null);
     setRoundTimer(30);
     setIsTimerActive(true);
     setPhase("game");
@@ -347,11 +349,41 @@ function ReverseThinking() {
     runStartCountdown(startGameNow);
   };
 
+  const prepareNextQuestion = (nextQuestionIndex: number) => {
+    setCurrentQuestionIndex(nextQuestionIndex);
+    setLevel(questions[nextQuestionIndex].level);
+    setSelectedAnswer(null);
+    setShowResult(false);
+    setRoundWinner(null);
+    setBuzzedTeamId(null);
+    setRoundTimer(30);
+    setIsTimerActive(true);
+    setTeams(prev =>
+      prev.map((t, idx) => ({
+        ...t,
+        isActive: isSinglePlayer ? idx === 0 : false,
+      })),
+    );
+  };
+
+  const claimAnswerTurn = (teamId: number) => {
+    if (isSinglePlayer || showResult || buzzedTeamId !== null) return;
+
+    const team = teams.find((item) => item.id === teamId);
+    if (!team) return;
+
+    setBuzzedTeamId(teamId);
+    setTeams(prev => prev.map(t => ({ ...t, isActive: t.id === teamId })));
+    showToast(`${team.name} birinchi bosdi`);
+  };
+
   // Handle answer
   const handleAnswer = (answer: string) => {
     if (showResult) return;
     
-    const currentTeam = teams.find(t => t.isActive);
+    const currentTeam = isSinglePlayer
+      ? teams.find(t => t.isActive)
+      : teams.find(t => t.id === buzzedTeamId);
     if (!currentTeam) return;
 
     const currentQuestion = questions[currentQuestionIndex];
@@ -406,17 +438,7 @@ function ReverseThinking() {
     // Next question
     setTimeout(() => {
       if (currentQuestionIndex + 1 < questions.length) {
-        setCurrentQuestionIndex(prev => prev + 1);
-        setLevel(questions[currentQuestionIndex + 1].level);
-        setSelectedAnswer(null);
-        setShowResult(false);
-        setRoundWinner(null);
-        setRoundTimer(30);
-        setIsTimerActive(true);
-        
-        // Switch active team
-        const nextActive = isSinglePlayer ? 0 : (teams.findIndex(t => t.isActive) + 1) % teams.length;
-        setTeams(prev => prev.map((t, idx) => ({ ...t, isActive: idx === nextActive })));
+        prepareNextQuestion(currentQuestionIndex + 1);
       } else {
         finishGame();
       }
@@ -427,11 +449,26 @@ function ReverseThinking() {
   const handleTimeout = () => {
     setIsTimerActive(false);
     
-    const currentTeam = teams.find(t => t.isActive);
-    if (!currentTeam) return;
+    const currentTeam = isSinglePlayer
+      ? teams.find(t => t.isActive)
+      : teams.find(t => t.id === buzzedTeamId);
+
+    if (!currentTeam) {
+      setGameHistory(prev => [...prev, "Hech qaysi jamoa javob huquqini olmadi"]);
+      showToast("Hech kim birinchi bosmadi");
+
+      setTimeout(() => {
+        if (currentQuestionIndex + 1 < questions.length) {
+          prepareNextQuestion(currentQuestionIndex + 1);
+        } else {
+          finishGame();
+        }
+      }, 1500);
+      return;
+    }
 
     setTeams(prev => prev.map(t => {
-      if (t.isActive) {
+      if (t.id === currentTeam.id) {
         return {
           ...t,
           score: Math.max(0, t.score - 3),
@@ -446,16 +483,7 @@ function ReverseThinking() {
 
     setTimeout(() => {
       if (currentQuestionIndex + 1 < questions.length) {
-        setCurrentQuestionIndex(prev => prev + 1);
-        setLevel(questions[currentQuestionIndex + 1].level);
-        setSelectedAnswer(null);
-        setShowResult(false);
-        setRoundWinner(null);
-        setRoundTimer(30);
-        setIsTimerActive(true);
-        
-        const nextActive = isSinglePlayer ? 0 : (teams.findIndex(t => t.isActive) + 1) % teams.length;
-        setTeams(prev => prev.map((t, idx) => ({ ...t, isActive: idx === nextActive })));
+        prepareNextQuestion(currentQuestionIndex + 1);
       } else {
         finishGame();
       }
@@ -485,6 +513,7 @@ function ReverseThinking() {
     setGameHistory([]);
     setWinner(null);
     setRoundWinner(null);
+    setBuzzedTeamId(null);
   };
 
   // Toggle mute
@@ -551,8 +580,8 @@ function ReverseThinking() {
 
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-3 rounded-full shadow-2xl animate-bounce backdrop-blur-sm border-2 border-green-300">
+        <div className="fixed left-1/2 top-20 z-50 w-[calc(100%-1.5rem)] max-w-sm -translate-x-1/2 sm:top-24 sm:w-auto">
+          <div className="rounded-2xl border-2 border-green-300 bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-2.5 text-center text-sm text-white shadow-2xl animate-bounce backdrop-blur-sm sm:rounded-full sm:px-6 sm:py-3 sm:text-base">
             {toast}
           </div>
         </div>
@@ -561,7 +590,7 @@ function ReverseThinking() {
       {/* Mute Button */}
       <button
         onClick={toggleMute}
-        className="fixed top-6 right-6 z-50 p-3 bg-green-900/50 border-2 border-green-500/30 text-green-300 rounded-xl hover:bg-green-800/50 transition-all backdrop-blur-sm"
+        className="fixed right-3 top-3 z-50 rounded-xl border-2 border-green-500/30 bg-green-900/50 p-2.5 text-green-300 backdrop-blur-sm transition-all hover:bg-green-800/50 sm:right-6 sm:top-6 sm:p-3"
       >
         {isMuted ? <FaVolumeMute size={20} /> : <FaVolumeUp size={20} />}
       </button>
@@ -570,9 +599,9 @@ function ReverseThinking() {
 
         {phase === "teacher" && (
           /* ========== O'QITUVCHI PANELI ========== */
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:gap-8">
             {/* Teams Panel */}
-            <div className="relative group transform-gpu overflow-hidden rounded-2xl border border-green-500/20 bg-gradient-to-br from-green-900/40 to-emerald-900/40 p-6 backdrop-blur-xl">
+            <div className="relative group transform-gpu overflow-hidden rounded-2xl border border-green-500/20 bg-gradient-to-br from-green-900/40 to-emerald-900/40 p-4 backdrop-blur-xl sm:p-6">
               <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-green-500/10 to-emerald-500/10" />
               
               <div className="flex items-center gap-3 mb-4 pb-2 border-b border-green-500/30">
@@ -587,7 +616,7 @@ function ReverseThinking() {
 
               {!isSinglePlayer ? (
                 <div className="mb-4">
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row">
                     <input
                       type="text"
                       value={newTeamName}
@@ -650,7 +679,7 @@ function ReverseThinking() {
             </div>
 
             {/* Questions Panel */}
-            <div className="relative group transform-gpu overflow-hidden rounded-2xl border border-green-500/20 bg-gradient-to-br from-green-900/40 to-emerald-900/40 p-6 backdrop-blur-xl">
+            <div className="relative group transform-gpu overflow-hidden rounded-2xl border border-green-500/20 bg-gradient-to-br from-green-900/40 to-emerald-900/40 p-4 backdrop-blur-xl sm:p-6">
               <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-green-500/10 to-emerald-500/10" />
               
               <div className="flex items-center gap-3 mb-4 pb-2 border-b border-green-500/30">
@@ -683,7 +712,7 @@ function ReverseThinking() {
                   className="w-full px-4 py-2 rounded-xl border border-green-500/30 bg-green-950/30 text-white"
                 />
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {[0, 1, 2, 3].map(idx => (
                     <input
                       key={idx}
@@ -723,7 +752,7 @@ function ReverseThinking() {
 
                 <button
                   onClick={addQuestion}
-                  className="w-full py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold hover:scale-[1.02] transition-all"
+                  className="w-full rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 py-3 font-bold text-white transition-all hover:scale-[1.02]"
                 >
                   {editingId ? <FaSave className="inline mr-2" /> : <FaPlus className="inline mr-2" />}
                   {editingId ? "SAQLASH" : "QO'SHISH"}
@@ -768,7 +797,7 @@ function ReverseThinking() {
               <div className="lg:col-span-2 text-center">
                 <button
                   onClick={startGame}
-                  className="px-12 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-2xl hover:scale-105 transition-all shadow-2xl border-2 border-green-400/50"
+                  className="rounded-xl border-2 border-green-400/50 bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4 text-lg font-bold text-white shadow-2xl transition-all hover:scale-105 sm:px-12 sm:text-2xl"
                 >
                   <FaPlay className="inline mr-2" />
                   TESKARI FIKRNI BOSHLASH
@@ -782,15 +811,15 @@ function ReverseThinking() {
           /* ========== O'YIN JARAYONI ========== */
           <div className="space-y-8">
             {/* Header */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                 <div className="bg-green-900/30 border-2 border-green-500/30 rounded-xl px-4 py-2">
                   <p className="text-xs text-green-300">Savol</p>
-                  <p className="text-lg font-bold text-white">{currentQuestionIndex + 1}/{questions.length}</p>
+                  <p className="text-base font-bold text-white sm:text-lg">{currentQuestionIndex + 1}/{questions.length}</p>
                 </div>
                 <div className="bg-green-900/30 border-2 border-green-500/30 rounded-xl px-4 py-2">
                   <p className="text-xs text-green-300">Vaqt</p>
-                  <p className="text-lg font-bold text-white flex items-center gap-1">
+                  <p className="flex items-center gap-1 text-base font-bold text-white sm:text-lg">
                     <FaClock className="text-green-400" />
                     {roundTimer}s
                   </p>
@@ -801,13 +830,15 @@ function ReverseThinking() {
                 </div>
                 <div className="bg-green-900/30 border-2 border-green-500/30 rounded-xl px-4 py-2">
                   <p className="text-xs text-green-300">Rejim</p>
-                  <p className="text-lg font-bold text-white">{modeLabel}</p>
+                  <p className="text-base font-bold text-white sm:text-lg">{modeLabel}</p>
                 </div>
               </div>
 
-              <div className="text-center">
-                <p className="text-sm text-green-300 mb-1">Hozirgi navbat</p>
-                <div className="flex items-center gap-3">
+              <div className="text-center xl:text-right">
+                <p className="text-sm text-green-300 mb-1">
+                  {isSinglePlayer ? "Hozirgi navbat" : "Javob huquqi"}
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-3 xl:justify-end">
                   {teams.map((team) => (
                     <div
                       key={team.id}
@@ -821,7 +852,7 @@ function ReverseThinking() {
                       <span className="font-bold text-white">{team.name}</span>
                       {team.isActive && (
                         <span className="ml-2 text-xs bg-white/20 px-2 py-1 rounded-full animate-pulse">
-                          NAVBAT
+                          {isSinglePlayer ? "NAVBAT" : "BIRINCHI"}
                         </span>
                       )}
                       {team.streak >= 2 && (
@@ -836,26 +867,67 @@ function ReverseThinking() {
             </div>
 
             {/* Question Card */}
-            <div className="relative group transform-gpu overflow-hidden rounded-2xl border-2 border-green-500/30 bg-gradient-to-br from-green-900/40 to-emerald-900/40 p-8 backdrop-blur-xl">
+            <div className="relative group transform-gpu overflow-hidden rounded-2xl border-2 border-green-500/30 bg-gradient-to-br from-green-900/40 to-emerald-900/40 p-4 backdrop-blur-xl sm:p-8">
               <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-green-500/10 to-emerald-500/10" />
               
-              <h3 className="relative text-2xl font-bold text-white text-center mb-8">
+              <h3 className="relative mb-6 text-center text-xl font-bold text-white sm:mb-8 sm:text-2xl">
                 {questions[currentQuestionIndex]?.question}
               </h3>
 
+              {!isSinglePlayer && (
+                <div className="relative mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+                  {teams.map((team) => {
+                    const isBuzzed = buzzedTeamId === team.id;
+                    const isLocked = buzzedTeamId !== null && !isBuzzed;
+
+                    return (
+                      <button
+                        key={`buzzer-${team.id}`}
+                        onClick={() => claimAnswerTurn(team.id)}
+                        disabled={showResult || buzzedTeamId !== null}
+                        className={`rounded-2xl border-2 p-4 text-left transition-all sm:p-5 ${
+                          isBuzzed
+                            ? "border-emerald-400 bg-emerald-500/20 shadow-[0_0_24px_rgba(74,222,128,0.35)]"
+                            : isLocked
+                              ? "border-green-500/20 bg-green-950/20 opacity-55"
+                              : "border-green-400/35 bg-green-950/35 hover:border-green-300 hover:bg-green-900/40"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <span className="text-3xl">{team.avatar}</span>
+                            <div>
+                              <p className="text-lg font-black text-white">{team.name}</p>
+                              <p className="text-xs text-green-200/70">
+                                {isBuzzed ? "Javob huquqini oldi" : "Birinchi bo'lib bosing"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-bold text-white">
+                            {isBuzzed ? "TANLANDI" : "READY"}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
               {/* Options */}
-              <div className="relative grid grid-cols-2 gap-4">
+              <div className="relative grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                 {questions[currentQuestionIndex]?.options.map((option, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleAnswer(option)}
-                    disabled={showResult}
+                    disabled={showResult || (!isSinglePlayer && buzzedTeamId === null)}
                     className={`
-                      p-6 rounded-xl border-2 text-left font-bold text-lg transition-all hover:scale-105
+                      rounded-xl border-2 p-4 text-left text-base font-bold transition-all hover:scale-105 sm:p-6 sm:text-lg
                       ${showResult && option === questions[currentQuestionIndex].correctAnswer
                         ? 'border-green-500 bg-green-500/20 text-green-300 shadow-[0_0_20px_#22c55e]'
                         : showResult && selectedAnswer === option
                         ? 'border-red-500 bg-red-500/20 text-red-300 shadow-[0_0_20px_#ef4444]'
+                        : !isSinglePlayer && buzzedTeamId === null
+                        ? 'border-green-500/20 bg-green-950/20 text-white/45'
                         : 'border-green-500/30 bg-green-950/30 text-white hover:border-green-400 hover:shadow-[0_0_15px_#4ade80]'
                       }
                     `}
@@ -929,10 +1001,10 @@ function ReverseThinking() {
 
         {phase === "finish" && winner && (
           /* ========== YAKUNIY NATIJALAR ========== */
-          <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
             {showConfetti && <Confetti mode="boom" particleCount={500} effectCount={1} x={0.5} y={0.3} colors={['#86efac', '#4ade80', '#22c55e', '#16a34a', '#15803d']} />}
             
-            <div className="relative group transform-gpu overflow-hidden rounded-3xl border-2 border-green-500/30 bg-gradient-to-br from-green-900/80 via-emerald-900/80 to-green-900/80 p-8 backdrop-blur-xl shadow-2xl max-w-2xl w-full text-center">
+            <div className="relative group max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-3xl border-2 border-green-500/30 bg-gradient-to-br from-green-900/80 via-emerald-900/80 to-green-900/80 p-5 text-center shadow-2xl backdrop-blur-xl sm:p-8">
               <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-green-500/10 via-emerald-500/10 to-green-500/10" />
               
               {/* Trophy */}
@@ -943,15 +1015,15 @@ function ReverseThinking() {
                 </div>
               </div>
 
-              <h2 className="relative text-4xl font-black text-transparent bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text mb-2">
+              <h2 className="relative mb-2 text-3xl font-black text-transparent bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text sm:text-4xl">
                 {isSinglePlayer ? `${winner.name} natijasi` : `${winner.name} G'OLIB!`}
               </h2>
-              <p className="relative text-xl text-green-300 mb-8">
+              <p className="relative mb-8 text-lg text-green-300 sm:text-xl">
                 {winner.score} ball to'pladi
               </p>
 
               {/* Results */}
-              <div className={`relative grid gap-4 mb-8 ${isSinglePlayer ? "grid-cols-1" : "grid-cols-2"}`}>
+              <div className={`relative mb-8 grid gap-4 ${isSinglePlayer ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2"}`}>
                 {[...teams].sort((a, b) => b.score - a.score).map((team) => (
                   <div key={team.id} className="rounded-xl border border-green-500/30 bg-green-950/30 p-4">
                     <div className="flex items-center gap-3 mb-2">
@@ -965,17 +1037,17 @@ function ReverseThinking() {
               </div>
 
               {/* Buttons */}
-              <div className="relative flex justify-center gap-4">
+              <div className="relative flex flex-col justify-center gap-3 sm:flex-row sm:gap-4">
                 <button
                   onClick={resetGame}
-                  className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold hover:scale-105 transition-all"
+                  className="w-full rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-3 font-bold text-white transition-all hover:scale-105 sm:w-auto"
                 >
                   <FaRedo className="inline mr-2" />
                   QAYTA O'YNASH
                 </button>
                 <button
                   onClick={() => setPhase("teacher")}
-                  className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-xl font-bold hover:scale-105 transition-all"
+                  className="w-full rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 px-6 py-3 font-bold text-white transition-all hover:scale-105 sm:w-auto"
                 >
                   <FaTimesCircle className="inline mr-2" />
                   SOZLAMALAR

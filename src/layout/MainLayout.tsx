@@ -7,11 +7,18 @@ import Footer from "../components/footer/Footer";
 export default function MainLayout() {
   const { pathname } = useLocation();
   const isHomePage = pathname === "/";
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("home-theme") === "dark";
+  });
 
   useEffect(() => {
-    const savedTheme = window.localStorage.getItem("home-theme");
-    setIsDarkMode(savedTheme === "dark");
+    const syncTheme = () => {
+      setIsDarkMode(window.localStorage.getItem("home-theme") === "dark");
+    };
+
+    window.addEventListener("storage", syncTheme);
+    return () => window.removeEventListener("storage", syncTheme);
   }, []);
 
   useEffect(() => {

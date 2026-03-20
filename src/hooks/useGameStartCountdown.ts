@@ -3,8 +3,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 type CountdownStep = 3 | 2 | 1 | "BOSHLANDI";
 
 const COUNTDOWN_STEPS: CountdownStep[] = [3, 2, 1, "BOSHLANDI"];
-const STEP_DURATION_MS = 700;
-const FINAL_STEP_DURATION_MS = 500;
+const STEP_DURATION_MS = 900;
+const FINAL_STEP_DURATION_MS = 2300;
 
 export function useGameStartCountdown() {
   const [countdownValue, setCountdownValue] = useState<CountdownStep | null>(null);

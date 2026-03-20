@@ -43,6 +43,7 @@ function Games() {
   const [isVisible, setIsVisible] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
+  const showAmbientEffects = typeof window !== "undefined" && window.innerWidth >= 768;
 
   useEffect(() => {
     setIsVisible(true);
@@ -54,6 +55,10 @@ function Games() {
   }, []);
 
   useEffect(() => {
+    if (!showAmbientEffects) {
+      return;
+    }
+
     const handleMouseMove = (e : MouseEvent) => {
       setMousePosition({
         x: (e.clientX / window.innerWidth) * 100,
@@ -62,7 +67,7 @@ function Games() {
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [showAmbientEffects]);
 
   const categories = useMemo(
     () => ["Barchasi", ...Array.from(new Set(gameCards.map((game) => game.category)))],
@@ -117,7 +122,7 @@ function Games() {
 
       {/* Animatsion zarralar tizimi */}
       <div className="fixed inset-0 overflow-hidden">
-        {[...Array(100)].map((_, i) => (
+        {[...Array(showAmbientEffects ? 100 : 28)].map((_, i) => (
           <div
             key={i}
             className="absolute rounded-full animate-float-particle"
@@ -151,11 +156,11 @@ function Games() {
       </div>
 
       {/* Asosiy kontent */}
-      <div className={`relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-4 py-6 md:px-6 md:py-8 lg:px-8 xl:px-10 transition-opacity duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-3 py-4 sm:px-4 sm:py-5 md:px-6 md:py-8 lg:px-8 xl:px-10 transition-opacity duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
         {/* Orqaga qaytish tugmasi */}
         <button
           onClick={() => navigate("/")}
-          className="group cursor-pointer relative mb-8 inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-white/5 to-white/10 px-6 py-3 text-sm font-bold text-white border border-white/10 backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:border-white/20 hover:shadow-[0_0_30px_rgba(168,85,247,0.3)]"
+          className="group relative mb-6 inline-flex items-center gap-2.5 rounded-2xl border border-white/10 bg-gradient-to-r from-white/5 to-white/10 px-4 py-2.5 text-sm font-bold text-white backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:shadow-[0_0_30px_rgba(168,85,247,0.3)] sm:mb-8 sm:gap-3 sm:px-6 sm:py-3 sm:hover:scale-105"
         >
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-600/20 to-pink-600/20 opacity-0 group-hover:opacity-100 blur-xl transition-opacity" />
           <FaHome className="text-base transition-transform group-hover:-translate-x-1" />
@@ -164,11 +169,11 @@ function Games() {
         </button>
 
         {/* Sarlavha qismi */}
-        <div className="relative mb-16 text-center">
+        <div className="relative mb-10 text-center sm:mb-12 lg:mb-16">
           {/* 3D effektli sarlavha */}
           <div className="relative inline-block perspective-1000">
             <div className="relative">
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-black">
+              <h1 className="text-3xl font-black leading-none sm:text-4xl md:text-6xl lg:text-7xl">
                 <span className="relative inline-block">
                   <span className="absolute inset-0 blur-2xl bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 opacity-50 " />
                   <span className="relative bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 bg-clip-text text-transparent me-3">
@@ -185,23 +190,23 @@ function Games() {
             </div>
 
             {/* Animatsion yulduzlar */}
-            <div className="absolute -top-12 -right-12">
+            <div className="absolute -right-3 -top-7 sm:-right-12 sm:-top-12">
               <div className="relative">
-                <FaStar className="absolute text-4xl text-yellow-400 opacity-50" />
-                <FaStar className="relative text-4xl text-yellow-400 " />
+                <FaStar className="absolute text-2xl text-yellow-400 opacity-50 sm:text-4xl" />
+                <FaStar className="relative text-2xl text-yellow-400 sm:text-4xl" />
               </div>
             </div>
             
-            <div className="absolute -bottom-8 -left-12">
+            <div className="absolute -bottom-4 -left-2 sm:-bottom-8 sm:-left-12">
               <div className="relative">
-                <FaCrown className="absolute text-5xl text-pink-400 opacity-50" />
-                <FaCrown className="relative text-5xl text-pink-400 " />
+                <FaCrown className="absolute text-3xl text-pink-400 opacity-50 sm:text-5xl" />
+                <FaCrown className="relative text-3xl text-pink-400 sm:text-5xl" />
               </div>
             </div>
           </div>
 
           {/* Ta'rif */}
-          <p className="mt-6 text-xl text-transparent bg-gradient-to-r from-white/80 via-white/60 to-white/80 bg-clip-text max-w-3xl mx-auto leading-relaxed">
+          <p className="mx-auto mt-4 max-w-3xl bg-gradient-to-r from-white/80 via-white/60 to-white/80 bg-clip-text text-base leading-relaxed text-transparent sm:mt-6 sm:text-xl">
             Eng sara o'yinlar, ajoyib sarguzashtlar va unutilmas lahzalar sizni kutmoqda!
           </p>
 
@@ -214,7 +219,7 @@ function Games() {
         </div>
 
         {/* Kategoriya filtrlari */}
-        <div className="mb-12 flex flex-wrap items-center justify-center gap-4">
+        <div className="mb-10 flex flex-wrap items-center justify-center gap-2.5 sm:mb-12 sm:gap-4">
           {categories.map((category, index) => {
             const isActive = activeCategory === category;
             const colors = [
@@ -230,7 +235,7 @@ function Games() {
               <button
                 key={category}
                 onClick={() => setActiveCategory(category)}
-                className={`group cursor-pointer relative overflow-hidden rounded-2xl px-6 py-3 text-sm font-bold transition-all duration-500 transform hover:scale-110 ${
+                className={`group relative overflow-hidden rounded-2xl px-4 py-2.5 text-xs font-bold transition-all duration-500 sm:px-6 sm:py-3 sm:text-sm ${showAmbientEffects ? "transform hover:scale-110" : ""} ${
                   isActive
                     ? `bg-gradient-to-r ${colors[colorIndex]} text-white shadow-[0_0_30px_rgba(168,85,247,0.5)]`
                     : 'bg-white/5 text-white/70 hover:bg-white/10'
@@ -252,12 +257,12 @@ function Games() {
         </div>
 
         {/* Statistik ma'lumotlar */}
-        <div className="mb-12 flex justify-center">
+        <div className="mb-10 flex justify-center sm:mb-12">
           <div className="relative group w-full max-w-6xl">
             <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl blur-2xl opacity-30 group-hover:opacity-50 transition-opacity" />
-            <div className="relative overflow-hidden rounded-2xl border border-white/20 bg-black/40 px-6 py-4 backdrop-blur-xl lg:px-8">
+            <div className="relative overflow-hidden rounded-2xl border border-white/20 bg-black/40 px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-8">
               <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-12 xl:gap-20">
-                <div className="flex flex-wrap items-center justify-center gap-8 lg:flex-1 lg:justify-start">
+                <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 lg:flex-1 lg:justify-start lg:gap-8">
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <div className="absolute inset-0 bg-yellow-400 rounded-full blur-md " />
@@ -268,7 +273,7 @@ function Games() {
                   </span>
                 </div>
                 
-                <div className="w-px h-8 bg-white/20" />
+                <div className="hidden h-8 w-px bg-white/20 sm:block" />
                 
                 <div className="flex items-center gap-3">
                   <div className="relative">
@@ -280,7 +285,7 @@ function Games() {
                   </span>
                 </div>
                 
-                <div className="w-px h-8 bg-white/20" />
+                <div className="hidden h-8 w-px bg-white/20 sm:block" />
                 
                 <div className="flex items-center gap-3">
                   <div className="relative">
@@ -315,7 +320,7 @@ function Games() {
                             key={page}
                             type="button"
                             onClick={() => setCurrentPage(page)}
-                            className={`relative h-12 min-w-12 overflow-hidden rounded-2xl border px-4 text-sm font-black transition-all duration-300 ${
+                            className={`relative h-10 min-w-10 overflow-hidden rounded-2xl border px-3 text-xs font-black transition-all duration-300 sm:h-12 sm:min-w-12 sm:px-4 sm:text-sm ${
                               active
                                 ? "border-pink-300/60 bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 text-white shadow-[0_0_30px_rgba(217,70,239,0.35)]"
                                 : "border-white/10 bg-white/5 text-white/75 hover:-translate-y-0.5 hover:bg-white/10 hover:text-white"
@@ -347,7 +352,7 @@ function Games() {
         </div>
 
         {/* O'yin kartochkalari */}
-        <div className="relative z-10 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:gap-10">
+        <div className="relative z-10 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:gap-8">
           {paginatedGames.map((game, index) => {
             const isHovered = hoveredCard === game.id;
             const delay = index * 0.1;
@@ -357,7 +362,7 @@ function Games() {
             return (
               <div
                 key={game.id}
-                className={`group relative transform-gpu transition-all duration-700 hover:scale-[1.03] hover:-translate-y-3 ${
+                className={`group relative transform-gpu transition-all duration-700 ${showAmbientEffects ? "hover:scale-[1.03] hover:-translate-y-3" : ""} ${
                   isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
                 }`}
                 style={{ transitionDelay: `${delay}s` }}
@@ -380,7 +385,7 @@ function Games() {
                   }}
                 >
                   {/* Rasm qismi */}
-                  <div className="relative z-10 h-56 w-full overflow-hidden sm:h-64">
+                  <div className="relative z-10 h-52 w-full overflow-hidden sm:h-64">
                     <img
                       src={game.image}
                       alt={game.title}
@@ -446,8 +451,8 @@ function Games() {
                   </div>
 
                   {/* Kontent qismi */}
-                  <div className="relative z-0 p-6 pt-6">
-                    <h3 className="mb-2 text-2xl font-black text-white flex items-center gap-2">
+                  <div className="relative z-0 p-4 pt-5 sm:p-6 sm:pt-6">
+                    <h3 className="mb-2 flex items-center gap-2 text-xl font-black text-white sm:text-2xl">
                       {game.title}
                       {game.available && (
                         <FaBolt className="text-yellow-400" />
@@ -457,7 +462,7 @@ function Games() {
                     <p className="mb-4 text-sm text-white/60 line-clamp-2">{game.description}</p>
 
                     {/* Ma'lumotlar gridi */}
-                    <div className="mb-5 grid grid-cols-2 gap-3">
+                    <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
                       <div className="relative group/item">
                         <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} rounded-xl blur-md opacity-0 group-hover/item:opacity-30 transition-opacity`} />
                         <div className="relative flex items-center gap-2 rounded-xl bg-white/5 p-2.5 border border-white/10 backdrop-blur-sm">
@@ -506,8 +511,8 @@ function Games() {
                             : 'border-gray-600 bg-gray-700/50 cursor-not-allowed'
                         }`}
                       >
-                        <div className="px-6 py-4">
-                          <span className="relative z-10 flex items-center justify-center gap-3 text-sm font-black text-white">
+                        <div className="px-4 py-3.5 sm:px-6 sm:py-4">
+                          <span className="relative z-10 flex items-center justify-center gap-2.5 text-sm font-black text-white">
                             {game.available ? (
                               <>
                                 <game.mainIcon className="text-base" />
@@ -545,7 +550,7 @@ function Games() {
         </div>
 
         {/* Footer ikonkalar */}
-        <div className="relative mt-20 flex justify-center gap-8 text-white/20">
+        <div className="relative mt-14 flex flex-wrap justify-center gap-5 text-white/20 sm:mt-20 sm:gap-8">
           {[
             GiAchievement,
             GiPodium,

@@ -219,6 +219,49 @@
   -webkit-backdrop-filter: none !important;
 }
 
+@media (max-width: 767px) {
+  .game-layout {
+    overflow-x: clip;
+  }
+}
+
+.wheel-leaderboard-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(251, 191, 36, 0.78) rgba(255, 255, 255, 0.08);
+}
+
+.wheel-leaderboard-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.wheel-leaderboard-scroll::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(88, 28, 135, 0.22));
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+@keyframes countdownPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.84) translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.wheel-leaderboard-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(253, 224, 71, 0.95), rgba(244, 114, 182, 0.9));
+  border-radius: 999px;
+  border: 2px solid rgba(76, 29, 149, 0.38);
+  box-shadow: 0 8px 18px rgba(244, 114, 182, 0.24);
+}
+
+.wheel-leaderboard-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(254, 240, 138, 0.98), rgba(236, 72, 153, 0.95));
+}
+
 
 @keyframes floatBall {
   0%, 100% {

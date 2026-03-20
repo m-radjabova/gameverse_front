@@ -332,22 +332,22 @@ function Bingo() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-3 sm:p-4 md:p-8">
       {showConfetti && <Confetti mode="fall" particleCount={140} shapeSize={14} colors={['#818cf8', '#c084fc', '#f9a8d4', '#34d399', '#fbbf24']} />}
       
       <div className="max-w-7xl mx-auto">
         {/* Toast Notification */}
         {toast && (
-          <div className="fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-xl border border-white/30 animate-bounce">
+          <div className="fixed left-1/2 top-3 z-50 w-[calc(100%-1.5rem)] max-w-sm -translate-x-1/2 rounded-2xl border border-white/30 bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2.5 text-center text-sm font-bold text-white shadow-xl animate-bounce sm:left-auto sm:right-4 sm:top-4 sm:w-auto sm:translate-x-0 sm:rounded-xl sm:py-3">
             {toast}
           </div>
         )}
 
         {phase === "teacher" ? (
           /* ========== O'QITUVCHI PANELI ========== */
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 xl:gap-6">
             {/* Left Panel - Input */}
-            <div className="rounded-2xl bg-gradient-to-br from-indigo-800/50 to-purple-800/50 backdrop-blur-xl border-2 border-indigo-500/30 p-6 shadow-2xl">
+            <div className="rounded-2xl border-2 border-indigo-500/30 bg-gradient-to-br from-indigo-800/50 to-purple-800/50 p-4 shadow-2xl backdrop-blur-xl sm:p-6">
               <div className="flex items-center gap-3 mb-4 pb-2 border-b border-indigo-500/30">
                 <div className="relative">
                   <div className="absolute -inset-1 rounded-full bg-indigo-500/30" />
@@ -358,7 +358,7 @@ function Bingo() {
                 <h2 className="text-xl font-black text-white">KATAK KIRITISH</h2>
               </div>
 
-              <div className="space-y-3 max-h-[560px] overflow-y-auto pr-1">
+              <div className="max-h-[480px] space-y-3 overflow-y-auto pr-1 sm:max-h-[560px]">
                 {inputRows.map((row, index) => (
                   <div key={index} className="rounded-xl border border-indigo-500/30 bg-indigo-950/40 p-3">
                     <div className="mb-2 text-xs font-bold text-indigo-200">Katak #{index + 1}</div>
@@ -488,7 +488,7 @@ function Bingo() {
             {/* Right Panel - Preview & Students */}
             <div className="space-y-6">
               {/* Live Preview */}
-              <div className="rounded-2xl bg-gradient-to-br from-purple-800/50 to-pink-800/50 backdrop-blur-xl border-2 border-purple-500/30 p-6 shadow-2xl">
+              <div className="rounded-2xl border-2 border-purple-500/30 bg-gradient-to-br from-purple-800/50 to-pink-800/50 p-4 shadow-2xl backdrop-blur-xl sm:p-6">
                 <h3 className="text-lg font-black text-white mb-4 flex items-center gap-2">
                   <FaEye className="text-purple-300" /> 4x4 PREVIEW
                 </h3>
@@ -513,11 +513,11 @@ function Bingo() {
               </div>
 
               {/* Students Panel */}
-              <div className="rounded-2xl bg-gradient-to-br from-pink-800/50 to-rose-800/50 backdrop-blur-xl border-2 border-pink-500/30 p-6 shadow-2xl">
+              <div className="rounded-2xl border-2 border-pink-500/30 bg-gradient-to-br from-pink-800/50 to-rose-800/50 p-4 shadow-2xl backdrop-blur-xl sm:p-6">
                 <h3 className="text-lg font-black text-white mb-4 flex items-center gap-2">
                   <FaUsers className="text-pink-300" /> O'QUVCHILAR
                 </h3>
-                <div className="flex gap-2 mb-4">
+                <div className="mb-4 flex gap-2">
                   <input 
                     type="text" 
                     value={newStudentName} 
@@ -548,7 +548,7 @@ function Bingo() {
           /* ========== O'YIN JARAYONI ========== */
           <>
             {/* Stats Panel */}
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
+            <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-6">
               <div className="rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 border-2 border-indigo-400/30 p-4 shadow-xl">
                 <p className="text-xs text-indigo-200 mb-1">Topilgan</p>
                 <p className="font-black text-2xl text-white">{foundCount} / 16</p>
@@ -595,14 +595,14 @@ function Bingo() {
             )}
 
             {/* Bingo Grid */}
-            <div className="rounded-2xl bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 backdrop-blur-xl border-2 border-indigo-500/30 p-6 shadow-2xl">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="rounded-2xl border-2 border-indigo-500/30 bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 p-3 shadow-2xl backdrop-blur-xl sm:p-6">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
                 {cells.map((cell) => (
                   <button 
                     key={cell.id} 
                     onClick={() => handleCellClick(cell)} 
                     disabled={cell.found || gameOver} 
-                    className={`relative rounded-xl min-h-[140px] p-3 border-2 transition-all text-left group
+                    className={`relative min-h-[118px] rounded-xl border-2 p-2.5 text-left transition-all group sm:min-h-[140px] sm:p-3
                       ${cell.found 
                         ? "bg-gradient-to-br from-emerald-600 to-green-600 border-emerald-400 text-white cursor-not-allowed" 
                         : cell.wrong
@@ -623,7 +623,7 @@ function Bingo() {
                       </div>
                     </div>
                     
-                    <div className="text-sm font-black text-white mb-1 leading-tight">{cell.title}</div>
+                    <div className="mb-1 text-xs font-black leading-tight text-white sm:text-sm">{cell.title}</div>
                     <div className="flex items-center gap-1 text-indigo-300 text-xs">
                       {typeIcon(cell.type)}
                       <span>{cell.type === "quiz" ? "Test" : cell.type === "tf" ? "To'g'ri/Noto'g'ri" : "Topshiriq"}</span>
@@ -641,15 +641,15 @@ function Bingo() {
 
             {/* Question Modal */}
             {selectedCell && (
-              <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-                <div className="w-full max-w-2xl rounded-2xl bg-gradient-to-br from-indigo-900 to-purple-900 border-2 border-indigo-500/30 p-6 shadow-2xl">
-                  <div className="flex items-start justify-between gap-4 mb-4">
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+                <div className="max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-2xl border-2 border-indigo-500/30 bg-gradient-to-br from-indigo-900 to-purple-900 p-4 shadow-2xl sm:p-6">
+                  <div className="mb-4 flex items-start justify-between gap-4">
                     <div>
-                      <h3 className="text-2xl font-black text-white flex items-center gap-2">
+                      <h3 className="flex items-center gap-2 text-xl font-black text-white sm:text-2xl">
                         <span>{selectedCell.emoji}</span>
                         <span>{selectedCell.title}</span>
                       </h3>
-                      <p className="mt-2 text-lg text-indigo-200">{selectedCell.prompt}</p>
+                      <p className="mt-2 text-base text-indigo-200 sm:text-lg">{selectedCell.prompt}</p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       {difficultyBadge(selectedCell.difficulty)}
@@ -678,7 +678,7 @@ function Bingo() {
                   )}
 
                   {selectedCell.type === "quiz" && selectedCell.options && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                       <button onClick={() => handleAnswer("A")} className="rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold p-4 border border-white/20 shadow-lg transition-all hover:scale-105">
                         <div className="text-xs opacity-80 mb-1">A</div>
                         <div>{selectedCell.options.A}</div>
@@ -695,7 +695,7 @@ function Bingo() {
                   )}
 
                   {selectedCell.type === "tf" && (
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       <button onClick={() => handleAnswer(true)} className="rounded-xl bg-gradient-to-br from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold p-4 border border-white/20 shadow-lg transition-all hover:scale-105 flex items-center justify-center gap-2">
                         <FaCheck /> To'g'ri
                       </button>
@@ -720,8 +720,8 @@ function Bingo() {
 
             {/* Joker Confirm Modal */}
             {jokerConfirmCellId && (
-              <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-                <div className="w-full max-w-md rounded-2xl bg-gradient-to-br from-purple-900 to-pink-900 border-2 border-purple-500/30 p-5 shadow-2xl">
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+                <div className="w-full max-w-md rounded-2xl border-2 border-purple-500/30 bg-gradient-to-br from-purple-900 to-pink-900 p-4 shadow-2xl sm:p-5">
                   <h3 className="text-lg font-black text-white mb-3 flex items-center gap-2">
                     <GiCardJoker className="text-2xl" /> Jokerni ishlatish
                   </h3>
@@ -741,7 +741,7 @@ function Bingo() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <button onClick={confirmJokerUse} className="rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold py-2 border border-white/20">
                       Tasdiqlash
                     </button>

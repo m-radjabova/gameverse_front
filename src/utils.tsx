@@ -14,9 +14,15 @@ export function parseJwt(token: string): Record<string, unknown> | null {
   }
 }
 
+function normalizeApiOrigin(origin?: string): string {
+  const value = origin?.trim();
+  if (!value) return "";
+  return value.replace(/\/+$/, "");
+}
+
 export const API_ORIGIN =
-  import.meta.env.VITE_API_ORIGIN ||
-  import.meta.env.VITE_API_URL ||
+  normalizeApiOrigin(import.meta.env.VITE_API_ORIGIN) ||
+  normalizeApiOrigin(import.meta.env.VITE_API_URL) ||
   "http://localhost:8000";
 
 export function toMediaUrl(path?: string | null): string {

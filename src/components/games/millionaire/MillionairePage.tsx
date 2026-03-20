@@ -1,6 +1,6 @@
 import { FaUsers, FaTrophy, FaCrown, FaQuestion } from "react-icons/fa";
 import { GiAchievement, GiPodium, GiSpinningWheel, GiBrain, GiMoneyStack } from "react-icons/gi";
-import img from "../../../assets/millionaire_photo.jpg";
+import img from "../../../assets/millionare_hero.png";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
 

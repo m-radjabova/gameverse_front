@@ -8,6 +8,7 @@ import {
 } from "../../hooks/useProfile";
 import useContextPro from "../../hooks/useContextPro";
 import { toMediaUrl } from "../../utils";
+import { formatUserCreatedAt } from "../../utils/userDates";
 
 import { 
   HiOutlineUserCircle, 
@@ -312,7 +313,7 @@ function Profile() {
                   <span className="text-xs text-[#8f6d70]">Ro'yxatdan o'tgan</span>
                   <span className="text-xs font-medium text-[#7b4f53] flex items-center gap-1">
                     <FiCalendar className="w-3 h-3 text-[#e07c8e]" />
-                    {new Date(user.created_at || Date.now()).toLocaleDateString()}
+                    {formatUserCreatedAt(user)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-xl bg-[#fceae8]/50">

@@ -26,21 +26,33 @@ import {
   FaGrinTongue,
   FaKissWinkHeart
 } from "react-icons/fa";
-import { GiPodiumWinner, GiSpinningWheel, GiPartyPopper, GiHummingbird, GiButterfly, GiDragonfly } from "react-icons/gi";
+import {
+  GiPodiumWinner,
+  GiSpinningWheel,
+  GiPartyPopper,
+  GiHummingbird,
+  GiButterfly,
+  GiDragonfly
+} from "react-icons/gi";
 import { MdQuiz, MdTimer, MdOutlineEmojiEvents, MdClose } from "react-icons/md";
 import { BsLightningChargeFill, BsFlower1, BsFlower2, BsFlower3 } from "react-icons/bs";
 import { RiHeart2Fill, RiHeart3Fill, RiStarSmileFill } from "react-icons/ri";
 import Confetti from "react-confetti-boom";
+
 import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
 
-import { EMPTY_OPTIONS, SAMPLE_QUESTIONS, WHEEL_COLORS, WHEEL_OF_FORTUNE_GAME_KEY } from "./constants";
+import {
+  EMPTY_OPTIONS,
+  SAMPLE_QUESTIONS,
+  WHEEL_OF_FORTUNE_GAME_KEY
+} from "./constants";
 import type { Phase, Question, Student } from "./types";
 import { normalizeQuestions, shuffle } from "./utils";
+import StudentWheel from "./StudentWheel";
 
-// Student emojilari - har bir studentga o'ziga xos emoji
 const STUDENT_EMOJIS = [
   { icon: FaSmile, color: "text-yellow-400", bg: "from-yellow-400 to-orange-400" },
   { icon: FaGrinStars, color: "text-blue-400", bg: "from-blue-400 to-cyan-400" },
@@ -68,34 +80,45 @@ const STUDENT_EMOJIS = [
 
 export default function WheelOfFortune() {
   const skipInitialRemoteSaveRef = useRef(true);
+
   const [phase, setPhase] = useState<Phase>("setup");
   useFinishApplause(phase === "finish");
+
   const [students, setStudents] = useState<Student[]>([]);
   const [questions, setQuestions] = useState<Question[]>(SAMPLE_QUESTIONS);
+
   const [newStudent, setNewStudent] = useState("");
   const [studentError, setStudentError] = useState("");
+
   const [questionText, setQuestionText] = useState("");
   const [questionOptions, setQuestionOptions] = useState<[string, string, string, string]>(EMPTY_OPTIONS);
   const [answerIndex, setAnswerIndex] = useState(0);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [questionError, setQuestionError] = useState("");
+
   const [remoteLoaded, setRemoteLoaded] = useState(false);
   const [activeQuestions, setActiveQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+
+  const [mustSpin, setMustSpin] = useState(false);
+  const [prizeNumber, setPrizeNumber] = useState(0);
   const [spinning, setSpinning] = useState(false);
-  const [rotation, setRotation] = useState(0);
+
   const [timeLeft, setTimeLeft] = useState(0);
   const [questionLocked, setQuestionLocked] = useState(false);
   const [result, setResult] = useState<{ correct: boolean; message: string } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [showWinnerOverlay, setShowWinnerOverlay] = useState(false);
+
   const [category, setCategory] = useState("Geografiya");
   const [points, setPoints] = useState(100);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showQuestionModal, setShowQuestionModal] = useState(false);
+
   const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
 
-  const spinTimeoutRef = useRef<number | null>(null);
   const countdownRef = useRef<number | null>(null);
   const nextRef = useRef<number | null>(null);
 
@@ -103,9 +126,8 @@ export default function WheelOfFortune() {
   const totalQuestions = activeQuestions.length || questions.length;
   const progressPct = Math.round(((currentQuestionIndex + 1) / Math.max(totalQuestions, 1)) * 100);
   const sortedStudents = useMemo(() => [...students].sort((a, b) => b.score - a.score), [students]);
-  const selectedStudent = students.find(s => s.id === selectedStudentId);
+  const selectedStudent = students.find((s) => s.id === selectedStudentId);
 
-  // Har bir studentga emoji belgilash
   const studentEmojis = useMemo(() => {
     const emojiMap = new Map();
     students.forEach((student, index) => {
@@ -114,17 +136,17 @@ export default function WheelOfFortune() {
     return emojiMap;
   }, [students]);
 
-  const wheelGradient = useMemo(() => {
-    if (!students.length) return "#312e81 0deg 360deg";
-    const segment = 360 / students.length;
-    return students.map((_, i) => `${WHEEL_COLORS[i % WHEEL_COLORS.length]} ${i * segment}deg ${(i + 1) * segment}deg`).join(", ");
-  }, [students]);
-
   useEffect(() => {
     if (!toast) return;
     const t = window.setTimeout(() => setToast(null), 2000);
     return () => window.clearTimeout(t);
   }, [toast]);
+
+  useEffect(() => {
+    if (!showWinnerOverlay) return;
+    const t = window.setTimeout(() => setShowWinnerOverlay(false), 1800);
+    return () => window.clearTimeout(t);
+  }, [showWinnerOverlay]);
 
   useEffect(() => {
     let alive = true;
@@ -136,6 +158,7 @@ export default function WheelOfFortune() {
       }
       setRemoteLoaded(true);
     })();
+
     return () => {
       alive = false;
     };
@@ -147,25 +170,31 @@ export default function WheelOfFortune() {
       skipInitialRemoteSaveRef.current = false;
       return;
     }
+
     const t = window.setTimeout(() => {
       void saveGameQuestions<Question>(WHEEL_OF_FORTUNE_GAME_KEY, questions);
     }, 500);
+
     return () => window.clearTimeout(t);
   }, [questions, remoteLoaded]);
 
-  useEffect(() => () => {
-    if (spinTimeoutRef.current) window.clearTimeout(spinTimeoutRef.current);
-    if (countdownRef.current) window.clearTimeout(countdownRef.current);
-    if (nextRef.current) window.clearTimeout(nextRef.current);
+  useEffect(() => {
+    return () => {
+      if (countdownRef.current) window.clearTimeout(countdownRef.current);
+      if (nextRef.current) window.clearTimeout(nextRef.current);
+    };
   }, []);
 
   useEffect(() => {
     if (phase !== "question" || !currentQuestion || questionLocked || !showQuestionModal) return;
+
     if (timeLeft <= 0) {
       submitAnswer(undefined, true);
       return;
     }
+
     countdownRef.current = window.setTimeout(() => setTimeLeft((v) => v - 1), 1000);
+
     return () => {
       if (countdownRef.current) window.clearTimeout(countdownRef.current);
     };
@@ -173,10 +202,13 @@ export default function WheelOfFortune() {
 
   const nextQuestion = () => {
     setShowQuestionModal(false);
+    setShowWinnerOverlay(false);
+
     if (currentQuestionIndex + 1 >= activeQuestions.length) {
       setPhase("finish");
       return;
     }
+
     setCurrentQuestionIndex((v) => v + 1);
     setSelectedStudentId(null);
     setQuestionLocked(false);
@@ -188,15 +220,25 @@ export default function WheelOfFortune() {
   const addStudent = () => {
     const name = newStudent.trim();
     if (!name) return setStudentError("Ism kiriting");
-    if (students.some((s) => s.name.toLowerCase() === name.toLowerCase())) return setStudentError("Bu ism allaqachon bor");
-    setStudents((prev) => [...prev, { id: `s-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, name, score: 0 }]);
+    if (students.some((s) => s.name.toLowerCase() === name.toLowerCase())) {
+      return setStudentError("Bu ism allaqachon bor");
+    }
+
+    setStudents((prev) => [
+      ...prev,
+      {
+        id: `s-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        name,
+        score: 0,
+      },
+    ]);
     setNewStudent("");
     setStudentError("");
     setToast(`✅ ${name} qo'shildi`);
   };
 
   const removeStudent = (id: string) => {
-    const student = students.find(s => s.id === id);
+    const student = students.find((s) => s.id === id);
     setStudents((prev) => prev.filter((s) => s.id !== id));
     if (selectedStudentId === id) setSelectedStudentId(null);
     setToast(`🗑️ ${student?.name} o'chirildi`);
@@ -225,8 +267,10 @@ export default function WheelOfFortune() {
   const addQuestion = () => {
     const q = questionText.trim();
     const options = questionOptions.map((option) => option.trim()) as [string, string, string, string];
+
     if (!q) return setQuestionError("Savol matnini kiriting");
     if (options.some((option) => !option)) return setQuestionError("4 ta variantni to'ldiring");
+
     if (editingQuestionId) {
       setQuestions((prev) =>
         prev.map((item) =>
@@ -239,25 +283,27 @@ export default function WheelOfFortune() {
                 points,
                 category,
               }
-            : item,
-        ),
+            : item
+        )
       );
       resetQuestionForm();
       setToast("✏️ Savol yangilandi");
       return;
     }
+
     setQuestions((prev) => [
       ...prev,
-      { 
-        id: `q-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, 
-        question: q, 
+      {
+        id: `q-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        question: q,
         options,
         answerIndex,
-        points: points, 
-        category: category, 
-        timeLimit: 30 
+        points,
+        category,
+        timeLimit: 30,
       },
     ]);
+
     resetQuestionForm();
     setToast("✅ Savol qo'shildi");
   };
@@ -267,6 +313,7 @@ export default function WheelOfFortune() {
       setToast("❌ Kamida 1 ta savol bo'lishi kerak");
       return;
     }
+
     setQuestions((prev) => prev.filter((q) => q.id !== id));
     if (editingQuestionId === id) {
       resetQuestionForm();
@@ -277,12 +324,17 @@ export default function WheelOfFortune() {
   const startGame = () => {
     if (students.length < 2) return setStudentError("Kamida 2 ta o'quvchi kerak");
     if (questions.length < 1) return setQuestionError("Kamida 1 ta savol kerak");
+
     setStudents((prev) => prev.map((s) => ({ ...s, score: 0 })));
     setActiveQuestions(shuffle(questions));
     setCurrentQuestionIndex(0);
     setSelectedStudentId(null);
     setQuestionLocked(false);
     setResult(null);
+    setShowQuestionModal(false);
+    setTimeLeft(0);
+    setMustSpin(false);
+    setSpinning(false);
     setPhase("spinning");
     setToast("🎮 O'yin boshlandi!");
   };
@@ -291,55 +343,53 @@ export default function WheelOfFortune() {
 
   const spinWheel = () => {
     if (spinning || students.length === 0 || !currentQuestion) return;
+
+    const randomIndex = Math.floor(Math.random() * students.length);
+    setPrizeNumber(randomIndex);
+    setMustSpin(true);
     setSpinning(true);
-    const base = rotation;
-    const finalRotation = base + (10 + Math.random() * 10) * 360;
-    const duration = 4000;
-    let startTime: number | null = null;
+  };
 
-    const animate = (t: number) => {
-      if (!startTime) startTime = t;
-      const p = Math.min((t - startTime) / duration, 1);
-      // Easing function for realistic slowdown
-      const eased = 1 - Math.pow(1 - p, 3);
-      setRotation(base + (finalRotation - base) * eased);
-      
-      if (p < 1) return requestAnimationFrame(animate);
+  const handleWheelStop = () => {
+    const winner = students[prizeNumber];
+    if (!winner || !currentQuestion) return;
 
-      // Calculate selected student (pointer at top - 0 degrees)
-      const segment = 360 / students.length;
-      const normalized = ((finalRotation % 360) + 360) % 360;
-      // Adjust so that top (0°) points to a student
-      const pointer = (360 - normalized + 90) % 360;
-      const i = Math.floor(pointer / segment) % students.length;
-      const selected = students[i];
+    setMustSpin(false);
+    setSpinning(false);
+    setSelectedStudentId(winner.id);
+    setShowWinnerOverlay(true);
+    setToast(`🎯 Baraban to'xtadi: ${winner.name}`);
 
-      setSpinning(false);
-      setRotation(finalRotation);
-      setSelectedStudentId(selected.id);
-      setToast(`🎯 Baraban to'xtadi: ${selected.name}`);
-      
-      // Show question modal after a short delay
-      spinTimeoutRef.current = window.setTimeout(() => {
-        setShowQuestionModal(true);
-        setPhase("question");
-        setTimeLeft(currentQuestion.timeLimit);
-      }, 1000);
-    };
-
-    requestAnimationFrame(animate);
+    window.setTimeout(() => {
+      setShowQuestionModal(true);
+      setPhase("question");
+      setTimeLeft(currentQuestion.timeLimit);
+    }, 700);
   };
 
   const submitAnswer = (selectedOptionIndex?: number, timeout = false) => {
     if (questionLocked || !currentQuestion || !selectedStudentId) return;
+
     setQuestionLocked(true);
+
     const ok = !timeout && selectedOptionIndex === currentQuestion.answerIndex;
+
     if (ok) {
-      setStudents((prev) => prev.map((s) => (s.id === selectedStudentId ? { ...s, score: s.score + currentQuestion.points } : s)));
+      setStudents((prev) =>
+        prev.map((s) =>
+          s.id === selectedStudentId
+            ? { ...s, score: s.score + currentQuestion.points }
+            : s
+        )
+      );
       setResult({ correct: true, message: `✅ To'g'ri! +${currentQuestion.points} ball` });
     } else {
-      setResult({ correct: false, message: `❌ Xato! To'g'ri javob: ${currentQuestion.options[currentQuestion.answerIndex]}` });
+      setResult({
+        correct: false,
+        message: `❌ Xato! To'g'ri javob: ${currentQuestion.options[currentQuestion.answerIndex]}`,
+      });
     }
+
     nextRef.current = window.setTimeout(nextQuestion, 2000);
   };
 
@@ -350,11 +400,13 @@ export default function WheelOfFortune() {
     setActiveQuestions([]);
     setCurrentQuestionIndex(0);
     setSelectedStudentId(null);
-    setRotation(0);
     setTimeLeft(0);
     setQuestionLocked(false);
     setResult(null);
     setShowQuestionModal(false);
+    setMustSpin(false);
+    setPrizeNumber(0);
+    setSpinning(false);
     setToast("🔄 O'yin qayta boshlandi");
   };
 
@@ -372,7 +424,6 @@ export default function WheelOfFortune() {
     return colors[index % colors.length];
   };
 
-  // Render student emoji
   const renderStudentEmoji = (studentId: string, size: string = "text-2xl") => {
     const emoji = studentEmojis.get(studentId);
     if (!emoji) return null;
@@ -382,116 +433,127 @@ export default function WheelOfFortune() {
 
   return (
     <div className="relative min-h-screen text-white">
-      {/* Sound Toggle */}
       <button
         onClick={() => setSoundEnabled(!soundEnabled)}
-        className="fixed top-4 right-4 z-50 rounded-full bg-purple-900/50 p-3 backdrop-blur-sm border border-purple-500/30 hover:bg-purple-800/50 transition-all"
+        className="fixed right-3 top-3 z-50 rounded-full border border-purple-500/30 bg-purple-900/50 p-2.5 backdrop-blur-sm transition-all hover:bg-purple-800/50 sm:right-4 sm:top-4 sm:p-3"
       >
         {soundEnabled ? <FaVolumeUp /> : <FaVolumeMute />}
       </button>
 
-      {/* Toast Notification */}
-      <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-50">
+      <div className="fixed left-1/2 top-20 z-50 w-[calc(100%-1.5rem)] max-w-sm -translate-x-1/2 sm:top-24 sm:w-auto">
         {toast && (
-          <div className="rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-3 text-white font-bold shadow-2xl animate-bounce backdrop-blur-sm border border-white/20">
+          <div className="rounded-2xl border border-white/20 bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2.5 text-center text-sm font-bold text-white shadow-2xl animate-bounce backdrop-blur-sm sm:rounded-full sm:px-6 sm:py-3 sm:text-base">
             {toast}
           </div>
         )}
       </div>
 
-      {/* Question Modal */}
       {showQuestionModal && phase === "question" && currentQuestion && selectedStudent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-          <div className="relative max-w-2xl w-full">
-            {/* Modal Background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl blur-xl opacity-50 animate-pulse" />
-            
-            {/* Modal Content */}
-            <div className="relative bg-gradient-to-br from-purple-900 to-pink-900 rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
-              {/* Decorative Header */}
-              <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white/10 to-transparent" />
-              
-              {/* Close Button */}
-              <button
-                onClick={nextQuestion}
-                className="absolute top-4 right-4 z-10 rounded-full bg-black/30 p-2 hover:bg-black/50 transition-colors"
-              >
-                <MdClose className="text-2xl" />
-              </button>
+          <div className="relative w-full max-w-3xl max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-[2rem]">
+            <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-r from-fuchsia-600/60 via-violet-600/50 to-cyan-500/50 blur-2xl" />
 
-              {/* Student Info */}
-              <div className="relative p-8 text-center border-b border-white/10">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.1),transparent_70%)]" />
-                
-                <div className="relative inline-block mb-4">
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 blur-xl opacity-50 animate-pulse" />
-                  <div className="relative flex items-center justify-center">
-                    <div className={`absolute inset-0 rounded-full bg-gradient-to-r ${getStudentColor(students.findIndex(s => s.id === selectedStudent.id))} blur-md`} />
-                    <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 border-4 border-white/30 flex items-center justify-center shadow-2xl">
-                      {renderStudentEmoji(selectedStudent.id, "text-5xl")}
+            <div className="relative overflow-hidden rounded-[2rem] border border-white/15 bg-[linear-gradient(145deg,rgba(48,16,94,0.96),rgba(86,18,87,0.94))] shadow-2xl">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.14),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(56,189,248,0.16),transparent_30%)]" />
+
+              <div className="relative border-b border-white/10 px-4 py-5 sm:px-8 sm:py-6">
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <div
+                        className={`absolute inset-0 rounded-full bg-gradient-to-r ${getStudentColor(
+                          students.findIndex((s) => s.id === selectedStudent.id)
+                        )} blur-lg opacity-80`}
+                      />
+                      <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/10 shadow-xl sm:h-20 sm:w-20">
+                        {renderStudentEmoji(selectedStudent.id, "text-4xl")}
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.35em] text-fuchsia-200/75">
+                        Savol tushdi
+                      </p>
+                      <h2 className="mt-1 text-2xl font-black text-white sm:text-3xl">{selectedStudent.name}</h2>
+                      <p className="mt-1 text-sm text-purple-100/75">
+                        Javob berish navbati shu o'quvchida.
+                      </p>
                     </div>
                   </div>
-                </div>
 
-                <h2 className="text-3xl font-black text-white mb-2">{selectedStudent.name}</h2>
-                <p className="text-purple-200/80">Javob berish navbati sizda!</p>
-                
-                {/* Timer */}
-                <div className="mt-4 flex items-center justify-center gap-4">
-                  <div className="flex items-center gap-2 text-2xl font-bold text-white bg-black/30 rounded-full px-4 py-2">
-                    <MdTimer className="text-yellow-400 animate-pulse" />
-                    <span>{timeLeft}s</span>
-                  </div>
-                  <div className="w-32 h-2 rounded-full bg-purple-500/30">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 transition-all duration-1000"
-                      style={{ width: `${(timeLeft / currentQuestion.timeLimit) * 100}%` }}
-                    />
+                  <div className="flex items-center gap-3 self-start sm:self-auto">
+                    <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                      <div className="flex items-center gap-2 text-xl font-black text-white">
+                        <MdTimer className="text-amber-300" />
+                        <span>{timeLeft}s</span>
+                      </div>
+                      <div className="mt-2 h-2 w-24 rounded-full bg-white/10 sm:w-28">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-amber-300 via-orange-400 to-rose-400 transition-all duration-1000"
+                          style={{ width: `${(timeLeft / currentQuestion.timeLimit) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {questionLocked && (
+                      <button
+                        onClick={nextQuestion}
+                        className="rounded-2xl border border-white/15 bg-white/10 p-3 text-white transition-colors hover:bg-white/20"
+                      >
+                        <MdClose className="text-2xl" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Question */}
-              <div className="relative p-8">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="rounded-full bg-purple-500/30 px-3 py-1 text-sm font-bold text-purple-200 border border-purple-500/30">
+              <div className="relative px-4 py-5 sm:px-8 sm:py-8">
+                <div className="mb-5 flex flex-wrap items-center gap-3">
+                  <span className="rounded-full border border-fuchsia-400/25 bg-fuchsia-500/15 px-4 py-1.5 text-sm font-bold text-fuchsia-100">
                     {currentQuestion.category}
                   </span>
-                  <span className="rounded-full bg-yellow-500/30 px-3 py-1 text-sm font-bold text-yellow-200 border border-yellow-500/30">
+                  <span className="rounded-full border border-amber-300/25 bg-amber-400/15 px-4 py-1.5 text-sm font-bold text-amber-100">
                     +{currentQuestion.points} ball
                   </span>
                 </div>
 
-                <h3 className="text-2xl font-bold text-white mb-6">{currentQuestion.question}</h3>
+                <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4 sm:rounded-[1.75rem] sm:p-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-cyan-100/60">
+                    Savol matni
+                  </p>
+                  <h3 className="mt-3 text-xl font-black leading-tight text-white sm:text-3xl">
+                    {currentQuestion.question}
+                  </h3>
+                </div>
 
-                {/* Options */}
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   {currentQuestion.options.map((option, idx) => (
                     <button
                       key={idx}
                       onClick={() => submitAnswer(idx)}
                       disabled={questionLocked}
-                      className="group relative overflow-hidden rounded-xl border border-purple-500/30 bg-purple-950/30 p-4 text-left font-bold text-white transition-all hover:scale-[1.02] hover:bg-purple-900/40 hover:border-purple-400 disabled:opacity-50 disabled:hover:scale-100"
+                    className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.1),rgba(255,255,255,0.04))] p-3.5 text-left text-white transition-all hover:-translate-y-0.5 hover:border-fuchsia-300/40 hover:bg-white/10 disabled:cursor-default disabled:opacity-60 sm:p-4"
                     >
-                      <span className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                      <span className="relative flex items-center gap-3">
-                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-500/30 text-sm">
+                      <span className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 via-transparent to-cyan-400/10 opacity-0 transition-opacity group-hover:opacity-100" />
+                      <span className="relative flex items-start gap-3">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/12 text-sm font-black">
                           {String.fromCharCode(65 + idx)}
                         </span>
-                        {option}
+                        <span className="pt-1 text-sm font-semibold leading-6 sm:text-base">{option}</span>
                       </span>
                     </button>
                   ))}
                 </div>
 
-                {/* Result */}
                 {result && (
-                  <div className={`mt-6 rounded-xl p-4 text-center backdrop-blur-sm border ${
-                    result.correct
-                      ? 'bg-emerald-500/20 border-emerald-500/30'
-                      : 'bg-rose-500/20 border-rose-500/30'
-                  }`}>
-                    <p className="text-lg font-bold">{result.message}</p>
+                  <div
+                    className={`mt-6 rounded-2xl border p-4 text-center backdrop-blur-sm ${
+                      result.correct
+                        ? "border-emerald-400/30 bg-emerald-500/15"
+                        : "border-rose-400/30 bg-rose-500/15"
+                    }`}
+                  >
+                    <p className="text-lg font-black text-white">{result.message}</p>
                   </div>
                 )}
               </div>
@@ -511,32 +573,29 @@ export default function WheelOfFortune() {
         />
       )}
 
-      {/* Setup Phase */}
       {phase === "setup" && (
-        <div className="relative transform-gpu overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-br from-purple-900/40 via-purple-800/40 to-pink-900/40 p-8 backdrop-blur-xl shadow-2xl">
-          {/* Animated Background */}
+        <div className="relative transform-gpu overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-br from-purple-900/40 via-purple-800/40 to-pink-900/40 p-4 shadow-2xl backdrop-blur-xl sm:p-8">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,40,200,0.2),transparent_50%)]" />
           <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%239C92AC%22%20fill-opacity%3D%220.05%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20" />
 
           <div className="relative">
-            <div className="mb-8 flex items-center justify-between">
-              <div className="flex items-center gap-6">
+            <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex items-start gap-4 sm:items-center sm:gap-6">
                 <div className="relative">
                   <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 blur-xl opacity-50" />
-                  <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg">
+                  <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg sm:h-20 sm:w-20">
                     <GiSpinningWheel className="text-4xl text-white animate-spin-slow" />
                   </div>
                 </div>
                 <div>
-                  <h1 className="text-4xl font-black bg-gradient-to-r from-purple-300 via-pink-300 to-rose-300 bg-clip-text text-transparent">
+                  <h1 className="text-3xl font-black bg-gradient-to-r from-purple-300 via-pink-300 to-rose-300 bg-clip-text text-transparent sm:text-4xl">
                     BARABAN O'YINI
                   </h1>
-                  <p className="text-purple-200/70">Omadingizni sinab ko'ring va g'alaba qozoning!</p>
+                  <p className="text-sm text-purple-200/70 sm:text-base">Omadingizni sinab ko'ring va g'alaba qozoning!</p>
                 </div>
               </div>
-              
-              {/* Stats */}
-              <div className="flex gap-4">
+
+              <div className="grid grid-cols-2 gap-3 sm:flex sm:gap-4">
                 <div className="rounded-xl bg-purple-900/30 border border-purple-500/30 px-4 py-2 text-center">
                   <p className="text-xs text-purple-200/70">O'quvchilar</p>
                   <p className="text-2xl font-bold">{students.length}</p>
@@ -547,20 +606,19 @@ export default function WheelOfFortune() {
                 </div>
               </div>
             </div>
-            
+
             <div className="grid gap-8 lg:grid-cols-2">
-              {/* Students Section */}
               <div className="space-y-4">
                 <h3 className="flex items-center gap-2 text-xl font-bold">
                   <FaUsers className="text-purple-400" />
                   O'QUVCHILAR
                 </h3>
-                
+
                 <div className="flex gap-2">
                   <input
                     value={newStudent}
                     onChange={(e) => setNewStudent(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && addStudent()}
+                    onKeyDown={(e) => e.key === "Enter" && addStudent()}
                     className="flex-1 rounded-xl border border-purple-500/30 bg-purple-950/30 px-4 py-3 text-white placeholder-purple-200/50 focus:border-purple-400 focus:outline-none backdrop-blur-sm"
                     placeholder="O'quvchi ismini kiriting..."
                   />
@@ -571,18 +629,18 @@ export default function WheelOfFortune() {
                     <FaPlus />
                   </button>
                 </div>
-                
+
                 {studentError && (
                   <div className="rounded-xl bg-rose-500/20 p-3 text-rose-300 border border-rose-500/30 backdrop-blur-sm">
                     ⚠️ {studentError}
                   </div>
                 )}
-                
+
                 <div className="space-y-2 overflow-auto pr-2 scrollbar-thin scrollbar-thumb-purple-500/30">
                   {students.map((student, index) => {
                     const emoji = STUDENT_EMOJIS[index % STUDENT_EMOJIS.length];
                     const IconComponent = emoji.icon;
-                    
+
                     return (
                       <div
                         key={student.id}
@@ -606,7 +664,7 @@ export default function WheelOfFortune() {
                       </div>
                     );
                   })}
-                  
+
                   {students.length === 0 && (
                     <div className="text-center py-12 text-purple-200/50">
                       <FaUsers className="mx-auto text-5xl mb-3 opacity-30" />
@@ -617,13 +675,12 @@ export default function WheelOfFortune() {
                 </div>
               </div>
 
-              {/* Questions Section */}
               <div className="space-y-4">
                 <h3 className="flex items-center gap-2 text-xl font-bold">
                   <MdQuiz className="text-pink-400" />
                   SAVOLLAR
                 </h3>
-                
+
                 <div className="space-y-2">
                   <input
                     value={questionText}
@@ -631,7 +688,8 @@ export default function WheelOfFortune() {
                     className="w-full rounded-xl border border-purple-500/30 bg-purple-950/30 px-4 py-3 text-white placeholder-purple-200/50 focus:border-purple-400 focus:outline-none backdrop-blur-sm"
                     placeholder="Savol matnini kiriting..."
                   />
-                  <div className="grid grid-cols-2 gap-2">
+
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <select
                       value={answerIndex}
                       onChange={(e) => setAnswerIndex(Number(e.target.value))}
@@ -642,6 +700,7 @@ export default function WheelOfFortune() {
                       <option value={2}>✅ To'g'ri: Variant 3</option>
                       <option value={3}>✅ To'g'ri: Variant 4</option>
                     </select>
+
                     <select
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
@@ -655,7 +714,8 @@ export default function WheelOfFortune() {
                       <option value="Umumiy">🎯 Umumiy</option>
                     </select>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     {questionOptions.map((option, idx) => (
                       <input
                         key={idx}
@@ -672,7 +732,8 @@ export default function WheelOfFortune() {
                       />
                     ))}
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <div className="flex items-center gap-2 bg-purple-950/30 rounded-xl px-4 py-2 border border-purple-500/30">
                       <BsLightningChargeFill className="text-yellow-400" />
                       <span className="text-sm text-purple-200/70">Ball:</span>
@@ -686,6 +747,7 @@ export default function WheelOfFortune() {
                         className="w-20 bg-transparent text-white focus:outline-none"
                       />
                     </div>
+
                     <div className="flex gap-2">
                       <button
                         onClick={addQuestion}
@@ -696,6 +758,7 @@ export default function WheelOfFortune() {
                           {editingQuestionId ? "SAQLASH" : "QO'SHISH"}
                         </span>
                       </button>
+
                       {editingQuestionId && (
                         <button
                           onClick={resetQuestionForm}
@@ -707,14 +770,14 @@ export default function WheelOfFortune() {
                     </div>
                   </div>
                 </div>
-                
+
                 {questionError && (
                   <div className="rounded-xl bg-rose-500/20 p-3 text-rose-300 border border-rose-500/30 backdrop-blur-sm">
                     ⚠️ {questionError}
                   </div>
                 )}
-                
-                <div className="max-h-80 space-y-2 overflow-auto pr-2 scrollbar-thin scrollbar-thumb-pink-500/30">
+
+                <div className="max-h-72 space-y-2 overflow-auto pr-2 scrollbar-thin scrollbar-thumb-pink-500/30 sm:max-h-80">
                   {questions.map((q) => (
                     <div
                       key={q.id}
@@ -731,7 +794,7 @@ export default function WheelOfFortune() {
                             </span>
                           </div>
                           <p className="text-sm font-bold text-white line-clamp-1">{q.question}</p>
-                          <div className="mt-2 grid grid-cols-2 gap-1">
+                          <div className="mt-2 grid grid-cols-1 gap-1 sm:grid-cols-2">
                             {q.options.map((opt, optIdx) => (
                               <span
                                 key={optIdx}
@@ -746,6 +809,7 @@ export default function WheelOfFortune() {
                             ))}
                           </div>
                         </div>
+
                         <div className="ml-2 flex items-center gap-2">
                           <button
                             onClick={() => beginEditQuestion(q)}
@@ -766,13 +830,12 @@ export default function WheelOfFortune() {
                 </div>
               </div>
             </div>
-            
-            {/* Start Button */}
+
             {students.length >= 2 && questions.length >= 1 && (
               <div className="relative mt-8 flex justify-center">
                 <button
                   onClick={handleStartGame}
-                  className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 px-12 py-4 text-xl font-black text-white shadow-2xl transition-all hover:scale-105 hover:shadow-purple-500/50 active:scale-95"
+                  className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-4 text-lg font-black text-white shadow-2xl transition-all hover:scale-105 hover:shadow-purple-500/50 active:scale-95 sm:px-12 sm:text-xl"
                 >
                   <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                   <span className="relative flex items-center gap-4">
@@ -787,13 +850,10 @@ export default function WheelOfFortune() {
         </div>
       )}
 
-      {/* Spinning Phase */}
       {phase === "spinning" && currentQuestion && (
-        <div className="relative transform-gpu overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-br from-purple-900/40 via-purple-800/40 to-pink-900/40 p-8 backdrop-blur-xl shadow-2xl">
-          {/* Animated Background */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(168,85,247,0.1),transparent_70%)]" />
-          
-          {/* Progress */}
+        <div className="relative transform-gpu overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-br from-purple-900/40 via-purple-800/40 to-pink-900/40 p-4 shadow-2xl backdrop-blur-xl sm:p-8">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_10%,rgba(34,211,238,0.12),transparent_30%),radial-gradient(circle_at_75%_50%,rgba(236,72,153,0.16),transparent_35%),radial-gradient(circle_at_50%_100%,rgba(168,85,247,0.14),transparent_45%)]" />
+
           <div className="relative mb-8">
             <div className="flex items-center justify-between text-sm mb-2">
               <span className="text-purple-200/80 flex items-center gap-2">
@@ -811,192 +871,130 @@ export default function WheelOfFortune() {
               </div>
             </div>
           </div>
-          
-          {/* Main Game Area */}
-          <div className="grid lg:grid-cols-3 gap-8 items-center">
-            {/* Students List - Left */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-bold text-purple-200/70 mb-4 flex items-center gap-2">
-                <FaUsers />
-                O'QUVCHILAR
-              </h4>
-              {students.map((student, index) => {
-                const emoji = STUDENT_EMOJIS[index % STUDENT_EMOJIS.length];
-                const IconComponent = emoji.icon;
-                
-                return (
-                  <div
-                    key={student.id}
-                    className={`relative group transition-all duration-300 ${
-                      student.id === selectedStudentId ? 'scale-105 z-10' : ''
-                    }`}
-                  >
-                    <div className={`absolute inset-0 rounded-xl bg-gradient-to-r ${emoji.bg} opacity-0 group-hover:opacity-20 transition-opacity`} />
+
+          <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)] xl:items-start xl:gap-8">
+            <div className="space-y-5">
+              <div className="rounded-[1.75rem] border border-white/10 bg-black/15 p-5 backdrop-blur-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h4 className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.28em] text-cyan-100/75">
+                      <FaUsers />
+                      O'quvchilar
+                    </h4>
+                  </div>
+                </div>
+              </div>
+
+              <div className="wheel-leaderboard-scroll max-h-[360px] space-y-3 overflow-auto pr-2 sm:max-h-[640px]">
+                {sortedStudents.map((student, rank) => {
+                  const studentIndex = students.findIndex((item) => item.id === student.id);
+                  const emoji = STUDENT_EMOJIS[studentIndex % STUDENT_EMOJIS.length];
+                  const IconComponent = emoji.icon;
+                  const isSelected = student.id === selectedStudentId;
+
+                  return (
                     <div
-                      className={`relative flex items-center gap-3 rounded-xl border p-3 backdrop-blur-sm transition-all ${
-                        student.id === selectedStudentId
-                          ? 'border-yellow-400 bg-yellow-500/20 shadow-lg shadow-yellow-500/25'
-                          : 'border-purple-500/30 bg-purple-950/30'
+                      key={student.id}
+                      className={`relative overflow-hidden rounded-[1.5rem] border p-4 transition-all ${
+                        isSelected
+                          ? "border-amber-300/50 bg-amber-400/10 shadow-lg shadow-amber-500/10"
+                          : "border-white/10 bg-white/5"
                       }`}
                     >
-                      <div className={`flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r ${emoji.bg} text-xs font-bold text-white shadow-lg`}>
-                        <IconComponent className="text-lg" />
-                      </div>
-                      <span className="text-sm font-bold text-white flex-1 truncate">{student.name}</span>
-                      <span className="text-sm font-bold text-yellow-300">{student.score}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                      <div className={`absolute inset-0 bg-gradient-to-r ${emoji.bg} opacity-[0.08]`} />
+                      <div className="relative flex items-center gap-4">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-sm font-black text-white ring-1 ring-white/10">
+                          {rank + 1}
+                        </div>
 
-            {/* Wheel - Center */}
-            <div className="relative">
-              {/* Glow Effects */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 blur-3xl animate-pulse" />
-              <div className="absolute inset-0 rounded-full bg-purple-500/10 blur-2xl" />
-              
-              {/* Wheel Container */}
-              <div className="relative w-full aspect-square">
-                {/* Pointer */}
-                <div className="absolute left-1/2 top-0 z-20 -translate-x-1/2 -translate-y-4">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-yellow-400 blur-md" />
-                    <div className="relative w-0 h-0 border-l-[25px] border-r-[25px] border-t-[50px] border-l-transparent border-r-transparent border-t-yellow-400 drop-shadow-2xl" />
-                  </div>
-                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-1 h-8 bg-gradient-to-b from-yellow-400 to-transparent blur-sm" />
-                </div>
-                
-                {/* Wheel */}
-                <div
-                  className="absolute inset-0 rounded-full transition-transform duration-300 overflow-hidden shadow-2xl"
-                  style={{
-                    transform: `rotate(${rotation}deg)`,
-                    boxShadow: '0 30px 60px rgba(0,0,0,0.6), inset 0 0 50px rgba(255,255,255,0.3)',
-                  }}
-                >
-                  {/* Segments */}
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      background: `conic-gradient(${wheelGradient})`,
-                    }}
-                  >
-                    {/* Segment Dividers */}
-                    <div className="absolute inset-0">
-                      {students.map((_, i) => {
-                        const angle = (i * 360) / students.length;
-                        return (
-                          <div
-                            key={i}
-                            className="absolute inset-0"
-                            style={{
-                              transform: `rotate(${angle}deg)`,
-                              borderRight: '2px solid rgba(255,255,255,0.3)',
-                              transformOrigin: '50% 50%',
-                            }}
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-                  
-                  {/* Student labels on wheel segments */}
-                  {students.map((student, i) => {
-                    const segment = 360 / students.length;
-                    const angle = i * segment + segment / 2;
-                    const radius = students.length <= 6 ? 68 : students.length <= 9 ? 62 : 58;
-                    const emoji = studentEmojis.get(student.id) ?? STUDENT_EMOJIS[i % STUDENT_EMOJIS.length];
-                    const IconComponent = emoji.icon;
-                    
-                    return (
-                      <div
-                        key={student.id}
-                        className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
-                        style={{
-                          transform: `rotate(${angle}deg) translate(0, -${radius}%) rotate(-${angle}deg)`,
-                        }}
-                      >
-                        <div className="flex min-w-[92px] max-w-[132px] flex-col items-center gap-2">
-                          <div className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r ${emoji.bg} border-2 border-white/80 shadow-[0_8px_24px_rgba(0,0,0,0.35)]`}>
-                            <IconComponent className="text-lg text-white" />
-                          </div>
-                          <div className="rounded-full border border-white/30 bg-black/65 px-3 py-1.5 text-center shadow-lg backdrop-blur-md">
-                            <span className="block truncate text-[11px] font-black uppercase tracking-[0.08em] text-white">
-                              {student.name}
-                            </span>
-                          </div>
+                        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-r ${emoji.bg} shadow-lg`}>
+                          <IconComponent className="text-xl text-white" />
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-base font-black text-white">{student.name}</p>
+                          <p className="text-xs uppercase tracking-[0.2em] text-purple-100/55">
+                            {isSelected ? "Savol tushgan o'quvchi" : "Navbat kutmoqda"}
+                          </p>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="text-xs uppercase tracking-[0.2em] text-purple-100/50">Ball</p>
+                          <p className="text-2xl font-black text-amber-300">{student.score}</p>
                         </div>
                       </div>
-                    );
-                  })}
-                  
-                  {/* Center Hub */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="relative">
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 blur-xl opacity-50 animate-pulse" />
-                      <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 border-4 border-white/30 flex items-center justify-center shadow-2xl">
-                        {spinning ? (
-                          <FaSpinner className="text-4xl text-white animate-spin" />
-                        ) : (
-                          <GiSpinningWheel className="text-4xl text-white" />
-                        )}
-                      </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Spin Button */}
-              <div className="relative mt-8 flex justify-center">
-                <button
-                  onClick={spinWheel}
-                  disabled={spinning}
-                  className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 px-8 py-4 font-black text-white shadow-2xl transition-all hover:scale-105 hover:shadow-purple-500/50 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
-                >
-                  <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                  <span className="relative flex items-center gap-3 text-lg">
-                    {spinning ? (
-                      <>
-                        <FaSpinner className="animate-spin" />
-                        AYLANMOQDA...
-                      </>
-                    ) : (
-                      <>
-                        <GiSpinningWheel className="text-2xl" />
-                        BARABANNI AYLANTIRISH
-                      </>
-                    )}
-                  </span>
-                </button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Next Question Preview - Right */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-bold text-purple-200/70 mb-4 flex items-center gap-2">
-                <MdQuiz />
-                NAVBATDAGI SAVOL
-              </h4>
-              <div className="rounded-xl border border-purple-500/30 bg-purple-950/30 p-4 backdrop-blur-sm">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="rounded-full bg-purple-500/20 px-2 py-1 text-xs text-purple-300">
-                    {currentQuestion.category}
-                  </span>
-                  <span className="rounded-full bg-yellow-500/20 px-2 py-1 text-xs text-yellow-300">
-                    +{currentQuestion.points}
-                  </span>
+            <div className="space-y-6">
+              <div className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03))] p-4 shadow-2xl backdrop-blur-sm sm:p-6">
+                <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h3 className="mt-2 text-xl font-black text-white sm:text-2xl">
+                      O'quvchini tanlash uchun aylantiring
+                    </h3>
+                  </div>
                 </div>
-                <p className="text-sm font-bold text-white mb-3 line-clamp-2">{currentQuestion.question}</p>
-                <div className="grid gap-1">
-                  {currentQuestion.options.map((opt, idx) => (
-                    <div
-                      key={idx}
-                      className="text-xs p-2 rounded-lg bg-purple-900/20 border border-purple-500/20"
-                    >
-                      {opt}
+
+                <div className="flex justify-center py-2">
+                  <div className="relative">
+                    <StudentWheel
+                      students={students}
+                      mustSpin={mustSpin}
+                      prizeNumber={prizeNumber}
+                      onStopSpinning={handleWheelStop}
+                    />
+
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                      <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-white/20 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.3),rgba(255,255,255,0.08))] shadow-[0_25px_80px_rgba(0,0,0,0.35)] backdrop-blur-md sm:h-32 sm:w-32">
+                        <div className="absolute inset-2 rounded-full border border-white/10" />
+                        <button
+                          onClick={spinWheel}
+                          disabled={spinning}
+                          className="pointer-events-auto relative z-10 flex h-16 w-16 items-center justify-center rounded-full bg-[linear-gradient(135deg,#fb7185,#d946ef,#38bdf8)] text-center text-[10px] font-black tracking-[0.28em] text-white shadow-[0_18px_40px_rgba(217,70,239,0.35)] transition-all hover:scale-105 disabled:cursor-default disabled:opacity-70 disabled:hover:scale-100 sm:h-24 sm:w-24 sm:text-sm"
+                        >
+                          {spinning ? (
+                            <FaSpinner className="text-2xl animate-spin" />
+                          ) : (
+                            <span className="translate-x-[0.14em]">SPIN</span>
+                          )}
+                        </button>
+                      </div>
                     </div>
-                  ))}
+
+                    {showWinnerOverlay && selectedStudent && (
+                      <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
+                        <div className="absolute inset-0 rounded-full bg-black/20 blur-2xl" />
+                        <div className="relative flex max-w-[280px] flex-col items-center rounded-[1.75rem] border border-amber-200/30 bg-[linear-gradient(135deg,rgba(255,255,255,0.24),rgba(255,255,255,0.08))] px-6 py-5 text-center shadow-2xl backdrop-blur-xl animate-fadeIn">
+                          <div className="rounded-full bg-amber-300/20 px-3 py-1 text-xs font-black uppercase tracking-[0.3em] text-amber-100">
+                            Tanlandi
+                          </div>
+                          <p className="mt-3 text-sm font-medium text-purple-100/80">
+                            Savol tushadigan o'quvchi
+                          </p>
+                          <h4 className="mt-2 text-3xl font-black text-white">{selectedStudent.name}</h4>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-8 flex flex-col items-center gap-4">
+                  <div className="rounded-2xl border border-white/10 bg-black/15 px-5 py-4 text-center">
+                    {selectedStudent ? (
+                      <p className="text-sm text-purple-100/80">
+                        Oxirgi tanlangan o'quvchi:
+                        <span className="ml-2 font-black text-amber-300">{selectedStudent.name}</span>
+                      </p>
+                    ) : (
+                      <p className="text-sm text-purple-100/65">
+                        Hozircha hech kim tanlanmagan. Barabanni aylantiring.
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -1004,12 +1002,10 @@ export default function WheelOfFortune() {
         </div>
       )}
 
-      {/* Finish Phase */}
       {phase === "finish" && (
-        <div className="relative transform-gpu overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-br from-purple-900/40 via-pink-900/40 to-rose-900/40 p-8 backdrop-blur-xl shadow-2xl text-center">
-          {/* Animated Background */}
+        <div className="relative transform-gpu overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-br from-purple-900/40 via-pink-900/40 to-rose-900/40 p-4 text-center shadow-2xl backdrop-blur-xl sm:p-8">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(236,72,153,0.1),transparent_70%)]" />
-          
+
           <div className="relative mb-8 flex justify-center">
             <div className="relative">
               <div className="absolute inset-0 rounded-full bg-yellow-400 blur-3xl opacity-30 animate-pulse" />
@@ -1018,14 +1014,12 @@ export default function WheelOfFortune() {
               </div>
             </div>
           </div>
-          
-          <h2 className="relative mb-8 text-5xl font-black bg-gradient-to-r from-purple-300 via-pink-300 to-rose-300 bg-clip-text text-transparent">
+
+          <h2 className="relative mb-8 text-3xl font-black bg-gradient-to-r from-purple-300 via-pink-300 to-rose-300 bg-clip-text text-transparent sm:text-5xl">
             O'YIN YAKUNLANDI
           </h2>
-          
-          {/* Podium */}
-          <div className="relative mb-12 grid grid-cols-3 gap-6 max-w-3xl mx-auto">
-            {/* 2nd Place */}
+
+          <div className="relative mb-12 grid max-w-3xl grid-cols-1 gap-5 mx-auto md:grid-cols-3 md:gap-6">
             {sortedStudents[1] && (
               <div className="relative group hover:scale-105 transition-transform">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-gray-400 to-gray-300 rounded-2xl blur opacity-70" />
@@ -1041,10 +1035,9 @@ export default function WheelOfFortune() {
                 </div>
               </div>
             )}
-            
-            {/* 1st Place */}
+
             {sortedStudents[0] && (
-              <div className="relative scale-110 z-10 group hover:scale-115 transition-transform">
+              <div className="relative z-10 group transition-transform md:scale-110 md:hover:scale-115">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-2xl blur opacity-90" />
                 <div className="relative bg-gradient-to-b from-yellow-600 to-orange-600 rounded-2xl p-6 pt-12">
                   <div className="absolute -top-8 left-1/2 transform -translate-x-1/2">
@@ -1058,8 +1051,7 @@ export default function WheelOfFortune() {
                 </div>
               </div>
             )}
-            
-            {/* 3rd Place */}
+
             {sortedStudents[2] && (
               <div className="relative group hover:scale-105 transition-transform">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-600 to-amber-500 rounded-2xl blur opacity-70" />
@@ -1076,8 +1068,7 @@ export default function WheelOfFortune() {
               </div>
             )}
           </div>
-          
-          {/* All Students */}
+
           <div className="relative mb-8 max-w-md mx-auto">
             <div className="rounded-xl border border-purple-500/30 bg-purple-950/30 p-6 backdrop-blur-sm">
               <h3 className="text-sm font-bold text-purple-300 mb-4 flex items-center gap-2">
@@ -1086,9 +1077,9 @@ export default function WheelOfFortune() {
               </h3>
               <div className="space-y-3">
                 {sortedStudents.map((student) => {
-                  const emoji = STUDENT_EMOJIS[students.findIndex(s => s.id === student.id) % STUDENT_EMOJIS.length];
+                  const emoji = STUDENT_EMOJIS[students.findIndex((s) => s.id === student.id) % STUDENT_EMOJIS.length];
                   const IconComponent = emoji.icon;
-                  
+
                   return (
                     <div key={student.id} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -1104,8 +1095,7 @@ export default function WheelOfFortune() {
               </div>
             </div>
           </div>
-          
-          {/* Buttons */}
+
           <div className="relative flex justify-center gap-4">
             <button
               onClick={resetGame}
@@ -1117,7 +1107,7 @@ export default function WheelOfFortune() {
                 QAYTA O'YNASH
               </span>
             </button>
-            
+
             <button
               onClick={() => setPhase("setup")}
               className="group relative overflow-hidden rounded-xl bg-white/10 px-8 py-4 font-bold text-white border border-white/20 transition-all hover:bg-white/20"
@@ -1130,6 +1120,7 @@ export default function WheelOfFortune() {
           </div>
         </div>
       )}
+
       <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue} />
     </div>
   );

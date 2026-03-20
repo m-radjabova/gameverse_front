@@ -59,7 +59,7 @@ export default function GameShowcaseCard({
           <img
             src={game.image}
             alt={game.title}
-            className="h-52 w-full object-cover transition-transform duration-700 group-hover:scale-105"
+            className="h-44 w-full object-cover transition-transform duration-700 group-hover:scale-105 sm:h-52"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent" />
 
@@ -72,16 +72,16 @@ export default function GameShowcaseCard({
             <Icon className="text-lg text-white" />
           </div>
 
-          <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
-            <div className="rounded-2xl bg-white/18 px-3 py-2 backdrop-blur-sm">
+          <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-2">
+            <div className="rounded-2xl bg-white/18 px-2.5 py-2 backdrop-blur-sm sm:px-3">
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/80">Kategoriya</p>
-              <p className="mt-1 text-sm font-bold text-white">{game.category}</p>
+              <p className="mt-1 text-xs font-bold text-white sm:text-sm">{game.category}</p>
             </div>
 
             <button
               type="button"
               onClick={() => onLikeToggle(game.id)}
-              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] backdrop-blur-sm transition-all ${
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.12em] backdrop-blur-sm transition-all sm:gap-2 sm:px-3 sm:text-[10px] sm:tracking-[0.14em] ${
                 isLiked ? "border-white bg-white text-[#ff6b8a]" : "border-white/35 bg-white/20 text-white hover:bg-white/30"
               }`}
             >
@@ -116,8 +116,8 @@ export default function GameShowcaseCard({
             ) : null}
           </div>
 
-          <div className="min-h-[118px]">
-            <h3 className={`text-2xl font-black ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>{game.title}</h3>
+          <div className="min-h-[104px] sm:min-h-[118px]">
+            <h3 className={`text-xl font-black sm:text-2xl ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>{game.title}</h3>
             <p
               className={`mt-2 text-sm leading-relaxed ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}
               style={{
@@ -131,7 +131,7 @@ export default function GameShowcaseCard({
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className={`rounded-2xl border px-4 py-3 ${isDark ? "border-[#2b3146] bg-[#1e1e2f]" : "border-white/70 bg-white/65"}`}>
               <p className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] ${isDark ? "text-[#a1a1aa]" : "text-[#a66466]"}`}>
                 <CategoryIcon className="text-[11px]" />
@@ -151,7 +151,7 @@ export default function GameShowcaseCard({
           <button
             type="button"
             onClick={() => onOpen(game.path)}
-            className={`group/btn relative mt-auto w-full overflow-hidden rounded-2xl bg-gradient-to-r ${game.gradient} p-3.5 text-sm font-bold text-white shadow-lg transition-all duration-300 hover:-translate-y-1`}
+            className={`group/btn relative mt-auto w-full overflow-hidden rounded-2xl bg-gradient-to-r ${game.gradient} p-3.5 text-sm font-bold text-white shadow-lg transition-all duration-300 sm:hover:-translate-y-1`}
           >
             <span className="absolute inset-0 translate-y-full bg-white/20 transition-transform duration-300 group-hover/btn:translate-y-0" />
             <span className="relative flex items-center justify-center gap-2">

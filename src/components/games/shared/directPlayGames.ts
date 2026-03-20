@@ -9,5 +9,6 @@ export const DIRECT_PLAY_GAME_PATHS = new Set([
   "/games/math-race",
   "/games/math-chick",
   "/games/baamboozle",
-  "/games/word-chain"
+  "/games/word-chain",
+  "/games/mini-puzzle"
 ]);

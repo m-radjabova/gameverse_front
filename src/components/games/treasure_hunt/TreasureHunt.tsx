@@ -824,10 +824,10 @@ export default function TreasureHunt() {
 
       {/* -- PLAY PHASE -- */}
       {phase === "play" && current && (
-        <div className="flex min-h-screen flex-col">
+        <div className="flex min-h-[72dvh] flex-col">
           {/* -- Top status bar -- */}
-          <div className="sticky top-0 z-30 border-b border-amber-800/30 bg-slate-950/90 px-4 py-2 backdrop-blur-md shadow-lg">
-            <div className="mx-auto flex max-w-7xl items-center gap-3">
+          <div className="sticky top-0 z-30 border-b border-amber-800/30 bg-slate-950/90 px-3 py-2 backdrop-blur-md shadow-lg sm:px-4">
+            <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 sm:gap-3">
               {/* Savol */}
               <div className="rounded-xl border border-amber-700/30 bg-black/50 px-3 py-1.5 text-center shrink-0">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-amber-600">Savol</p>
@@ -871,7 +871,7 @@ export default function TreasureHunt() {
             </div>
           </div>
 
-          <div className="flex-1 p-4">
+          <div className="flex-1 p-3 sm:p-4">
             <div className="mx-auto grid max-w-7xl gap-4 xl:grid-cols-[1.45fr_1fr] xl:items-start">
               <div className="space-y-4">
                 {/* -- TREASURE MAP -- */}
@@ -879,7 +879,7 @@ export default function TreasureHunt() {
                   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.16),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(14,165,233,0.12),transparent_30%)]" />
                   <div
                     className="relative overflow-hidden rounded-[26px] border border-amber-500/30"
-                    style={{ height: "min(68vh, 620px)" }}
+                    style={{ height: typeof window !== "undefined" && window.innerWidth < 640 ? "360px" : "min(68vh, 620px)" }}
                   >
                     <TreasureMapSVG progress={pathProgressPct} />
 
@@ -926,11 +926,11 @@ export default function TreasureHunt() {
               </div>
 
               {/* -- Question card -- */}
-              <div className="relative overflow-hidden rounded-[32px] border border-amber-700/30 bg-gradient-to-br from-amber-950/70 via-stone-950/80 to-black/80 p-5 shadow-xl backdrop-blur-sm xl:sticky xl:top-20">
+              <div className="relative overflow-hidden rounded-[32px] border border-amber-700/30 bg-gradient-to-br from-amber-950/70 via-stone-950/80 to-black/80 p-4 shadow-xl backdrop-blur-sm sm:p-5 xl:sticky xl:top-20">
                 <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-amber-500/10 blur-3xl" />
                 <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-amber-500/10 to-transparent" />
 
-                <div className="relative mb-4 flex items-center justify-between gap-3 border-b border-amber-700/20 pb-4">
+                <div className="relative mb-4 flex flex-col gap-3 border-b border-amber-700/20 pb-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-amber-500/80">Joriy vazifa</p>
                     <p className="mt-1 text-lg font-black text-amber-200">Savolga javob bering va kemani oldinga suring</p>
@@ -941,7 +941,7 @@ export default function TreasureHunt() {
                   </div>
                 </div>
 
-                <div className="relative mb-4 flex items-start justify-between gap-3">
+                <div className="relative mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <span className="inline-flex rounded-full border border-amber-700/40 bg-amber-900/50 px-3 py-1 text-sm font-bold text-amber-300">
                       {current.title}
@@ -962,7 +962,7 @@ export default function TreasureHunt() {
                   </div>
                 </div>
 
-                <h3 className="relative mb-5 text-2xl font-black leading-tight text-white md:text-3xl">
+                <h3 className="relative mb-5 text-xl font-black leading-tight text-white sm:text-2xl md:text-3xl">
                   {current.question}
                 </h3>
 

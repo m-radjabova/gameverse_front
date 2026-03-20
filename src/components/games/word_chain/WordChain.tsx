@@ -228,7 +228,7 @@ function WordChain() {
   const winner = getWinner();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-950 py-8 relative overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-950 py-5 sm:py-8">
       {/* Confetti */}
       {showConfetti && (
         <div className="fixed inset-0 pointer-events-none z-50">
@@ -251,8 +251,8 @@ function WordChain() {
 
       {/* Toast xabar */}
       {toast && (
-        <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-full shadow-2xl animate-bounce backdrop-blur-sm">
+        <div className="fixed left-1/2 top-20 z-50 w-[calc(100%-1.5rem)] max-w-sm -translate-x-1/2 sm:top-24 sm:w-auto">
+          <div className="rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2.5 text-center text-sm text-white shadow-2xl animate-bounce backdrop-blur-sm sm:rounded-full sm:px-6 sm:py-3 sm:text-base">
             {toast}
           </div>
         </div>
@@ -260,15 +260,15 @@ function WordChain() {
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 px-6 py-3 rounded-2xl border border-purple-500/30 backdrop-blur-sm mb-4">
-            <FaKeyboard className="text-purple-400 text-3xl animate-pulse" />
-            <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-purple-300 via-pink-300 to-rose-300 bg-clip-text text-transparent">
+        <div className="mb-6 text-center sm:mb-8">
+          <div className="mb-4 inline-flex flex-wrap items-center justify-center gap-3 rounded-2xl border border-purple-500/30 bg-gradient-to-r from-purple-500/20 to-pink-500/20 px-4 py-3 backdrop-blur-sm sm:px-6">
+            <FaKeyboard className="text-2xl text-purple-400 animate-pulse sm:text-3xl" />
+            <h1 className="text-3xl font-black bg-gradient-to-r from-purple-300 via-pink-300 to-rose-300 bg-clip-text text-transparent sm:text-5xl">
               SO'ZLAR BELLASHUVI
             </h1>
-            <FaKeyboard className="text-pink-400 text-3xl animate-pulse delay-300" />
+            <FaKeyboard className="text-2xl text-pink-400 animate-pulse delay-300 sm:text-3xl" />
           </div>
-          <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+          <p className="mx-auto max-w-2xl px-2 text-sm text-slate-300 sm:text-lg">
             2 jamoa navbat bilan so'z yozadi. Har bir so'z oldingi so'zning oxirgi harfi bilan boshlanishi kerak!
           </p>
         </div>
@@ -276,7 +276,7 @@ function WordChain() {
         {phase === "teacher" ? (
           /* ========== O'QITUVCHI PANELI ========== */
           <div className="max-w-4xl mx-auto">
-            <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 rounded-3xl border-2 border-purple-500/30 p-6 backdrop-blur-sm shadow-2xl">
+            <div className="rounded-3xl border-2 border-purple-500/30 bg-gradient-to-br from-slate-800/90 to-slate-900/90 p-4 shadow-2xl backdrop-blur-sm sm:p-6">
               {/* Panel Header */}
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-purple-500/30">
                 <div className="relative">
@@ -296,7 +296,7 @@ function WordChain() {
                 <label className="block text-sm font-bold text-slate-300 mb-2">
                   Yangi jamoa qo'shish
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
                   <input
                     type="text"
                     value={newTeamName}
@@ -307,7 +307,7 @@ function WordChain() {
                   />
                   <button
                     onClick={addTeam}
-                    className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:scale-105 transition-all flex items-center gap-2 shadow-lg"
+                    className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-3 font-bold text-white shadow-lg transition-all hover:scale-105"
                   >
                     <FaUsers />
                     Qo'shish
@@ -325,7 +325,7 @@ function WordChain() {
                   Jamoalar ({teams.length}/2)
                 </h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   {teams.map((team, index) => (
                     <div
                       key={team.id}
@@ -490,14 +490,14 @@ function WordChain() {
                       </div>
                     </div>
 
-                    <div className="mb-4 grid grid-cols-7 gap-2 sm:grid-cols-9">
+                    <div className="mb-4 grid grid-cols-6 gap-1.5 sm:grid-cols-7 sm:gap-2 lg:grid-cols-9">
                       {ALPHABET.map((letter) => (
                         <button
                           key={`${teamIdx}-${letter}`}
                           onClick={() => addLetter(letter)}
                           disabled={!isActive}
                           className={`
-                            h-11 rounded-lg text-sm font-black transition-all duration-200 sm:h-12 sm:text-base
+                            h-10 rounded-lg text-sm font-black transition-all duration-200 sm:h-11 sm:text-base
                             ${isActive
                               ? `bg-gradient-to-br ${colors.primary} text-white hover:-translate-y-0.5 hover:shadow-lg active:scale-95`
                               : "cursor-not-allowed bg-slate-700/90 text-slate-500"}
@@ -508,7 +508,7 @@ function WordChain() {
                       ))}
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2.5">
+                    <div className="grid grid-cols-3 gap-2">
                       <button
                         onClick={backspace}
                         disabled={!isActive}
@@ -571,7 +571,7 @@ function WordChain() {
             <div className="flex justify-center">
               <button
                 onClick={finishGame}
-                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-black hover:scale-105 transition-all flex items-center gap-2 shadow-2xl"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-3 font-black text-white shadow-2xl transition-all hover:scale-105 sm:w-auto"
               >
                 <FaTrophy />
                 O'YINNI TUGATISH
@@ -581,7 +581,7 @@ function WordChain() {
         ) : (
           /* ========== YAKUNIY NATIJALAR ========== */
           <div className="max-w-4xl mx-auto">
-            <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 rounded-3xl border-2 border-purple-500/30 p-8 backdrop-blur-sm shadow-2xl text-center">
+            <div className="rounded-3xl border-2 border-purple-500/30 bg-gradient-to-br from-slate-800/90 to-slate-900/90 p-5 text-center shadow-2xl backdrop-blur-sm sm:p-8">
               {/* G'olib */}
               <div className="relative mb-8">
                 <div className="absolute inset-0 rounded-full bg-yellow-500/30" />
@@ -590,15 +590,15 @@ function WordChain() {
                 </div>
               </div>
 
-              <h2 className="text-4xl font-black bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent mb-2">
+              <h2 className="mb-2 text-3xl font-black bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent sm:text-4xl">
                 {winner?.name} G'OLIB!
               </h2>
-              <p className="text-xl text-slate-400 mb-8">
+              <p className="mb-8 text-lg text-slate-400 sm:text-xl">
                 {winner?.score} ball to'pladi
               </p>
 
               {/* Natijalar */}
-              <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {teams.sort((a, b) => b.score - a.score).map((team, index) => (
                   <div
                     key={team.id}
@@ -636,7 +636,7 @@ function WordChain() {
               <div className="flex justify-center gap-4">
                 <button
                   onClick={resetGame}
-                  className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-black hover:scale-105 transition-all flex items-center gap-2 shadow-2xl"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-3 font-black text-white shadow-2xl transition-all hover:scale-105 sm:w-auto"
                 >
                   <FaRedo />
                   Yangi o'yin

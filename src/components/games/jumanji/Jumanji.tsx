@@ -815,8 +815,7 @@ function Jumanji() {
 
   return (
     <div
-      className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-950/90 via-amber-900/90 to-amber-950/90 p-6 backdrop-blur-xl shadow-2xl"
-      style={{ minHeight: "100vh" }}
+      className="relative min-h-[72dvh] overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-950/90 via-amber-900/90 to-amber-950/90 p-3 shadow-2xl sm:p-4 md:p-6"
     >
       {/* Animated Background */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -854,8 +853,8 @@ function Jumanji() {
 
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-gradient-to-r from-amber-600 to-yellow-600 text-white px-6 py-3 rounded-full shadow-2xl animate-bounce backdrop-blur-sm border-2 border-amber-400">
+        <div className="fixed left-1/2 top-18 z-50 w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 sm:top-24">
+          <div className="rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-amber-600 to-yellow-600 px-4 py-3 text-center text-white shadow-2xl sm:rounded-full sm:px-6">
             {toast}
           </div>
         </div>
@@ -864,7 +863,7 @@ function Jumanji() {
       {/* Mute Button */}
       <button
         onClick={toggleMute}
-        className="fixed top-6 right-6 z-50 p-3 bg-amber-900/50 border-2 border-amber-500/30 text-amber-400 rounded-xl hover:bg-amber-800/50 transition-all backdrop-blur-sm"
+        className="fixed right-3 top-3 z-50 rounded-xl border-2 border-amber-500/30 bg-amber-900/70 p-2.5 text-amber-400 transition-all hover:bg-amber-800/50 sm:right-6 sm:top-6 sm:p-3"
       >
         {isMuted ? <FaVolumeMute size={20} /> : <FaVolumeUp size={20} />}
       </button>
@@ -1169,13 +1168,13 @@ function Jumanji() {
 
         {(phase === "game" || phase === "question") && (
           /* ========== O'YIN JARAYONI ========== */
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             {/* Teams Stats */}
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
               {teams.map((team, idx) => (
                 <div
                   key={team.id}
-                  className={`relative group transform-gpu overflow-hidden rounded-xl border-2 p-5 transition-all ${
+                  className={`relative group transform-gpu overflow-hidden rounded-xl border-2 p-3 transition-all sm:p-4 lg:p-5 ${
                     team.isActive
                       ? `border-amber-400/50 bg-gradient-to-br ${TEAM_COLORS[idx].primary} scale-105 shadow-2xl`
                       : "border-amber-500/30 bg-amber-950/30"
@@ -1191,23 +1190,23 @@ function Jumanji() {
                     </div>
                   )}
 
-                  <div className="relative flex items-center gap-4 mb-3">
-                    {renderPawn(team, 40)}
+                  <div className="relative mb-2 flex items-center gap-2 sm:mb-3 sm:gap-4">
+                    {renderPawn(team, 32)}
                     <div>
-                      <h3 className="text-xl font-bold text-white">
+                      <h3 className="text-lg font-bold text-white sm:text-xl">
                         {team.name}
                       </h3>
                       <p
-                        className={`text-sm ${team.isActive ? "text-white/80" : "text-amber-300/70"}`}
+                        className={`text-xs sm:text-sm ${team.isActive ? "text-white/80" : "text-amber-300/70"}`}
                       >
                         {TEAM_TITLES[idx]}
                       </p>
                     </div>
                   </div>
 
-                  <div className="relative flex justify-between items-center mb-3">
-                    <span className="text-amber-300">SCORE</span>
-                    <span className="text-3xl font-bold text-white">
+                  <div className="relative mb-2 flex items-center justify-between sm:mb-3">
+                    <span className="text-sm text-amber-300 sm:text-base">SCORE</span>
+                    <span className="text-2xl font-bold text-white sm:text-3xl">
                       {team.score}
                     </span>
                   </div>
@@ -1225,11 +1224,11 @@ function Jumanji() {
             </div>
 
             {/* Jungle Map Board */}
-            <div className="relative group transform-gpu overflow-hidden rounded-2xl border-2 border-amber-500/30 bg-gradient-to-br from-amber-900/40 to-yellow-900/40 p-4 backdrop-blur-xl">
+            <div className="relative group transform-gpu overflow-hidden rounded-2xl border-2 border-amber-500/30 bg-gradient-to-br from-amber-900/40 to-yellow-900/40 p-3 backdrop-blur-xl sm:p-4">
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-amber-500/10 to-yellow-500/10" />
 
               <div className="relative w-full overflow-hidden rounded-xl">
-                <div className="relative aspect-[3/2] w-full">
+                <div className="relative aspect-[4/5] min-h-[540px] w-full sm:aspect-[3/2] sm:min-h-0">
                   <img
                     src={JUMANJI_MAP_IMAGE}
                     alt="Jumanji map"
@@ -1391,15 +1390,15 @@ function Jumanji() {
                   </svg>
 
                   {phase === "question" && currentQuestion && (
-                    <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4 backdrop-blur-[2px]">
-                      <div className="relative w-full max-w-4xl overflow-hidden rounded-3xl border-2 border-amber-500/30 bg-gradient-to-br from-amber-900/85 to-yellow-900/85 p-6 shadow-2xl">
+                    <div className="absolute inset-0 z-20 flex items-start justify-center overflow-y-auto bg-black/50 p-3 backdrop-blur-[2px] sm:items-center sm:p-4">
+                      <div className="relative my-3 w-full max-w-4xl overflow-hidden rounded-3xl border-2 border-amber-500/30 bg-gradient-to-br from-amber-900/90 to-yellow-900/90 p-4 shadow-2xl sm:my-0 sm:p-6">
                         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-amber-500/10 to-yellow-500/10" />
 
-                        <div className="relative mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+                        <div className="relative mb-4 grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
                           {teams.map((team) => (
                             <div
                               key={`question-score-${team.id}`}
-                              className={`rounded-xl border p-3 ${
+                              className={`rounded-xl border p-2.5 sm:p-3 ${
                                 team.isActive
                                   ? "border-amber-400/60 bg-amber-500/20"
                                   : "border-amber-500/30 bg-amber-950/30"
@@ -1408,41 +1407,41 @@ function Jumanji() {
                               <p className="truncate text-xs text-amber-200/80">
                                 {team.name}
                               </p>
-                              <p className="text-xl font-black text-white">
+                              <p className="text-lg font-black text-white sm:text-xl">
                                 {team.score}
                               </p>
                             </div>
                           ))}
                         </div>
 
-                        <div className="relative mb-6 flex items-center justify-between border-b border-amber-500/30 pb-4">
-                          <div className="flex items-center gap-4">
+                        <div className="relative mb-5 flex flex-col gap-3 border-b border-amber-500/30 pb-4 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="flex items-center gap-3 sm:gap-4">
                             <div className="relative">
                               <div className="absolute -inset-1 rounded-full bg-amber-500/30" />
-                              <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-2xl">
+                              <div className="relative flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-xl sm:h-12 sm:w-12 sm:text-2xl">
                                 {currentTile?.icon}
                               </div>
                             </div>
                             <div>
-                              <p className="text-sm text-amber-300/70">
+                              <p className="text-xs text-amber-300/70 sm:text-sm">
                                 {currentQuestion.subject}
                               </p>
-                              <h3 className="text-xl font-bold text-white">
+                              <h3 className="text-lg font-bold text-white sm:text-xl">
                                 {currentTile?.type === "boss"
                                   ? "BOSS CHALLENGE"
                                   : "THE QUESTION"}
                               </h3>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <FaClock className="text-amber-400 text-xl" />
-                            <span className="text-2xl font-bold text-white">
+                          <div className="flex items-center gap-2 self-start rounded-xl border border-amber-500/30 bg-black/15 px-3 py-2 sm:self-auto sm:gap-3">
+                            <FaClock className="text-lg text-amber-400 sm:text-xl" />
+                            <span className="text-xl font-bold text-white sm:text-2xl">
                               {timeLeft}s
                             </span>
                           </div>
                         </div>
 
-                        <h4 className="relative mb-5 text-center text-2xl font-bold text-white">
+                        <h4 className="relative mb-5 text-center text-2xl font-bold leading-tight text-white sm:text-3xl">
                           "{currentQuestion.question}"
                         </h4>
 
@@ -1453,7 +1452,7 @@ function Jumanji() {
                               onClick={() => handleAnswer(option)}
                               disabled={showResult}
                               className={`
-                                p-4 rounded-xl border-2 text-left font-bold transition-all hover:scale-[1.02]
+                                rounded-xl border-2 p-4 text-left text-base font-bold transition-all hover:scale-[1.02] sm:text-lg
                                 ${
                                   showResult &&
                                   option === currentQuestion.correctAnswer
@@ -1560,8 +1559,8 @@ function Jumanji() {
             </div>
 
             {/* Dice and Controls */}
-            <div className="flex items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+              <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:text-left">
                 {/* Realistic Dice */}
                 <div
                   className={`
@@ -1586,22 +1585,24 @@ function Jumanji() {
               </div>
 
               {/* Action Button */}
-              <button
-                onClick={rollDice}
-                disabled={isRolling || isMoving}
-                className="px-8 py-4 bg-gradient-to-r from-amber-600 to-yellow-600 text-white rounded-xl font-bold text-xl hover:scale-105 transition-all disabled:opacity-50 shadow-2xl border-2 border-amber-400/50"
-              >
-                <FaDice className="inline mr-2" />
-                ROLL DICE
-              </button>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <button
+                  onClick={rollDice}
+                  disabled={isRolling || isMoving}
+                  className="rounded-xl border-2 border-amber-400/50 bg-gradient-to-r from-amber-600 to-yellow-600 px-6 py-3.5 text-base font-bold text-white transition-all hover:scale-105 disabled:opacity-50 sm:px-8 sm:py-4 sm:text-xl"
+                >
+                  <FaDice className="mr-2 inline" />
+                  ROLL DICE
+                </button>
 
-              {/* Finish Game */}
-              <button
-                onClick={() => finishGame()}
-                className="px-6 py-4 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl font-bold text-lg hover:scale-105 transition-all shadow-2xl border-2 border-red-400/50"
-              >
-                END GAME
-              </button>
+                {/* Finish Game */}
+                <button
+                  onClick={() => finishGame()}
+                  className="rounded-xl border-2 border-red-400/50 bg-gradient-to-r from-red-600 to-rose-600 px-6 py-3.5 text-base font-bold text-white transition-all hover:scale-105 sm:text-lg"
+                >
+                  END GAME
+                </button>
+              </div>
             </div>
 
             <div className="rounded-2xl border border-amber-500/30 bg-amber-950/35 p-4">
@@ -1632,7 +1633,7 @@ function Jumanji() {
 
         {phase === "finish" && winner && (
           /* ========== YAKUNIY NATIJALAR ========== */
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 sm:items-center">
             {showConfetti && (
               <Confetti
                 mode="boom"
@@ -1644,7 +1645,7 @@ function Jumanji() {
               />
             )}
 
-            <div className="relative group flex h-full w-full flex-col justify-center transform-gpu overflow-hidden bg-gradient-to-br from-amber-900/85 via-yellow-900/80 to-amber-900/85 p-6 text-center shadow-2xl backdrop-blur-xl sm:p-10">
+            <div className="relative group flex w-full max-w-5xl flex-col justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-amber-900/85 via-yellow-900/80 to-amber-900/85 p-5 text-center shadow-2xl sm:p-10">
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10" />
 
               {/* Trophy */}
@@ -1663,7 +1664,7 @@ function Jumanji() {
               </p>
 
               {/* Results */}
-              <div className="relative grid grid-cols-2 gap-4 mb-8">
+              <div className="relative mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {teams
                   .sort((a, b) => b.score - a.score)
                   .map((team) => (

@@ -81,6 +81,8 @@ export default function GameLayout() {
   })();
 
   const showGameControls = location.pathname.startsWith("/games/") && location.pathname !== "/games";
+  const isMobileViewport =
+    typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
 
   useEffect(() => {
     const onFullscreenChange = () => {
@@ -108,6 +110,10 @@ export default function GameLayout() {
   }, []);
 
   const toggleFullscreen = async () => {
+    if (isMobileViewport) {
+      return;
+    }
+
     try {
       if (!document.fullscreenElement) {
         await document.documentElement.requestFullscreen();
@@ -128,14 +134,14 @@ export default function GameLayout() {
   };
 
   return (
-    <div className="game-layout relative min-h-screen">
+    <div className="game-layout relative min-h-screen bg-[#04111f]">
       {showGameControls && (
         <>
           {/* Left Button - Back to Games */}
           <div
             className={`fixed left-4 top-1/2 z-50 transform -translate-y-1/2 transition-all duration-300 ${
               showControls ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-full"
-            }`}
+            } hidden md:block`}
           >
             <button
               onClick={goBack}
@@ -154,7 +160,7 @@ export default function GameLayout() {
           <div
             className={`fixed right-4 top-1/2 z-50 transform -translate-y-1/2 transition-all duration-300 ${
               showControls ? "opacity-100 translate-x-0" : "opacity-100 translate-x-0"
-            }`}
+            } hidden md:block`}
           >
             <button
               onClick={toggleFullscreen}
@@ -182,32 +188,18 @@ export default function GameLayout() {
             {/* Back to Games */}
             <button
               onClick={goBack}
-              className={`group relative h-12 w-12 overflow-hidden rounded-xl ${controlTheme.button} text-white shadow-2xl transition-all hover:scale-110 active:scale-95`}
+              className={`group relative h-11 w-11 overflow-hidden rounded-xl ${controlTheme.button} text-white shadow-2xl transition-all active:scale-95`}
               aria-label="O'yinlar"
             >
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               <FaArrowLeft className="relative mx-auto text-base" />
-            </button>
-
-            {/* Fullscreen Toggle */}
-            <button
-              onClick={toggleFullscreen}
-              className={`group relative h-12 w-12 overflow-hidden rounded-xl ${controlTheme.button} text-white shadow-2xl transition-all hover:scale-110 active:scale-95`}
-              aria-label={isFullscreen ? "Chiqish" : "To'liq ekran"}
-            >
-              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-              {isFullscreen ? (
-                <MdFullscreenExit className="relative mx-auto text-base" />
-              ) : (
-                <MdFullscreen className="relative mx-auto text-base" />
-              )}
             </button>
           </div>
         </>
       )}
 
       {/* Main Content */}
-      <main className="min-h-screen">
+      <main className="min-h-[100dvh] bg-[#04111f] pb-20 md:pb-0">
         <Outlet />
       </main>
     </div>

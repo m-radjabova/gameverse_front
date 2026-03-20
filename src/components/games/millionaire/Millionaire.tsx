@@ -1014,17 +1014,17 @@ function Millionaire() {
 
         {/* Play Phase */}
         {phase === "play" && currentPlayer && (
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 h-full">
+          <div className="grid h-full grid-cols-1 gap-4 lg:gap-6 xl:grid-cols-12">
             {/* Left Side - Money Ladder */}
             <div className="xl:col-span-2">
-              <div className="bg-gradient-to-b from-[#1a2639] to-[#0f1a2f] rounded-2xl p-4 border-2 border-yellow-500/50 sticky top-4 shadow-2xl">
+              <div className="rounded-2xl border-2 border-yellow-500/50 bg-gradient-to-b from-[#1a2639] to-[#0f1a2f] p-4 shadow-2xl xl:sticky xl:top-4">
                 <h3 className="text-lg font-bold text-yellow-400 mb-4 text-center flex items-center justify-center gap-2">
                   <GiMoneyStack className="text-xl" />
                   PUL POG'ONASI
                 </h3>
                 <div
                   ref={ladderContainerRef}
-                  className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar pr-2"
+                  className="space-y-2 max-h-[min(56dvh,520px)] overflow-y-auto custom-scrollbar pr-2 xl:max-h-[calc(100dvh-200px)]"
                 >
                   {[...MONEY_LADDER].reverse().map((amount, idx) => {
                     const reversedIndex = MONEY_LADDER.length - 1 - idx;
@@ -1091,7 +1091,7 @@ function Millionaire() {
               </div>
 
               {/* Lifelines */}
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 {[
                   { 
                     name: "50/50", 
@@ -1165,11 +1165,11 @@ function Millionaire() {
                       </div>
                     </div>
 
-                    <div className="text-2xl md:text-3xl font-bold text-white mb-10 text-center leading-relaxed">
+                    <div className="mb-8 text-xl font-bold leading-relaxed text-white text-center sm:text-2xl md:text-3xl">
                       {question.text}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
                       {OPTION_KEYS.map((k) => {
                         const isDisabled = disabledOptions.includes(k) || answeringPlayerIndex === null;
                         const isSelected = selectedAnswer === k;
@@ -1179,7 +1179,7 @@ function Millionaire() {
                             key={k}
                             onClick={() => !isDisabled && chooseAnswer(k)}
                             className={`
-                              group relative p-6 rounded-xl border-2 transition-all cursor-pointer overflow-hidden
+                              group relative rounded-xl border-2 p-4 transition-all cursor-pointer overflow-hidden sm:p-6
                               ${isDisabled
                                 ? 'bg-gray-700/30 border-gray-600 opacity-50 cursor-not-allowed'
                                 : isSelected
@@ -1189,11 +1189,11 @@ function Millionaire() {
                             `}
                           >
                             <span className="absolute inset-0 bg-gradient-to-r from-yellow-500/0 via-yellow-500/10 to-yellow-500/0 transform -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                            <div className="relative flex items-center gap-4">
-                              <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-bold text-xl shadow-lg">
+                              <div className="relative flex items-center gap-3 sm:gap-4">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-yellow-500 to-amber-600 text-lg font-bold text-white shadow-lg sm:h-12 sm:w-12 sm:text-xl">
                                 {k}
                               </div>
-                              <div className="text-xl text-white">{question.options[k]}</div>
+                              <div className="text-base text-white sm:text-xl">{question.options[k]}</div>
                             </div>
                           </div>
                         );
@@ -1213,7 +1213,7 @@ function Millionaire() {
 
             {/* Right Side - Players */}
             <div className="xl:col-span-3">
-              <div className="bg-gradient-to-b from-[#1a2639] to-[#0f1a2f] rounded-2xl p-4 border-2 border-yellow-500/50 sticky top-4 shadow-2xl">
+              <div className="rounded-2xl border-2 border-yellow-500/50 bg-gradient-to-b from-[#1a2639] to-[#0f1a2f] p-4 shadow-2xl xl:sticky xl:top-4">
                 <h3 className="text-lg font-bold text-yellow-400 mb-4 text-center flex items-center justify-center gap-2">
                   <FaUsers />
                   {isSinglePlayer ? "SOLO PROFILE" : "O'YINCHILAR"}
@@ -1244,7 +1244,7 @@ function Millionaire() {
                     </div>
                   </div>
                 ) : (
-                <div className="space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar pr-2">
+                <div className="space-y-3 max-h-[min(52dvh,480px)] overflow-y-auto custom-scrollbar pr-2 xl:max-h-[calc(100dvh-300px)]">
                   {players.map((player, idx) => {
                     const alreadyAttempted = attemptedPlayerIds.has(player.id);
                     const claimDisabled =
@@ -1347,7 +1347,7 @@ function Millionaire() {
               <div className="relative">
                 <div className="text-8xl mb-8 animate-bounce">🏆</div>
 
-                <h2 className="text-5xl md:text-7xl font-black text-transparent bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-400 bg-clip-text mb-12">
+                <h2 className="mb-8 text-3xl font-black text-transparent bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-400 bg-clip-text sm:text-5xl md:mb-12 md:text-7xl">
                   {isSinglePlayer ? "SOLO NATIJA" : "O'YIN TUGADI!"}
                 </h2>
 
@@ -1390,7 +1390,7 @@ function Millionaire() {
                   <h3 className="text-sm font-bold text-yellow-400 mb-4 flex items-center justify-center gap-2">
                     <FaUsers /> {isSinglePlayer ? "SOLO STATISTIKA" : "BARCHA O'YINCHILAR"}
                   </h3>
-                  <div className={`grid gap-3 ${isSinglePlayer ? "grid-cols-1 max-w-sm mx-auto" : "grid-cols-2 md:grid-cols-5"}`}>
+                  <div className={`grid gap-3 ${isSinglePlayer ? "grid-cols-1 max-w-sm mx-auto" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-5"}`}>
                     {[...players]
                       .sort((a, b) => b.totalMoney - a.totalMoney)
                       .map((player, idx) => (

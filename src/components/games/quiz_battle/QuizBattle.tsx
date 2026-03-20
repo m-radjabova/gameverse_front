@@ -57,7 +57,7 @@ function QuizBattle() {
   const [questionError, setQuestionError] = useState("");
 
   const [current, setCurrent] = useState(0);
-  const [turn, setTurn] = useState<TeamId>(0);
+  const [answeringTeam, setAnsweringTeam] = useState<TeamId | null>(null);
   const [scores, setScores] = useState<[number, number]>([0, 0]);
   const [timeLeft, setTimeLeft] = useState(SECONDS_PER_QUESTION);
   const [locked, setLocked] = useState(false);
@@ -126,6 +126,7 @@ function QuizBattle() {
     setTimeLeft(SECONDS_PER_QUESTION);
     setLocked(false);
     setSelected(null);
+    setAnsweringTeam(null);
     setDoublePoints(Math.random() < 0.25);
   }, [current, phase]);
 
@@ -288,7 +289,6 @@ function QuizBattle() {
     setTeamNames([a, isSinglePlayer ? teamNames[1] : b]);
     setNameError("");
     setCurrent(0);
-    setTurn(0);
     setScores([0, 0]);
     setStreak([0, 0]);
     setTimeLeft(SECONDS_PER_QUESTION);
@@ -306,36 +306,34 @@ function QuizBattle() {
       setLocked(true);
       return;
     }
-    if (!isSinglePlayer) {
-      setTurn((v) => (v === 0 ? 1 : 0));
-    }
     setCurrent((v) => v + 1);
   };
 
-  const onAnswer = (idx: number) => {
+  const onAnswer = (idx: number, teamId?: TeamId) => {
     if (phase !== "play" || locked || !question) return;
+    const responder: TeamId = isSinglePlayer ? 0 : (teamId ?? 0);
     setLocked(true);
     setSelected(idx);
-
+    setAnsweringTeam(responder);
     const correct = idx === question.answerIndex;
     if (correct) {
-      const streakBonus = streak[turn] * STREAK_BONUS;
+      const streakBonus = streak[responder] * STREAK_BONUS;
       const gain = (BASE_POINTS + streakBonus) * (doublePoints ? 2 : 1);
       setScores((prev) => {
         const n: [number, number] = [...prev] as [number, number];
-        n[turn] += gain;
+        n[responder] += gain;
         return n;
       });
       setStreak((prev) => {
         const n: [number, number] = [...prev] as [number, number];
-        n[turn] += 1;
+        n[responder] += 1;
         return n;
       });
       setToast(`✅ To'g'ri! +${gain} ball ${doublePoints ? 'x2 BONUS!' : ''}`);
     } else {
       setStreak((prev) => {
         const n: [number, number] = [...prev] as [number, number];
-        n[turn] = 0;
+        n[responder] = 0;
         return n;
       });
       setToast(`❌ Xato! Javob: ${question.options[question.answerIndex]}`);
@@ -346,12 +344,12 @@ function QuizBattle() {
 
   const resetRound = () => {
     setCurrent(0);
-    setTurn(0);
     setScores([0, 0]);
     setStreak([0, 0]);
     setTimeLeft(SECONDS_PER_QUESTION);
     setLocked(false);
     setSelected(null);
+    setAnsweringTeam(null);
     setDoublePoints(false);
     setPhase("team-setup");
     setToast("🔄 Yangi o'yin boshlandi!");
@@ -362,12 +360,12 @@ function QuizBattle() {
     setQuestionError("");
     setNameError("");
     setCurrent(0);
-    setTurn(0);
     setScores([0, 0]);
     setStreak([0, 0]);
     setTimeLeft(SECONDS_PER_QUESTION);
     setLocked(false);
     setSelected(null);
+    setAnsweringTeam(null);
     setDoublePoints(false);
     setPhase("question-setup");
     setToast("🏠 Bosh sahifaga qaytdingiz");
@@ -647,7 +645,7 @@ function QuizBattle() {
           {/* Teams Score */}
           <div className={`grid gap-4 ${isSinglePlayer ? "md:grid-cols-1" : "md:grid-cols-2"}`}>
             {(isSinglePlayer ? [0] : [0, 1]).map((i) => {
-              const active = turn === i;
+              const active = isSinglePlayer ? true : answeringTeam === i;
               return (
                 <div
                   key={i}
@@ -726,47 +724,121 @@ function QuizBattle() {
             <p className="relative mb-4 text-sm text-yellow-200/80">
               {isSinglePlayer ? (
                 <>O'yinchi: <span className="font-bold text-yellow-400">{teamNames[0]}</span></>
+              ) : answeringTeam !== null ? (
+                <>Birinchi bosgan: <span className="font-bold text-yellow-400">{teamNames[answeringTeam]}</span></>
               ) : (
-                <>Navbat: <span className="font-bold text-yellow-400">{teamNames[turn]}</span></>
+                <>Tezroq bosing: <span className="font-bold text-yellow-400">kim birinchi javob tanlasa, ball o'shanga yoziladi</span></>
               )}
             </p>
 
             {/* Options */}
-            <div className="grid gap-3 sm:grid-cols-2">
-              {question.options.map((option, idx) => {
-                const isSelected = selected === idx;
-                const isCorrect = idx === question.answerIndex;
-                const reveal = locked && selected !== null;
+            {isSinglePlayer ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {question.options.map((option, idx) => {
+                  const isSelected = selected === idx;
+                  const isCorrect = idx === question.answerIndex;
+                  const reveal = locked && selected !== null;
 
-                let stateClass = 'border-yellow-500/30 bg-yellow-950/30 hover:bg-yellow-900/40';
-                if (reveal && isCorrect) {
-                  stateClass = 'border-emerald-500/50 bg-emerald-500/20';
-                } else if (reveal && isSelected && !isCorrect) {
-                  stateClass = 'border-rose-500/50 bg-rose-500/20';
-                } else if (isSelected) {
-                  stateClass = 'border-yellow-400 bg-yellow-500/30';
-                }
+                  let stateClass = "border-yellow-500/30 bg-yellow-950/30 hover:bg-yellow-900/40";
+                  if (reveal && isCorrect) {
+                    stateClass = "border-emerald-500/50 bg-emerald-500/20";
+                  } else if (reveal && isSelected && !isCorrect) {
+                    stateClass = "border-rose-500/50 bg-rose-500/20";
+                  } else if (isSelected) {
+                    stateClass = "border-yellow-400 bg-yellow-500/30";
+                  }
 
-                return (
-                  <button
-                    key={`${option}-${idx}`}
-                    onClick={() => onAnswer(idx)}
-                    disabled={locked}
-                    className={`group relative overflow-hidden rounded-xl border-2 p-4 text-left font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100 ${stateClass}`}
-                  >
-                    <span className="relative flex items-center justify-between">
-                      <span>{option}</span>
-                      {reveal && isCorrect && (
-                        <FaCheckCircle className="text-emerald-400 text-xl" />
-                      )}
-                      {reveal && isSelected && !isCorrect && (
-                        <FaTimesCircle className="text-rose-400 text-xl" />
-                      )}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+                  return (
+                    <button
+                      key={`${option}-${idx}`}
+                      onClick={() => onAnswer(idx, 0)}
+                      disabled={locked}
+                      className={`group relative overflow-hidden rounded-xl border-2 p-4 text-left font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100 ${stateClass}`}
+                    >
+                      <span className="relative flex items-center justify-between">
+                        <span>{option}</span>
+                        {reveal && isCorrect && (
+                          <FaCheckCircle className="text-emerald-400 text-xl" />
+                        )}
+                        {reveal && isSelected && !isCorrect && (
+                          <FaTimesCircle className="text-rose-400 text-xl" />
+                        )}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="grid gap-4 xl:grid-cols-2">
+                {[0, 1].map((teamId) => {
+                  const isResponder = answeringTeam === teamId;
+                  const panelTone =
+                    teamId === 0
+                      ? "border-yellow-500/30 from-yellow-900/25 to-orange-900/15"
+                      : "border-orange-500/30 from-orange-900/25 to-red-900/15";
+
+                  return (
+                    <div
+                      key={teamId}
+                      className={`rounded-2xl border bg-gradient-to-br p-4 ${panelTone} ${
+                        isResponder ? "ring-2 ring-yellow-300/40" : ""
+                      }`}
+                    >
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <div>
+                          <p className={`text-xs font-black uppercase tracking-[0.22em] ${teamId === 0 ? "text-yellow-400" : "text-orange-400"}`}>
+                            {teamId === 0 ? "1-guruh javob kartasi" : "2-guruh javob kartasi"}
+                          </p>
+                          <p className="mt-1 text-lg font-black text-white">{teamNames[teamId as TeamId]}</p>
+                        </div>
+                        <span className="rounded-full border border-white/10 bg-black/15 px-3 py-1 text-[11px] text-white/55">
+                          {locked ? (isResponder ? "Javob berdi" : "Kutmoqda") : "Bosishga tayyor"}
+                        </span>
+                      </div>
+
+                      <div className="grid gap-3">
+                        {question.options.map((option, idx) => {
+                          const isSelected = isResponder && selected === idx;
+                          const isCorrect = idx === question.answerIndex;
+                          const reveal = locked && selected !== null;
+                          const disabledForOtherTeam = locked && answeringTeam !== teamId;
+
+                          let stateClass = "border-white/10 bg-black/15 hover:bg-white/10";
+                          if (reveal && isCorrect) {
+                            stateClass = "border-emerald-500/50 bg-emerald-500/20";
+                          } else if (reveal && isSelected && !isCorrect) {
+                            stateClass = "border-rose-500/50 bg-rose-500/20";
+                          } else if (isSelected) {
+                            stateClass = "border-yellow-400 bg-yellow-500/20";
+                          } else if (disabledForOtherTeam) {
+                            stateClass = "border-white/8 bg-black/10 opacity-60";
+                          }
+
+                          return (
+                            <button
+                              key={`${teamId}-${option}-${idx}`}
+                              onClick={() => onAnswer(idx, teamId as TeamId)}
+                              disabled={locked}
+                              className={`group relative overflow-hidden rounded-xl border-2 p-4 text-left font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:hover:scale-100 ${stateClass}`}
+                            >
+                              <span className="relative flex items-center justify-between gap-3">
+                                <span>{option}</span>
+                                {reveal && isCorrect && (
+                                  <FaCheckCircle className="text-emerald-400 text-xl" />
+                                )}
+                                {reveal && isSelected && !isCorrect && (
+                                  <FaTimesCircle className="text-rose-400 text-xl" />
+                                )}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Finish Button */}

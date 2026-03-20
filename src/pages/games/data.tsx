@@ -238,7 +238,7 @@ export const gameCards = [
     path: "/games/wheel-of-fortune",
     bgPattern: "bg-gradient-to-br from-purple-600 via-pink-600 to-rose-600",
     image: wheelFortuneImg,
-    players: "1- 25 o'yinchi",
+    players: "1-20 o'yinchi",
     level: "Boshlang'ich - Professional",
     levelIcon: FaStar,
     badge: "YANGI",
