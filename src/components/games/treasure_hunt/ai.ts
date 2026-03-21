@@ -1,9 +1,10 @@
 import { generateGeminiJson, type GameDifficulty } from "../../../apiClient/gemini";
+import { getGradeRangeInstruction, getGradeRangeLabel, type GradeRange } from "../../../utils/aiGeneration";
 import type { Riddle } from "./types";
 
 type TreasureHuntGeneratedRiddle = Omit<Riddle, "id">;
 
-function buildTreasureHuntPrompt(theme: string, count: number, difficulty: GameDifficulty): string {
+function buildTreasureHuntPrompt(theme: string, count: number, difficulty: GameDifficulty, gradeRange: GradeRange): string {
   const isSingle = count === 1;
   const difficultyInstruction =
     difficulty === "easy"
@@ -29,6 +30,8 @@ function buildTreasureHuntPrompt(theme: string, count: number, difficulty: GameD
     `- Qiyinlik: ${difficulty}.`,
     `- ${difficultyInstruction}`,
     `- Mavzu: ${theme}.`,
+    `- Sinf oralig'i: ${getGradeRangeLabel(gradeRange)}.`,
+    `- ${getGradeRangeInstruction(gradeRange)}`,
     `- Soni: ${count}.`,
   ].join("\n");
 }
@@ -84,15 +87,18 @@ export async function generateTreasureHuntRiddles({
   topic,
   count,
   difficulty,
+  gradeRange,
 }: {
   topic?: string;
   count: number;
   difficulty?: GameDifficulty;
+  gradeRange?: GradeRange;
 }): Promise<TreasureHuntGeneratedRiddle[]> {
   const safeCount = Math.max(1, Math.min(20, Math.floor(count)));
-  const theme = topic?.trim() || "general knowledge";
+  const theme = topic?.trim() || "umumiy bilim";
   const safeDifficulty = difficulty ?? "medium";
-  const prompt = buildTreasureHuntPrompt(theme, safeCount, safeDifficulty);
+  const safeGradeRange = gradeRange ?? "none";
+  const prompt = buildTreasureHuntPrompt(theme, safeCount, safeDifficulty, safeGradeRange);
   const parsed = await generateGeminiJson(prompt);
   return safeCount === 1 ? [toValidatedRiddle(parsed)] : toValidatedRiddles(parsed, safeCount);
 }

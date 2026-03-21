@@ -188,9 +188,6 @@ export default function GameLeaderboardPanel({
                   To'liq leaderboard ro'yxati
                 </p>
               </div>
-              <p className="rounded-full border border-white/10 bg-black/10 px-3 py-1 text-[11px] text-white/45">
-                Scroll qilib ko'ring
-              </p>
             </div>
 
             <div className="wheel-leaderboard-scroll max-h-72 space-y-2 overflow-y-auto pr-1">

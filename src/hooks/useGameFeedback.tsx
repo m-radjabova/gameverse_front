@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "../apiClient/apiClient";
 import type { GameComment, GameRatingSummary } from "../types/types";
 import { getAccessToken } from "../utils/auth";
@@ -21,6 +22,11 @@ const toCommentsPath = (gameKey: string) =>
   `/game-feedback/${encodeURIComponent(gameKey)}/comments`;
 const toMyFeedbackPath = (gameKey: string) =>
   `/game-feedback/${encodeURIComponent(gameKey)}/my`;
+
+const gameFeedbackKeys = {
+  summary: (gameKey: string) => ["game-feedback", gameKey, "summary"] as const,
+  comments: (gameKey: string) => ["game-feedback", gameKey, "comments"] as const,
+};
 
 export async function fetchGameRatingSummary(
   gameKey: string,
@@ -65,45 +71,66 @@ export async function submitMyGameFeedback(
 }
 
 export default function useGameFeedback(gameKey: string) {
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [summary, setSummary] = useState<GameRatingSummary | null>(null);
-  const [comments, setComments] = useState<GameComment[]>([]);
+  const queryClient = useQueryClient();
+  const enabled = Boolean(gameKey);
+
+  const summaryQuery = useQuery({
+    queryKey: gameFeedbackKeys.summary(gameKey),
+    queryFn: () => fetchGameRatingSummary(gameKey),
+    enabled,
+  });
+
+  const commentsQuery = useQuery({
+    queryKey: gameFeedbackKeys.comments(gameKey),
+    queryFn: () => fetchGameComments(gameKey),
+    enabled,
+  });
 
   const reload = useCallback(async () => {
-    setLoading(true);
     const [summaryData, commentsData] = await Promise.all([
-      fetchGameRatingSummary(gameKey),
-      fetchGameComments(gameKey),
+      queryClient.fetchQuery({
+        queryKey: gameFeedbackKeys.summary(gameKey),
+        queryFn: () => fetchGameRatingSummary(gameKey),
+      }),
+      queryClient.fetchQuery({
+        queryKey: gameFeedbackKeys.comments(gameKey),
+        queryFn: () => fetchGameComments(gameKey),
+      }),
     ]);
-    setSummary(summaryData);
-    setComments(commentsData);
-    setLoading(false);
+
     return { summary: summaryData, comments: commentsData };
-  }, [gameKey]);
+  }, [gameKey, queryClient]);
+
+  const submitFeedbackMutation = useMutation({
+    mutationFn: async (payload: { rating: number; comment: string }) =>
+      submitMyGameFeedback(gameKey, payload),
+    onSuccess: async (ok) => {
+      if (!ok) {
+        return;
+      }
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: gameFeedbackKeys.summary(gameKey) }),
+        queryClient.invalidateQueries({ queryKey: gameFeedbackKeys.comments(gameKey) }),
+      ]);
+    },
+  });
 
   const submitFeedback = useCallback(
-    async (payload: { rating: number; comment: string }) => {
-      setSubmitting(true);
-      const ok = await submitMyGameFeedback(gameKey, payload);
-      if (ok) {
-        await reload();
-      }
-      setSubmitting(false);
-      return ok;
-    },
-    [gameKey, reload],
+    (payload: { rating: number; comment: string }) =>
+      submitFeedbackMutation.mutateAsync(payload),
+    [submitFeedbackMutation],
   );
 
-  useEffect(() => {
-    void reload();
-  }, [reload]);
-
   return {
-    loading,
-    submitting,
-    summary,
-    comments,
+    loading:
+      summaryQuery.isLoading ||
+      commentsQuery.isLoading ||
+      summaryQuery.isFetching ||
+      commentsQuery.isFetching,
+    submitting: submitFeedbackMutation.isPending,
+    summary: summaryQuery.data ?? null,
+    comments: commentsQuery.data ?? [],
     reload,
     submitFeedback,
   };

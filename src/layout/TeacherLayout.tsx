@@ -24,7 +24,7 @@ export default function TeacherLayout() {
           </button>
 
           <div className="text-right">
-            <div className="text-xs font-bold uppercase tracking-[0.24em] text-white/45">Teacher Panel</div>
+            <div className="text-xs font-bold uppercase tracking-[0.24em] text-white/45">O'qituvchi Paneli</div>
             <div className="text-sm font-black text-[#ffe24d]">Savollar boshqaruvi</div>
           </div>
         </div>

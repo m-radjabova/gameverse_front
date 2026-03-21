@@ -1,4 +1,5 @@
 import { generateGeminiJson, type GameDifficulty } from "../../../apiClient/gemini";
+import { getGradeRangeInstruction, getGradeRangeLabel, type GradeRange } from "../../../utils/aiGeneration";
 
 export type TruthDetectorGeneratedPack = {
   title?: string;
@@ -16,7 +17,7 @@ type TruthDetectorPackCandidate = {
   claims: TruthDetectorGeneratedPack["claims"];
 } | null;
 
-function buildTruthDetectorPrompt(topic: string, count: number, difficulty: GameDifficulty): string {
+function buildTruthDetectorPrompt(topic: string, count: number, difficulty: GameDifficulty, gradeRange: GradeRange): string {
   const difficultyInstruction =
     difficulty === "easy"
       ? "Faktlar sodda, tez tushunarli va maktab o'quvchilari uchun yengil bo'lsin."
@@ -39,6 +40,8 @@ function buildTruthDetectorPrompt(topic: string, count: number, difficulty: Game
     "- Matnlar qisqa, aniq va sinf uchun mos bo'lsin.",
     "- Factlar zararli, siyosiy yoki noaniq bo'lmasin.",
     `- Mavzu: ${topic}.`,
+    `- Sinf oralig'i: ${getGradeRangeLabel(gradeRange)}.`,
+    `- ${getGradeRangeInstruction(gradeRange)}`,
     `- Qiyinlik: ${difficulty}.`,
     `- ${difficultyInstruction}`,
     `- Soni: ${count}.`,
@@ -106,15 +109,18 @@ export async function generateTruthDetectorPacks({
   topic,
   count,
   difficulty,
+  gradeRange,
 }: {
   topic?: string;
   count: number;
   difficulty?: GameDifficulty;
+  gradeRange?: GradeRange;
 }): Promise<TruthDetectorGeneratedPack[]> {
   const safeCount = Math.max(1, Math.min(10, Math.floor(count)));
-  const safeTopic = topic?.trim() || "general knowledge";
+  const safeTopic = topic?.trim() || "umumiy bilim";
   const safeDifficulty = difficulty ?? "medium";
-  const prompt = buildTruthDetectorPrompt(safeTopic, safeCount, safeDifficulty);
+  const safeGradeRange = gradeRange ?? "none";
+  const prompt = buildTruthDetectorPrompt(safeTopic, safeCount, safeDifficulty, safeGradeRange);
   const parsed = await generateGeminiJson(prompt);
   return toValidatedTruthDetectorPacks(parsed, safeCount);
 }

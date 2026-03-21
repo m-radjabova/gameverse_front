@@ -46,6 +46,7 @@ import {
 } from "./constants/board";
 import { DEFAULT_QUESTIONS } from "./constants/questions";
 import RealisticDice from "./components/RealisticDice";
+import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
 
 const JUMANJI_GAME_KEY = "jumanji";
 const AI_QUESTION_COUNT_OPTIONS = [4, 8, 12, 16, 20, 24] as const;
@@ -85,7 +86,9 @@ function Jumanji() {
   });
   const [questionError, setQuestionError] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [aiTopic, setAiTopic] = useState("");
   const [aiSubject, setAiSubject] = useState<string>("Aralash fanlar");
+  const [aiGradeRange, setAiGradeRange] = useState<GradeRange>("none");
   const [aiQuestionCount, setAiQuestionCount] = useState<number>(8);
   const [aiDifficulty, setAiDifficulty] = useState<"easy" | "medium" | "hard" | "mixed">("medium");
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
@@ -351,8 +354,10 @@ function Jumanji() {
     try {
       const generated = await generateJumanjiQuestions({
         subject: aiSubject,
+        topic: aiTopic,
         count: aiQuestionCount,
         difficulty: aiDifficulty,
+        gradeRange: aiGradeRange,
       });
       const generatedQuestions = generated.map((item, index) => ({
           ...item,
@@ -967,6 +972,12 @@ function Jumanji() {
                     <p className="text-sm font-bold">AI SAVOL GENERATSIYASI</p>
                   </div>
                   <div className="grid gap-3 md:grid-cols-2">
+                    <textarea
+                      value={aiTopic}
+                      onChange={(e) => setAiTopic(e.target.value)}
+                      placeholder="Mavzu: kasrlar, Amir Temur, hujayra tuzilishi..."
+                      className="min-h-[92px] w-full px-4 py-2 rounded-xl border border-cyan-500/30 bg-slate-950/70 text-white placeholder-cyan-300/50 md:col-span-2"
+                    />
                     <select
                       value={aiSubject}
                       onChange={(e) => setAiSubject(e.target.value)}
@@ -975,6 +986,17 @@ function Jumanji() {
                       {AI_SUBJECT_OPTIONS.map((subject) => (
                         <option key={subject} value={subject}>
                           {subject}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={aiGradeRange}
+                      onChange={(e) => setAiGradeRange(e.target.value as GradeRange)}
+                      className="w-full px-4 py-2 rounded-xl border border-cyan-500/30 bg-slate-950/70 text-white"
+                    >
+                      {GRADE_RANGE_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
                         </option>
                       ))}
                     </select>
@@ -1009,13 +1031,8 @@ function Jumanji() {
                     </button>
                   </div>
                   <p className="mt-3 text-xs text-cyan-100/75">
-                    AI savollar mavjud ro'yxatga qo'shiladi. "Aralash fanlar" tanlansa bir nechta fanlardan savollar keladi, "Aralash" qiyinlik tanlansa easy, medium va hard savollar aralash bo'ladi.
+                    Avval mavzu kiriting, keyin fan va kerak bo'lsa sinf oralig'ini tanlang. "Aralash fanlar" tanlansa bir nechta fanlardan savollar keladi.
                   </p>
-                  {!hasGeminiKey && (
-                    <p className="mt-2 text-xs text-amber-300">
-                      AI ishlashi uchun `.env` ichida `VITE_GEMINI_API_KEY` bo'lishi kerak.
-                    </p>
-                  )}
                 </div>
 
                 <select

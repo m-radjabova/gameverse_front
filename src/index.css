@@ -262,6 +262,16 @@
   background: linear-gradient(180deg, rgba(254, 240, 138, 0.98), rgba(236, 72, 153, 0.95));
 }
 
+.teacher-games-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+}
+
+.teacher-games-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 
 @keyframes floatBall {
   0%, 100% {

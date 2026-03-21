@@ -287,7 +287,7 @@ export default function FlagBattle() {
     { value: "ALL", label: "Barchasi" }, { value: "Osiyo", label: "Osiyo" }, { value: "Yevropa", label: "Yevropa" }, { value: "Afrika", label: "Afrika" }, { value: "Shimoliy Amerika", label: "Shimoliy Amerika" }, { value: "Janubiy Amerika", label: "Janubiy Amerika" }, { value: "Okeaniya", label: "Okeaniya" },
   ];
   const difficultyOptions: Array<{ value: DifficultyFilter; label: string }> = [
-    { value: "ALL", label: "Barchasi" }, { value: "easy", label: "Easy" }, { value: "medium", label: "Medium" }, { value: "hard", label: "Hard" },
+    { value: "ALL", label: "Barchasi" }, { value: "easy", label: "Oson" }, { value: "medium", label: "O'rtacha" }, { value: "hard", label: "Qiyin" },
   ];
 
   return (
@@ -387,7 +387,7 @@ export default function FlagBattle() {
             <CountryBallCanvas
               src={currentQuestion.flag}
               alt={`${currentQuestion.country} bayrog'i`}
-              size={300}
+              size={380}
               paused={paused}
               isCorrect={locked && roundWinner !== null}
             />
@@ -411,7 +411,7 @@ export default function FlagBattle() {
                         return (
                           <button key={`${name}-${option}`} onClick={() => handleAnswer(index, option)} disabled={locked || paused || answer !== null} className={`rounded-xl border-2 p-3 text-left font-bold transition-all hover:scale-[1.02] disabled:hover:scale-100 ${selected ? (correct ? "border-emerald-500/50 bg-emerald-500/20" : "border-rose-500/50 bg-rose-500/20") : "border-white/20 bg-black/20 hover:bg-white/10"}`}>
                             <span className="flex items-center justify-between">
-                              <span className="flex items-center gap-2"><span>{optionIndex === 0 ? "A" : optionIndex === 1 ? "B" : optionIndex === 2 ? "C" : "D"}</span><span>{option}</span></span>
+                              <span className="flex items-center gap-2"><span>{optionIndex === 0 ? "A)" : optionIndex === 1 ? "B)" : optionIndex === 2 ? "C)" : "D)"}</span><span>{option}</span></span>
                               {selected && (correct ? <FaCheckCircle className="text-emerald-400" /> : <FaTimesCircle className="text-rose-400" />)}
                             </span>
                           </button>

@@ -172,15 +172,16 @@ export default function CountryBallCanvas({
             const blinkWave = paused ? -1 : (Math.sin(elapsed * 3.2) + 1) / 2;
 const eyeScaleY = 0.12 + (1 - Math.pow(blinkWave, 14)) * 0.88;
 
-      const ballSize = size * 0.61;
+      const ballSize = size * 0.75;
       const ballX = (cssWidth - ballSize) / 2;
-      const ballY = cssHeight * 0.04 + idleFloat - jumpOffset;
+      const ballY = cssHeight * 0.015 + idleFloat - jumpOffset;
       const centerX = ballX + ballSize / 2;
       const centerY = ballY + ballSize / 2;
-      const bodyMaskScale = 1.81;
-      const bodyMaskSize = ballSize * bodyMaskScale;
-      const bodyMaskX = centerX - bodyMaskSize / 2;
-      const bodyMaskY = centerY - bodyMaskSize / 2 - ballSize * 0.36;
+      const bodyMaskScale = 1.85;
+      const bodyMaskWidth = ballSize * bodyMaskScale;
+      const bodyMaskHeight = ballSize * bodyMaskScale;
+      const bodyMaskX = centerX - bodyMaskWidth / 2;
+      const bodyMaskY = centerY - bodyMaskHeight / 2 - ballSize * 0.35;
 
       const downMaskWidth = ballSize * 0.64;
       const downMaskHeight = ballSize * 0.26;
@@ -227,7 +228,7 @@ const eyeScaleY = 0.12 + (1 - Math.pow(blinkWave, 14)) * 0.88;
       ctx.clip();
 
       if (flag) {
-        drawImageCover(ctx, flag, ballX, ballY, ballSize, ballSize, 1.04);
+        drawImageCover(ctx, flag, ballX, ballY, ballSize, ballSize, 1.09);
       } else {
         ctx.fillStyle = "#334155";
         ctx.fillRect(ballX, ballY, ballSize, ballSize);
@@ -274,37 +275,43 @@ const eyeScaleY = 0.12 + (1 - Math.pow(blinkWave, 14)) * 0.88;
       ctx.restore();
 
       if (bodyMask) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, ballSize / 2, 0, TAU);
+        ctx.clip();
+        ctx.globalAlpha = 0.94;
         ctx.drawImage(
           bodyMask,
           bodyMaskX,
           bodyMaskY,
-          bodyMaskSize,
-          bodyMaskSize,
+          bodyMaskWidth,
+          bodyMaskHeight,
         );
+        ctx.restore();
       }
 
             if (eye) {
-        const leftEyeWidth = ballSize * 0.19;
-        const leftEyeHeight = ballSize * 0.13 * eyeScaleY;
-        const rightEyeWidth = ballSize * 0.16;
-        const rightEyeHeight = ballSize * 0.11 * eyeScaleY;
-        const eyeLift = ballSize * 0.04;
-        const eyeSpacing = ballSize * 0.12;
+        const leftEyeWidth = ballSize * 0.25;
+        const leftEyeHeight = ballSize * 0.17 * eyeScaleY;
+        const rightEyeWidth = ballSize * 0.22;
+        const rightEyeHeight = ballSize * 0.15 * eyeScaleY;
+        const eyeLift = ballSize * 0.055;
+        const eyeSpacing = ballSize * 0.135;
 
         const leftEyeXBase = centerX - eyeSpacing - leftEyeWidth / 2;
         const rightEyeXBase = centerX + eyeSpacing - rightEyeWidth / 2;
 
         const leftEyeYBase =
           ballY +
-          ballSize * 0.455 -
+          ballSize * 0.432 -
           eyeLift +
-          (ballSize * 0.13 - leftEyeHeight) / 2;
+          (ballSize * 0.17 - leftEyeHeight) / 2;
 
         const rightEyeYBase =
           ballY +
-          ballSize * 0.465 -
+          ballSize * 0.44 -
           eyeLift +
-          (ballSize * 0.11 - rightEyeHeight) / 2;
+          (ballSize * 0.15 - rightEyeHeight) / 2;
 
         // Realistik eye movement:
         // mayin micro movement + sekinroq qarash harakati

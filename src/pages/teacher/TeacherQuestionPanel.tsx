@@ -28,6 +28,8 @@ import { generateTeacherPanelQuestions, type SupportedTeacherGameKey } from "./t
 import type { GameDifficulty } from "../../apiClient/gemini";
 import useContextPro from "../../hooks/useContextPro";
 import useGameQuestions from "../../hooks/useGameQuestions";
+import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../utils/aiGeneration";
+import { gameCards } from "../games/data";
 
 type GameRegistryItem = {
   gameKey: string;
@@ -40,7 +42,9 @@ type GameRegistryItem = {
   description?: string;
 };
 
-const GAME_REGISTRY: GameRegistryItem[] = [
+type EditorMode = "manual" | "ai";
+
+const RAW_GAME_REGISTRY: GameRegistryItem[] = [
   {
     gameKey: "quiz_battle",
     title: "Quiz Battle",
@@ -160,6 +164,19 @@ const GAME_REGISTRY: GameRegistryItem[] = [
     description: "Teskari fikrlash",
   },
 ];
+
+const GAME_CARD_META = new Map(
+  gameCards.map((card) => [card.id.replaceAll("-", "_"), { title: card.title, description: card.description }]),
+);
+
+const GAME_REGISTRY: GameRegistryItem[] = RAW_GAME_REGISTRY.map((game) => {
+  const localizedMeta = GAME_CARD_META.get(game.gameKey);
+  return {
+    ...game,
+    title: localizedMeta?.title ?? game.title,
+    description: localizedMeta?.description ?? game.description,
+  };
+});
 
 function createId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -611,9 +628,6 @@ function SpecializedEditor({
         {"answer" in value && (
           <FormField label="answer" value={value.answer} path={["answer"]} onChange={onChange} icon={<FaCheck />} />
         )}
-        {"id" in value && (
-          <FormField label="id" value={value.id} path={["id"]} onChange={onChange} icon={<FaRobot />} />
-        )}
       </div>
     );
   }
@@ -649,9 +663,6 @@ function SpecializedEditor({
         {"correct" in value && (
           <FormField label="correct" value={value.correct} path={["correct"]} onChange={onChange} icon={<FaCheck />} />
         )}
-        {"id" in value && (
-          <FormField label="id" value={value.id} path={["id"]} onChange={onChange} icon={<FaRobot />} />
-        )}
       </div>
     );
   }
@@ -666,9 +677,6 @@ function SpecializedEditor({
           <FormField label="difficulty" value={value.difficulty} path={["difficulty"]} onChange={onChange} icon={<FaStar />} />
         )}
         <TruthClaimsEditor claims={value.claims as Array<{ text?: unknown; truth?: unknown }>} path={["claims"]} onChange={onChange} />
-        {"id" in value && (
-          <FormField label="id" value={value.id} path={["id"]} onChange={onChange} icon={<FaRobot />} />
-        )}
       </div>
     );
   }
@@ -694,9 +702,6 @@ function SpecializedEditor({
         )}
         {"points" in value && (
           <FormField label="points" value={value.points} path={["points"]} onChange={onChange} icon={<FaStar />} />
-        )}
-        {"id" in value && (
-          <FormField label="id" value={value.id} path={["id"]} onChange={onChange} icon={<FaRobot />} />
         )}
       </div>
     );
@@ -915,7 +920,9 @@ export default function TeacherQuestionPanel() {
   const [editorError, setEditorError] = useState("");
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [showExtraFields, setShowExtraFields] = useState(false);
+  const [editorMode, setEditorMode] = useState<EditorMode>("manual");
   const [aiTopic, setAiTopic] = useState("");
+  const [aiGradeRange, setAiGradeRange] = useState<GradeRange>("none");
   const [aiCount, setAiCount] = useState<(typeof AI_COUNT_OPTIONS)[number]>(5);
   const [aiDifficulty, setAiDifficulty] = useState<GameDifficulty>("mixed");
   const {
@@ -1027,19 +1034,29 @@ export default function TeacherQuestionPanel() {
         topic: aiTopic,
         count: aiCount,
         difficulty: aiDifficulty,
+        gradeRange: aiGradeRange,
       });
 
       const nextItems = [...generated.map((item) => withIdFallback(item)), ...activeItems];
       const ok = await persistGameItems(activeGame.gameKey, nextItems);
       if (!ok) return;
 
-      setSelectedIndex(null);
+      setSelectedIndex(0);
       setDraftValue(withIdFallback(generated[0] ?? activeGame.template));
+      setEditorMode("manual");
     } catch (error) {
       setEditorError(error instanceof Error ? error.message : "AI savol yaratishda xato bo'ldi.");
     } finally {
       setIsGeneratingAi(false);
     }
+  }
+
+  function handleSelectGame(gameKey: string) {
+    setActiveGameKey(gameKey);
+    setSelectedIndex(null);
+    setSearch("");
+    setEditorMode("manual");
+    void loadQuestions(gameKey, { teacherScoped: true });
   }
 
   return (
@@ -1068,7 +1085,6 @@ export default function TeacherQuestionPanel() {
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-light leading-tight">
                 <span className="text-[#7b4f53]">Savollar Markazi</span>
-                
               </h1>
               <p className="mt-4 max-w-2xl text-sm text-[#8f6d70]">
                 Barcha o'yinlar uchun savollarni yarating, tahrirlang va boshqaring
@@ -1109,267 +1125,357 @@ export default function TeacherQuestionPanel() {
           </div>
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid gap-6 xl:grid-cols-[340px_minmax(0,1fr)_440px]">
-          
-          {/* Games Sidebar */}
-          <aside className="space-y-2">
-            {GAME_REGISTRY.map((game) => {
-              const count = questionsByGame[game.gameKey]?.length ?? 0;
-              const active = game.gameKey === activeGameKey;
-              return (
-                <button
-                  key={game.gameKey}
-                  type="button"
-                  onClick={() => {
-                    setActiveGameKey(game.gameKey);
-                    setSelectedIndex(null);
-                    setSearch("");
-                    void loadQuestions(game.gameKey, { teacherScoped: true });
-                  }}
-                  className={`w-full overflow-hidden rounded-2xl border p-4 text-left transition-all duration-200 ${
-                    active 
-                      ? "border-[#e07c8e] bg-gradient-to-r from-[#fceae8] to-[#ffe1de] shadow-md" 
-                      : "border-[#f0d9d6] bg-white/70 hover:bg-white/90"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
-                      <div className={`inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${game.accent} text-2xl text-white shadow-md`}>
-                        {game.emoji}
-                      </div>
-                      <div>
-                        <h3 className="text-base font-medium text-[#7b4f53]">{game.title}</h3>
-                        <p className="mt-0.5 text-[10px] text-[#b38b8d]">{game.description}</p>
-                      </div>
-                    </div>
-                    <div className="rounded-lg border border-[#f0d9d6] bg-white/90 px-2 py-1 text-center">
-                      <div className="text-[8px] font-medium text-[#b38b8d]">Savol</div>
-                      <div className="text-sm font-medium text-[#7b4f53]">{count}</div>
-                    </div>
-                  </div>
-                  <div className={`mt-3 rounded-lg border px-2 py-1 text-[8px] font-medium uppercase tracking-wider ${game.bg} border-[#f0d9d6] text-[#7b4f53]`}>
-                    {game.gameKey}
-                  </div>
-                </button>
-              );
-            })}
-          </aside>
-
-          {/* Questions List Section */}
-          <section className="rounded-3xl border border-[#f0d9d6] bg-white/70 p-6 shadow-xl backdrop-blur-xl">
-            {activeGame ? (
-              <>
-            <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <div className="text-[10px] font-medium uppercase tracking-wider text-[#b38b8d]">Tanlangan O'yin</div>
-                <div className="mt-2 flex items-center gap-3">
-                  <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${activeGame.accent} text-xl text-white shadow-md`}>
-                    {activeGame.emoji}
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-medium text-[#7b4f53]">{activeGame.title}</h2>
-                    <p className="text-[10px] text-[#b38b8d]">{activeItems.length} ta savol</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <div className="relative ">
-                  <FaSearch className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#b38b8d]" />
-                  <input
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                    placeholder="Savol qidiring..."
-                    className="w-full rounded-xl border border-[#f0d9d6] bg-white/80 py-2.5 pl-9 pr-3 text-xs text-[#7b4f53] placeholder:text-[#b38b8d] outline-none focus:border-[#e07c8e] focus:shadow-[0_0_0_3px_rgba(224,124,142,0.1)]"
-                  />
-                </div>
-                <Link
-                  to={activeGame.path}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#f0d9d6] bg-white/80 px-4 py-2.5 text-xs font-medium text-[#7b4f53] transition-all hover:bg-white hover:border-[#e07c8e]"
-                >
-                  O'yinga o'tish
-                  <FaArrowRight className="h-3 w-3" />
-                </Link>
-              </div>
+        <section className="mb-6 overflow-hidden rounded-3xl border border-[#f0d9d6] bg-white/70 p-5 shadow-xl backdrop-blur-xl sm:p-6">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#b38b8d]">O'yinlar</p>
+              <h2 className="mt-1 text-lg font-medium text-[#7b4f53]">Kerakli o'yinni tanlang</h2>
             </div>
+          </div>
 
-            <div className="space-y-2 pr-1">
-              {filteredItems.map(({ item, index: realIndex }) => {
-                const meta = extractMeta(item);
-                const selected = selectedIndex === realIndex;
-
+          <div className="teacher-games-scroll -mx-1 overflow-x-auto pb-2">
+            <div className="flex min-w-max gap-3 px-1">
+              {GAME_REGISTRY.map((game) => {
+                const count = questionsByGame[game.gameKey]?.length ?? 0;
+                const active = game.gameKey === activeGameKey;
                 return (
-                  <div
-                    key={typeof (item as { id?: unknown })?.id === "string" ? String((item as { id?: unknown }).id) : `${activeGame.gameKey}-${realIndex}`}
-                    className={`rounded-xl border p-3 transition-all duration-200 ${
-                      selected 
-                        ? "border-[#e07c8e] bg-gradient-to-r from-[#fceae8] to-[#ffe1de]" 
-                        : "border-[#f0d9d6] bg-white/80 hover:bg-white/90"
+                  <button
+                    key={game.gameKey}
+                    type="button"
+                    onClick={() => handleSelectGame(game.gameKey)}
+                    className={`group relative min-h-[168px] w-[220px] flex-shrink-0 overflow-hidden rounded-[28px] border p-4 text-left transition-all duration-300 ${
+                      active
+                        ? "border-[#e07c8e] bg-gradient-to-br from-[#fff5f3] via-[#ffe6e2] to-[#fbd8d6] shadow-[0_18px_40px_rgba(166,100,102,0.18)]"
+                        : "border-[#f0d9d6] bg-white/85 hover:-translate-y-1 hover:border-[#e07c8e]/50 hover:bg-white"
                     }`}
                   >
-                    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                      <div className="flex-1">
-                        <div className="mb-2 flex flex-wrap items-center gap-1.5">
-                          <span className="rounded-full border border-[#f0d9d6] bg-white/90 px-2 py-0.5 text-[8px] font-medium text-[#b38b8d]">
-                            #{realIndex + 1}
-                          </span>
-                          {meta.map((badge) => {
-                            const color = DIFFICULTY_LABELS[badge] ? DIFFICULTY_COLORS?.[badge] : "from-gray-200 to-gray-300";
-                            return (
-                              <span 
-                                key={badge} 
-                                className={`rounded-full border border-[#f0d9d6] bg-gradient-to-r ${color}/10 px-2 py-0.5 text-[8px] font-medium text-[#7b4f53]`}
-                              >
-                                {DIFFICULTY_LABELS[badge] || badge}
-                              </span>
-                            );
-                          })}
+                    <div
+                      className={`absolute inset-x-6 top-0 h-20 rounded-b-full bg-gradient-to-r ${game.accent} blur-2xl ${
+                        active ? "opacity-20" : "opacity-10"
+                      }`}
+                    />
+                    <div className="relative flex h-full flex-col">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${game.accent} text-2xl text-white shadow-md`}>
+                          {game.emoji}
                         </div>
-                        <p className="text-xs font-medium leading-5 text-[#7b4f53]">
-                          {summarizeQuestion(item)}
-                        </p>
+                        <div className={`rounded-xl border px-2.5 py-1 text-center ${active ? "border-[#e7b8b0] bg-white text-[#7b4f53]" : "border-[#f0d9d6] bg-white/90 text-[#8f6d70]"}`}>
+                          <div className="text-[8px] font-medium uppercase tracking-wider">Savol</div>
+                          <div className="text-sm font-medium">{count}</div>
+                        </div>
                       </div>
-
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedIndex(realIndex)}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-[#e07c8e]/30 bg-[#fceae8] px-3 py-1.5 text-[9px] font-medium text-[#e07c8e] transition-all hover:bg-[#e07c8e] hover:text-white"
-                        >
-                          <FaEdit className="h-2.5 w-2.5" />
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => void handleDelete(realIndex)}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-[9px] font-medium text-rose-600 transition-all hover:bg-rose-600 hover:text-white"
-                        >
-                          <FaTrash className="h-2.5 w-2.5" />
-                          Delete
-                        </button>
+                      <div className="mt-4 flex-1">
+                        <h3 className="text-sm font-semibold text-[#7b4f53]">{game.title}</h3>
+                        <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-[#8f6d70]">{game.description}</p>
+                      </div>
+                      <div className="mt-4 flex items-center justify-between">
+                        <span className={`rounded-full border px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.18em] ${game.bg} border-[#f0d9d6] text-[#7b4f53]`}>
+                          {game.title}
+                        </span>
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-medium ${active ? "text-[#a66466]" : "text-[#b38b8d]"}`}>
+                          Ochish
+                          <FaChevronRight className={`h-2.5 w-2.5 transition-transform ${active ? "translate-x-0.5" : ""}`} />
+                        </span>
                       </div>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
-
-              {!loading && filteredItems.length === 0 && (
-                <div className="rounded-xl border border-dashed border-[#f0d9d6] bg-white/80 p-8 text-center">
-                  <p className="text-xs text-[#b38b8d]">
-                    {loadedByGame[activeGame.gameKey]
-                      ? "Bu o'yinda hozircha savol topilmadi."
-                      : "Savollarni ko'rish uchun chap tomondan o'yinni tanlang."}
-                  </p>
-                </div>
-              )}
             </div>
+          </div>
+        </section>
+
+        <div className="grid gap-6 xl:grid-cols-2">
+          <section className="rounded-3xl border border-[#f0d9d6] bg-white/70 p-5 shadow-xl backdrop-blur-xl sm:p-6">
+            {activeGame ? (
+              <>
+                <div className="mb-6 rounded-[28px] border border-[#f0d9d6] bg-gradient-to-r from-white via-[#fff7f5] to-[#ffeae6] p-4 sm:p-5">
+                  <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                    <div className="flex items-start gap-3">
+                      <div className={`inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${activeGame.accent} text-2xl text-white shadow-md`}>
+                        {activeGame.emoji}
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#b38b8d]">Tanlangan o'yin</div>
+                        <h2 className="mt-1 text-xl font-medium text-[#7b4f53]">{activeGame.title}</h2>
+                        <p className="mt-1 text-xs text-[#8f6d70]">
+                          {activeItems.length} ta savol. Kerakli savolni chap ro'yxatdan tanlang, o'ng tomonda tahrir qiling.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <div className="relative min-w-[220px] flex-1">
+                        <FaSearch className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#b38b8d]" />
+                        <input
+                          value={search}
+                          onChange={(event) => setSearch(event.target.value)}
+                          placeholder="Savol qidiring..."
+                          className="w-full rounded-xl border border-[#f0d9d6] bg-white/90 py-2.5 pl-9 pr-3 text-xs text-[#7b4f53] placeholder:text-[#b38b8d] outline-none focus:border-[#e07c8e] focus:shadow-[0_0_0_3px_rgba(224,124,142,0.1)]"
+                        />
+                      </div>
+                      <Link
+                        to={activeGame.path}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#f0d9d6] bg-white/90 px-4 py-2.5 text-xs font-medium text-[#7b4f53] transition-all hover:border-[#e07c8e] hover:bg-white"
+                      >
+                        O'yinga o'tish
+                        <FaArrowRight className="h-3 w-3" />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-4 flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedIndex(null);
+                      setEditorMode("manual");
+                    }}
+                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium transition-all ${
+                      selectedIndex === null
+                        ? "border-[#e07c8e] bg-gradient-to-r from-[#e07c8e] to-[#a66466] text-white shadow-md"
+                        : "border-[#f0d9d6] bg-white/80 text-[#7b4f53] hover:border-[#e07c8e]"
+                    }`}
+                  >
+                    <FaPlus className="h-3 w-3" />
+                    Yangi savol
+                  </button>
+                  <div className="rounded-full border border-[#f0d9d6] bg-white/80 px-3 py-2 text-[11px] text-[#8f6d70]">
+                    {filteredItems.length} / {activeItems.length} ko'rsatilmoqda
+                  </div>
+                </div>
+
+                <div className="space-y-3 pr-1">
+                  {filteredItems.map(({ item, index: realIndex }) => {
+                    const meta = extractMeta(item);
+                    const selected = selectedIndex === realIndex;
+
+                    return (
+                      <button
+                        key={typeof (item as { id?: unknown })?.id === "string" ? String((item as { id?: unknown }).id) : `${activeGame.gameKey}-${realIndex}`}
+                        type="button"
+                        onClick={() => {
+                          setSelectedIndex(realIndex);
+                          setEditorMode("manual");
+                        }}
+                        className={`w-full rounded-2xl border p-4 text-left transition-all duration-200 ${
+                          selected
+                            ? "border-[#e07c8e] bg-gradient-to-r from-[#fceae8] to-[#ffe1de] shadow-md"
+                            : "border-[#f0d9d6] bg-white/85 hover:border-[#e07c8e]/40 hover:bg-white"
+                        }`}
+                      >
+                        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                          <div className="flex-1">
+                            <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                              <span className="rounded-full border border-[#f0d9d6] bg-white/90 px-2 py-0.5 text-[8px] font-medium text-[#b38b8d]">
+                                #{realIndex + 1}
+                              </span>
+                              {meta.map((badge) => {
+                                const color = DIFFICULTY_LABELS[badge] ? DIFFICULTY_COLORS?.[badge] : "from-gray-200 to-gray-300";
+                                return (
+                                  <span
+                                    key={badge}
+                                    className={`rounded-full border border-[#f0d9d6] bg-gradient-to-r ${color}/10 px-2 py-0.5 text-[8px] font-medium text-[#7b4f53]`}
+                                  >
+                                    {DIFFICULTY_LABELS[badge] || badge}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                            <p className="text-sm font-medium leading-6 text-[#7b4f53]">{summarizeQuestion(item)}</p>
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            <span
+                              className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[10px] font-medium ${
+                                selected
+                                  ? "border-[#e07c8e]/40 bg-white/90 text-[#a66466]"
+                                  : "border-[#f0d9d6] bg-white/90 text-[#8f6d70]"
+                              }`}
+                            >
+                              <FaEdit className="h-2.5 w-2.5" />
+                              {selected ? "Tahrirlanmoqda" : "Tanlash"}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                void handleDelete(realIndex);
+                              }}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-[10px] font-medium text-rose-600 transition-all hover:bg-rose-600 hover:text-white"
+                            >
+                              <FaTrash className="h-2.5 w-2.5" />
+                              O'chirish
+                            </button>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+
+                  {!loading && filteredItems.length === 0 && (
+                    <div className="rounded-2xl border border-dashed border-[#f0d9d6] bg-white/80 p-10 text-center">
+                      <p className="text-sm font-medium text-[#7b4f53]">
+                        {loadedByGame[activeGame.gameKey] ? "Savol topilmadi" : "Savollar hali yuklanmagan"}
+                      </p>
+                      <p className="mt-2 text-xs text-[#b38b8d]">
+                        {loadedByGame[activeGame.gameKey]
+                          ? "Qidiruvni o'zgartiring yoki yangi savol qo'shing."
+                          : "O'yin tanlanganda savollar shu yerda chiqadi."}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
-              <div className="flex min-h-[420px] items-center justify-center rounded-2xl border border-dashed border-[#f0d9d6] bg-white/60 text-center">
-                <div>
-                  <p className="text-sm font-medium text-[#7b4f53]">Avval o'yinni tanlang</p>
-                  <p className="mt-2 text-xs text-[#b38b8d]">
-                    Qaysi o'yin ustiga bossangiz, savollar o'sha paytda yuklanadi.
+              <div className="flex min-h-[520px] items-center justify-center rounded-2xl border border-dashed border-[#f0d9d6] bg-white/60 text-center">
+                <div className="max-w-md">
+                  <p className="text-lg font-medium text-[#7b4f53]">Avval tepada o'yinni tanlang</p>
+                  <p className="mt-2 text-sm text-[#b38b8d]">
+                    O'yin ustiga bosilganda chap tomonda savollar, o'ng tomonda esa qo'shish va AI paneli ochiladi.
                   </p>
                 </div>
               </div>
             )}
           </section>
 
-          {/* Editor Section */}
-          <aside className="rounded-3xl border border-[#f0d9d6] bg-white/70 p-6 shadow-xl backdrop-blur-xl">
+          <aside className="rounded-3xl border border-[#f0d9d6] bg-white/70 p-5 shadow-xl backdrop-blur-xl sm:p-6 xl:sticky xl:top-6 xl:self-start">
             {activeGame ? (
               <>
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4 flex items-start justify-between gap-3">
               <div>
-                <div className="text-[10px] font-medium uppercase tracking-wider text-[#b38b8d]">Savol Tahrirlash</div>
+                <div className="text-[10px] font-medium uppercase tracking-wider text-[#b38b8d]">Savol boshqaruvi</div>
                 <h3 className="mt-1 text-lg font-medium text-[#7b4f53]">
-                  {selectedIndex === null ? "Yangi savol" : `Savol #${selectedIndex + 1}`}
+                  {editorMode === "manual"
+                    ? selectedIndex === null
+                      ? "Qo'lda qo'shish"
+                      : `Savol #${selectedIndex + 1}`
+                    : "Sun'iy intellekt bilan yaratish"}
                 </h3>
               </div>
+              <div className="rounded-full border border-[#f0d9d6] bg-gradient-to-r from-[#fceae8] to-[#ffe1de] px-3 py-1.5 text-[10px] font-medium text-[#7b4f53]">
+                {activeGame.title}
+              </div>
+            </div>
+
+            <div className="mb-4 grid grid-cols-2 gap-2 rounded-[24px] border border-[#f0d9d6] bg-gradient-to-r from-[#fff8f6] via-white to-[#fff1ee] p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
               <button
                 type="button"
-                onClick={() => setSelectedIndex(null)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#e07c8e]/30 bg-[#fceae8] px-3 py-1.5 text-[9px] font-medium text-[#e07c8e] transition-all hover:bg-[#e07c8e] hover:text-white"
+                onClick={() => setEditorMode("manual")}
+                className={`inline-flex flex-col items-center justify-center gap-1 rounded-[18px] px-3 py-3 text-center transition-all ${
+                  editorMode === "manual"
+                    ? "bg-gradient-to-br from-[#e07c8e] via-[#d67687] to-[#a66466] text-white shadow-[0_12px_24px_rgba(166,100,102,0.24)]"
+                    : "text-[#8f6d70] hover:bg-white/90"
+                }`}
               >
-                <FaPlus className="h-2.5 w-2.5" />
-                Yangi
+                <FaEdit className="h-3.5 w-3.5" />
+                <span className="text-xs font-semibold">Qo'lda</span>
+                <span className={`text-[9px] leading-3 ${editorMode === "manual" ? "text-white/80" : "text-[#b38b8d]"}`}>
+                  O'zingiz kiritasiz
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditorMode("ai")}
+                className={`inline-flex flex-col items-center justify-center gap-1 rounded-[18px] px-3 py-3 text-center transition-all ${
+                  editorMode === "ai"
+                    ? "bg-gradient-to-br from-[#7b4f53] via-[#946163] to-[#c17b73] text-white shadow-[0_12px_24px_rgba(123,79,83,0.26)]"
+                    : "text-[#8f6d70] hover:bg-white/90"
+                }`}
+              >
+                <MdAutoAwesome className="h-3.5 w-3.5" />
+                <span className="text-xs font-semibold">AI yaratish</span>
+                <span className={`text-[9px] leading-3 ${editorMode === "ai" ? "text-white/80" : "text-[#b38b8d]"}`}>
+                  Tez savol tayyorlaydi
+                </span>
               </button>
             </div>
 
-            <div className="mb-4 rounded-xl border border-[#f0d9d6] bg-white/80 p-3 text-[10px] leading-5 text-[#b38b8d]">
-              <MdAutoAwesome className="mb-1 h-3.5 w-3.5 text-[#e07c8e]" />
-              Har bir o'yin uchun maxsus maydonlar avtomatik tarzda ko'rsatiladi
-            </div>
-
-            <div className="mb-4 rounded-lg border border-[#f0d9d6] bg-gradient-to-r from-[#fceae8] to-[#ffe1de] px-3 py-1.5 text-xs font-medium text-[#7b4f53]">
-              {activeGame.gameKey}
-            </div>
-
-            <div className="mb-4 rounded-2xl border border-[#f0d9d6] bg-gradient-to-br from-[#fff7f5] to-white p-4 shadow-sm">
-              <div className="mb-3 flex items-start gap-3">
-                <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#e07c8e] to-[#a66466] text-white shadow-md">
-                  <FaRobot className="h-4 w-4" />
+            {editorMode === "ai" ? (
+              <div className="space-y-4 rounded-2xl border border-[#f0d9d6] bg-gradient-to-br from-[#fff7f5] via-white to-[#fff2ef] p-4 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#7b4f53] to-[#a66466] text-white shadow-md">
+                    <MdAutoAwesome className={`h-4 w-4 ${isGeneratingAi ? "animate-spin" : ""}`} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#b38b8d]">AI yordamchisi</p>
+                    <h4 className="mt-1 text-sm font-medium text-[#7b4f53]">{aiPanelContent.heading}</h4>
+                    <p className="mt-1 text-[10px] leading-4 text-[#8f6d70]">{aiPanelContent.description}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#b38b8d]">AI Generator</p>
-                  <h4 className="text-sm font-medium text-[#7b4f53]">{aiPanelContent.heading}</h4>
-                  <p className="mt-1 text-[10px] leading-4 text-[#8f6d70]">
-                    {aiPanelContent.description}
-                  </p>
-                </div>
-              </div>
 
-              <div className="space-y-3">
                 <label className="block space-y-2">
                   <span className="text-[10px] font-medium uppercase tracking-wider text-[#8f6d70]">{aiPanelContent.topicLabel}</span>
-                  <input
+                  <textarea
                     value={aiTopic}
                     onChange={(event) => setAiTopic(event.target.value)}
                     placeholder={aiPanelContent.topicPlaceholder}
+                    rows={3}
                     className="w-full rounded-xl border border-[#f0d9d6] bg-white/90 px-4 py-3 text-sm text-[#7b4f53] placeholder:text-[#b38b8d] outline-none transition-all duration-200 focus:border-[#e07c8e] focus:shadow-[0_0_0_3px_rgba(224,124,142,0.1)]"
                   />
                 </label>
 
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-3">
                   <div className="space-y-2">
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-[#8f6d70]">Savollar soni</span>
-                    <div className="grid grid-cols-3 gap-2">
-                      {AI_COUNT_OPTIONS.map((count) => (
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-[#8f6d70]">Sinf oralig'i</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {GRADE_RANGE_OPTIONS.map((option) => (
                         <button
-                          key={count}
+                          key={option.value}
                           type="button"
-                          onClick={() => setAiCount(count)}
+                          onClick={() => setAiGradeRange(option.value)}
                           className={`rounded-xl px-3 py-2 text-xs font-medium transition-all ${
-                            aiCount === count
+                            aiGradeRange === option.value
                               ? "bg-gradient-to-r from-[#e07c8e] to-[#a66466] text-white shadow-md"
                               : "border border-[#f0d9d6] bg-white/80 text-[#7b4f53] hover:border-[#e07c8e]"
                           }`}
                         >
-                          {count} ta
+                          {option.label}
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-[#8f6d70]">Qiyinlik</span>
-                    <div className="grid grid-cols-2 gap-2">
-                      {Object.entries(DIFFICULTY_LABELS).map(([value, label]) => (
-                        <button
-                          key={value}
-                          type="button"
-                          onClick={() => setAiDifficulty(value as GameDifficulty)}
-                          className={`rounded-xl px-3 py-2 text-xs font-medium transition-all ${
-                            aiDifficulty === value
-                              ? "bg-gradient-to-r from-[#e07c8e] to-[#a66466] text-white shadow-md"
-                              : "border border-[#f0d9d6] bg-white/80 text-[#7b4f53] hover:border-[#e07c8e]"
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      ))}
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-medium uppercase tracking-wider text-[#8f6d70]">Savollar soni</span>
+                      <div className="grid grid-cols-3 gap-2">
+                        {AI_COUNT_OPTIONS.map((count) => (
+                          <button
+                            key={count}
+                            type="button"
+                            onClick={() => setAiCount(count)}
+                            className={`rounded-xl px-3 py-2 text-xs font-medium transition-all ${
+                              aiCount === count
+                                ? "bg-gradient-to-r from-[#e07c8e] to-[#a66466] text-white shadow-md"
+                                : "border border-[#f0d9d6] bg-white/80 text-[#7b4f53] hover:border-[#e07c8e]"
+                            }`}
+                          >
+                            {count} ta
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-medium uppercase tracking-wider text-[#8f6d70]">Qiyinlik</span>
+                      <div className="grid grid-cols-2 gap-2">
+                        {Object.entries(DIFFICULTY_LABELS).map(([value, label]) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => setAiDifficulty(value as GameDifficulty)}
+                            className={`rounded-xl px-3 py-2 text-xs font-medium transition-all ${
+                              aiDifficulty === value
+                                ? "bg-gradient-to-r from-[#7b4f53] to-[#a66466] text-white shadow-md"
+                                : "border border-[#f0d9d6] bg-white/80 text-[#7b4f53] hover:border-[#e07c8e]"
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1385,65 +1491,83 @@ export default function TeacherQuestionPanel() {
                     ? aiPanelContent.loadingLabel.replace(aiCountPlaceholder, String(aiCount))
                     : aiPanelContent.buttonLabel.replace(aiCountPlaceholder, String(aiCount))}
                 </button>
-
-                <p className="text-[10px] leading-4 text-[#8f6d70]">
-                  {aiPanelContent.footnote} AI ishlashi uchun `.env` ichida `VITE_GEMINI_API_KEY` bo'lishi kerak.
-                </p>
               </div>
-            </div>
-
-            <div className="space-y-4 pr-1">
-              {draftValue && typeof draftValue === "object" ? (
-                <>
-                  <SpecializedEditor
-                    gameKey={activeGame.gameKey}
-                    draftValue={draftValue}
-                    onChange={(path, valueAtPath) => {
-                      setDraftValue((prev: unknown) => updateValueAtPath(prev, path, valueAtPath));
+            ) : (
+              <>
+                <div className="mb-4 flex items-center justify-between gap-2 rounded-2xl border border-[#f0d9d6] bg-white/80 p-3">
+                  <div>
+                    <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#b38b8d]">Qo'lda kiritish</p>
+                    <p className="mt-1 text-xs text-[#8f6d70]">
+                      {selectedIndex === null ? "Yangi savolni qo'lda kiriting." : "Tanlangan savolni tahrir qiling."}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedIndex(null);
+                      setEditorError("");
                     }}
-                  />
-                  
-                  <details className="mt-3 rounded-xl border border-[#f0d9d6] bg-white/80 p-3">
-                    <summary 
-                      className="flex cursor-pointer items-center justify-between text-xs font-medium text-[#7b4f53]"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setShowExtraFields(!showExtraFields);
-                      }}
-                    >
-                      <span>Qo'shimcha maydonlar</span>
-                      <FaChevronRight className={`h-2.5 w-2.5 transition-transform duration-200 ${showExtraFields ? 'rotate-90' : ''}`} />
-                    </summary>
-                    <div className="mt-3 space-y-3">
-                      {Object.entries(draftValue as Record<string, unknown>).map(([key, value]) => {
-                        const handledKeys = new Set([
-                          "title", "story", "subject", "category", "difficulty", "level",
-                          "question", "prompt", "text", "options", "correctAnswer", "correct",
-                          "hint", "explanation", "reward", "points", "timeLimit", "answer",
-                          "claims", "id", "answerIndex", "correctIndex"
-                        ]);
-                        if (handledKeys.has(key)) return null;
-                        return (
-                          <FormField
-                            key={key}
-                            label={key}
-                            value={value}
-                            path={[key]}
-                            onChange={(path, valueAtPath) => {
-                              setDraftValue((prev: unknown) => updateValueAtPath(prev, path, valueAtPath));
-                            }}
-                          />
-                        );
-                      })}
-                    </div>
-                  </details>
-                </>
-              ) : (
-                <div className="rounded-xl border border-dashed border-[#f0d9d6] bg-white/80 px-4 py-6 text-center text-[10px] text-[#b38b8d]">
-                  Bu format uchun forma mavjud emas
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-[#e07c8e]/30 bg-[#fceae8] px-3 py-1.5 text-[10px] font-medium text-[#e07c8e] transition-all hover:bg-[#e07c8e] hover:text-white"
+                  >
+                    <FaPlus className="h-2.5 w-2.5" />
+                    Yangi
+                  </button>
                 </div>
-              )}
-            </div>
+
+                <div className="space-y-4 pr-1">
+                  {draftValue && typeof draftValue === "object" ? (
+                    <>
+                      <SpecializedEditor
+                        gameKey={activeGame.gameKey}
+                        draftValue={draftValue}
+                        onChange={(path, valueAtPath) => {
+                          setDraftValue((prev: unknown) => updateValueAtPath(prev, path, valueAtPath));
+                        }}
+                      />
+
+                      <details open={showExtraFields} className="mt-3 rounded-xl border border-[#f0d9d6] bg-white/80 p-3">
+                        <summary
+                          className="flex cursor-pointer items-center justify-between text-xs font-medium text-[#7b4f53]"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setShowExtraFields(!showExtraFields);
+                          }}
+                        >
+                          <span>Qo'shimcha maydonlar</span>
+                          <FaChevronRight className={`h-2.5 w-2.5 transition-transform duration-200 ${showExtraFields ? "rotate-90" : ""}`} />
+                        </summary>
+                        <div className="mt-3 space-y-3">
+                          {Object.entries(draftValue as Record<string, unknown>).map(([key, value]) => {
+                            const handledKeys = new Set([
+                              "title", "story", "subject", "category", "difficulty", "level",
+                              "question", "prompt", "text", "options", "correctAnswer", "correct",
+                              "hint", "explanation", "reward", "points", "timeLimit", "answer",
+                              "claims", "id", "answerIndex", "correctIndex"
+                            ]);
+                            if (handledKeys.has(key)) return null;
+                            return (
+                              <FormField
+                                key={key}
+                                label={key}
+                                value={value}
+                                path={[key]}
+                                onChange={(path, valueAtPath) => {
+                                  setDraftValue((prev: unknown) => updateValueAtPath(prev, path, valueAtPath));
+                                }}
+                              />
+                            );
+                          })}
+                        </div>
+                      </details>
+                    </>
+                  ) : (
+                    <div className="rounded-xl border border-dashed border-[#f0d9d6] bg-white/80 px-4 py-6 text-center text-[10px] text-[#b38b8d]">
+                      Bu format uchun forma mavjud emas
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
 
             {editorError && (
               <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-medium text-rose-600">
@@ -1451,32 +1575,34 @@ export default function TeacherQuestionPanel() {
               </div>
             )}
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => void handleSaveEditor()}
-                disabled={saving}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-[#e07c8e] to-[#a66466] px-4 py-2.5 text-xs font-medium text-white shadow-md hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
-              >
-                {saving ? <FaRobot className="h-3 w-3 animate-pulse" /> : <FaSave className="h-3 w-3" />}
-                {selectedIndex === null ? "Savol qo'shish" : "Saqlash"}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (selectedIndex === null) {
-                    setDraftValue(activeGame.template);
-                  } else {
-                    setDraftValue(activeItems[selectedIndex]);
-                  }
-                  setEditorError("");
-                }}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#f0d9d6] bg-white/80 px-4 py-2.5 text-xs font-medium text-[#7b4f53] transition-all hover:bg-white"
-              >
-                <FaCheck className="h-3 w-3" />
-                Reset
-              </button>
-            </div>
+            {editorMode === "manual" && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => void handleSaveEditor()}
+                  disabled={saving}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-[#e07c8e] to-[#a66466] px-4 py-2.5 text-xs font-medium text-white shadow-md hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
+                >
+                  {saving ? <FaRobot className="h-3 w-3 animate-pulse" /> : <FaSave className="h-3 w-3" />}
+                  {selectedIndex === null ? "Savol qo'shish" : "Saqlash"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (selectedIndex === null) {
+                      setDraftValue(activeGame.template);
+                    } else {
+                      setDraftValue(activeItems[selectedIndex]);
+                    }
+                    setEditorError("");
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#f0d9d6] bg-white/80 px-4 py-2.5 text-xs font-medium text-[#7b4f53] transition-all hover:bg-white"
+                >
+                  <FaCheck className="h-3 w-3" />
+                  Qaytarish
+                </button>
+              </div>
+            )}
 
             {/* Made with love */}
             <div className="mt-4 flex items-center justify-center gap-1 text-[8px] text-[#b38b8d]">

@@ -2,8 +2,8 @@ import { useEffect, useReducer, type Dispatch, type ReactNode } from "react";
 import { MyContext } from "../context/MyContext";
 import type { User } from "../types/types";
 import { useNavigate } from "react-router-dom";
-import apiClient from "../apiClient/apiClient";
 import { clearAuthStorage } from "../utils/auth";
+import { useMeQuery } from "./useProfile";
 
 export interface TypeState {
   user: User | null;
@@ -60,31 +60,29 @@ function CreateContextPro({ children }: { children: ReactNode }) {
     roles: [],
   });
 
-  const fetchUser = async () => {
-    dispatch({ type: "SET_LOADING", payload: true });
+  const hasToken = Boolean(localStorage.getItem("accessToken"));
+  const meQuery = useMeQuery(hasToken);
 
-    try {
-      const token = localStorage.getItem("accessToken");
-      if (!token) {
-        dispatch({ type: "SET_USER", payload: null });
-        return;
-      }
+  useEffect(() => {
+    if (!hasToken) {
+      dispatch({ type: "SET_USER", payload: null });
+      dispatch({ type: "SET_LOADING", payload: false });
+      return;
+    }
 
-      const res = await apiClient.get<User>("/users/me");
-      dispatch({ type: "SET_USER", payload: res.data });
-    } catch {
+    dispatch({ type: "SET_LOADING", payload: meQuery.isLoading });
+
+    if (meQuery.data) {
+      dispatch({ type: "SET_USER", payload: meQuery.data });
+    }
+
+    if (meQuery.error) {
       clearAuthStorage();
       dispatch({ type: "SET_USER", payload: null });
-      navigate("/login"); 
-    } finally {
       dispatch({ type: "SET_LOADING", payload: false });
+      navigate("/login");
     }
-  };
-
-  // app start
-  useEffect(() => {
-    fetchUser();
-  }, []);
+  }, [hasToken, meQuery.data, meQuery.error, meQuery.isLoading, navigate]);
 
   // role redirect
   useEffect(() => {

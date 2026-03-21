@@ -1,4 +1,5 @@
 import { generateGeminiJson, type GameDifficulty } from "../../../apiClient/gemini";
+import { getGradeRangeInstruction, getGradeRangeLabel, type GradeRange } from "../../../utils/aiGeneration";
 
 export type ClassicArcadeGeneratedChallenge = {
   prompt: string;
@@ -7,7 +8,7 @@ export type ClassicArcadeGeneratedChallenge = {
   reason: string;
 };
 
-function buildClassicArcadePrompt(topic: string, count: number, difficulty: GameDifficulty): string {
+function buildClassicArcadePrompt(topic: string, count: number, difficulty: GameDifficulty, gradeRange: GradeRange): string {
   const difficultyInstruction =
     difficulty === "easy"
       ? "Challenge'lar oson bo'lsin, javoblari sodda va tez topiladigan bo'lsin."
@@ -29,6 +30,8 @@ function buildClassicArcadePrompt(topic: string, count: number, difficulty: Game
     "- Savollar bir-biridan farqli bo'lsin, takror bo'lmasin.",
     "- Matnlar dars uchun mos, tushunarli va qisqa bo'lsin.",
     `- Mavzu: ${topic}.`,
+    `- Sinf oralig'i: ${getGradeRangeLabel(gradeRange)}.`,
+    `- ${getGradeRangeInstruction(gradeRange)}`,
     `- Qiyinlik: ${difficulty}.`,
     `- ${difficultyInstruction}`,
     `- Soni: ${count}.`,
@@ -85,15 +88,18 @@ export async function generateClassicArcadeChallenges({
   topic,
   count,
   difficulty,
+  gradeRange,
 }: {
   topic?: string;
   count: number;
   difficulty?: GameDifficulty;
+  gradeRange?: GradeRange;
 }): Promise<ClassicArcadeGeneratedChallenge[]> {
   const safeCount = Math.max(1, Math.min(15, Math.floor(count)));
-  const safeTopic = topic?.trim() || "general knowledge";
+  const safeTopic = topic?.trim() || "umumiy bilim";
   const safeDifficulty = difficulty ?? "medium";
-  const prompt = buildClassicArcadePrompt(safeTopic, safeCount, safeDifficulty);
+  const safeGradeRange = gradeRange ?? "none";
+  const prompt = buildClassicArcadePrompt(safeTopic, safeCount, safeDifficulty, safeGradeRange);
   const parsed = await generateGeminiJson(prompt);
   return toValidatedClassicArcadeChallenges(parsed, safeCount);
 }

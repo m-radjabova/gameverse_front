@@ -111,13 +111,13 @@ function Header({
       visible: !!user,
     },
     {
-      label: "Teacher Panel",
+      label: "O'qituvchi Paneli",
       to: "/teacher-panel",
       icon: <FaGraduationCap className="text-sm" />,
       visible: canOpenTeacherPanel,
     },
     {
-      label: "Admin Panel",
+      label: "Admin Paneli",
       to: "/admin",
       icon: <FaUserShield className="text-sm" />,
       visible: canOpenAdminPanel,
@@ -197,7 +197,8 @@ function Header({
                 GAMEVERSE
               </h1>
               <p className={`text-[10px] font-bold uppercase tracking-[0.25em] ${isDark ? "text-[#a1a1aa]" : "text-[#d98a95]"}`}>
-                Learn • Play • Grow
+                {/* Learn • Play • Grow */}
+                O‘rgan • O‘yna • Rivojlan
               </p>
             </div>
           </div>
@@ -457,7 +458,7 @@ function Header({
             <div className={`flex items-center justify-between border-b px-5 py-5 ${isDark ? "border-[#2b3146]" : "border-[#f4d9d7]"}`}>
               <div>
                 <p className={`text-xs font-bold uppercase tracking-[0.24em] ${isDark ? "text-[#a1a1aa]" : "text-[#d98a95]"}`}>
-                  Account Menu
+                  Akkaunt Menyusi
                 </p>
                 <h3 className={`mt-2 text-xl font-black ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
                   GAMEVERSE

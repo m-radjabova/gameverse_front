@@ -5,6 +5,7 @@ import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQue
 import useContextPro from "../../../hooks/useContextPro";
 import { hasAnyRole } from "../../../utils/roles";
 import { generateTruthDetectorPacks } from "./ai";
+import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
 
 type Difficulty = "easy" | "medium" | "hard";
 type FakeLetter = "A" | "B" | "C";
@@ -102,6 +103,7 @@ function TruthDetector() {
   const [teacherMsg, setTeacherMsg] = useState("");
   const [remoteLoaded, setRemoteLoaded] = useState(false);
   const [aiTopic, setAiTopic] = useState("");
+  const [aiGradeRange, setAiGradeRange] = useState<GradeRange>("none");
   const [aiPackCount, setAiPackCount] = useState<number>(3);
   const [aiDifficulty, setAiDifficulty] = useState<"easy" | "medium" | "hard" | "mixed">("medium");
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
@@ -264,6 +266,7 @@ function TruthDetector() {
         topic: aiTopic,
         count: aiPackCount,
         difficulty: aiDifficulty,
+        gradeRange: aiGradeRange,
       });
 
       const stamp = Date.now();
@@ -349,12 +352,23 @@ function TruthDetector() {
                 <p className="text-sm font-bold">AI FAKT GENERATSIYASI</p>
               </div>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <input
+                <textarea
                   value={aiTopic}
                   onChange={(e) => setAiTopic(e.target.value)}
                   placeholder="Mavzu: hayvonlar, kosmos, tarix..."
-                  className="px-4 py-2 rounded-xl border-2 border-cyan-200 dark:border-cyan-700 bg-white/80 dark:bg-slate-900/50 text-slate-900 dark:text-cyan-100 placeholder-cyan-500/70 dark:placeholder-cyan-300/60"
+                  className="min-h-[92px] px-4 py-2 rounded-xl border-2 border-cyan-200 dark:border-cyan-700 bg-white/80 dark:bg-slate-900/50 text-slate-900 dark:text-cyan-100 placeholder-cyan-500/70 dark:placeholder-cyan-300/60 md:col-span-2 xl:col-span-2"
                 />
+                <select
+                  value={aiGradeRange}
+                  onChange={(e) => setAiGradeRange(e.target.value as GradeRange)}
+                  className="px-4 py-2 rounded-xl border-2 border-cyan-200 dark:border-cyan-700 bg-white/80 dark:bg-slate-900/50 text-slate-900 dark:text-cyan-100"
+                >
+                  {GRADE_RANGE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
                 <select
                   value={aiPackCount}
                   onChange={(e) => setAiPackCount(Number(e.target.value))}
@@ -386,13 +400,8 @@ function TruthDetector() {
                 </button>
               </div>
               <p className="mt-3 text-xs text-cyan-700/80 dark:text-cyan-200/80">
-                AI har bir to'plam uchun 3 ta fact yaratadi: 2 tasi rost, 1 tasi yolg'on.
+                AI har bir to'plam uchun 3 ta fact yaratadi: 2 tasi rost, 1 tasi yolg'on. Sinf oralig'i berilsa fakt murakkabligi ham moslashadi.
               </p>
-              {!hasGeminiKey && (
-                <p className="mt-2 text-xs text-amber-600 dark:text-amber-300">
-                  AI ishlashi uchun `.env` ichida `VITE_GEMINI_API_KEY` bo'lishi kerak.
-                </p>
-              )}
             </div>
 
             <div className="mt-3 flex gap-2 flex-wrap">

@@ -15,6 +15,7 @@ import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { useGameParticipantMode } from "../../../hooks/useGameParticipantMode";
 import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
+import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
 
 type Phase = "teacher" | "teams" | "play" | "finish";
 type Mini = "math" | "pattern" | "odd";
@@ -83,6 +84,7 @@ export default function ClassicArcade() {
   const [teacherRounds, setTeacherRounds] = useState<OddRound[]>([]);
   const [teacherError, setTeacherError] = useState("");
   const [aiTopic, setAiTopic] = useState("");
+  const [aiGradeRange, setAiGradeRange] = useState<GradeRange>("none");
   const [aiChallengeCount, setAiChallengeCount] = useState<number>(5);
   const [aiDifficulty, setAiDifficulty] = useState<"easy" | "medium" | "hard" | "mixed">("medium");
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
@@ -257,6 +259,7 @@ export default function ClassicArcade() {
         topic: aiTopic,
         count: aiChallengeCount,
         difficulty: aiDifficulty,
+        gradeRange: aiGradeRange,
       });
       setTeacherRounds((prev) => [...prev, ...generated]);
       setToast(`${generated.length} ta AI challenge qo'shildi`);
@@ -363,12 +366,23 @@ export default function ClassicArcade() {
                     <p className="text-sm font-bold">AI CHALLENGE GENERATSIYASI</p>
                   </div>
                   <div className="grid gap-3 md:grid-cols-2">
-                    <input
+                    <textarea
                       value={aiTopic}
                       onChange={(e) => setAiTopic(e.target.value)}
-                      className="w-full rounded-xl border border-cyan-500/30 bg-slate-950/70 px-4 py-3 text-white placeholder-cyan-300/40 focus:border-cyan-400 focus:outline-none"
-                      placeholder="Mavzu: matematika, tarix, ingliz tili..."
+                      className="min-h-[92px] w-full rounded-xl border border-cyan-500/30 bg-slate-950/70 px-4 py-3 text-white placeholder-cyan-300/40 focus:border-cyan-400 focus:outline-none md:col-span-2"
+                      placeholder="Mavzu: hayvonlar, tarixiy shaxslar, matematika tushunchalari..."
                     />
+                    <select
+                      value={aiGradeRange}
+                      onChange={(e) => setAiGradeRange(e.target.value as GradeRange)}
+                      className="w-full rounded-xl border border-cyan-500/30 bg-slate-950/70 px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
+                    >
+                      {GRADE_RANGE_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value} className="bg-slate-950">
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
                     <select
                       value={aiChallengeCount}
                       onChange={(e) => setAiChallengeCount(Number(e.target.value))}
@@ -400,13 +414,8 @@ export default function ClassicArcade() {
                     </button>
                   </div>
                   <p className="mt-3 text-xs text-cyan-100/70">
-                    AI challenge'lar mavjud ro'yxatga qo'shiladi. "Aralash" tanlansa oson, o'rta va qiyin challenge'lar aralashtiriladi.
+                    AI challenge'lar mavjud ro'yxatga qo'shiladi. Sinf oralig'i tanlansa challenge uslubi o'sha bosqichga moslashtiriladi.
                   </p>
-                  {!hasGeminiKey && (
-                    <p className="mt-2 text-xs text-amber-300">
-                      AI ishlashi uchun `.env` ichida `VITE_GEMINI_API_KEY` bo'lishi kerak.
-                    </p>
-                  )}
                 </div>
 
                 <input
@@ -945,4 +954,3 @@ export default function ClassicArcade() {
     </div>
   );
 }
-

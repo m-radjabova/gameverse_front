@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { submitGameResult } from "./useGameLeaderboard";
+import { useSubmitGameResultMutation } from "./useGameLeaderboard";
 
 type Entry = {
   participant_name: string;
@@ -14,6 +14,7 @@ export function useGameResultSubmission(
   entries: Entry[],
 ) {
   const submittedRef = useRef<string | null>(null);
+  const submitResultMutation = useSubmitGameResultMutation(gameKey);
 
   useEffect(() => {
     if (!enabled || entries.length === 0) {
@@ -34,6 +35,6 @@ export function useGameResultSubmission(
     }
 
     submittedRef.current = fingerprint;
-    void Promise.all(entries.map((entry) => submitGameResult(gameKey, entry)));
-  }, [enabled, entries, gameKey]);
+    void Promise.all(entries.map((entry) => submitResultMutation.mutateAsync(entry)));
+  }, [enabled, entries, submitResultMutation]);
 }

@@ -19,6 +19,7 @@ import Confetti from "react-confetti-boom";
 import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
 import { generateBaamboozleQuestions } from "./ai";
 import { DEFAULT_QUESTION_BANK } from "./data";
+import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
 
 export type QuestionBankItem = {
   question: string;
@@ -127,7 +128,9 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
   const [draft, setDraft] = useState<QuestionBankItem>({ question: "", answer: "" });
   const [questionError, setQuestionError] = useState("");
   const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
+  const [aiTopic, setAiTopic] = useState("");
   const [aiSubject, setAiSubject] = useState("");
+  const [aiGradeRange, setAiGradeRange] = useState<GradeRange>("none");
   const [aiQuestionCount, setAiQuestionCount] = useState<number>(8);
   const [aiDifficulty, setAiDifficulty] = useState<"easy" | "medium" | "hard" | "mixed">("medium");
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
@@ -226,8 +229,10 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
     try {
       const generated = await generateBaamboozleQuestions({
         subject: aiSubject,
+        topic: aiTopic,
         count: aiQuestionCount,
         difficulty: aiDifficulty,
+        gradeRange: aiGradeRange,
       });
       setQuestionBank((prev) => [...prev, ...generated]);
       setDraft({ question: "", answer: "" });
@@ -532,12 +537,29 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
                     <p className="text-sm font-bold">AI SAVOL GENERATSIYASI</p>
                   </div>
                   <div className="grid gap-2 md:grid-cols-2">
+                    <textarea
+                      value={aiTopic}
+                      onChange={(e) => setAiTopic(e.target.value)}
+                      placeholder="Mavzu: kasrlar, hayvonlar, tarixiy voqealar..."
+                      className="min-h-[92px] w-full rounded-xl border border-cyan-500/30 bg-slate-950/70 px-4 py-3 text-white placeholder-cyan-300/40 focus:border-cyan-400 focus:outline-none md:col-span-2"
+                    />
                     <input
                       value={aiSubject}
                       onChange={(e) => setAiSubject(e.target.value)}
-                      placeholder="Fan yoki mavzu: matematika, tarix..."
+                      placeholder="Fan: matematika, tarix, biologiya..."
                       className="w-full rounded-xl border border-cyan-500/30 bg-slate-950/70 px-4 py-3 text-white placeholder-cyan-300/40 focus:border-cyan-400 focus:outline-none"
                     />
+                    <select
+                      value={aiGradeRange}
+                      onChange={(e) => setAiGradeRange(e.target.value as GradeRange)}
+                      className="w-full rounded-xl border border-cyan-500/30 bg-slate-950/70 px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
+                    >
+                      {GRADE_RANGE_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value} className="bg-slate-950">
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
                     <select
                       value={aiQuestionCount}
                       onChange={(e) => setAiQuestionCount(Number(e.target.value))}
@@ -569,11 +591,8 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
                     </button>
                   </div>
                   <p className="mt-3 text-xs text-cyan-200/80">
-                    AI yaratgan savollar hozirgi Baamboozle savollariga qo'shiladi.
+                    Avval mavzu, keyin fan va kerak bo'lsa sinf oralig'ini tanlang. AI yaratgan savollar hozirgi Baamboozle savollariga qo'shiladi.
                   </p>
-                  {!hasGeminiKey && (
-                    <p className="mt-2 text-xs text-rose-300">`.env` ichida `VITE_GEMINI_API_KEY` ni to'ldiring va dev serverni qayta ishga tushiring.</p>
-                  )}
                 </div>
 
                 <div className="grid gap-2">

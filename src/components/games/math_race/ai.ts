@@ -1,9 +1,10 @@
 import { generateGeminiJson, type GameDifficulty } from "../../../apiClient/gemini";
+import { getGradeRangeInstruction, getGradeRangeLabel, type GradeRange } from "../../../utils/aiGeneration";
 import type { Difficulty, MathQuestion } from "./types";
 
 type GeneratedMathQuestion = Omit<MathQuestion, "id">;
 
-function buildMathRacePrompt(count: number, difficulty: GameDifficulty): string {
+function buildMathRacePrompt(topic: string, count: number, difficulty: GameDifficulty, gradeRange: GradeRange): string {
   const difficultyInstruction =
     difficulty === "easy"
       ? "Misollar oson bo'lsin: sodda qo'shish, ayirish, ko'paytirish yoki bo'lish."
@@ -24,6 +25,9 @@ function buildMathRacePrompt(count: number, difficulty: GameDifficulty): string 
     "- question qisqa matematik misol bo'lsin va '=' yoki '?' bilan tugasin.",
     "- points easy uchun 10, medium uchun 15, hard uchun 20 bo'lsin.",
     "- Misollar bir-biridan farqli bo'lsin.",
+    `- Mavzu: ${topic}.`,
+    `- Sinf oralig'i: ${getGradeRangeLabel(gradeRange)}.`,
+    `- ${getGradeRangeInstruction(gradeRange)}`,
     `- Qiyinlik talabi: ${difficulty}.`,
     `- ${difficultyInstruction}`,
     `- Soni: ${count}.`,
@@ -76,15 +80,21 @@ function toValidatedMathQuestions(payload: unknown, expectedCount: number): Gene
 }
 
 export async function generateMathRaceQuestions({
+  topic,
   count,
   difficulty,
+  gradeRange,
 }: {
+  topic?: string;
   count: number;
   difficulty?: GameDifficulty;
+  gradeRange?: GradeRange;
 }): Promise<GeneratedMathQuestion[]> {
   const safeCount = Math.max(2, Math.min(20, Math.floor(count)));
+  const safeTopic = topic?.trim() || "umumiy matematika";
   const safeDifficulty = difficulty ?? "medium";
-  const prompt = buildMathRacePrompt(safeCount, safeDifficulty);
+  const safeGradeRange = gradeRange ?? "none";
+  const prompt = buildMathRacePrompt(safeTopic, safeCount, safeDifficulty, safeGradeRange);
   const parsed = await generateGeminiJson(prompt);
   return toValidatedMathQuestions(parsed, safeCount);
 }

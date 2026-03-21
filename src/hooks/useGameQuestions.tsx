@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "../apiClient/apiClient";
 import { getAccessToken } from "../utils/auth";
 
@@ -19,6 +20,11 @@ type LoadQuestionsOptions = {
 };
 
 const toPath = (gameKey: string) => `/game-questions/${encodeURIComponent(gameKey)}`;
+
+const gameQuestionsKeys = {
+  list: (gameKey: string, teacherId?: string) =>
+    ["game-questions", gameKey, teacherId ?? "global"] as const,
+};
 
 function extractQuestions<T>(payload: unknown): T[] | null {
   if (Array.isArray(payload)) return payload as T[];
@@ -78,26 +84,76 @@ export async function saveGameQuestions<T>(
 export default function useGameQuestions<T>({
   teacherId,
 }: UseGameQuestionsOptions = {}) {
+  const queryClient = useQueryClient();
   const [questionsByGame, setQuestionsByGame] = useState<Record<string, T[]>>({});
   const [loadingByGame, setLoadingByGame] = useState<Record<string, boolean>>({});
   const [loadedByGame, setLoadedByGame] = useState<Record<string, boolean>>({});
   const [savingByGame, setSavingByGame] = useState<Record<string, boolean>>({});
+
+  const saveQuestionsMutation = useMutation({
+    mutationFn: async ({
+      gameKey,
+      questions,
+      teacherScoped,
+    }: {
+      gameKey: string;
+      questions: T[];
+      teacherScoped: boolean;
+    }) => {
+      const scopedTeacherId = teacherScoped && teacherId ? teacherId : undefined;
+      const ok = await saveGameQuestions(gameKey, questions, scopedTeacherId);
+
+      return {
+        ok,
+        gameKey,
+        questions,
+        teacherId: scopedTeacherId,
+      };
+    },
+    onSuccess: async ({ ok, gameKey, questions, teacherId: scopedTeacherId }) => {
+      if (!ok) {
+        return;
+      }
+
+      queryClient.setQueryData(
+        gameQuestionsKeys.list(gameKey, scopedTeacherId),
+        questions,
+      );
+      await queryClient.invalidateQueries({
+        queryKey: gameQuestionsKeys.list(gameKey, scopedTeacherId),
+      });
+    },
+  });
 
   const loadQuestions = useCallback(
     async (
       gameKey: string,
       { force = false, teacherScoped = Boolean(teacherId) }: LoadQuestionsOptions = {},
     ) => {
+      const scopedTeacherId = teacherScoped && teacherId ? teacherId : undefined;
+      const queryKey = gameQuestionsKeys.list(gameKey, scopedTeacherId);
+      const cachedQuestions = queryClient.getQueryData<T[]>(queryKey);
+
+      if (!force && cachedQuestions) {
+        setQuestionsByGame((prev) => ({ ...prev, [gameKey]: cachedQuestions }));
+        setLoadedByGame((prev) => ({ ...prev, [gameKey]: true }));
+        setLoadingByGame((prev) => ({ ...prev, [gameKey]: false }));
+        return cachedQuestions;
+      }
+
       if (!force && loadedByGame[gameKey]) {
         return questionsByGame[gameKey] ?? [];
       }
 
       setLoadingByGame((prev) => ({ ...prev, [gameKey]: true }));
 
-      const items =
-        teacherScoped && teacherId
-          ? await fetchGameQuestionsByTeacher<T>(gameKey, teacherId)
-          : await fetchGameQuestions<T>(gameKey);
+      const items = await queryClient.fetchQuery({
+        queryKey,
+        queryFn: () =>
+          teacherScoped && teacherId
+            ? fetchGameQuestionsByTeacher<T>(gameKey, teacherId)
+            : fetchGameQuestions<T>(gameKey),
+      });
 
       const nextItems = items ?? [];
       setQuestionsByGame((prev) => ({ ...prev, [gameKey]: nextItems }));
@@ -105,17 +161,17 @@ export default function useGameQuestions<T>({
       setLoadingByGame((prev) => ({ ...prev, [gameKey]: false }));
       return nextItems;
     },
-    [loadedByGame, questionsByGame, teacherId],
+    [loadedByGame, queryClient, questionsByGame, teacherId],
   );
 
   const saveQuestionsForGame = useCallback(
     async (gameKey: string, questions: T[], teacherScoped = Boolean(teacherId)) => {
       setSavingByGame((prev) => ({ ...prev, [gameKey]: true }));
-      const ok = await saveGameQuestions(
+      const { ok } = await saveQuestionsMutation.mutateAsync({
         gameKey,
         questions,
-        teacherScoped && teacherId ? teacherId : undefined,
-      );
+        teacherScoped,
+      });
       setSavingByGame((prev) => ({ ...prev, [gameKey]: false }));
 
       if (!ok) {
@@ -126,13 +182,14 @@ export default function useGameQuestions<T>({
       setLoadedByGame((prev) => ({ ...prev, [gameKey]: true }));
       return true;
     },
-    [teacherId],
+    [saveQuestionsMutation, teacherId],
   );
 
   const setQuestionsForGame = useCallback((gameKey: string, questions: T[]) => {
     setQuestionsByGame((prev) => ({ ...prev, [gameKey]: questions }));
     setLoadedByGame((prev) => ({ ...prev, [gameKey]: true }));
-  }, []);
+    queryClient.setQueryData(gameQuestionsKeys.list(gameKey, teacherId), questions);
+  }, [queryClient, teacherId]);
 
   const getQuestions = useCallback(
     (gameKey: string) => questionsByGame[gameKey] ?? [],

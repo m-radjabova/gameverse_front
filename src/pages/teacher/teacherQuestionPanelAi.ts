@@ -1,4 +1,5 @@
 import { generateGeminiJson, type GameDifficulty } from "../../apiClient/gemini";
+import { getGradeRangeInstruction, getGradeRangeLabel, type GradeRange } from "../../utils/aiGeneration";
 
 export type SupportedTeacherGameKey =
   | "quiz_battle"
@@ -34,10 +35,12 @@ function toStringArray(value: unknown, expected = 4): string[] | null {
   return items;
 }
 
-function buildPrompt(gameKey: SupportedTeacherGameKey, topic: string, count: number, difficulty: GameDifficulty) {
+function buildPrompt(gameKey: SupportedTeacherGameKey, topic: string, count: number, difficulty: GameDifficulty, gradeRange: GradeRange) {
   const safeTopic = topic.trim() || "umumiy bilim";
   const shared = [
     `Mavzu: ${safeTopic}.`,
+    `Sinf oralig'i: ${getGradeRangeLabel(gradeRange)}.`,
+    `- ${getGradeRangeInstruction(gradeRange)}`,
     `Soni: ${count}.`,
     `Qiyinlik: ${difficulty}.`,
     `- ${difficultyInstruction(difficulty)}`,
@@ -302,15 +305,18 @@ export async function generateTeacherPanelQuestions({
   topic,
   count,
   difficulty,
+  gradeRange,
 }: {
   gameKey: SupportedTeacherGameKey;
   topic?: string;
   count: number;
   difficulty?: GameDifficulty;
+  gradeRange?: GradeRange;
 }) {
   const safeCount = Math.max(1, Math.min(20, Math.floor(count)));
   const safeDifficulty = difficulty ?? "medium";
-  const prompt = buildPrompt(gameKey, topic ?? "", safeCount, safeDifficulty);
+  const safeGradeRange = gradeRange ?? "none";
+  const prompt = buildPrompt(gameKey, topic ?? "", safeCount, safeDifficulty, safeGradeRange);
   const parsed = await generateGeminiJson(prompt);
   return validateItems(gameKey, parsed, safeCount);
 }

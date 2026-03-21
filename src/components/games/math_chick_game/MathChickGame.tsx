@@ -11,6 +11,7 @@ import mathChickGameSound from "../../../assets/sounds/math_chick_game.m4a";
 import wrongSound from "../../../assets/sounds/wrong.mp3";
 import finishSound from "../../../assets/sounds/applause.mp3";
 import { getAccessToken } from "../../../utils/auth";
+import { GRADE_RANGE_OPTIONS, getGradeRangeInstruction, getGradeRangeLabel, type GradeRange } from "../../../utils/aiGeneration";
 
 type Difficulty = "easy" | "medium" | "hard" | "mixed";
 type PlayerId = "A" | "B";
@@ -365,10 +366,12 @@ async function generateMathChickAiProblems({
   topic,
   count,
   difficulty,
+  gradeRange,
 }: {
   topic: string;
   count: number;
   difficulty: GameDifficulty;
+  gradeRange: GradeRange;
 }): Promise<Problem[]> {
   const safeCount = Math.max(1, Math.min(10, Math.floor(count)));
   const safeTopic = topic.trim() || "boshlang'ich matematika";
@@ -383,6 +386,8 @@ async function generateMathChickAiProblems({
     "- Savollar maktab o'quvchilari uchun tushunarli bo'lsin.",
     "- Takror savollar bo'lmasin.",
     "- Matn Uzbek (Latin) tilida bo'lsin.",
+    `- Sinf oralig'i: ${getGradeRangeLabel(gradeRange)}.`,
+    `- ${getGradeRangeInstruction(gradeRange)}`,
   ].join("\n");
 
   const parsed = await generateGeminiJson(prompt);
@@ -519,6 +524,7 @@ export default function MathChickGame() {
   const [teacherMessage, setTeacherMessage] = useState<string>("");
   const [chickSprite, setChickSprite] = useState<HTMLImageElement | null>(null);
   const [aiTopic, setAiTopic] = useState("");
+  const [aiGradeRange, setAiGradeRange] = useState<GradeRange>("none");
   const [aiDifficulty, setAiDifficulty] = useState<GameDifficulty>("medium");
   const [aiCount, setAiCount] = useState<(typeof AI_COUNT_OPTIONS)[number]>(3);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
@@ -757,6 +763,7 @@ export default function MathChickGame() {
         topic: aiTopic,
         count: aiCount,
         difficulty: aiDifficulty,
+        gradeRange: aiGradeRange,
       });
       const nextProblems = [...savedProblems, ...generated];
       const ok = await persistCustomProblems(
@@ -771,7 +778,7 @@ export default function MathChickGame() {
     } finally {
       setIsGeneratingAi(false);
     }
-  }, [aiCount, aiDifficulty, aiTopic, hasAuth, persistCustomProblems, savedProblems]);
+  }, [aiCount, aiDifficulty, aiGradeRange, aiTopic, hasAuth, persistCustomProblems, savedProblems]);
 
   const handleAnswer = useCallback(
     (player: PlayerId, value: number) => {
@@ -1352,8 +1359,7 @@ export default function MathChickGame() {
                     <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_0.9fr]">
                       <label className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
                         <div className="text-xs font-black uppercase tracking-[0.28em] text-slate-400">Mavzu</div>
-                        <input
-                          type="text"
+                        <textarea
                           value={aiTopic}
                           onChange={(event) => setAiTopic(event.target.value)}
                           className="mt-3 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-300/40"
@@ -1362,6 +1368,21 @@ export default function MathChickGame() {
                       </label>
 
                       <div className="grid gap-4 md:grid-cols-2">
+                        <div className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+                          <div className="text-xs font-black uppercase tracking-[0.28em] text-slate-400">Sinf oralig'i</div>
+                          <select
+                            value={aiGradeRange}
+                            onChange={(event) => setAiGradeRange(event.target.value as GradeRange)}
+                            className="mt-3 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-300/40"
+                          >
+                            {GRADE_RANGE_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value} className="bg-slate-950">
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
                         <div className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
                           <div className="text-xs font-black uppercase tracking-[0.28em] text-slate-400">Soni</div>
                           <div className="mt-3 grid grid-cols-2 gap-2">
@@ -1405,9 +1426,6 @@ export default function MathChickGame() {
                     </div>
 
                     <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                      <div className="text-sm text-slate-400">
-                        AI ishlashi uchun `.env` ichida `VITE_GEMINI_API_KEY` bo'lishi kerak.
-                      </div>
                       <button
                         type="button"
                         onClick={() => void handleGenerateAiQuestions()}

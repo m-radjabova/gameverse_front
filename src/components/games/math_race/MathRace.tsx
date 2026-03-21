@@ -35,6 +35,7 @@ import sfxFinish from "../../../assets/sounds/applause.mp3";
 import { BASE_MOVE_AMOUNT, DEFAULT_QUESTIONS, MATH_RACE_GAME_KEY, MATH_RACE_RESULT_KEY, RACE_TRACK_LENGTH, ROUND_TIME, TIME_BONUS_MULTIPLIER } from "./constants";
 import type { Difficulty, MathQuestion, Phase, Player, PlayerId, PlayerStats, QuestionDraft } from "./types";
 import { clamp, createDefaultStats, nitroBonusFromStreak, shuffleArray, wrongPenalty } from "./utils";
+import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
 
 const AI_QUESTION_COUNT_OPTIONS = [2, 4, 6, 8, 10, 15, 20] as const;
 const AI_DIFFICULTY_OPTIONS = [
@@ -79,6 +80,8 @@ export default function MathRace() {
     question: "", answer: "", difficulty: "medium", points: 15,
   });
   const [draftError, setDraftError] = useState("");
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiGradeRange, setAiGradeRange] = useState<GradeRange>("none");
   const [aiQuestionCount, setAiQuestionCount] = useState<number>(6);
   const [aiDifficulty, setAiDifficulty] = useState<"easy" | "medium" | "hard" | "mixed">("medium");
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
@@ -322,8 +325,10 @@ export default function MathRace() {
 
     try {
       const generated = await generateMathRaceQuestions({
+        topic: aiTopic,
         count: aiQuestionCount,
         difficulty: aiDifficulty,
+        gradeRange: aiGradeRange,
       });
       setQuestions(
         generated.map((item, index) => ({
@@ -540,6 +545,23 @@ export default function MathRace() {
                 <p className="text-sm font-bold">AI MISOL GENERATSIYASI</p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
+                <textarea
+                  value={aiTopic}
+                  onChange={(e) => setAiTopic(e.target.value)}
+                  className="rounded-xl border border-cyan-500/30 bg-slate-900/70 px-4 py-2.5 text-white outline-none placeholder-cyan-300/50 sm:col-span-2"
+                  placeholder="Mavzu: qo'shish-ayirish, kasrlar, foizlar..."
+                />
+                <select
+                  value={aiGradeRange}
+                  onChange={(e) => setAiGradeRange(e.target.value as GradeRange)}
+                  className="rounded-xl border border-cyan-500/30 bg-slate-900/70 px-4 py-2.5 text-white outline-none"
+                >
+                  {GRADE_RANGE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value} className="bg-slate-950">
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
                 <select
                   value={aiQuestionCount}
                   onChange={(e) => setAiQuestionCount(Number(e.target.value))}
@@ -571,13 +593,8 @@ export default function MathRace() {
                 {isGeneratingAi ? `${aiQuestionCount} ta yaratilmoqda...` : `AI bilan ${aiQuestionCount} ta yaratish`}
               </button>
               <p className="mt-3 text-xs text-cyan-100/70">
-                AI yangi matematik misollar yaratadi. "Aralash" tanlansa easy, medium va hard misollar birga keladi.
+                AI yangi matematik misollar yaratadi. Mavzu va sinf oralig'i berilsa misollar shu darajaga moslashadi.
               </p>
-              {!hasGeminiKey && (
-                <p className="mt-2 text-xs text-amber-300">
-                  AI ishlashi uchun `.env` ichida `VITE_GEMINI_API_KEY` bo'lishi kerak.
-                </p>
-              )}
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <input

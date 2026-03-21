@@ -1,11 +1,12 @@
 import { generateGeminiJson, type GameDifficulty } from "../../../apiClient/gemini";
+import { getGradeRangeInstruction, getGradeRangeLabel, type GradeRange } from "../../../utils/aiGeneration";
 
 export type BaamboozleGeneratedQuestion = {
   question: string;
   answer: string;
 };
 
-function buildBaamboozlePrompt(subject: string, count: number, difficulty: GameDifficulty): string {
+function buildBaamboozlePrompt(subject: string, topic: string, count: number, difficulty: GameDifficulty, gradeRange: GradeRange): string {
   const difficultyInstruction =
     difficulty === "easy"
       ? "Savollar oson bo'lsin, javoblari qisqa va sodda bo'lsin."
@@ -24,7 +25,10 @@ function buildBaamboozlePrompt(subject: string, count: number, difficulty: GameD
     "- Savollar bir-biridan farqli bo'lsin, takror bo'lmasin.",
     "- Savol va javoblar dars uchun mos, qisqa va aniq bo'lsin.",
     "- Javoblar iloji boricha 1-6 so'z oralig'ida bo'lsin.",
+    `- Mavzu: ${topic}.`,
     `- Fan/mavzu: ${subject}.`,
+    `- Sinf oralig'i: ${getGradeRangeLabel(gradeRange)}.`,
+    `- ${getGradeRangeInstruction(gradeRange)}`,
     `- Qiyinlik: ${difficulty}.`,
     `- ${difficultyInstruction}`,
     `- Soni: ${count}.`,
@@ -60,17 +64,23 @@ function toValidatedBaamboozleQuestions(payload: unknown, expectedCount: number)
 
 export async function generateBaamboozleQuestions({
   subject,
+  topic,
   count,
   difficulty,
+  gradeRange,
 }: {
   subject?: string;
+  topic?: string;
   count: number;
   difficulty?: GameDifficulty;
+  gradeRange?: GradeRange;
 }): Promise<BaamboozleGeneratedQuestion[]> {
   const safeCount = Math.max(4, Math.min(24, Math.floor(count)));
-  const safeSubject = subject?.trim() || "general knowledge";
+  const safeSubject = subject?.trim() || "Umumiy fan";
+  const safeTopic = topic?.trim() || "umumiy mavzu";
   const safeDifficulty = difficulty ?? "medium";
-  const prompt = buildBaamboozlePrompt(safeSubject, safeCount, safeDifficulty);
+  const safeGradeRange = gradeRange ?? "none";
+  const prompt = buildBaamboozlePrompt(safeSubject, safeTopic, safeCount, safeDifficulty, safeGradeRange);
   const parsed = await generateGeminiJson(prompt);
   return toValidatedBaamboozleQuestions(parsed, safeCount);
 }

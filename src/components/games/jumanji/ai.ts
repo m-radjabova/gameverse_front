@@ -1,9 +1,10 @@
 import { generateGeminiJson, type GameDifficulty } from "../../../apiClient/gemini";
+import { getGradeRangeInstruction, getGradeRangeLabel, type GradeRange } from "../../../utils/aiGeneration";
 import type { Question } from "./types";
 
 type GeneratedJumanjiQuestion = Omit<Question, "id">;
 
-function buildJumanjiPrompt(subject: string, count: number, difficulty: GameDifficulty): string {
+function buildJumanjiPrompt(subject: string, topic: string, count: number, difficulty: GameDifficulty, gradeRange: GradeRange): string {
   const subjectInstruction =
     subject === "Aralash fanlar"
       ? "Savollar Matematika, Ingliz tili, Ona tili, Tarix, Geografiya, Biologiya va Informatika fanlaridan aralash bo'lsin."
@@ -30,8 +31,11 @@ function buildJumanjiPrompt(subject: string, count: number, difficulty: GameDiff
     "- timeLimit 20 dan 60 gacha son bo'lsin.",
     "- Savollar bir-biridan farqli bo'lsin.",
     "- Matnlar o'quvchilar uchun tushunarli bo'lsin.",
+    `- Mavzu: ${topic}.`,
     `- Fan talabi: ${subject}.`,
     `- ${subjectInstruction}`,
+    `- Sinf oralig'i: ${getGradeRangeLabel(gradeRange)}.`,
+    `- ${getGradeRangeInstruction(gradeRange)}`,
     `- Qiyinlik: ${difficulty}.`,
     `- ${difficultyInstruction}`,
     `- Soni: ${count}.`,
@@ -95,17 +99,23 @@ function toValidatedJumanjiQuestions(payload: unknown, expectedCount: number): G
 
 export async function generateJumanjiQuestions({
   subject,
+  topic,
   count,
   difficulty,
+  gradeRange,
 }: {
   subject?: string;
+  topic?: string;
   count: number;
   difficulty?: GameDifficulty;
+  gradeRange?: GradeRange;
 }): Promise<GeneratedJumanjiQuestion[]> {
   const safeCount = Math.max(4, Math.min(24, Math.floor(count)));
   const safeSubject = subject?.trim() || "Aralash fanlar";
+  const safeTopic = topic?.trim() || "umumiy mavzu";
   const safeDifficulty = difficulty ?? "medium";
-  const prompt = buildJumanjiPrompt(safeSubject, safeCount, safeDifficulty);
+  const safeGradeRange = gradeRange ?? "none";
+  const prompt = buildJumanjiPrompt(safeSubject, safeTopic, safeCount, safeDifficulty, safeGradeRange);
   const parsed = await generateGeminiJson(prompt);
   return toValidatedJumanjiQuestions(parsed, safeCount);
 }

@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "../apiClient/apiClient";
 import type {
   GameLeaderboardEntry,
@@ -16,6 +17,11 @@ const toLeaderboardPath = (gameKey: string) =>
   `/game-results/${encodeURIComponent(gameKey)}/leaderboard`;
 const toSubmitPath = (gameKey: string) =>
   `/game-results/${encodeURIComponent(gameKey)}`;
+
+const gameLeaderboardKeys = {
+  all: (gameKey: string) => ["game-leaderboard", gameKey] as const,
+  list: (gameKey: string, limit: number) => ["game-leaderboard", gameKey, limit] as const,
+};
 
 function getLocalKey(gameKey: string) {
   return `${LOCAL_KEY_PREFIX}${gameKey}`;
@@ -166,32 +172,63 @@ export async function submitGameResult(
   }
 }
 
+export function useSubmitGameResultMutation(gameKey: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: SubmitGameResultPayload) => submitGameResult(gameKey, payload),
+    onSuccess: async (ok) => {
+      if (!ok) {
+        return;
+      }
+
+      await queryClient.invalidateQueries({
+        queryKey: gameLeaderboardKeys.all(gameKey),
+      });
+    },
+  });
+}
+
 export default function useGameLeaderboard(gameKey: string, limit = 100) {
-  const [entries, setEntries] = useState<GameLeaderboardEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+
+  const leaderboardQuery = useQuery({
+    queryKey: gameLeaderboardKeys.list(gameKey, limit),
+    queryFn: async () => {
+      const data = await fetchGameLeaderboard(gameKey, limit);
+      return getBestEntries(
+        data.filter((entry) => !entry.game_key || entry.game_key === gameKey),
+      );
+    },
+    enabled: Boolean(gameKey),
+  });
 
   const reload = useCallback(async () => {
-    setLoading(true);
-    const data = await fetchGameLeaderboard(gameKey, limit);
-    const nextEntries = getBestEntries(
-      data.filter((entry) => !entry.game_key || entry.game_key === gameKey),
-    );
-    setEntries(nextEntries);
-    setLoading(false);
-    return nextEntries;
-  }, [gameKey, limit]);
+    return queryClient.fetchQuery({
+      queryKey: gameLeaderboardKeys.list(gameKey, limit),
+      queryFn: async () => {
+        const data = await fetchGameLeaderboard(gameKey, limit);
+        return getBestEntries(
+          data.filter((entry) => !entry.game_key || entry.game_key === gameKey),
+        );
+      },
+    });
+  }, [gameKey, limit, queryClient]);
 
   useEffect(() => {
     clearLocalEntries(gameKey);
-    void reload();
-  }, [reload]);
+  }, [gameKey]);
 
+  const entries = useMemo(
+    () => leaderboardQuery.data ?? [],
+    [leaderboardQuery.data],
+  );
   const topThree = useMemo(() => entries.slice(0, 3), [entries]);
 
   return {
     entries,
     topThree,
-    loading,
+    loading: leaderboardQuery.isLoading,
     reload,
   };
 }

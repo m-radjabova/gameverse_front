@@ -594,7 +594,6 @@ export default function WordSearchPuzzle() {
                       </button>
                     </div>
                     <p className="mt-3 text-xs text-cyan-100/70">{isSinglePlayer ? "AI yaratgan so'zlar shu o'yinchi ro'yxatiga yuklanadi." : "AI yaratgan so'zlar ikki tomonga avtomatik bo'linadi."}</p>
-                    {!hasGeminiKey && <p className="mt-2 text-xs text-amber-300">AI ishlashi uchun `.env` ichida `VITE_GEMINI_API_KEY` bo'lishi kerak.</p>}
                   </div>
 
                   <input value={draft.word} onChange={(e) => setDraft({ ...draft, word: e.target.value })} onKeyDown={(e) => e.key === "Enter" && addWord()} className="w-full rounded-xl border border-emerald-500/30 bg-emerald-950/30 px-4 py-3 text-white" placeholder="So'zni kiriting" />

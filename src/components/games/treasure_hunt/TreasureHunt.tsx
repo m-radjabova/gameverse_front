@@ -26,6 +26,7 @@ import { TREASURE_RIDDLES } from "./data/riddles";
 import type { Riddle } from "./types";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
+import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
 
 type Phase = "intro" | "play" | "finish";
 type RiddleDraft = {
@@ -408,6 +409,7 @@ export default function TreasureHunt() {
   const [questionError, setQuestionError] = useState("");
   const [remoteLoaded, setRemoteLoaded] = useState(false);
   const [aiTopic, setAiTopic] = useState("");
+  const [aiGradeRange, setAiGradeRange] = useState<GradeRange>("none");
   const [aiCount, setAiCount] = useState<number>(1);
   const [aiDifficulty, setAiDifficulty] = useState<"easy" | "medium" | "hard" | "mixed">("medium");
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
@@ -506,6 +508,7 @@ export default function TreasureHunt() {
         topic: aiTopic,
         count: aiCount,
         difficulty: aiDifficulty,
+        gradeRange: aiGradeRange,
       });
       const generatedItems: Riddle[] = generated.map((item, index) => ({
         id: `${Date.now()}-${index}-${Math.random().toString(36).slice(2, 8)}`,
@@ -659,12 +662,24 @@ export default function TreasureHunt() {
               </h3>
               <div className="mb-3 grid gap-2 md:grid-cols-[1fr_auto]">
                 <div className="grid gap-2 md:grid-cols-[1fr_140px_140px]">
-                  <input
+                  <textarea
                     value={aiTopic}
                     onChange={(e) => setAiTopic(e.target.value)}
+                    rows={4}
                     className="rounded-xl border border-cyan-500/30 bg-black/40 px-4 py-3 text-cyan-100 outline-none transition-all placeholder-cyan-700 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30"
-                    placeholder="AI mavzusi (masalan: geografiya)"
+                    placeholder="Mavzu: geografiya, hayvonlar, tarixiy kashfiyotlar..."
                   />
+                  <select
+                    value={aiGradeRange}
+                    onChange={(e) => setAiGradeRange(e.target.value as GradeRange)}
+                    className="rounded-xl border border-cyan-500/30 bg-slate-950 px-4 py-3 text-cyan-100 outline-none focus:border-cyan-400"
+                  >
+                    {GRADE_RANGE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value} className="bg-slate-950">
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
                   <select
                     value={aiCount}
                     onChange={(e) => setAiCount(Number(e.target.value))}
@@ -697,11 +712,8 @@ export default function TreasureHunt() {
                 </button>
               </div>
               <p className="mb-3 text-xs text-cyan-200/80">
-                AI yaratganda yangi {aiCount} ta {AI_DIFFICULTY_OPTIONS.find((item) => item.value === aiDifficulty)?.label.toLowerCase()} savol hozirgi ro'yxatga qo'shiladi.
+                AI yaratganda yangi {aiCount} ta {AI_DIFFICULTY_OPTIONS.find((item) => item.value === aiDifficulty)?.label.toLowerCase()} savol hozirgi ro'yxatga qo'shiladi va tanlangan sinf oralig'iga moslashadi.
               </p>
-              {!hasGeminiKey && (
-                <p className="mb-3 text-xs text-rose-300">`.env` ichida `VITE_GEMINI_API_KEY` ni to'ldiring va dev serverni qayta ishga tushiring.</p>
-              )}
               <div className="grid gap-3 md:grid-cols-2">
                 {[
                   { val: draft.title, ph: "🏴‍☠️ Sarlavha", key: "title" },
@@ -1111,4 +1123,3 @@ export default function TreasureHunt() {
     </div>
   );
 }
-
