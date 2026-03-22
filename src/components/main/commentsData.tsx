@@ -29,15 +29,15 @@ export const comments = [
   },
   {
     id: 3,
-    fullName: "Shahzod Alimov",
-    role: "Tarix fani o'qituvchisi",
-    school: "5-maktab, Buxoro",
+    fullName: "Ozodbek Salimov",
+    role: "TDIU 3-kurs talabasi",
+    school: "TDIU, Toshkent",
     rating: 5,
-    comment: "Jumanji orqali tarix darslarini o'tish - bu kashfiyot! Sanalar va voqealarni yodlash zerikarli edi, endi esa raqobat va o'yin orqali oson eslab qolishadi.",
+    comment: "Keyingi yil praktikada shu platformadan foydalanaman. Raxmat <3",
     avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Shahzod",
-    likes: 156,
+    likes: 42,
     timeAgo: "1 hafta oldin",
-    game: "Jumanji",
+    game: "All game",
     color: "from-[#e58ca0] to-[#bc5c74]",
     bgColor: "bg-[#fff0f3]"
   },
@@ -84,17 +84,17 @@ export const comments = [
     bgColor: "bg-[#fff3e8]"
   },
   {
-    id: 7,
-    fullName: "Azizbek Tursunov",
-    role: "Matematika o'qituvchisi",
-    school: "3-maktab, Qarshi",
-    rating: 5,
-    comment: "Baamboozle o'yini darslarimni butunlay o'zgartirib yubordi. Bolalar endi darsni intiqlik bilan kutishadi. Matematika darslarida o'yin orqali misollar yechish ularga juda yoqadi. 2-haftada o'zlashtirish 30% ga oshdi!",
-    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Azizbek",
-    likes: 210,
-    timeAgo: "2 kun oldin",
-    game: "Baamboozle",
-    color: "from-[#f7c66d] to-[#e48b52]",
-    bgColor: "bg-[#fff8e7]"
-  }
+        id: 7,
+        fullName: "Zulfiya Karimova",
+        role: "Boshlang'ich sinf o'qituvchisi",
+        school: "67-umumiy o'rta maktab, Toshkent",
+        avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Nilufar",
+        rating: 5,
+        game: "Matematik Poyga",
+        comment: "Dastur bolalarning mantiqiy fikrlashini ajoyib rivojlantiradi. Har bir dars interaktiv va qiziqarli, o'quvchilar zavq bilan qatnashadi.",
+        likes: 124,
+        timeAgo: "2 kun oldin",
+        bgColor: "bg-gradient-to-br from-rose-50/60 to-orange-50/40",
+        color: "from-rose-400 to-orange-400"
+      }
 ];

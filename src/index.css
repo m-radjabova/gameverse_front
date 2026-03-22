@@ -7,23 +7,28 @@
   --font-bebas: "Bebas Neue", sans-serif;
   --font-inter: "Inter", sans-serif;
 }
-
 @keyframes petal-fall {
   0% {
-    transform: translate3d(0, -10vh, 0) rotate(0deg);
+    transform: translate3d(0, -12vh, 0) rotate(0deg);
   }
-  25% {
-    transform: translate3d(18px, 25vh, 0) rotate(80deg);
+  20% {
+    transform: translate3d(calc(var(--drift) * 0.35), 20vh, 0) rotate(80deg);
   }
-  50% {
-    transform: translate3d(-12px, 50vh, 0) rotate(160deg);
+  45% {
+    transform: translate3d(calc(var(--drift) * -0.25), 46vh, 0) rotate(165deg);
   }
-  75% {
-    transform: translate3d(20px, 75vh, 0) rotate(240deg);
+  70% {
+    transform: translate3d(calc(var(--drift) * 0.55), 74vh, 0) rotate(255deg);
   }
   100% {
-    transform: translate3d(-8px, 110vh, 0) rotate(320deg);
+    transform: translate3d(var(--drift), 114vh, 0) rotate(340deg);
   }
+}
+
+.animate-petal-fall {
+  animation-name: petal-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
 }
 
 @keyframes float-soft {
