@@ -21,6 +21,41 @@ import "swiper/css/navigation";
 import "swiper/css/effect-coverflow";
 import { comments } from "./commentsData";
 
+const getAvatarFallback = (name: string) => {
+  const initials = name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56">
+      <defs>
+        <linearGradient id="avatarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#f3a6b7" />
+          <stop offset="100%" stop-color="#d88b6a" />
+        </linearGradient>
+      </defs>
+      <rect width="56" height="56" rx="28" fill="url(#avatarGradient)" />
+      <text
+        x="50%"
+        y="50%"
+        dominant-baseline="central"
+        text-anchor="middle"
+        font-family="Arial, sans-serif"
+        font-size="20"
+        font-weight="700"
+        fill="#ffffff"
+      >
+        ${initials}
+      </text>
+    </svg>
+  `;
+
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+};
+
 function CommentsSection({ isDark = false }: { isDark?: boolean }) {
   const [likedComments, setLikedComments] = useState<number[]>([]);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
@@ -302,6 +337,10 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
                           <img
                             src={item.avatar}
                             alt={item.fullName}
+                            onError={(event) => {
+                              event.currentTarget.onerror = null;
+                              event.currentTarget.src = getAvatarFallback(item.fullName);
+                            }}
                             className="relative h-14 w-14 rounded-full border-3 border-white/80 object-cover shadow-md transition-transform duration-300 group-hover:scale-105"
                           />
                           <div className="absolute -right-0.5 -bottom-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-400 shadow-sm animate-pulse-soft" />

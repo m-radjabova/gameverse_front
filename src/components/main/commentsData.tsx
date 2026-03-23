@@ -7,7 +7,7 @@ export const comments = [
     rating: 5,
     comment:
       "Baamboozle o'yini darslarimni butunlay o'zgartirib yubordi. Bolalar endi darsni intiqlik bilan kutishadi. Matematika darslarida o'yin orqali misollar yechish ularga juda yoqadi. 2-haftada o'zlashtirish 30% ga oshdi!",
-    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Dilnoza",
+    avatar: "https://i.pravatar.cc/150?img=5",
     likes: 234,
     timeAgo: "2 kun oldin",
     game: "Baamboozle",
@@ -22,7 +22,7 @@ export const comments = [
     rating: 5,
     comment:
       "Treasure Hunt - bu ajoyib! O'quvchilarim ingliz tilida so'zlashishdan qo'rqmasdan, o'yin orqali o'rganishmoqda. Har bir darsimiz sarguzashtga aylangan.",
-    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Madina",
+    avatar: "https://i.pravatar.cc/150?img=9",
     likes: 189,
     timeAgo: "5 kun oldin",
     game: "Treasure Hunt",
@@ -36,8 +36,8 @@ export const comments = [
     school: "TDIU, Toshkent",
     rating: 5,
     comment: "Keyingi yil praktikada shu platformadan foydalanaman. Raxmat <3",
-    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Shahzod",
-    likes: 42,
+    avatar: "https://i.pravatar.cc/150?img=12",
+    likes: 426,
     timeAgo: "1 hafta oldin",
     game: "All game",
     color: "from-[#e58ca0] to-[#bc5c74]",
@@ -51,7 +51,7 @@ export const comments = [
     rating: 5,
     comment:
       "Fizika formulalari endi bolalar uchun o'yin. Platformadagi barcha o'yinlarni sinab ko'rdik, eng sevimlisi Baamboozle.",
-    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Gulnora",
+    avatar: "https://i.pravatar.cc/150?img=20",
     likes: 203,
     timeAgo: "3 kun oldin",
     game: "Baamboozle",
@@ -66,7 +66,7 @@ export const comments = [
     rating: 5,
     comment:
       "Butun maktabimizda ushbu platformani joriy qildik. O'qituvchilar darsga tayyorgarlik ko'rishda vaqtni tejashyapti, o'quvchilar esa darsga qiziqish bilan qatnashishyapti.",
-    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Rustam",
+    avatar: "https://i.pravatar.cc/150?img=14",
     likes: 312,
     timeAgo: "1 hafta oldin",
     game: "Platforma",
@@ -81,7 +81,7 @@ export const comments = [
     rating: 5,
     comment:
       "Grammatika qoidalarini o'rgatish eng qiyin vazifa edi. Treasure Hunt orqali bolalar gap bo'laklarini o'yin orqali o'rganishdi.",
-    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Nilufar",
+    avatar: "https://i.pravatar.cc/150?img=23",
     likes: 178,
     timeAgo: "4 kun oldin",
     game: "Treasure Hunt",
@@ -93,7 +93,7 @@ export const comments = [
     fullName: "Zulfiya Karimova",
     role: "Boshlang'ich sinf o'qituvchisi",
     school: "67-umumiy o'rta maktab, Toshkent",
-    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Nilufar",
+    avatar: "https://i.pravatar.cc/150?img=28",
     rating: 5,
     game: "Matematik Poyga",
     comment:
@@ -111,7 +111,7 @@ export const comments = [
     rating: 5,
     comment:
       "Matematik Poyga orqali o'quvchilar tez va aniq hisoblashni o'rganishyapti. Darslar juda jonlandi.",
-    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Shahzod",
+    avatar: "https://i.pravatar.cc/150?img=33",
     likes: 156,
     timeAgo: "1 kun oldin",
     game: "Matematik Poyga",
@@ -126,7 +126,7 @@ export const comments = [
     rating: 5,
     comment:
       "Treasure Hunt orqali speaking skill juda tez rivojlandi. O'quvchilarim endi faol gapirishyapti!",
-    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Aziza",
+    avatar: "https://i.pravatar.cc/150?img=32",
     likes: 210,
     timeAgo: "3 kun oldin",
     game: "Treasure Hunt",
@@ -141,7 +141,7 @@ export const comments = [
     rating: 5,
     comment:
       "Platforma UX jihatdan juda qulay. O'quvchilar ham tez tushunib ketishyapti.",
-    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Jasur",
+    avatar: "https://i.pravatar.cc/150?img=52",
     likes: 98,
     timeAgo: "2 kun oldin",
     game: "Platforma",
@@ -156,7 +156,7 @@ export const comments = [
     rating: 5,
     comment:
       "Bolalar darsdan chiqishni xohlamayapti! Eng yaxshi feedback shu bo'lsa kerak 😊",
-    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Malika",
+    avatar: "https://i.pravatar.cc/150?img=47",
     likes: 175,
     timeAgo: "4 kun oldin",
     game: "Baamboozle",
@@ -171,7 +171,7 @@ export const comments = [
     rating: 5,
     comment:
       "Kelajakda o'qituvchi bo'lsam, albatta shu platformani ishlataman!",
-    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Bekzod",
+    avatar: "https://i.pravatar.cc/150?img=54",
     likes: 67,
     timeAgo: "6 kun oldin",
     game: "All game",
@@ -186,7 +186,7 @@ export const comments = [
     rating: 5,
     comment:
       "Grammatika osonlashdi! O'quvchilar qoidalarni tez eslab qolishyapti.",
-    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Dilshoda",
+    avatar: "https://i.pravatar.cc/150?img=41",
     likes: 132,
     timeAgo: "2 kun oldin",
     game: "Treasure Hunt",
@@ -201,7 +201,7 @@ export const comments = [
     rating: 5,
     comment:
       "O'qituvchilar uchun ham juda katta yordam. Tayyor kontentlar juda sifatli.",
-    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Umid",
+    avatar: "https://i.pravatar.cc/150?img=59",
     likes: 201,
     timeAgo: "5 kun oldin",
     game: "Platforma",
@@ -216,7 +216,7 @@ export const comments = [
     rating: 5,
     comment:
       "Murakkab mavzularni ham o'yin orqali tushuntirish mumkinligini ko'rdim.",
-    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Zafar",
+    avatar: "https://i.pravatar.cc/150?img=65",
     likes: 145,
     timeAgo: "3 kun oldin",
     game: "Baamboozle",
@@ -230,7 +230,7 @@ export const comments = [
     school: "3-maktab, Nukus",
     rating: 5,
     comment: "Bolalar har safar yangi o'yin kutishyapti. Juda zo'r platforma!",
-    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Gulbahor",
+    avatar: "https://i.pravatar.cc/150?img=44",
     likes: 188,
     timeAgo: "1 kun oldin",
     game: "Matematik Poyga",
@@ -244,7 +244,7 @@ export const comments = [
     school: "Freelancer",
     rating: 5,
     comment: "Frontend juda chiroyli qilingan 👏 UX ham mukammal.",
-    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Sardor",
+    avatar: "https://i.pravatar.cc/150?img=68",
     likes: 90,
     timeAgo: "1 hafta oldin",
     game: "Platforma",
