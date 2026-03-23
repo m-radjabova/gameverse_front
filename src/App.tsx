@@ -5,7 +5,6 @@ import Home from "./pages/home/Home";
 import AuthLayout from "./layout/AuthLayout";
 import MainLayout from "./layout/MainLayout";
 import AdminLayout from "./layout/AdminLayout";
-import AdminDashboard from "./pages/admin/AdminDashboard";
 import useContextPro from "./hooks/useContextPro";
 import LoginForm from "./pages/login/Login";
 import Register from "./pages/login/Register";
@@ -43,6 +42,10 @@ import TeacherQuestionPanel from "./pages/teacher/TeacherQuestionPanel";
 import TeacherLayout from "./layout/TeacherLayout";
 import IQGamePage from "./components/games/iq_game/IQGamePage";
 import FavoritesPage from "./pages/favorites/FavoritesPage";
+import HelloAdmin from "./pages/admin/HelloAdmin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/users/AdminUsers";
+import AdminFeedbacks from "./pages/admin/feedbacks/AdminFeedbacks";
 
 function App() {
   const {
@@ -93,7 +96,10 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<AdminDashboard />} />
+        <Route index element={<HelloAdmin />} />
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="feedbacks" element={<AdminFeedbacks />} />
       </Route>
 
       <Route

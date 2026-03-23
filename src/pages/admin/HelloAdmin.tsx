@@ -1,327 +1,248 @@
-import { useEffect, useMemo, useState } from "react";
-import {
-  FaArrowLeft,
-  FaCalendarAlt,
-  FaEnvelope,
-  FaExclamationTriangle,
-  FaSearch,
-  FaTrash,
-  FaUserShield,
-  FaUsers,
-} from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import apiClient from "../../apiClient/apiClient";
+import { Link } from "react-router-dom";
+import { 
+  ArrowRight, 
+  LayoutDashboard, 
+  MessageSquareMore, 
+  Sparkles, 
+  Users,
+  Flower2,
+  Heart,
+  ChevronRight
+} from "lucide-react";
+import { FaUserShield } from "react-icons/fa";
 import useContextPro from "../../hooks/useContextPro";
-import type { User } from "../../types/types";
-import { getErrorMessage } from "../../utils/error";
-import { formatUserCreatedAt } from "../../utils/userDates";
-import { FcRefresh } from "react-icons/fc";
 
-function normalizeRoleLabel(roles?: string[]) {
-  const normalized = (roles ?? []).map((role) => role.toLowerCase());
-  if (normalized.includes("admin")) return "Admin";
-  if (normalized.includes("teacher")) return "Teacher";
-  return "Teacher";
-}
+const quickLinks = [
+  {
+    title: "Dashboard",
+    to: "/admin/dashboard",
+    icon: LayoutDashboard,
+    gradient: "from-pink-300 to-rose-300",
+    petalColor: "bg-pink-200/30",
+  },
+  {
+    title: "Users",
+    to: "/admin/users",
+    icon: Users,
+    gradient: "from-amber-200 to-pink-200",
+    petalColor: "bg-amber-200/30",
+  },
+  {
+    title: "Feedbacks",
+    to: "/admin/feedbacks",
+    icon: MessageSquareMore,
+    gradient: "from-rose-200 to-pink-200",
+    petalColor: "bg-rose-200/30",
+  },
+];
 
 export default function HelloAdmin() {
-  const navigate = useNavigate();
   const {
     state: { user },
   } = useContextPro();
 
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [pendingDeleteUser, setPendingDeleteUser] = useState<User | null>(null);
-  const [search, setSearch] = useState("");
-  const [error, setError] = useState("");
-
-  const loadUsers = async (mode: "initial" | "refresh" = "initial") => {
-    if (mode === "initial") {
-      setIsLoading(true);
-    } else {
-      setIsRefreshing(true);
-    }
-
-    try {
-      setError("");
-      const res = await apiClient.get<User[]>("/users/");
-      setUsers(Array.isArray(res.data) ? res.data : []);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    void loadUsers();
-  }, []);
-
-  const filteredUsers = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) return users;
-
-    return users.filter((item) => {
-      const roleLabel = normalizeRoleLabel(item.roles).toLowerCase();
-      return (
-        item.username?.toLowerCase().includes(query) ||
-        item.email?.toLowerCase().includes(query) ||
-        roleLabel.includes(query)
-      );
-    });
-  }, [search, users]);
-
-  const adminCount = useMemo(
-    () => users.filter((item) => item.roles?.some((role) => role.toLowerCase() === "admin")).length,
-    [users]
-  );
-
-  const teacherCount = useMemo(
-    () => users.filter((item) => item.roles?.some((role) => role.toLowerCase() === "teacher")).length,
-    [users]
-  );
-
-  const handleDelete = async () => {
-    if (!pendingDeleteUser?.id || deletingId || pendingDeleteUser.id === user?.id) return;
-    try {
-      setDeletingId(pendingDeleteUser.id);
-      await apiClient.delete(`/users/${pendingDeleteUser.id}`);
-      setUsers((prev) => prev.filter((item) => item.id !== pendingDeleteUser.id));
-      setPendingDeleteUser(null);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setDeletingId(null);
-    }
-  };
+  // Generate random falling petals
+  const petals = Array.from({ length: 20 }, (_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    delay: Math.random() * 10,
+    duration: 5 + Math.random() * 5,
+    size: 8 + Math.random() * 12,
+  }));
 
   return (
-    <div className="min-h-screen px-4 py-6 text-white sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(145deg,rgba(15,23,42,0.9),rgba(49,46,129,0.55))] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur-xl">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-1.5 text-xs font-black uppercase tracking-[0.28em] text-cyan-200">
-                <FaUserShield />
-                Admin Panel
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={() => navigate("/")}
-                className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-white transition hover:bg-white/10"
-              >
-                <FaArrowLeft />
-                Bosh sahifa
-              </button>
-              <button
-                type="button"
-                onClick={() => void loadUsers("refresh")}
-                disabled={isRefreshing}
-                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-3 text-sm font-black text-slate-950 transition hover:brightness-110 disabled:opacity-70"
-              >
-                <FcRefresh className={isRefreshing ? "animate-spin" : ""} />
-                Yangilash
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <section className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-5">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-400/12 text-cyan-300">
-              <FaUsers />
-            </div>
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/45">Jami foydalanuvchi</p>
-            <p className="mt-2 text-3xl font-black text-white">{users.length}</p>
-          </div>
-
-          <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-5">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-fuchsia-400/12 text-fuchsia-300">
-              <FaUserShield />
-            </div>
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/45">Adminlar</p>
-            <p className="mt-2 text-3xl font-black text-white">{adminCount}</p>
-          </div>
-
-          <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-5">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-400/12 text-amber-300">
-              <FaCalendarAlt />
-            </div>
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/45">Teacherlar</p>
-            <p className="mt-2 text-3xl font-black text-white">{teacherCount}</p>
-          </div>
-        </section>
-
-        <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04))] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.2)] backdrop-blur-xl md:p-5">
-          <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h2 className="text-xl font-black text-white">Users ro'yxati</h2>
-              <p className="mt-1 text-sm text-white/50">
-                Kim qachon ro'yxatdan o'tganini va rolini shu yerda ko'rasiz.
-              </p>
-            </div>
-
-            <label className="flex w-full max-w-md items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-              <FaSearch className="text-white/45" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Username, email yoki role bo'yicha qidiring..."
-                className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/35"
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-pink-50 via-rose-50 to-amber-50">
+      {/* Falling Cherry Blossom Petals Animation */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {petals.map((petal) => (
+          <div
+            key={petal.id}
+            className="absolute animate-fall"
+            style={{
+              left: `${petal.left}%`,
+              animationDelay: `${petal.delay}s`,
+              animationDuration: `${petal.duration}s`,
+              width: petal.size,
+              height: petal.size,
+            }}
+          >
+            <div className="relative w-full h-full">
+              <div 
+                className="absolute inset-0 rounded-full bg-pink-200/40 blur-[1px]"
+                style={{
+                  transform: `rotate(${Math.random() * 360}deg)`,
+                }}
               />
-            </label>
+              <Flower2 className="w-full h-full text-pink-300/60" strokeWidth={1.5} />
+            </div>
           </div>
-
-          {error ? (
-            <div className="mb-4 rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-              {error}
-            </div>
-          ) : null}
-
-          {isLoading ? (
-            <div className="space-y-3 animate-pulse">
-              {[0, 1, 2, 3].map((item) => (
-                <div key={item} className="rounded-[1.5rem] border border-white/8 bg-white/5 p-4">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-2xl bg-white/10" />
-                      <div>
-                        <div className="h-4 w-40 rounded-full bg-white/10" />
-                        <div className="mt-2 h-3 w-56 rounded-full bg-white/10" />
-                      </div>
-                    </div>
-                    <div className="h-10 w-24 rounded-2xl bg-white/10" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : filteredUsers.length === 0 ? (
-            <div className="rounded-[1.5rem] border border-dashed border-white/10 bg-white/5 px-5 py-10 text-center">
-              <p className="text-lg font-black text-white">Hech narsa topilmadi</p>
-              <p className="mt-2 text-sm text-white/45">
-                Qidiruvni o'zgartirib ko'ring yoki foydalanuvchilarni yangilang.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {filteredUsers.map((item) => {
-                const roleLabel = normalizeRoleLabel(item.roles);
-                const isSelf = item.id === user?.id;
-
-                return (
-                  <article
-                    key={item.id}
-                    className="rounded-[1.5rem] border border-white/10 bg-[linear-gradient(90deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))] p-4 transition hover:border-white/15 hover:bg-[linear-gradient(90deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04))]"
-                  >
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                      <div className="flex min-w-0 items-start gap-4">
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-500 text-lg font-black text-slate-950">
-                          {(item.username || "U").charAt(0).toUpperCase()}
-                        </div>
-
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="truncate text-lg font-black text-white">{item.username}</p>
-                            <span
-                              className={`rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.2em] ${
-                                roleLabel === "Admin"
-                                  ? "bg-fuchsia-400/15 text-fuchsia-200"
-                                  : roleLabel === "Teacher"
-                                    ? "bg-amber-400/15 text-amber-200"
-                                    : "bg-emerald-400/15 text-emerald-200"
-                              }`}
-                            >
-                              {roleLabel}
-                            </span>
-                            {isSelf ? (
-                              <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold text-white/70">
-                                Siz
-                              </span>
-                            ) : null}
-                          </div>
-
-                          <div className="mt-2 flex flex-col gap-2 text-sm text-white/55 sm:flex-row sm:flex-wrap sm:items-center">
-                            <span className="inline-flex items-center gap-2">
-                              <FaEnvelope className="text-[12px]" />
-                              {item.email}
-                            </span>
-                            <span className="hidden text-white/20 sm:inline">•</span>
-                            <span className="inline-flex items-center gap-2">
-                              <FaCalendarAlt className="text-[12px]" />
-                              {formatUserCreatedAt(item)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-end gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setPendingDeleteUser(item)}
-                          disabled={isSelf || deletingId === item.id}
-                          className="inline-flex items-center gap-2 rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm font-bold text-rose-100 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          <FaTrash />
-                          {deletingId === item.id ? "O'chirilmoqda..." : "Delete"}
-                        </button>
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          )}
-        </section>
+        ))}
       </div>
 
-      {pendingDeleteUser ? (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.96),rgba(30,41,59,0.92))] p-6 shadow-[0_30px_90px_rgba(0,0,0,0.38)]">
-            <div className="flex h-14 w-14 items-center justify-center rounded-[1.3rem] bg-rose-500/15 text-rose-200">
-              <FaExclamationTriangle className="text-2xl" />
-            </div>
-            <h3 className="mt-4 text-2xl font-black text-white">Userni o'chirish</h3>
-            <p className="mt-2 text-sm leading-6 text-white/60">
-              Siz rostdan ham <span className="font-bold text-white">{pendingDeleteUser.username}</span> userini
-              o'chirmoqchimisiz? Bu amal qaytarib bo'lmaydi.
-            </p>
+      <div className="relative z-10 space-y-8 p-6 md:p-8">
+        {/* Hero Section */}
+        <section className="relative overflow-hidden rounded-3xl bg-white/40 backdrop-blur-xl shadow-2xl border border-white/60">
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-200/20 via-rose-200/20 to-amber-200/20" />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-pink-300/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-rose-300/20 rounded-full blur-3xl" />
+          
+          <div className="relative p-8 md:p-12">
+            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-white/60 backdrop-blur-sm px-5 py-2 border border-pink-200/50 shadow-sm">
+                  <Sparkles className="h-4 w-4 text-pink-500" />
+                  <span className="text-xs font-medium text-rose-700 tracking-wide">
+                    BAHOR FASLI
+                  </span>
+                  <Heart className="h-3 w-3 text-pink-400" fill="currentColor" />
+                </div>
+                
+                <h1 className="mt-6 text-4xl md:text-6xl font-bold tracking-tight">
+                  <span className="bg-gradient-to-r from-rose-600 via-pink-600 to-amber-600 bg-clip-text text-transparent">
+                    Xush kelibsiz
+                  </span>
+                  <br />
+                  <span className="text-rose-800">
+                    {user?.username || "Admin"} 🌸
+                  </span>
+                </h1>
+                <div className="mt-8 flex flex-wrap gap-4">
+                  <Link
+                    to="/admin/dashboard"
+                    className="group relative inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 px-6 py-3.5 font-semibold text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+                  >
+                    <span>Dashboard'ga o'tish</span>
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-rose-400 to-pink-400 opacity-0 group-hover:opacity-100 transition-opacity -z-10" />
+                  </Link>
+                  <Link
+                    to="/admin/users"
+                    className="inline-flex items-center gap-2 rounded-2xl bg-white/60 backdrop-blur-sm px-6 py-3.5 font-semibold text-rose-700 border border-pink-200/50 hover:bg-white/80 transition-all duration-300"
+                  >
+                    <Users className="h-4 w-4" />
+                    <span>Users ochish</span>
+                  </Link>
+                </div>
+              </div>
 
-            <div className="mt-5 rounded-[1.3rem] border border-white/10 bg-white/5 p-4 text-sm text-white/70">
-              <p>
-                <span className="text-white/40">Email:</span> {pendingDeleteUser.email}
-              </p>
-              <p className="mt-2">
-                <span className="text-white/40">Role:</span> {normalizeRoleLabel(pendingDeleteUser.roles)}
-              </p>
-            </div>
+              {/* Profile Card */}
+              <div className="relative">
+                <div className="rounded-2xl bg-white/60 backdrop-blur-xl p-6 border border-white/60 shadow-lg">
+                  <div className="relative">
+                    <div className="absolute -top-3 -right-3">
+                      <div className="animate-pulse">
+                        <Heart className="h-6 w-6 text-pink-400" fill="currentColor" />
+                      </div>
+                    </div>
+                    <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-300 via-rose-300 to-amber-300 shadow-lg">
+                      <FaUserShield className="text-3xl text-white" />
+                    </div>
+                  </div>
+                  
+                  <h3 className="mt-4 text-2xl font-bold text-rose-800">HelloAdmin</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-rose-600/70">
+                     Admin paneliga xush kelibsiz.
+                  </p>
 
-            <div className="mt-6 flex gap-3">
-              <button
-                type="button"
-                onClick={() => setPendingDeleteUser(null)}
-                className="flex-1 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-white/80 transition hover:bg-white/10"
-              >
-                Yo'q
-              </button>
-              <button
-                type="button"
-                onClick={() => void handleDelete()}
-                disabled={deletingId === pendingDeleteUser.id}
-                className="flex-1 rounded-2xl bg-gradient-to-r from-rose-500 to-red-500 px-4 py-3 text-sm font-black text-white transition hover:brightness-110 disabled:opacity-70"
-              >
-                {deletingId === pendingDeleteUser.id ? "O'chirilmoqda..." : "Ha"}
-              </button>
+                  <div className="mt-5 space-y-3">
+                    <div className="rounded-xl bg-white/40 backdrop-blur-sm px-4 py-3 border border-pink-100">
+                      <p className="mt-1 truncate text-sm font-semibold text-rose-800">
+                        {user?.email || "admin@example.com"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+        </section>
+
+        {/* Quick Links Cards */}
+        <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {quickLinks.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.title}
+                to={item.to}
+                className="group relative overflow-hidden rounded-2xl bg-white/40 backdrop-blur-sm border border-white/60 p-6 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 hover:bg-white/60"
+                style={{
+                  animationDelay: `${index * 100}ms`,
+                }}
+              >
+                {/* Background Petal Effect */}
+                <div className="absolute -top-10 -right-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-pink-300/20 rounded-full blur-xl" />
+                    <Flower2 className="relative h-24 w-24 text-pink-200/40" strokeWidth={1} />
+                  </div>
+                </div>
+                
+                <div className="relative z-10">
+                  <div className={`inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br ${item.gradient} shadow-md`}>
+                    <Icon className="h-6 w-6 text-rose-700" />
+                  </div>
+                  
+                  <h3 className="mt-5 text-xl font-bold text-rose-800 group-hover:text-rose-900 transition-colors">
+                    {item.title}
+                  </h3>
+                  <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-rose-500 group-hover:text-rose-600 transition-colors">
+                    <span>Ochish</span>
+                    <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </div>
+                </div>
+                
+                {/* Decorative Border */}
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-pink-300 via-rose-300 to-amber-300 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+              </Link>
+            );
+          })}
+        </section>
+
+        {/* Decorative Elements */}
+        <div className="absolute bottom-8 left-8 opacity-30 pointer-events-none">
+          <Flower2 className="h-12 w-12 text-pink-300" strokeWidth={1} />
         </div>
-      ) : null}
+        <div className="absolute top-32 right-12 opacity-20 pointer-events-none animate-float">
+          <Heart className="h-16 w-16 text-pink-300" fill="currentColor" />
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes fall {
+          0% {
+            transform: translateY(-20vh) rotate(0deg);
+            opacity: 0;
+          }
+          10% {
+            opacity: 0.6;
+          }
+          90% {
+            opacity: 0.4;
+          }
+          100% {
+            transform: translateY(100vh) rotate(360deg);
+            opacity: 0;
+          }
+        }
+        
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-20px) rotate(5deg);
+          }
+        }
+        
+        .animate-fall {
+          animation: fall linear infinite;
+        }
+        
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 }

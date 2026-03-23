@@ -92,9 +92,7 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
           : "bg-gradient-to-br from-[#fffbf8] via-[#fff6f2] to-[#fef0ea]"
       }`}
     >
-      {/* Enhanced Background Decorations */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Large soft blurs with depth */}
         <div
           className={`absolute -top-40 -right-20 h-[500px] w-[500px] rounded-full blur-3xl animate-pulse-slow ${
             isDark ? "bg-[#ff6b8a]/5" : "bg-[#ffd9de]/30"
@@ -111,7 +109,6 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
           }`}
         />
 
-        {/* Floating organic shapes */}
         <div className="absolute top-[15%] left-[5%] opacity-20 animate-float-soft">
           <GiSpiralBloom className={`text-7xl ${isDark ? "text-[#ffb48a]" : "text-[#e07c8e]"}`} />
         </div>
@@ -122,7 +119,6 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
           <GiFlowerTwirl className={`text-6xl ${isDark ? "text-[#c9b6ff]" : "text-[#d99f8b]"}`} />
         </div>
 
-        {/* Floating cherry blossoms - more elegant */}
         {[...Array(12)].map((_, i) => (
           <GiCherry
             key={i}
@@ -138,7 +134,6 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
           />
         ))}
 
-        {/* Soft grid pattern - more refined */}
         <div
           className="absolute inset-0 opacity-[0.015]"
           style={{
@@ -152,9 +147,7 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header Section - More premium & spacious */}
         <div className="mx-auto mb-16 max-w-4xl text-center lg:mb-20" data-aos="fade-up" data-aos-delay="80">
-          {/* Elegant badge with sparkle */}
           <div
             className={`mb-6 inline-flex items-center gap-3 rounded-full border px-5 py-2.5 shadow-sm backdrop-blur-md transition-all hover:shadow-md ${
               isDark
@@ -173,7 +166,6 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
             <MdOutlineRateReview className={`text-xs ${isDark ? "text-[#ff9faa]" : "text-[#c98888]"}`} />
           </div>
 
-          {/* Main title with gradient and elegance */}
           <h2 className="text-4xl font-light leading-[1.2] tracking-tight sm:text-5xl lg:text-6xl">
             <span className={isDark ? "text-[#f0f0f0]" : "text-[#6b4e52]"}>Nima uchun</span>
             <span className="mt-2 block bg-gradient-to-r from-[#e07c8e] via-[#d46b7a] to-[#b85c6b] bg-clip-text font-semibold text-transparent">
@@ -181,13 +173,11 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
             </span>
           </h2>
 
-          {/* Elegant description */}
           <p className={`mx-auto mt-5 max-w-2xl text-base font-light ${isDark ? "text-[#a1a1b5]" : "text-[#9b7578]"}`}>
             Yurtimizning 50 dan ortiq maktab va litseylaridagi tajribali pedagoglar platformamiz haqida o'z
             fikrlarini bildirishdi
           </p>
 
-          {/* Stats with refined cards */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             {[
               {
@@ -238,7 +228,6 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
           </div>
         </div>
 
-        {/* Swiper Carousel - Premium & Smooth */}
         <div className="relative px-2 md:px-12">
           <Swiper
             modules={[Autoplay, Pagination, Navigation, EffectCoverflow]}
@@ -262,11 +251,7 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
               }
             }}
             onSlideChangeTransitionEnd={() => {
-              if (
-                shouldLoop &&
-                swiperRef.current &&
-                !swiperRef.current.autoplay.running
-              ) {
+              if (shouldLoop && swiperRef.current && !swiperRef.current.autoplay.running) {
                 swiperRef.current.autoplay.start();
               }
             }}
@@ -309,14 +294,12 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
                     onMouseLeave={() => setHoveredCard(null)}
                     className="group relative h-full transition-all duration-500"
                   >
-                    {/* Glow effect on hover */}
                     <div
                       className={`absolute -inset-0.5 rounded-3xl bg-gradient-to-r ${item.color} opacity-0 blur-xl transition-opacity duration-500 ${
                         isHovered ? "opacity-30" : "opacity-0"
                       }`}
                     />
 
-                    {/* Main Card - Premium glassmorphism */}
                     <div
                       className={`card-hover-effect relative flex h-full flex-col rounded-3xl border p-6 shadow-[0_10px_35px_rgba(0,0,0,0.03)] backdrop-blur-md transition-all duration-500 hover:shadow-[0_20px_45px_rgba(224,124,142,0.12)] ${
                         isDark
@@ -324,14 +307,12 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
                           : `${item.bgColor} border-white/70 bg-white/50 hover:bg-white/70`
                       }`}
                     >
-                      {/* Decorative quote orb - premium */}
                       <div
                         className={`absolute -top-3 -right-3 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${item.color} shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}
                       >
                         <FaQuoteRight className="text-sm text-white drop-shadow-sm" />
                       </div>
 
-                      {/* User section with elegant layout */}
                       <div className="mb-5 flex items-start gap-4">
                         <div className="relative flex-shrink-0">
                           <img
@@ -379,7 +360,6 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
                         </div>
                       </div>
 
-                      {/* Rating with stars - refined */}
                       <div className="mb-4 flex items-center gap-1.5">
                         <div className="flex items-center gap-0.5">
                           {Array.from({ length: 5 }).map((_, i) => (
@@ -405,7 +385,6 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
                         </span>
                       </div>
 
-                      {/* Comment with elegant typography */}
                       <div className="relative mb-5 min-h-[100px]">
                         <p
                           className={`line-clamp-3 text-[14px] leading-relaxed font-light italic ${
@@ -416,7 +395,6 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
                         </p>
                       </div>
 
-                      {/* Footer with interaction */}
                       <div
                         className={`mt-auto flex items-center justify-between border-t pt-4 ${
                           isDark ? "border-[#2a2a3a]" : "border-[#f0dbd5]/50"
@@ -442,12 +420,10 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
                         </button>
 
                         <div className={`flex items-center gap-1 text-[9px] ${isDark ? "text-[#6a6a82]" : "text-[#c8a2a2]"}`}>
-                          <span aria-hidden="true">🕊️</span>
                           {item.timeAgo}
                         </div>
                       </div>
 
-                      {/* Subtle decorative flower */}
                       <div className="absolute bottom-3 left-3 opacity-20 transition-opacity group-hover:opacity-30">
                         <GiFlowerTwirl className={`text-base ${isDark ? "text-[#ffb48a]" : "text-[#d99f8b]"}`} />
                       </div>
@@ -458,7 +434,6 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
             })}
           </Swiper>
 
-          {/* Custom Navigation Buttons - Premium minimal */}
           <button
             className={`swiper-button-prev-custom absolute top-1/2 left-0 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border shadow-md backdrop-blur-xl transition-all duration-300 hover:scale-110 md:flex ${
               isDark
@@ -480,21 +455,16 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
           </button>
         </div>
 
-        {/* Trusted by badge - extra social proof */}
         <div className="mt-12 flex justify-center">
           <div
             className={`inline-flex items-center gap-3 rounded-full border border-white/30 px-5 py-2 backdrop-blur-sm ${
               isDark ? "bg-[#1a1a2a]/40" : "bg-white/40"
             }`}
           >
-            <span className={`text-[10px] font-medium tracking-wide ${isDark ? "text-[#a0a0b8]" : "text-[#a77a7a]"}`}>
-              🌟 500+ o'qituvchilar ishonchi • 98% tavsiya etadi
-            </span>
-          </div>
+        </div>
         </div>
       </div>
 
-      {/* Enhanced Swiper & Animation Styles */}
       <style>{`
         .comments-swiper .swiper-wrapper {
           align-items: stretch;

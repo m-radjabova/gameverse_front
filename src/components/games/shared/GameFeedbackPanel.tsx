@@ -95,7 +95,7 @@ function GameFeedbackPanel({ gameKey }: Props) {
       return;
     }
 
-    setSuccess("Saqlandi.");
+    setSuccess("Izoh yuborildi. Admin tasdiqlagandan keyin ko'rinadi.");
     setCommentInput("");
   };
 

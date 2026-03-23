@@ -19,6 +19,11 @@ export interface GameComment {
   rating: number;
   comment: string;
   created_at?: string;
+  updated_at?: string;
+  is_approved?: boolean;
+  approved_at?: string | null;
+  approved_by?: string | null;
+  approver_username?: string | null;
 }
 
 export interface GameCommentOut {
@@ -30,7 +35,14 @@ export interface GameCommentOut {
   rating: number;
   comment: string;
   created_at?: string;
+  updated_at?: string;
+  is_approved?: boolean;
+  approved_at?: string | null;
+  approved_by?: string | null;
+  approver_username?: string | null;
 }
+
+export interface AdminGameComment extends GameComment {}
 
 
 export interface GameRatingSummary {
