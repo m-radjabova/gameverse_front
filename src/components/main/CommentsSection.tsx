@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   FaStar,
   FaQuoteRight,
@@ -34,7 +34,20 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
   };
 
   const totalComments = comments.length;
+  const maxSlidesPerView = 3;
   const shouldLoop = comments.length > 1;
+  const carouselComments = useMemo(() => {
+    if (!shouldLoop) return comments;
+
+    const minimumLoopSlides = maxSlidesPerView * 2;
+    const repeatedComments = [...comments];
+
+    while (repeatedComments.length < minimumLoopSlides) {
+      repeatedComments.push(...comments);
+    }
+
+    return repeatedComments;
+  }, [maxSlidesPerView, shouldLoop]);
 
   return (
     <section
@@ -198,7 +211,7 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
             slidesPerView={1}
             centeredSlides={false}
             loop={shouldLoop}
-            loopAdditionalSlides={Math.min(comments.length, 3)}
+            loopAdditionalSlides={shouldLoop ? Math.min(carouselComments.length, maxSlidesPerView * 2) : 0}
             watchSlidesProgress
             observer
             observeParents
@@ -209,20 +222,30 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
               swiperRef.current = swiper;
             }}
             onTouchEnd={() => {
-              swiperRef.current?.autoplay?.start();
+              if (shouldLoop) {
+                swiperRef.current?.autoplay?.start();
+              }
             }}
             onSlideChangeTransitionEnd={() => {
-              if (swiperRef.current && !swiperRef.current.autoplay.running) {
+              if (
+                shouldLoop &&
+                swiperRef.current &&
+                !swiperRef.current.autoplay.running
+              ) {
                 swiperRef.current.autoplay.start();
               }
             }}
-            autoplay={{
-              delay: 4800,
-              disableOnInteraction: false,
-              pauseOnMouseEnter: false,
-              stopOnLastSlide: false,
-              waitForTransition: false,
-            }}
+            autoplay={
+              shouldLoop
+                ? {
+                    delay: 4800,
+                    disableOnInteraction: false,
+                    pauseOnMouseEnter: false,
+                    stopOnLastSlide: false,
+                    waitForTransition: false,
+                  }
+                : false
+            }
             pagination={{
               clickable: true,
               dynamicBullets: true,
@@ -239,13 +262,13 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
             }}
             className="comments-swiper !overflow-visible !pb-14"
           >
-            {comments.map((item) => {
+            {carouselComments.map((item, index) => {
               const isLiked = likedComments.includes(item.id);
               const displayLikes = item.likes + (isLiked ? 1 : 0);
               const isHovered = hoveredCard === item.id;
 
               return (
-                <SwiperSlide key={item.id} className="!h-auto">
+                <SwiperSlide key={`${item.id}-${index}`} className="!h-auto">
                   <article
                     onMouseEnter={() => setHoveredCard(item.id)}
                     onMouseLeave={() => setHoveredCard(null)}

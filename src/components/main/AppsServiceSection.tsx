@@ -28,11 +28,20 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
     () => gameCards.filter((game) => game.available),
     []
   );
+  const maxSlidesPerView = 3;
   const shouldLoop = games.length > 1;
   const carouselGames = useMemo(() => {
     if (!shouldLoop) return games;
-    return [...games, ...games, ...games];
-  }, [games, shouldLoop]);
+
+    const minimumLoopSlides = maxSlidesPerView * 2;
+    const repeatedGames = [...games];
+
+    while (repeatedGames.length < minimumLoopSlides) {
+      repeatedGames.push(...games);
+    }
+
+    return repeatedGames;
+  }, [games, maxSlidesPerView, shouldLoop]);
 
   useEffect(() => {
     setLikedGames(getFavoriteGameIds());
@@ -85,20 +94,24 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
             spaceBetween={24}
             slidesPerView={1}
             loop={shouldLoop}
-            loopAdditionalSlides={carouselGames.length}
+            loopAdditionalSlides={shouldLoop ? Math.min(carouselGames.length, maxSlidesPerView * 2) : 0}
             watchSlidesProgress
             observer
             observeParents
             slidesPerGroup={1}
             grabCursor
             speed={650}
-            autoplay={{
-              delay: 3500,
-              disableOnInteraction: false,
-              pauseOnMouseEnter: false,
-              stopOnLastSlide: false,
-              waitForTransition: false,
-            }}
+            autoplay={
+              shouldLoop
+                ? {
+                    delay: 3500,
+                    disableOnInteraction: false,
+                    pauseOnMouseEnter: false,
+                    stopOnLastSlide: false,
+                    waitForTransition: false,
+                  }
+                : false
+            }
             pagination={{
               clickable: true,
               dynamicBullets: true,
