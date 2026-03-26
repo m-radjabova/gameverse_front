@@ -24,7 +24,7 @@ import type { User } from "../../types/types";
 import { getErrorMessage } from "../../utils/error";
 import { setTokens } from "../../utils/auth";
 
-import loginImg from "../../assets/login_ill.jpg"
+import loginImg from "../../assets/login_image.png"
 
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../firebase";
@@ -113,13 +113,13 @@ function LoginForm() {
       
       {/* Split Layout */}
       <div className="flex h-full w-full">
-        <div className="hidden lg:block lg:w-1/2 h-full relative overflow-hidden bg-gradient-to-br from-[#e07c8e] to-[#a66466]">
+        <div className="hidden lg:block lg:w-1/2 h-full relative overflow-hidden">
           {/* Decorative overlay */}
           <div className="absolute inset-0 bg-black/10" />
           
           {/* Image Container */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative w-full h-full rounded-3xl overflow-hidden shadow-2xl transform hover:scale-105 transition-all duration-700">
+            <div className="relative w-full h-full  overflow-hidden shadow-2xl transform hover:scale-105 transition-all duration-700">
               {/* Sizning rasmingiz shu yerga qo'yiladi */}
               <img
                 src={loginImg}

@@ -9,9 +9,6 @@ import {
   Star,
   Trash2,
   XCircle,
-  Flower2,
-  Heart,
-  Sparkles,
 } from "lucide-react";
 import {
   useAdminApprovedGameFeedback,
@@ -73,24 +70,9 @@ export default function AdminFeedbacks() {
   ).toFixed(1);
 
   const stats = [
-    {
-      label: activeTab === "pending" ? "Pending" : "Approved",
-      value: visibleComments.length,
-      icon: MessageSquareQuote,
-      gradient: "from-pink-400 to-rose-400",
-    },
-    {
-      label: "O'rtacha baho",
-      value: averageRating,
-      icon: Star,
-      gradient: "from-amber-400 to-pink-400",
-    },
-    {
-      label: "O'yinlar",
-      value: new Set(visibleComments.map((item) => item.game_key)).size,
-      icon: Gamepad2,
-      gradient: "from-rose-400 to-amber-400",
-    },
+    { label: activeTab === "pending" ? "Pending" : "Approved", value: visibleComments.length, icon: MessageSquareQuote },
+    { label: "O'rtacha baho", value: averageRating, icon: Star },
+    { label: "O'yinlar", value: new Set(visibleComments.map((item) => item.game_key)).size, icon: Gamepad2 },
   ];
 
   const tabs = [
@@ -100,7 +82,6 @@ export default function AdminFeedbacks() {
       count: pendingState.comments.length,
       icon: Clock3,
       description: "Tasdiqlashni kutayotgan feedbacklar",
-      gradient: "from-amber-400 to-pink-400",
     },
     {
       id: "approved" as const,
@@ -108,7 +89,6 @@ export default function AdminFeedbacks() {
       count: approvedState.comments.length,
       icon: ShieldCheck,
       description: "Tasdiqlangan feedbacklar",
-      gradient: "from-pink-400 to-rose-400",
     },
   ];
 
@@ -140,148 +120,104 @@ export default function AdminFeedbacks() {
   };
 
   return (
-    <div className="relative space-y-8">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden rounded-3xl bg-white/40 backdrop-blur-xl shadow-2xl border border-white/60">
-        <div className="absolute inset-0 bg-gradient-to-br from-pink-200/20 via-rose-200/20 to-amber-200/20" />
-        <div className="absolute -top-20 -right-20 w-80 h-80 bg-pink-300/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-rose-300/20 rounded-full blur-3xl" />
-        
-        <div className="relative p-4 md:p-6">
-          {/* Tabs and Search */}
-          <div className="mt-8 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="grid gap-3 sm:grid-cols-2">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
+    <div className="space-y-6">
+      <section className="rounded-[28px] border border-white/10 bg-white px-6 py-6 text-black shadow-[0_24px_70px_rgba(255,255,255,0.08)]">
+        <div className="grid gap-3 sm:grid-cols-2 xl:max-w-3xl">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
 
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`group relative overflow-hidden rounded-xl border p-4 text-left transition-all duration-300 ${
-                      isActive
-                        ? "bg-gradient-to-r from-pink-100/80 to-rose-100/80 border-pink-200/50 shadow-md"
-                        : "bg-white/40 border-white/60 hover:bg-white/60"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className={`flex h-11 w-11 items-center justify-center rounded-lg transition-all ${
-                        isActive 
-                          ? `bg-gradient-to-br ${tab.gradient} text-white shadow-md`
-                          : "bg-white/60 text-rose-500"
-                      }`}>
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <span className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        isActive 
-                          ? "bg-white/60 text-rose-700" 
-                          : "bg-white/50 text-rose-600 border border-pink-200/50"
-                      }`}>
-                        {tab.count}
-                      </span>
-                    </div>
-                    <p className={`mt-4 text-lg font-bold ${
-                      isActive ? "text-rose-800" : "text-rose-700"
-                    }`}>
-                      {tab.label}
-                    </p>
-                    <p className="mt-1 text-sm text-rose-600/60">{tab.description}</p>
-                    
-                    {/* Decorative Element */}
-                    {isActive && (
-                      <div className="absolute bottom-2 right-2 opacity-30">
-                        <Flower2 className="h-8 w-8 text-pink-300" strokeWidth={1} />
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`rounded-[24px] border p-4 text-left transition ${
+                  isActive
+                    ? "border-black bg-black text-white"
+                    : "border-black/10 bg-black/[0.03] text-black hover:bg-black/[0.06]"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${isActive ? "bg-white text-black" : "bg-black text-white"}`}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${isActive ? "bg-white/12 text-white" : "border border-black/10 bg-white text-black/75"}`}>
+                    {tab.count}
+                  </span>
+                </div>
+                <p className="mt-4 text-lg font-semibold">{tab.label}</p>
+                <p className={`mt-1 text-sm ${isActive ? "text-white/62" : "text-black/58"}`}>{tab.description}</p>
+              </button>
+            );
+          })}
         </div>
       </section>
 
-      {/* Stats Cards */}
-      <section className="grid gap-6 md:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-3">
         {stats.map((item) => {
           const Icon = item.icon;
+
           return (
             <article
               key={item.label}
-              className="group relative overflow-hidden rounded-2xl bg-white/40 backdrop-blur-sm border border-white/60 p-6 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 hover:bg-white/60"
+              className="rounded-[28px] border border-white/10 bg-white/[0.03] p-6 transition hover:border-white/20 hover:bg-white/[0.05]"
             >
-              <div className={`inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br ${item.gradient} shadow-md`}>
-                <Icon className="h-6 w-6 text-white" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-black">
+                <Icon className="h-6 w-6" />
               </div>
-              <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-rose-500/70">
-                {item.label}
-              </p>
-              <p className="mt-2 text-4xl font-bold text-rose-800">{item.value}</p>
-              
-              {/* Decorative Heart */}
-              <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Heart className="h-5 w-5 text-pink-300" fill="currentColor" />
-              </div>
+              <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/42">{item.label}</p>
+              <p className="mt-3 text-4xl font-semibold text-white">{item.value}</p>
             </article>
           );
         })}
       </section>
 
-      {/* Feedback List */}
       <section className="grid gap-4">
         {loading ? (
-          <div className="rounded-2xl bg-white/40 backdrop-blur-sm border border-white/60 px-6 py-12 text-center">
-            <div className="flex flex-col items-center gap-3">
-              <Sparkles className="h-8 w-8 text-pink-400 animate-pulse" />
-              <p className="text-rose-600">Feedbacklar yuklanmoqda...</p>
-            </div>
+          <div className="rounded-[28px] border border-white/10 bg-white/[0.03] px-6 py-14 text-center">
+            <p className="text-sm font-medium text-white/58">Feedbacklar yuklanmoqda...</p>
           </div>
         ) : visibleComments.map((item) => (
           <article
             key={item.id}
-            className="group relative overflow-hidden rounded-2xl bg-white/40 backdrop-blur-sm border border-white/60 p-5 transition-all duration-300 hover:shadow-md hover:bg-white/60"
+            className="rounded-[28px] border border-white/10 bg-white px-5 py-5 text-black transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(255,255,255,0.06)]"
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="flex items-start gap-4">
-                <div className={`flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br ${
-                  activeTab === "pending" 
-                    ? "from-amber-400 to-pink-400" 
-                    : "from-pink-400 to-rose-400"
-                } shadow-md text-white font-bold text-lg`}>
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-black text-lg font-semibold text-white">
                   {(item.username || "T").charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-lg font-bold text-rose-800">{item.username || "Teacher"}</h3>
-                    <span className="rounded-full bg-white/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-rose-600 border border-pink-200/50">
+                    <h3 className="text-lg font-semibold">{item.username || "Teacher"}</h3>
+                    <span className="rounded-full border border-black/10 bg-black/[0.05] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-black/72">
                       {item.game_key}
                     </span>
                     <span
-                      className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-wider ${
+                      className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] ${
                         activeTab === "pending"
-                          ? "border-amber-200/60 bg-amber-50/60 text-amber-700"
-                          : "border-pink-200/60 bg-pink-50/60 text-pink-700"
+                          ? "border border-black/10 bg-black text-white"
+                          : "border border-black/10 bg-black/[0.06] text-black/75"
                       }`}
                     >
                       {activeTab === "pending" ? "Kutilmoqda" : "Tasdiqlangan"}
                     </span>
                   </div>
-                  <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-rose-500/60">
-                    <span>🌸 Yuborilgan: {formatDate(item.created_at)}</span>
-                    {item.approved_at && <span>✅ Tasdiqlangan: {formatDate(item.approved_at)}</span>}
-                    {item.approver_username && <span>👤 Admin: {item.approver_username}</span>}
+
+                  <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-black/50">
+                    <span>Yuborilgan: {formatDate(item.created_at)}</span>
+                    {item.approved_at && <span>Tasdiqlangan: {formatDate(item.approved_at)}</span>}
+                    {item.approver_username && <span>Admin: {item.approver_username}</span>}
                   </div>
-                  <p className="mt-3 max-w-4xl text-sm leading-relaxed text-rose-700/80">
-                    "{item.comment}"
-                  </p>
+
+                  <p className="mt-3 max-w-4xl text-sm leading-7 text-black/70">"{item.comment}"</p>
                 </div>
               </div>
 
               <div className="flex shrink-0 flex-wrap items-center gap-3">
-                <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-100 to-pink-100 px-3 py-2 text-sm font-semibold text-amber-700">
-                  <Star className="h-4 w-4 fill-current text-amber-500" />
+                <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-black/[0.04] px-3 py-2 text-sm font-semibold text-black/75">
+                  <Star className="h-4 w-4 fill-current text-black" />
                   {item.rating}.0
                 </div>
 
@@ -291,7 +227,7 @@ export default function AdminFeedbacks() {
                       type="button"
                       onClick={() => void handleApprove(item.id)}
                       disabled={isBusy}
-                      className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-pink-400 to-rose-400 px-4 py-2 text-sm font-semibold text-white transition-all hover:shadow-md disabled:opacity-60"
+                      className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-black/88 disabled:opacity-60"
                     >
                       <CheckCheck className="h-4 w-4" />
                       {processingId === item.id && pendingState.approving ? "Tasdiqlanmoqda..." : "Tasdiqlash"}
@@ -300,7 +236,7 @@ export default function AdminFeedbacks() {
                       type="button"
                       onClick={() => void handleReject(item.id)}
                       disabled={isBusy}
-                      className="inline-flex items-center gap-2 rounded-full border border-rose-200/60 bg-white/60 px-4 py-2 text-sm font-semibold text-rose-600 transition-all hover:bg-rose-50 disabled:opacity-60"
+                      className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-black/[0.04] px-4 py-2 text-sm font-semibold text-black/75 transition hover:bg-black/[0.08] disabled:opacity-60"
                     >
                       {processingId === item.id && pendingState.rejecting ? (
                         <Trash2 className="h-4 w-4" />
@@ -312,7 +248,7 @@ export default function AdminFeedbacks() {
                   </>
                 ) : (
                   <>
-                    <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-pink-100 to-rose-100 px-4 py-2 text-sm font-semibold text-rose-700">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-sm font-semibold text-white">
                       <ShieldCheck className="h-4 w-4" />
                       Approved
                     </div>
@@ -320,7 +256,7 @@ export default function AdminFeedbacks() {
                       type="button"
                       onClick={() => void handleUnapprove(item.id)}
                       disabled={isBusy}
-                      className="inline-flex items-center gap-2 rounded-full border border-pink-200/60 bg-white/60 px-4 py-2 text-sm font-semibold text-rose-600 transition-all hover:bg-white/80 disabled:opacity-60"
+                      className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-black/[0.04] px-4 py-2 text-sm font-semibold text-black/75 transition hover:bg-black/[0.08] disabled:opacity-60"
                     >
                       <History className="h-4 w-4" />
                       {processingId === item.id && approvedState.unapproving
@@ -331,16 +267,12 @@ export default function AdminFeedbacks() {
                 )}
               </div>
             </div>
-
-            {/* Decorative Hover Effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-pink-200/0 via-pink-200/10 to-rose-200/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
           </article>
         ))}
 
         {!loading && visibleComments.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-pink-200/60 bg-white/30 px-6 py-12 text-center">
-            <Flower2 className="mx-auto h-12 w-12 text-pink-300 mb-3" strokeWidth={1.5} />
-            <p className="text-xl font-bold text-rose-700">
+          <div className="rounded-[28px] border border-dashed border-white/10 bg-white/[0.03] px-6 py-14 text-center">
+            <p className="text-xl font-semibold text-white">
               {activeTab === "pending" ? "Kutilayotgan feedback yo'q" : "Tasdiqlangan feedback topilmadi"}
             </p>
           </div>
