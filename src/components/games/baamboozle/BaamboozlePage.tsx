@@ -20,6 +20,7 @@ import { MdGridOn } from "react-icons/md";
 import { RiTeamFill } from "react-icons/ri";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
 import GameFeedbackPanel from '../shared/GameFeedbackPanel';
+import baamboozleImg from "../../../assets/Baamboozle_img.png"
 
 function BaamboozlePage() {
   const gameStats = [
@@ -239,24 +240,11 @@ function BaamboozlePage() {
 
               {/* Preview Board */}
               <div className="relative transform-gpu overflow-hidden rounded-2xl border-4 border-yellow-400/30 bg-gradient-to-br from-yellow-500 to-orange-500 p-4 shadow-2xl">
-                <div className="grid grid-cols-4 gap-2">
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-yellow-400 to-amber-400 border-2 border-white/30 flex items-center justify-center text-white font-bold">100</div>
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-orange-400 to-red-400 border-2 border-white/30 flex items-center justify-center text-white font-bold">200</div>
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-purple-400 to-pink-400 border-2 border-white/30 flex items-center justify-center text-white font-bold">⚡</div>
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-green-400 to-emerald-400 border-2 border-white/30 flex items-center justify-center text-white font-bold">🔄</div>
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-yellow-400 to-amber-400 border-2 border-white/30 flex items-center justify-center text-white font-bold">300</div>
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-blue-400 to-cyan-400 border-2 border-white/30 flex items-center justify-center text-white font-bold">💎</div>
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-red-400 to-rose-400 border-2 border-white/30 flex items-center justify-center text-white font-bold">🔥</div>
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-yellow-400 to-amber-400 border-2 border-white/30 flex items-center justify-center text-white font-bold">400</div>
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-yellow-400 to-amber-400 border-2 border-white/30 flex items-center justify-center text-white font-bold">500</div>
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-purple-400 to-pink-400 border-2 border-white/30 flex items-center justify-center text-white font-bold">⚡</div>
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-green-400 to-emerald-400 border-2 border-white/30 flex items-center justify-center text-white font-bold">🔄</div>
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-yellow-400 to-amber-400 border-2 border-white/30 flex items-center justify-center text-white font-bold">600</div>
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-red-400 to-rose-400 border-2 border-white/30 flex items-center justify-center text-white font-bold">🔥</div>
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-blue-400 to-cyan-400 border-2 border-white/30 flex items-center justify-center text-white font-bold">💎</div>
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-yellow-400 to-amber-400 border-2 border-white/30 flex items-center justify-center text-white font-bold">700</div>
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-yellow-400 to-amber-400 border-2 border-white/30 flex items-center justify-center text-white font-bold">800</div>
-                </div>
+                <img
+                  src={baamboozleImg}
+                  alt="Baamboozle Preview"
+                  className="w-full rounded-xl border-2 border-yellow-400/50 shadow-lg"
+                />
 
                 {/* Overlay Badge */}
                 <div className="absolute bottom-0 left-0 right-0 z-20 p-4">
