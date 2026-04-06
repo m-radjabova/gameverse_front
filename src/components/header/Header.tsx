@@ -16,6 +16,7 @@ import {
 } from "react-icons/fa";
 import { MdStars } from "react-icons/md";
 import { NavLink, useNavigate } from "react-router-dom";
+import bunnyLogo from "../../assets/bunny.png";
 import useContextPro from "../../hooks/useContextPro";
 import { toMediaUrl } from "../../utils";
 import { getFavoriteGameIds, subscribeFavoriteGames } from "../../utils/gameFavorites";
@@ -170,33 +171,33 @@ function Header({
         <div
           className={`mx-auto flex max-w-7xl items-center justify-between rounded-[28px] border px-4 py-3 shadow-[0_12px_35px_rgba(166,100,102,0.12)] backdrop-blur-xl sm:px-6 ${
             isDark
-              ? "border-[#ff6b8a]/18 bg-[#1e1e2f]/80"
-              : "border-[#f1d9d6] bg-white/75"
+              ? "border-[#59b9e6]/18 bg-[#121c2d]/80"
+              : "border-[#d8eef7] bg-white/82"
           }`}
         >
           <div
             onClick={() => navigate("/")}
-            className="group flex cursor-pointer items-center gap-3"
+            className="group flex cursor-pointer items-center gap-2 sm:gap-2.5"
           >
             <div
-              className={`relative flex h-12 w-12 items-center justify-center rounded-2xl border shadow-[0_8px_20px_rgba(224,124,142,0.18)] transition-transform duration-300 group-hover:scale-105 ${
+              className={`relative flex h-[58px] w-[58px] items-center justify-center rounded-[22px] border shadow-[0_8px_20px_rgba(89,185,230,0.18)] transition-transform duration-300 group-hover:scale-105 sm:h-16 sm:w-16 ${
                 isDark
-                  ? "border-[#ff6b8a]/20 bg-gradient-to-br from-[#25253a] via-[#1e1e2f] to-[#141423]"
-                  : "border-[#f0d9d6] bg-gradient-to-br from-[#fff8f7] via-[#f7ebe0] to-[#eec5c7]"
+                  ? "border-[#59b9e6]/20 bg-gradient-to-br from-[#1b2a41] via-[#121c2d] to-[#0f172a]"
+                  : "border-[#d8eef7] bg-gradient-to-br from-[#f4fcff] via-[#fffdf7] to-[#fff4d8]"
               }`}
             >
-              <span className="absolute left-[10px] top-[11px] h-3.5 w-3.5 rounded-full bg-[#ff6b8a]" />
-              <span className="absolute right-[10px] top-[11px] h-3 w-3 rounded-full bg-[#ff8ca6]" />
-              <span className={`absolute bottom-[10px] left-[12px] h-3 w-3 rounded-full ${isDark ? "bg-[#2c3246]" : "bg-[#e3bab6]"}`} />
-              <span className={`absolute bottom-[10px] right-[11px] h-3.5 w-3.5 rounded-full ${isDark ? "bg-[#a1a1aa]" : "bg-[#a66466]"}`} />
-              <span className="absolute h-2.5 w-2.5 rounded-full bg-white shadow" />
+              <img
+                src={bunnyLogo}
+                alt="Gameverse bunny logo"
+                className="h-11 w-11 object-contain sm:h-12 sm:w-12"
+              />
             </div>
 
-            <div className="leading-tight">
-              <h1 className={`text-lg font-black tracking-tight sm:text-xl ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
+            <div className="leading-[0.92]">
+              <h1 className={`text-[1.75rem] font-black tracking-[-0.04em] sm:text-[2.15rem] ${isDark ? "text-[#f1f1f1]" : "text-[#203572]"}`}>
                 GAMEVERSE
               </h1>
-              <p className={`text-[10px] font-bold uppercase tracking-[0.25em] ${isDark ? "text-[#a1a1aa]" : "text-[#d98a95]"}`}>
+              <p className={`mt-1 text-[10px] font-bold uppercase tracking-[0.31em] sm:text-[11px] ${isDark ? "text-[#a1a1aa]" : "text-[#59b9e6]"}`}>
                 {/* Learn • Play • Grow */}
                 O‘rgan • O‘yna • Rivojlan
               </p>
@@ -216,10 +217,10 @@ function Header({
                   }}
                   className={`group flex items-center rounded-full px-4 py-2.5 text-sm font-semibold transition-all duration-300 ${
                     isActive
-                      ? "bg-[#ff6b8a] text-white shadow-[0_8px_20px_rgba(255,107,138,0.35)]"
+                      ? "bg-[#59b9e6] text-white shadow-[0_8px_20px_rgba(89,185,230,0.35)]"
                       : isDark
-                        ? "text-[#f1f1f1] hover:bg-[#25253a] hover:text-[#ff6b8a]"
-                        : "text-[#8a6166] hover:bg-[#f9eeee] hover:text-[#a66466]"
+                        ? "text-[#f1f1f1] hover:bg-[#1b2a41] hover:text-[#7fd3ef]"
+                        : "text-[#506494] hover:bg-[#eefaff] hover:text-[#59b9e6]"
                   }`}
                 >
                   {item.icon}
@@ -235,14 +236,14 @@ function Header({
               onClick={() => navigate("/favorites")}
               className={`relative hidden h-11 w-11 items-center justify-center rounded-full border transition-all hover:-translate-y-0.5 sm:flex ${
                 isDark
-                  ? "border-[#ff6b8a]/20 bg-[#25253a] text-[#ff8ca6] hover:bg-[#2e2e45]"
-                  : "border-[#f0d9d6] bg-white text-[#d45c7d] hover:bg-[#fff4f3]"
+                  ? "border-[#59b9e6]/20 bg-[#1b2a41] text-[#7fd3ef] hover:bg-[#243652]"
+                  : "border-[#d8eef7] bg-white text-[#59b9e6] hover:bg-[#f4fcff]"
               }`}
               aria-label="Open favourites"
             >
               <FaHeart className="text-sm" />
               {favoriteCount > 0 ? (
-                <span className="absolute -right-1 -top-1 min-w-[20px] rounded-full bg-gradient-to-r from-[#ff6b8a] to-[#ff4f74] px-1.5 py-0.5 text-[10px] font-black text-white shadow-lg">
+                <span className="absolute -right-1 -top-1 min-w-[20px] rounded-full bg-gradient-to-r from-[#59b9e6] to-[#ffd15d] px-1.5 py-0.5 text-[10px] font-black text-[#0f172a] shadow-lg">
                   {favoriteCount}
                 </span>
               ) : null}
@@ -254,8 +255,8 @@ function Header({
                 onClick={onThemeToggle}
                 className={` cursor-pointer hidden h-11 w-11 items-center justify-center rounded-full border transition-all hover:-translate-y-0.5 sm:flex ${
                   isDark
-                    ? "border-[#ff6b8a]/20 bg-[#25253a] text-[#ff6b8a] hover:bg-[#2e2e45]"
-                    : "border-[#f0d9d6] bg-white text-[#a66466] hover:bg-[#fff4f3]"
+                    ? "border-[#59b9e6]/20 bg-[#1b2a41] text-[#7fd3ef] hover:bg-[#243652]"
+                    : "border-[#d8eef7] bg-white text-[#59b9e6] hover:bg-[#f4fcff]"
                 }`}
                 aria-label="Toggle theme"
               >
@@ -269,13 +270,13 @@ function Header({
                 onClick={() => setIsUserPanelOpen(true)}
                 className={`hidden cursor-pointer items-center gap-3 rounded-[22px] border px-3 py-2 text-left shadow-[0_10px_25px_rgba(166,100,102,0.08)] transition-all hover:-translate-y-0.5 sm:flex ${
                   isDark
-                    ? "border-[#ff6b8a]/18 bg-gradient-to-r from-[#25253a] to-[#1e1e2f] hover:bg-[#25253a]"
-                    : "border-[#f0d9d6] bg-gradient-to-r from-white to-[#fff7f6] hover:bg-white"
+                    ? "border-[#59b9e6]/18 bg-gradient-to-r from-[#1b2a41] to-[#121c2d] hover:bg-[#1b2a41]"
+                    : "border-[#d8eef7] bg-gradient-to-r from-white to-[#f4fcff] hover:bg-white"
                 }`}
               >
                 <div className="relative">
-                  <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#f7ebe0] via-[#ed97a0] to-[#e07c8e] opacity-60 blur-sm" />
-                  <div className={`relative h-11 w-11 overflow-hidden rounded-full border-2 shadow ${isDark ? "border-[#1e1e2f] bg-[#ff6b8a]" : "border-white bg-[#e07c8e]"}`}>
+                  <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#d9f3ff] via-[#9ad7ef] to-[#ffd76d] opacity-70 blur-sm" />
+                  <div className={`relative h-11 w-11 overflow-hidden rounded-full border-2 shadow ${isDark ? "border-[#121c2d] bg-[#59b9e6]" : "border-white bg-[#59b9e6]"}`}>
                     {userAvatarUrl && !hasAvatarError ? (
                       <img
                         src={userAvatarUrl}
@@ -293,20 +294,20 @@ function Header({
                 </div>
 
                 <div className="min-w-[148px]">
-                  <p className={`truncate text-sm font-extrabold ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
+                  <p className={`truncate text-sm font-extrabold ${isDark ? "text-[#f1f1f1]" : "text-[#203572]"}`}>
                     {userDisplayName}
                   </p>
-                  <p className={`text-[10px] font-bold uppercase tracking-[0.18em] ${isDark ? "text-[#a1a1aa]" : "text-[#d98a95]"}`}>
+                  <p className={`text-[10px] font-bold uppercase tracking-[0.18em] ${isDark ? "text-[#a1a1aa]" : "text-[#59b9e6]"}`}>
                     {primaryRoleLabel}
                   </p>
                 </div>
 
-                <FaChevronRight className={`${isDark ? "text-[#a1a1aa]" : "text-[#a66466]"}`} />
+                <FaChevronRight className={`${isDark ? "text-[#a1a1aa]" : "text-[#59b9e6]"}`} />
               </button>
             ) : (
               <button
                 onClick={() => navigate("/login")}
-                className="hidden rounded-full bg-[#ff6b8a] px-6 py-3 text-sm font-bold tracking-wide text-white shadow-[0_12px_24px_rgba(255,107,138,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#ff4f74] sm:inline-flex"
+                className="hidden rounded-full bg-[#ffd15d] px-6 py-3 text-sm font-bold tracking-wide text-[#203572] shadow-[0_12px_24px_rgba(255,209,93,0.32)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#ffc949] sm:inline-flex"
               >
                 <span className="flex items-center gap-2">
                   <FaUser className="text-sm" />
@@ -319,8 +320,8 @@ function Header({
               onClick={() => setIsMobileOpen((prev) => !prev)}
               className={`flex h-11 w-11 items-center justify-center rounded-full border shadow-[0_8px_20px_rgba(166,100,102,0.08)] transition-all lg:hidden ${
                 isDark
-                  ? "border-[#ff6b8a]/18 bg-[#25253a] text-[#f1f1f1] hover:bg-[#2e2e45]"
-                  : "border-[#f0d9d6] bg-white text-[#a66466] hover:bg-[#fff4f3]"
+                  ? "border-[#59b9e6]/18 bg-[#1b2a41] text-[#f1f1f1] hover:bg-[#243652]"
+                  : "border-[#d8eef7] bg-white text-[#59b9e6] hover:bg-[#f4fcff]"
               }`}
               aria-label="Menu"
             >
@@ -332,8 +333,8 @@ function Header({
         {isMobileOpen && (
           <div className={`mx-auto mt-3 max-w-7xl rounded-[26px] border p-4 shadow-[0_18px_40px_rgba(166,100,102,0.14)] backdrop-blur-xl lg:hidden ${
             isDark
-              ? "border-[#ff6b8a]/18 bg-[#1e1e2f]/95"
-              : "border-[#f0d9d6] bg-white/90"
+              ? "border-[#59b9e6]/18 bg-[#121c2d]/95"
+              : "border-[#d8eef7] bg-white/92"
           }`}>
             <div className="flex flex-col gap-2">
               {onThemeToggle && (
@@ -345,8 +346,8 @@ function Header({
                   }}
                   className={`flex items-center rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
                     isDark
-                      ? "bg-[#25253a] text-[#f1f1f1]"
-                      : "bg-[#fff5f4] text-[#7b4f53]"
+                      ? "bg-[#1b2a41] text-[#f1f1f1]"
+                      : "bg-[#f4fcff] text-[#203572]"
                   }`}
                 >
                   {isDark ? <FaSun className="mr-2 text-[13px]" /> : <FaMoon className="mr-2 text-[13px]" />}
@@ -362,15 +363,15 @@ function Header({
                 }}
                 className={`flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
                   isDark
-                    ? "bg-[#25253a] text-[#f1f1f1]"
-                    : "bg-[#fff5f4] text-[#7b4f53]"
+                    ? "bg-[#1b2a41] text-[#f1f1f1]"
+                    : "bg-[#f4fcff] text-[#203572]"
                 }`}
               >
                 <span className="flex items-center">
-                  <FaHeart className="mr-2 text-[13px] text-[#ff6b8a]" />
+                  <FaHeart className="mr-2 text-[13px] text-[#59b9e6]" />
                   Favourite Games
                 </span>
-                <span className="rounded-full bg-[#ff6b8a] px-2 py-0.5 text-[10px] font-black text-white">
+                <span className="rounded-full bg-[#ffd15d] px-2 py-0.5 text-[10px] font-black text-[#203572]">
                   {favoriteCount}
                 </span>
               </button>
@@ -387,10 +388,10 @@ function Header({
                     }}
                     className={`flex items-center rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
                       isActive
-                        ? "bg-[#ff6b8a] text-white"
+                        ? "bg-[#59b9e6] text-white"
                         : isDark
-                          ? "text-[#f1f1f1] hover:bg-[#25253a]"
-                          : "text-[#7b4f53] hover:bg-[#fbefee]"
+                          ? "text-[#f1f1f1] hover:bg-[#1b2a41]"
+                          : "text-[#203572] hover:bg-[#eefaff]"
                     }`}
                   >
                     {item.icon}
@@ -408,8 +409,8 @@ function Header({
                   }}
                   className={`mt-2 flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
                     isDark
-                      ? "bg-[#25253a] text-[#f1f1f1]"
-                      : "bg-[#fff5f4] text-[#7b4f53]"
+                      ? "bg-[#1b2a41] text-[#f1f1f1]"
+                      : "bg-[#f4fcff] text-[#203572]"
                   }`}
                 >
                   <span className="flex items-center">
@@ -426,7 +427,7 @@ function Header({
                     navigate("/login");
                     setIsMobileOpen(false);
                   }}
-                  className="mt-2 flex items-center justify-center rounded-2xl bg-[#ff6b8a] px-4 py-3 text-sm font-bold text-white transition-all hover:bg-[#ff4f74]"
+                  className="mt-2 flex items-center justify-center rounded-2xl bg-[#ffd15d] px-4 py-3 text-sm font-bold text-[#203572] transition-all hover:bg-[#ffc949]"
                 >
                   <FaUser className="mr-2" />
                   Ro'yxatdan o'tish
@@ -451,16 +452,16 @@ function Header({
           <aside
             className={`fixed bottom-0 right-0 top-0 z-[59] flex w-full max-w-[360px] flex-col border-l transition-transform duration-300 ${
               isDark
-                ? "border-[#ff6b8a]/18 bg-[#111827]/98"
-                : "border-[#f0d9d6] bg-white/98"
+                ? "border-[#59b9e6]/18 bg-[#111827]/98"
+                : "border-[#d8eef7] bg-white/98"
             } ${isUserPanelOpen ? "translate-x-0" : "translate-x-full"}`}
           >
-            <div className={`flex items-center justify-between border-b px-5 py-5 ${isDark ? "border-[#2b3146]" : "border-[#f4d9d7]"}`}>
+            <div className={`flex items-center justify-between border-b px-5 py-5 ${isDark ? "border-[#2b3146]" : "border-[#d8eef7]"}`}>
               <div>
-                <p className={`text-xs font-bold uppercase tracking-[0.24em] ${isDark ? "text-[#a1a1aa]" : "text-[#d98a95]"}`}>
+                <p className={`text-xs font-bold uppercase tracking-[0.24em] ${isDark ? "text-[#a1a1aa]" : "text-[#59b9e6]"}`}>
                   Akkaunt Menyusi
                 </p>
-                <h3 className={`mt-2 text-xl font-black ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
+                <h3 className={`mt-2 text-xl font-black ${isDark ? "text-[#f1f1f1]" : "text-[#203572]"}`}>
                   GAMEVERSE
                 </h3>
               </div>
@@ -470,7 +471,7 @@ function Header({
                 className={`flex cursor-pointer h-10 w-10 items-center justify-center rounded-full border transition-all ${
                   isDark
                     ? "border-[#2b3146] bg-[#1e1e2f] text-[#f1f1f1] hover:bg-[#25253a]"
-                    : "border-[#f0d9d6] bg-white text-[#7b4f53] hover:bg-[#fff4f3]"
+                    : "border-[#d8eef7] bg-white text-[#203572] hover:bg-[#f4fcff]"
                 }`}
               >
                 <FaTimes className="text-sm" />
@@ -478,14 +479,14 @@ function Header({
             </div>
 
             <div className="flex-1 overflow-y-auto px-5 py-6">
-              <div className={`rounded-[28px] border p-4 shadow-[0_18px_40px_rgba(166,100,102,0.12)] ${
-                isDark
-                  ? "border-[#ff6b8a]/18 bg-gradient-to-br from-[#1e1e2f] to-[#171c2a]"
-                  : "border-[#f0d9d6] bg-gradient-to-br from-white to-[#fff4f3]"
+                <div className={`rounded-[28px] border p-4 shadow-[0_18px_40px_rgba(166,100,102,0.12)] ${
+                  isDark
+                  ? "border-[#59b9e6]/18 bg-gradient-to-br from-[#121c2d] to-[#0f172a]"
+                  : "border-[#d8eef7] bg-gradient-to-br from-white to-[#f4fcff]"
               }`}>
                 <div className="flex items-center gap-4">
                   <div className="relative">
-                    <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#ff8ca6] to-[#ff4f74] opacity-60 blur-sm" />
+                    <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#59b9e6] via-[#9ad7ef] to-[#ffd76d] opacity-60 blur-sm" />
                     <div className={`relative h-16 w-16 overflow-hidden rounded-full border-2 ${isDark ? "border-[#1e1e2f]" : "border-white"}`}>
                       {userAvatarUrl && !hasAvatarError ? (
                         <img
@@ -495,7 +496,7 @@ function Header({
                           onError={() => setHasAvatarError(true)}
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-[#ff6b8a] text-lg font-black text-white">
+                        <div className="flex h-full w-full items-center justify-center bg-[#59b9e6] text-lg font-black text-white">
                           {userInitial}
                         </div>
                       )}
@@ -504,10 +505,10 @@ function Header({
                   </div>
 
                   <div className="min-w-0">
-                    <p className={`truncate text-lg font-black ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
+                    <p className={`truncate text-lg font-black ${isDark ? "text-[#f1f1f1]" : "text-[#203572]"}`}>
                       {userDisplayName}
                     </p>
-                    <p className={`mt-1 text-[11px] font-bold uppercase tracking-[0.22em] ${isDark ? "text-[#a1a1aa]" : "text-[#d98a95]"}`}>
+                    <p className={`mt-1 text-[11px] font-bold uppercase tracking-[0.22em] ${isDark ? "text-[#a1a1aa]" : "text-[#59b9e6]"}`}>
                       {primaryRoleLabel}
                     </p>
                   </div>
@@ -525,10 +526,10 @@ function Header({
                       className={({ isActive }) =>
                         `flex items-center justify-between rounded-2xl border px-4 py-4 text-sm font-semibold transition-all ${
                           isActive
-                            ? "border-[#ff6b8a]/30 bg-[#ff6b8a] text-white"
+                            ? "border-[#59b9e6]/30 bg-[#59b9e6] text-white"
                             : isDark
-                              ? "border-[#2b3146] bg-[#1a1a28] text-[#f1f1f1] hover:bg-[#25253a]"
-                              : "border-[#f0d9d6] bg-white text-[#7b4f53] hover:bg-[#fff5f4]"
+                              ? "border-[#2b3146] bg-[#1a1a28] text-[#f1f1f1] hover:bg-[#1b2a41]"
+                              : "border-[#d8eef7] bg-white text-[#203572] hover:bg-[#f4fcff]"
                         }`
                       }
                     >
@@ -542,11 +543,11 @@ function Header({
               </div>
             </div>
 
-            <div className={`border-t p-5 ${isDark ? "border-[#2b3146]" : "border-[#f4d9d7]"}`}>
+            <div className={`border-t p-5 ${isDark ? "border-[#2b3146]" : "border-[#d8eef7]"}`}>
               <button
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="flex cursor-pointer w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[#ff6b8a] to-[#ff4f74] px-4 py-4 text-sm font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-70"
+                className="flex cursor-pointer w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[#59b9e6] to-[#ffd15d] px-4 py-4 text-sm font-bold text-[#0f172a] transition-all hover:-translate-y-0.5 disabled:opacity-70"
               >
                 <FaSignOutAlt className="text-sm" />
                 Chiqish

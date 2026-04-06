@@ -24,10 +24,11 @@ import type { User } from "../../types/types";
 import { getErrorMessage } from "../../utils/error";
 import { setTokens } from "../../utils/auth";
 
-import loginImg from "../../assets/login_image.png"
+import loginImg from "../../assets/loginImg.png";
 
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../firebase";
+import useHomeTheme from "../../hooks/useHomeTheme";
 
 type LoginResponse = {
   access_token: string;
@@ -38,6 +39,7 @@ type LoginResponse = {
 function LoginForm() {
   const { dispatch } = useContextPro();
   const navigate = useNavigate();
+  const isDarkMode = useHomeTheme();
 
   const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -109,7 +111,10 @@ function LoginForm() {
   };
 
   return (
-    <div className="fixed inset-0 h-screen w-full overflow-hidden bg-white">
+    <div
+      data-home-theme={isDarkMode ? "dark" : "light"}
+      className="auth-theme fixed inset-0 h-screen w-full overflow-hidden bg-[var(--panel-page-base)]"
+    >
       
       {/* Split Layout */}
       <div className="flex h-full w-full">
@@ -144,7 +149,7 @@ function LoginForm() {
         </div>
         
         {/* Left Side - Form */}
-        <div className="w-full lg:w-1/2 h-full overflow-y-auto bg-gradient-to-br from-[#fff9f8] to-[#fff1f0]">
+        <div className="w-full lg:w-1/2 h-full overflow-y-auto bg-[image:var(--panel-page-bg)]">
           <div className="min-h-full flex items-center justify-center p-6 lg:p-8">
             <div className="w-full max-w-md">
               
@@ -152,15 +157,15 @@ function LoginForm() {
               <div className="text-center mb-8">
                 <div className="inline-flex items-center justify-center gap-2 mb-4">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-[#e07c8e] rounded-full blur-md animate-pulse-soft" />
-                    <GiPlanetCore className="relative text-5xl text-[#e07c8e]" />
+                    <div className="absolute inset-0 rounded-full blur-md animate-pulse-soft bg-[var(--panel-accent)]" />
+                    <GiPlanetCore className="relative text-5xl text-[var(--panel-accent)]" />
                   </div>
-                  <FaRocket className="text-4xl text-[#a66466] animate-float-soft" />
+                  <FaRocket className="text-4xl text-[var(--panel-accent-strong)] animate-float-soft" />
                 </div>
-                <h1 className="text-3xl font-light text-[#7b4f53] mb-2">
+                <h1 className="text-3xl font-light text-[var(--panel-text)] mb-2">
                   Xush kelibsiz
                 </h1>
-                <p className="text-sm text-[#8f6d70]">
+                <p className="text-sm text-[var(--panel-text-soft)]">
                   Hisobingizga kirish uchun ma'lumotlaringizni kiriting
                 </p>
               </div>
@@ -170,11 +175,11 @@ function LoginForm() {
                 
                 {/* Email Field */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-medium text-[#7b4f53]">
+                  <label className="block text-xs font-medium text-[var(--panel-text)]">
                     Email
                   </label>
                   <div className="relative">
-                    <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-[#b38b8d] text-base" />
+                    <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--panel-muted)] text-base" />
                     <input
                       type="email"
                       {...register("email", {
@@ -184,7 +189,7 @@ function LoginForm() {
                           message: "Noto'g'ri email format",
                         },
                       })}
-                      className="w-full rounded-xl border border-[#f0d9d6] bg-white/90 pl-10 pr-3 py-3.5 text-sm text-[#7b4f53] placeholder:text-[#b38b8d] outline-none focus:border-[#e07c8e] focus:shadow-[0_0_0_3px_rgba(224,124,142,0.1)] transition-all"
+                      className="w-full rounded-xl border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] pl-10 pr-3 py-3.5 text-sm text-[var(--panel-text)] placeholder:text-[var(--panel-muted)] outline-none focus:border-[var(--panel-accent)] focus:shadow-[0_0_0_3px_var(--panel-focus-ring)] transition-all"
                       placeholder="siz@email.com"
                     />
                   </div>
@@ -197,11 +202,11 @@ function LoginForm() {
 
                 {/* Password Field */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-medium text-[#7b4f53]">
+                  <label className="block text-xs font-medium text-[var(--panel-text)]">
                     Parol
                   </label>
                   <div className="relative">
-                    <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#b38b8d] text-base" />
+                    <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--panel-muted)] text-base" />
                     <input
                       type={showPassword ? "text" : "password"}
                       {...register("password", {
@@ -211,13 +216,13 @@ function LoginForm() {
                           message: "Kamida 6 belgi",
                         },
                       })}
-                      className="w-full rounded-xl border border-[#f0d9d6] bg-white/90 pl-10 pr-10 py-3.5 text-sm text-[#7b4f53] placeholder:text-[#b38b8d] outline-none focus:border-[#e07c8e] focus:shadow-[0_0_0_3px_rgba(224,124,142,0.1)] transition-all"
+                      className="w-full rounded-xl border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] pl-10 pr-10 py-3.5 text-sm text-[var(--panel-text)] placeholder:text-[var(--panel-muted)] outline-none focus:border-[var(--panel-accent)] focus:shadow-[0_0_0_3px_var(--panel-focus-ring)] transition-all"
                       placeholder="••••••••"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#b38b8d] hover:text-[#e07c8e] transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--panel-muted)] hover:text-[var(--panel-accent)] transition-colors"
                     >
                       {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
                     </button>
@@ -233,7 +238,8 @@ function LoginForm() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-[#e07c8e] to-[#a66466] py-3.5 text-sm font-medium text-white shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-70"
+                  className="group relative w-full overflow-hidden rounded-xl py-3.5 text-sm font-medium text-white shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-70"
+                  style={{ backgroundImage: "var(--panel-accent-gradient)" }}
                 >
                   <span className="relative flex items-center justify-center gap-2">
                     {isSubmitting ? (
@@ -253,10 +259,10 @@ function LoginForm() {
                 {/* Divider */}
                 <div className="relative my-6">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-[#f0d9d6]"></div>
+                    <div className="w-full border-t border-[var(--panel-border)]"></div>
                   </div>
                   <div className="relative flex justify-center text-xs">
-                    <span className="px-3 bg-gradient-to-br from-[#fff9f8] to-[#fff1f0] text-[#b38b8d]">
+                    <span className="px-3 bg-[var(--panel-page-base)] text-[var(--panel-muted)]">
                       yoki
                     </span>
                   </div>
@@ -266,12 +272,12 @@ function LoginForm() {
                 <button
                   onClick={handleGoogleLogin}
                   disabled={isGoogleLoading}
-                  className="group relative w-full overflow-hidden rounded-xl border border-[#f0d9d6] bg-white/80 py-3 text-sm font-medium text-[#7b4f53] hover:bg-white hover:-translate-y-0.5 transition-all disabled:opacity-70"
+                  className="group relative w-full overflow-hidden rounded-xl border border-[var(--panel-border)] bg-[var(--panel-surface)] py-3 text-sm font-medium text-[var(--panel-text)] hover:bg-[var(--panel-surface-strong)] hover:-translate-y-0.5 transition-all disabled:opacity-70"
                 >
                   <span className="flex items-center justify-center gap-2">
                     {isGoogleLoading ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-[#7b4f53] border-t-transparent rounded-full animate-spin" />
+                        <div className="w-4 h-4 border-2 border-[var(--panel-text)] border-t-transparent rounded-full animate-spin" />
                         <span>Bog'lanmoqda...</span>
                       </>
                     ) : (
@@ -284,19 +290,19 @@ function LoginForm() {
                 </button>
 
                 {/* Sign Up Link */}
-                <p className="text-center text-xs text-[#b38b8d]">
+                <p className="text-center text-xs text-[var(--panel-muted)]">
                   Hisobingiz yo'qmi?{" "}
                   <button
                     onClick={() => navigate("/register")}
-                    className="text-[#e07c8e] hover:text-[#a66466] font-medium hover:underline transition-all"
+                    className="text-[var(--panel-accent)] hover:text-[var(--panel-accent-strong)] font-medium hover:underline transition-all"
                   >
                     Ro'yxatdan o'tish
                   </button>
                 </p>
 
                 {/* Security Badge */}
-                <div className="flex items-center justify-center gap-1 text-[#b38b8d] text-[10px] mt-4">
-                  <FaShieldAlt className="text-[#e07c8e]" />
+                <div className="flex items-center justify-center gap-1 text-[var(--panel-muted)] text-[10px] mt-4">
+                  <FaShieldAlt className="text-[var(--panel-accent)]" />
                   <span>256-bit encryption • Secure login</span>
                 </div>
               </form>

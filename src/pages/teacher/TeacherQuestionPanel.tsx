@@ -30,6 +30,7 @@ import useContextPro from "../../hooks/useContextPro";
 import useGameQuestions from "../../hooks/useGameQuestions";
 import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../utils/aiGeneration";
 import { gameCards } from "../games/data";
+import useHomeTheme from "../../hooks/useHomeTheme";
 
 type GameRegistryItem = {
   gameKey: string;
@@ -50,8 +51,8 @@ const RAW_GAME_REGISTRY: GameRegistryItem[] = [
     title: "Quiz Battle",
     path: "/games/quiz-battle",
     emoji: "⚡",
-    accent: "from-[#e07c8e] to-[#a66466]",
-    bg: "bg-gradient-to-br from-[#e07c8e]/10 to-[#a66466]/10",
+    accent: "from-[var(--panel-accent)] to-[var(--panel-accent-strong)]",
+    bg: "bg-[image:var(--panel-accent-gradient-soft)]",
     template: { question: "", options: ["", "", "", ""], answerIndex: 0 },
     description: "Tezkor javoblar jangi",
   },
@@ -60,8 +61,8 @@ const RAW_GAME_REGISTRY: GameRegistryItem[] = [
     title: "Classic Arcade",
     path: "/games/classic-arcade",
     emoji: "🧠",
-    accent: "from-[#a66466] to-[#7b4f53]",
-    bg: "bg-gradient-to-br from-[#a66466]/10 to-[#7b4f53]/10",
+    accent: "from-[var(--panel-accent-strong)] to-[var(--panel-accent)]",
+    bg: "bg-[image:var(--panel-accent-gradient-soft)]",
     template: { prompt: "", options: ["", "", "", ""], correctIndex: 0, reason: "" },
     description: "Klassik bilim sinovi",
   },
@@ -70,8 +71,8 @@ const RAW_GAME_REGISTRY: GameRegistryItem[] = [
     title: "Wheel Of Fortune",
     path: "/games/wheel-of-fortune",
     emoji: "🎡",
-    accent: "from-[#8f6d70] to-[#6d4f52]",
-    bg: "bg-gradient-to-br from-[#8f6d70]/10 to-[#6d4f52]/10",
+    accent: "from-[var(--panel-accent)] to-[var(--panel-accent-strong)]",
+    bg: "bg-[image:var(--panel-accent-gradient-soft)]",
     template: { question: "", options: ["", "", "", ""], answerIndex: 0, category: "", points: 100 },
     description: "Omad va bilim",
   },
@@ -80,8 +81,8 @@ const RAW_GAME_REGISTRY: GameRegistryItem[] = [
     title: "Math Race",
     path: "/games/math-race",
     emoji: "🏎️",
-    accent: "from-[#e07c8e] to-[#a66466]",
-    bg: "bg-gradient-to-br from-[#e07c8e]/10 to-[#a66466]/10",
+    accent: "from-[var(--panel-accent)] to-[var(--panel-accent-strong)]",
+    bg: "bg-[image:var(--panel-accent-gradient-soft)]",
     template: { question: "", answer: 0, difficulty: "easy", points: 10 },
     description: "Matematik poyga",
   },
@@ -100,8 +101,8 @@ const RAW_GAME_REGISTRY: GameRegistryItem[] = [
     title: "Baamboozle",
     path: "/games/baamboozle",
     emoji: "🎲",
-    accent: "from-[#a66466] to-[#7b4f53]",
-    bg: "bg-gradient-to-br from-[#a66466]/10 to-[#7b4f53]/10",
+    accent: "from-[var(--panel-accent-strong)] to-[var(--panel-accent)]",
+    bg: "bg-[image:var(--panel-accent-gradient-soft)]",
     template: { question: "", answer: "" },
     description: "Qiziqarli savol-javob",
   },
@@ -110,8 +111,8 @@ const RAW_GAME_REGISTRY: GameRegistryItem[] = [
     title: "Jumanji",
     path: "/games/jumanji",
     emoji: "🌿",
-    accent: "from-[#8f6d70] to-[#6d4f52]",
-    bg: "bg-gradient-to-br from-[#8f6d70]/10 to-[#6d4f52]/10",
+    accent: "from-[var(--panel-accent)] to-[var(--panel-accent-strong)]",
+    bg: "bg-[image:var(--panel-accent-gradient-soft)]",
     template: { subject: "Matematika", question: "", options: ["", "", "", ""], correctAnswer: "", difficulty: "easy", timeLimit: 30 },
     description: "Sarguzashtli o'quv o'yini",
   },
@@ -120,8 +121,8 @@ const RAW_GAME_REGISTRY: GameRegistryItem[] = [
     title: "Millionaire",
     path: "/games/millionaire",
     emoji: "💰",
-    accent: "from-[#e07c8e] to-[#a66466]",
-    bg: "bg-gradient-to-br from-[#e07c8e]/10 to-[#a66466]/10",
+    accent: "from-[var(--panel-accent)] to-[var(--panel-accent-strong)]",
+    bg: "bg-[image:var(--panel-accent-gradient-soft)]",
     template: { text: "", options: { A: "", B: "", C: "", D: "" }, correct: "A", difficulty: "easy", category: "" },
     description: "Kim millioner bo'lishni xohlaydi?",
   },
@@ -130,8 +131,8 @@ const RAW_GAME_REGISTRY: GameRegistryItem[] = [
     title: "Truth Detector",
     path: "/games/truth-detector",
     emoji: "🕵️",
-    accent: "from-[#a66466] to-[#7b4f53]",
-    bg: "bg-gradient-to-br from-[#a66466]/10 to-[#7b4f53]/10",
+    accent: "from-[var(--panel-accent-strong)] to-[var(--panel-accent)]",
+    bg: "bg-[image:var(--panel-accent-gradient-soft)]",
     template: {
       title: "Faktlar to'plami",
       difficulty: "easy",
@@ -148,8 +149,8 @@ const RAW_GAME_REGISTRY: GameRegistryItem[] = [
     title: "Treasure Hunt",
     path: "/games/treasure-hunt",
     emoji: "🗺️",
-    accent: "from-[#8f6d70] to-[#6d4f52]",
-    bg: "bg-gradient-to-br from-[#8f6d70]/10 to-[#6d4f52]/10",
+    accent: "from-[var(--panel-accent)] to-[var(--panel-accent-strong)]",
+    bg: "bg-[image:var(--panel-accent-gradient-soft)]",
     template: { title: "", story: "", question: "", options: ["", "", "", ""], answerIndex: 0, hint: "", reward: 120 },
     description: "Xazina izlab",
   },
@@ -158,8 +159,8 @@ const RAW_GAME_REGISTRY: GameRegistryItem[] = [
     title: "Reverse Thinking",
     path: "/games/reverse-thinking",
     emoji: "🔄",
-    accent: "from-[#e07c8e] to-[#a66466]",
-    bg: "bg-gradient-to-br from-[#e07c8e]/10 to-[#a66466]/10",
+    accent: "from-[var(--panel-accent)] to-[var(--panel-accent-strong)]",
+    bg: "bg-[image:var(--panel-accent-gradient-soft)]",
     template: { level: 1, question: "", options: ["", "", "", ""], correctAnswer: "", explanation: "" },
     description: "Teskari fikrlash",
   },
@@ -220,8 +221,8 @@ const DIFFICULTY_LABELS: Record<string, string> = {
 const DIFFICULTY_COLORS: Record<string, string> = {
   easy: "from-emerald-400 to-green-400",
   medium: "from-amber-400 to-orange-400",
-  hard: "from-rose-400 to-red-400",
-  mixed: "from-purple-400 to-pink-400",
+  hard: "from-[var(--panel-accent)] to-[var(--panel-accent-strong)]",
+  mixed: "from-[var(--panel-accent)] to-[var(--panel-accent-strong)]",
 };
 
 const SUBJECT_OPTIONS = [
@@ -910,6 +911,7 @@ function FormField({
 }
 
 export default function TeacherQuestionPanel() {
+  const isDarkMode = useHomeTheme();
   const {
     state: { user },
   } = useContextPro();
@@ -1060,59 +1062,62 @@ export default function TeacherQuestionPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#fff9f8] via-[#fff1f0] to-[#fae6df] px-4 py-8 sm:px-6 lg:px-8">
+    <div
+      data-home-theme={isDarkMode ? "dark" : "light"}
+      className="teacher-theme min-h-screen bg-[image:var(--panel-page-bg)] bg-[var(--panel-page-base)] px-4 py-8 sm:px-6 lg:px-8"
+    >
       
       {/* Minimal Background Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute left-[5%] top-[10%] h-72 w-72 rounded-full bg-[#f6d4da]/20 blur-3xl animate-float-soft" />
-        <div className="absolute right-[8%] bottom-[15%] h-80 w-80 rounded-full bg-[#fbe5dd]/20 blur-3xl animate-float-slow" />
-        <GiCherry className="absolute left-[12%] top-[20%] text-6xl text-[#e07c8e]/10 animate-petal-float" />
-        <GiFlowerTwirl className="absolute right-[15%] top-[40%] text-7xl text-[#a66466]/10 animate-float-soft" />
-        <GiPlanetCore className="absolute left-[20%] bottom-[15%] text-8xl text-[#7b4f53]/10 animate-spin-slow" />
+        <div className="absolute left-[5%] top-[10%] h-72 w-72 rounded-full bg-[var(--home-blob-1)] blur-3xl animate-float-soft" />
+        <div className="absolute right-[8%] bottom-[15%] h-80 w-80 rounded-full bg-[var(--home-blob-3)] blur-3xl animate-float-slow" />
+        <GiCherry className="absolute left-[12%] top-[20%] text-6xl text-[var(--panel-accent)]/10 animate-petal-float" />
+        <GiFlowerTwirl className="absolute right-[15%] top-[40%] text-7xl text-[var(--panel-accent-strong)]/10 animate-float-soft" />
+        <GiPlanetCore className="absolute left-[20%] bottom-[15%] text-8xl text-[var(--panel-muted)]/10 animate-spin-slow" />
       </div>
 
       <div className="relative mx-auto max-w-8xl">
         
         {/* Header Section */}
-        <div className="mb-8 overflow-hidden rounded-3xl border border-[#f0d9d6] bg-white/70 backdrop-blur-xl p-8 shadow-xl">
+        <div className="mb-8 overflow-hidden rounded-3xl border border-[var(--panel-border)] bg-[var(--panel-surface)] backdrop-blur-xl p-8 shadow-xl">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/90 border border-[#f0d9d6] px-5 py-2.5 shadow-sm">
-                <HiSparkles className="text-[#e07c8e] text-sm animate-pulse-soft" />
-                <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#a66466]">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] px-5 py-2.5 shadow-sm">
+                <HiSparkles className="text-[var(--panel-accent)] text-sm animate-pulse-soft" />
+                <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-[var(--panel-text-soft)]">
                   O'qituvchi Paneli
                 </span>
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-light leading-tight">
-                <span className="text-[#7b4f53]">Savollar Markazi</span>
+                <span className="text-[var(--panel-text)]">Savollar Markazi</span>
               </h1>
-              <p className="mt-4 max-w-2xl text-sm text-[#8f6d70]">
+              <p className="mt-4 max-w-2xl text-sm text-[var(--panel-text-soft)]">
                 Barcha o'yinlar uchun savollarni yarating, tahrirlang va boshqaring
               </p>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-xl border border-[#f0d9d6] bg-white/80 px-4 py-3 backdrop-blur-sm">
-                <div className="flex items-center gap-1.5 text-[9px] font-medium uppercase tracking-wider text-[#b38b8d]">
-                  <FaCrown className="h-3 w-3 text-[#e07c8e]" />
+              <div className="rounded-xl border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] px-4 py-3 backdrop-blur-sm">
+                <div className="flex items-center gap-1.5 text-[9px] font-medium uppercase tracking-wider text-[var(--panel-muted)]">
+                  <FaCrown className="h-3 w-3 text-[var(--panel-accent)]" />
                   O'yinlar
                 </div>
-                <div className="mt-1 text-2xl font-medium text-[#7b4f53]">
+                <div className="mt-1 text-2xl font-medium text-[var(--panel-text)]">
                   {GAME_REGISTRY.length}
                 </div>
               </div>
-              <div className="rounded-xl border border-[#f0d9d6] bg-white/80 px-4 py-3 backdrop-blur-sm">
-                <div className="flex items-center gap-1.5 text-[9px] font-medium uppercase tracking-wider text-[#b38b8d]">
-                  <FaGem className="h-3 w-3 text-[#e07c8e]" />
+              <div className="rounded-xl border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] px-4 py-3 backdrop-blur-sm">
+                <div className="flex items-center gap-1.5 text-[9px] font-medium uppercase tracking-wider text-[var(--panel-muted)]">
+                  <FaGem className="h-3 w-3 text-[var(--panel-accent)]" />
                   Jami Savol
                 </div>
-                <div className="mt-1 text-2xl font-medium text-[#7b4f53]">
+                <div className="mt-1 text-2xl font-medium text-[var(--panel-text)]">
                   {totalQuestions}
                 </div>
               </div>
-              <div className="rounded-xl border border-[#f0d9d6] bg-white/80 px-4 py-3 backdrop-blur-sm">
-                <div className="flex items-center gap-1.5 text-[9px] font-medium uppercase tracking-wider text-[#b38b8d]">
-                  <FaRobot className="h-3 w-3 text-[#e07c8e]" />
+              <div className="rounded-xl border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] px-4 py-3 backdrop-blur-sm">
+                <div className="flex items-center gap-1.5 text-[9px] font-medium uppercase tracking-wider text-[var(--panel-muted)]">
+                  <FaRobot className="h-3 w-3 text-[var(--panel-accent)]" />
                   Holat
                 </div>
                 <div className={`mt-1 text-xs font-medium ${
@@ -1125,11 +1130,11 @@ export default function TeacherQuestionPanel() {
           </div>
         </div>
 
-        <section className="mb-6 overflow-hidden rounded-3xl border border-[#f0d9d6] bg-white/70 p-5 shadow-xl backdrop-blur-xl sm:p-6">
+        <section className="mb-6 overflow-hidden rounded-3xl border border-[var(--panel-border)] bg-[var(--panel-surface)] p-5 shadow-xl backdrop-blur-xl sm:p-6">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#b38b8d]">O'yinlar</p>
-              <h2 className="mt-1 text-lg font-medium text-[#7b4f53]">Kerakli o'yinni tanlang</h2>
+              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[var(--panel-muted)]">O'yinlar</p>
+              <h2 className="mt-1 text-lg font-medium text-[var(--panel-text)]">Kerakli o'yinni tanlang</h2>
             </div>
           </div>
 
@@ -1145,8 +1150,8 @@ export default function TeacherQuestionPanel() {
                     onClick={() => handleSelectGame(game.gameKey)}
                     className={`group relative min-h-[168px] w-[220px] flex-shrink-0 overflow-hidden rounded-[28px] border p-4 text-left transition-all duration-300 ${
                       active
-                        ? "border-[#e07c8e] bg-gradient-to-br from-[#fff5f3] via-[#ffe6e2] to-[#fbd8d6] shadow-[0_18px_40px_rgba(166,100,102,0.18)]"
-                        : "border-[#f0d9d6] bg-white/85 hover:-translate-y-1 hover:border-[#e07c8e]/50 hover:bg-white"
+                        ? "border-[var(--panel-accent)] bg-[var(--panel-accent-gradient-soft)] shadow-[0_18px_40px_rgba(89,185,230,0.18)]"
+                        : "border-[var(--panel-border)] bg-[var(--panel-surface-strong)] hover:-translate-y-1 hover:border-[var(--panel-accent)]/50 hover:bg-[var(--panel-surface)]"
                     }`}
                   >
                     <div
@@ -1159,20 +1164,20 @@ export default function TeacherQuestionPanel() {
                         <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${game.accent} text-2xl text-white shadow-md`}>
                           {game.emoji}
                         </div>
-                        <div className={`rounded-xl border px-2.5 py-1 text-center ${active ? "border-[#e7b8b0] bg-white text-[#7b4f53]" : "border-[#f0d9d6] bg-white/90 text-[#8f6d70]"}`}>
+                        <div className={`rounded-xl border px-2.5 py-1 text-center ${active ? "border-[var(--panel-border)] bg-[var(--panel-surface-strong)] text-[var(--panel-text)]" : "border-[var(--panel-border)] bg-[var(--panel-surface-strong)] text-[var(--panel-text-soft)]"}`}>
                           <div className="text-[8px] font-medium uppercase tracking-wider">Savol</div>
                           <div className="text-sm font-medium">{count}</div>
                         </div>
                       </div>
                       <div className="mt-4 flex-1">
-                        <h3 className="text-sm font-semibold text-[#7b4f53]">{game.title}</h3>
-                        <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-[#8f6d70]">{game.description}</p>
+                        <h3 className="text-sm font-semibold text-[var(--panel-text)]">{game.title}</h3>
+                        <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-[var(--panel-text-soft)]">{game.description}</p>
                       </div>
                       <div className="mt-4 flex items-center justify-between">
-                        <span className={`rounded-full border px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.18em] ${game.bg} border-[#f0d9d6] text-[#7b4f53]`}>
+                        <span className={`rounded-full border px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.18em] ${game.bg} border-[var(--panel-border)] text-[var(--panel-text)]`}>
                           {game.title}
                         </span>
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-medium ${active ? "text-[#a66466]" : "text-[#b38b8d]"}`}>
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-medium ${active ? "text-[var(--panel-accent)]" : "text-[var(--panel-muted)]"}`}>
                           Ochish
                           <FaChevronRight className={`h-2.5 w-2.5 transition-transform ${active ? "translate-x-0.5" : ""}`} />
                         </span>
@@ -1186,19 +1191,19 @@ export default function TeacherQuestionPanel() {
         </section>
 
         <div className="grid gap-6 xl:grid-cols-2">
-          <section className="rounded-3xl border border-[#f0d9d6] bg-white/70 p-5 shadow-xl backdrop-blur-xl sm:p-6">
+          <section className="rounded-3xl border border-[var(--panel-border)] bg-[var(--panel-surface)] p-5 shadow-xl backdrop-blur-xl sm:p-6">
             {activeGame ? (
               <>
-                <div className="mb-6 rounded-[28px] border border-[#f0d9d6] bg-gradient-to-r from-white via-[#fff7f5] to-[#ffeae6] p-4 sm:p-5">
+                <div className="mb-6 rounded-[28px] border border-[var(--panel-border)] bg-[var(--panel-accent-gradient-soft)] p-4 sm:p-5">
                   <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                     <div className="flex items-start gap-3">
                       <div className={`inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${activeGame.accent} text-2xl text-white shadow-md`}>
                         {activeGame.emoji}
                       </div>
                       <div>
-                        <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#b38b8d]">Tanlangan o'yin</div>
-                        <h2 className="mt-1 text-xl font-medium text-[#7b4f53]">{activeGame.title}</h2>
-                        <p className="mt-1 text-xs text-[#8f6d70]">
+                        <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-[var(--panel-muted)]">Tanlangan o'yin</div>
+                        <h2 className="mt-1 text-xl font-medium text-[var(--panel-text)]">{activeGame.title}</h2>
+                        <p className="mt-1 text-xs text-[var(--panel-text-soft)]">
                           {activeItems.length} ta savol. Kerakli savolni chap ro'yxatdan tanlang, o'ng tomonda tahrir qiling.
                         </p>
                       </div>
@@ -1216,7 +1221,7 @@ export default function TeacherQuestionPanel() {
                       </div>
                       <Link
                         to={activeGame.path}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#f0d9d6] bg-white/90 px-4 py-2.5 text-xs font-medium text-[#7b4f53] transition-all hover:border-[#e07c8e] hover:bg-white"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] px-4 py-2.5 text-xs font-medium text-[var(--panel-text)] transition-all hover:border-[var(--panel-accent)] hover:bg-[var(--panel-surface)]"
                       >
                         O'yinga o'tish
                         <FaArrowRight className="h-3 w-3" />
@@ -1234,14 +1239,14 @@ export default function TeacherQuestionPanel() {
                     }}
                     className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium transition-all ${
                       selectedIndex === null
-                        ? "border-[#e07c8e] bg-gradient-to-r from-[#e07c8e] to-[#a66466] text-white shadow-md"
-                        : "border-[#f0d9d6] bg-white/80 text-[#7b4f53] hover:border-[#e07c8e]"
+                        ? "border-[var(--panel-accent)] bg-[var(--panel-accent-gradient)] text-white shadow-md"
+                        : "border-[var(--panel-border)] bg-[var(--panel-surface-strong)] text-[var(--panel-text)] hover:border-[var(--panel-accent)]"
                     }`}
                   >
                     <FaPlus className="h-3 w-3" />
                     Yangi savol
                   </button>
-                  <div className="rounded-full border border-[#f0d9d6] bg-white/80 px-3 py-2 text-[11px] text-[#8f6d70]">
+                  <div className="rounded-full border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] px-3 py-2 text-[11px] text-[var(--panel-text-soft)]">
                     {filteredItems.length} / {activeItems.length} ko'rsatilmoqda
                   </div>
                 </div>
@@ -1261,14 +1266,14 @@ export default function TeacherQuestionPanel() {
                         }}
                         className={`w-full rounded-2xl border p-4 text-left transition-all duration-200 ${
                           selected
-                            ? "border-[#e07c8e] bg-gradient-to-r from-[#fceae8] to-[#ffe1de] shadow-md"
-                            : "border-[#f0d9d6] bg-white/85 hover:border-[#e07c8e]/40 hover:bg-white"
+                            ? "border-[var(--panel-accent)] bg-[var(--panel-accent-gradient-soft)] shadow-md"
+                            : "border-[var(--panel-border)] bg-[var(--panel-surface-strong)] hover:border-[var(--panel-accent)]/40 hover:bg-[var(--panel-surface)]"
                         }`}
                       >
                         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                           <div className="flex-1">
                             <div className="mb-2 flex flex-wrap items-center gap-1.5">
-                              <span className="rounded-full border border-[#f0d9d6] bg-white/90 px-2 py-0.5 text-[8px] font-medium text-[#b38b8d]">
+                              <span className="rounded-full border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] px-2 py-0.5 text-[8px] font-medium text-[var(--panel-muted)]">
                                 #{realIndex + 1}
                               </span>
                               {meta.map((badge) => {
@@ -1276,22 +1281,22 @@ export default function TeacherQuestionPanel() {
                                 return (
                                   <span
                                     key={badge}
-                                    className={`rounded-full border border-[#f0d9d6] bg-gradient-to-r ${color}/10 px-2 py-0.5 text-[8px] font-medium text-[#7b4f53]`}
+                                    className={`rounded-full border border-[var(--panel-border)] bg-gradient-to-r ${color}/10 px-2 py-0.5 text-[8px] font-medium text-[var(--panel-text)]`}
                                   >
                                     {DIFFICULTY_LABELS[badge] || badge}
                                   </span>
                                 );
                               })}
                             </div>
-                            <p className="text-sm font-medium leading-6 text-[#7b4f53]">{summarizeQuestion(item)}</p>
+                            <p className="text-sm font-medium leading-6 text-[var(--panel-text)]">{summarizeQuestion(item)}</p>
                           </div>
 
                           <div className="flex items-center gap-1.5">
                             <span
                               className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[10px] font-medium ${
                                 selected
-                                  ? "border-[#e07c8e]/40 bg-white/90 text-[#a66466]"
-                                  : "border-[#f0d9d6] bg-white/90 text-[#8f6d70]"
+                                  ? "border-[var(--panel-accent)]/40 bg-[var(--panel-surface-strong)] text-[var(--panel-accent)]"
+                                  : "border-[var(--panel-border)] bg-[var(--panel-surface-strong)] text-[var(--panel-text-soft)]"
                               }`}
                             >
                               <FaEdit className="h-2.5 w-2.5" />
@@ -1315,11 +1320,11 @@ export default function TeacherQuestionPanel() {
                   })}
 
                   {!loading && filteredItems.length === 0 && (
-                    <div className="rounded-2xl border border-dashed border-[#f0d9d6] bg-white/80 p-10 text-center">
-                      <p className="text-sm font-medium text-[#7b4f53]">
+                    <div className="rounded-2xl border border-dashed border-[var(--panel-border)] bg-[var(--panel-surface-strong)] p-10 text-center">
+                      <p className="text-sm font-medium text-[var(--panel-text)]">
                         {loadedByGame[activeGame.gameKey] ? "Savol topilmadi" : "Savollar hali yuklanmagan"}
                       </p>
-                      <p className="mt-2 text-xs text-[#b38b8d]">
+                      <p className="mt-2 text-xs text-[var(--panel-muted)]">
                         {loadedByGame[activeGame.gameKey]
                           ? "Qidiruvni o'zgartiring yoki yangi savol qo'shing."
                           : "O'yin tanlanganda savollar shu yerda chiqadi."}
@@ -1329,10 +1334,10 @@ export default function TeacherQuestionPanel() {
                 </div>
               </>
             ) : (
-              <div className="flex min-h-[520px] items-center justify-center rounded-2xl border border-dashed border-[#f0d9d6] bg-white/60 text-center">
+              <div className="flex min-h-[520px] items-center justify-center rounded-2xl border border-dashed border-[var(--panel-border)] bg-[var(--panel-surface)] text-center">
                 <div className="max-w-md">
-                  <p className="text-lg font-medium text-[#7b4f53]">Avval tepada o'yinni tanlang</p>
-                  <p className="mt-2 text-sm text-[#b38b8d]">
+                  <p className="text-lg font-medium text-[var(--panel-text)]">Avval tepada o'yinni tanlang</p>
+                  <p className="mt-2 text-sm text-[var(--panel-muted)]">
                     O'yin ustiga bosilganda chap tomonda savollar, o'ng tomonda esa qo'shish va AI paneli ochiladi.
                   </p>
                 </div>
@@ -1340,7 +1345,7 @@ export default function TeacherQuestionPanel() {
             )}
           </section>
 
-          <aside className="rounded-3xl border border-[#f0d9d6] bg-white/70 p-5 shadow-xl backdrop-blur-xl sm:p-6 xl:sticky xl:top-6 xl:self-start">
+          <aside className="rounded-3xl border border-[var(--panel-border)] bg-[var(--panel-surface)] p-5 shadow-xl backdrop-blur-xl sm:p-6 xl:sticky xl:top-6 xl:self-start">
             {activeGame ? (
               <>
             <div className="mb-4 flex items-start justify-between gap-3">
@@ -1354,7 +1359,7 @@ export default function TeacherQuestionPanel() {
                     : "Sun'iy intellekt bilan yaratish"}
                 </h3>
               </div>
-              <div className="rounded-full border border-[#f0d9d6] bg-gradient-to-r from-[#fceae8] to-[#ffe1de] px-3 py-1.5 text-[10px] font-medium text-[#7b4f53]">
+              <div className="rounded-full border border-[#f0d9d6] px-3 py-1.5 text-[10px] font-medium text-[#7b4f53]">
                 {activeGame.title}
               </div>
             </div>

@@ -86,43 +86,27 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
 
   return (
     <section
-      className={`relative overflow-hidden py-20 lg:py-28 transition-colors duration-300 ${
-        isDark
-          ? "bg-gradient-to-br from-[#0a0a1a] via-[#111122] to-[#0f0f1f]"
-          : "bg-gradient-to-br from-[#fffbf8] via-[#fff6f2] to-[#fef0ea]"
-      }`}
+      className="relative overflow-hidden bg-[image:var(--home-section-comments-bg)] py-20 transition-colors duration-300 lg:py-28"
     >
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div
-          className={`absolute -top-40 -right-20 h-[500px] w-[500px] rounded-full blur-3xl animate-pulse-slow ${
-            isDark ? "bg-[#ff6b8a]/5" : "bg-[#ffd9de]/30"
-          }`}
-        />
-        <div
-          className={`absolute -bottom-40 -left-20 h-[600px] w-[600px] rounded-full blur-3xl animate-pulse-slower ${
-            isDark ? "bg-[#4a3b6e]/10" : "bg-[#ffe1d6]/30"
-          }`}
-        />
-        <div
-          className={`absolute top-1/3 left-1/4 h-80 w-80 rounded-full blur-[100px] ${
-            isDark ? "bg-[#ff9f6e]/5" : "bg-[#fbc4b0]/20"
-          }`}
-        />
+        <div className="absolute -right-20 -top-40 h-[500px] w-[500px] animate-pulse-slow rounded-full bg-[var(--home-blob-4)] blur-3xl" />
+        <div className="absolute -bottom-40 -left-20 h-[600px] w-[600px] animate-pulse-slower rounded-full bg-[var(--home-blob-5)] blur-3xl" />
+        <div className="absolute left-1/4 top-1/3 h-80 w-80 rounded-full bg-[var(--home-blob-6)] blur-[100px]" />
 
         <div className="absolute top-[15%] left-[5%] opacity-20 animate-float-soft">
-          <GiSpiralBloom className={`text-7xl ${isDark ? "text-[#ffb48a]" : "text-[#e07c8e]"}`} />
+          <GiSpiralBloom className={`text-7xl ${isDark ? "text-[#ffd98a]" : "text-[#59b9e6]"}`} />
         </div>
         <div
           className="absolute bottom-[10%] right-[3%] opacity-15 animate-float-soft"
           style={{ animationDelay: "2s" }}
         >
-          <GiFlowerTwirl className={`text-6xl ${isDark ? "text-[#c9b6ff]" : "text-[#d99f8b]"}`} />
+          <GiFlowerTwirl className={`text-6xl ${isDark ? "text-[#7fd3ef]" : "text-[#d99f8b]"}`} />
         </div>
 
         {[...Array(12)].map((_, i) => (
           <GiCherry
             key={i}
-            className={`absolute animate-float ${isDark ? "text-[#ff8a9f]/10" : "text-[#e07c8e]/15"}`}
+            className={`absolute animate-float ${isDark ? "text-[#7fd3ef]/10" : "text-[#78cfee]/15"}`}
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -138,8 +122,8 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
           className="absolute inset-0 opacity-[0.015]"
           style={{
             backgroundImage: `
-            repeating-linear-gradient(45deg, #e07c8e 0px, #e07c8e 1px, transparent 1px, transparent 30px),
-            repeating-linear-gradient(135deg, #c9a59b 0px, #c9a59b 1px, transparent 1px, transparent 40px)
+            repeating-linear-gradient(45deg, #78cfee 0px, #78cfee 1px, transparent 1px, transparent 30px),
+            repeating-linear-gradient(135deg, #ffd76d 0px, #ffd76d 1px, transparent 1px, transparent 40px)
           `,
             backgroundSize: "60px 60px, 80px 80px",
           }}
@@ -151,29 +135,30 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
           <div
             className={`mb-6 inline-flex items-center gap-3 rounded-full border px-5 py-2.5 shadow-sm backdrop-blur-md transition-all hover:shadow-md ${
               isDark
-                ? "border-[#ff6b8a]/30 bg-[#1a1a2a]/70 hover:bg-[#1f1f32]"
-                : "border-white/70 bg-white/60 hover:bg-white/80"
+                ? "border-[var(--home-surface-border)] bg-[var(--home-surface-bg-soft)] hover:bg-[var(--home-surface-bg-hover)]"
+                : "border-[var(--home-surface-border-soft)] bg-[var(--home-surface-bg-soft)] hover:bg-[var(--home-surface-bg-hover)]"
             }`}
           >
-            <HiSparkles className="animate-twinkle text-sm text-[#e07c8e]" />
+            <HiSparkles className="animate-twinkle text-sm text-[var(--home-accent)]" />
             <span
-              className={`text-[10px] font-semibold uppercase tracking-[0.25em] ${
-                isDark ? "text-[#ffb7c5]" : "text-[#b27a7a]"
-              }`}
+              className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[var(--home-soft-text)]"
             >
               Hurmatli hamkasblar fikri
             </span>
-            <MdOutlineRateReview className={`text-xs ${isDark ? "text-[#ff9faa]" : "text-[#c98888]"}`} />
+            <MdOutlineRateReview className="text-xs text-[var(--home-soft-text)]" />
           </div>
 
           <h2 className="text-4xl font-light leading-[1.2] tracking-tight sm:text-5xl lg:text-6xl">
-            <span className={isDark ? "text-[#f0f0f0]" : "text-[#6b4e52]"}>Nima uchun</span>
-            <span className="mt-2 block bg-gradient-to-r from-[#e07c8e] via-[#d46b7a] to-[#b85c6b] bg-clip-text font-semibold text-transparent">
+            <span className="text-[var(--home-heading)]">Nima uchun</span>
+            <span
+              className="mt-2 block bg-clip-text font-semibold text-transparent"
+              style={{ backgroundImage: "var(--home-accent-gradient)" }}
+            >
               bizni tanlashadi?
             </span>
           </h2>
 
-          <p className={`mx-auto mt-5 max-w-2xl text-base font-light ${isDark ? "text-[#a1a1b5]" : "text-[#9b7578]"}`}>
+          <p className="mx-auto mt-5 max-w-2xl text-base font-light text-[var(--home-body)]">
             Yurtimizning 50 dan ortiq maktab va litseylaridagi tajribali pedagoglar platformamiz haqida o'z
             fikrlarini bildirishdi
           </p>
@@ -184,8 +169,8 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
                 icon: FaRegSmile,
                 label: "Faol izohlar",
                 value: `${totalComments}+`,
-                color: "#e07c8e",
-                gradient: "from-rose-100 to-orange-100",
+                color: "#59b9e6",
+                gradient: "from-sky-100 to-cyan-100",
               },
               {
                 icon: FaStar,
@@ -198,8 +183,8 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
                 icon: FaGraduationCap,
                 label: "Hamkor maktablar",
                 value: "50+",
-                color: "#a66466",
-                gradient: "from-pink-100 to-rose-100",
+                color: "#59b9e6",
+                gradient: "from-sky-100 to-blue-100",
               },
             ].map((stat, i) => (
               <div
@@ -214,10 +199,10 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
                   <stat.icon className="text-sm" style={{ color: stat.color }} />
                 </div>
                 <div className="text-left">
-                  <div className={`text-lg font-bold ${isDark ? "text-white" : "text-[#5e3e42]"}`}>{stat.value}</div>
+                  <div className="text-lg font-bold text-[var(--home-heading)]">{stat.value}</div>
                   <div
                     className={`text-[10px] font-medium uppercase tracking-wide ${
-                      isDark ? "text-[#8888a0]" : "text-[#b28a8a]"
+                      isDark ? "text-[#8ba0bf]" : "text-[#b28a8a]"
                     }`}
                   >
                     {stat.label}
@@ -301,7 +286,7 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
                     />
 
                     <div
-                      className={`card-hover-effect relative flex h-full flex-col rounded-3xl border p-6 shadow-[0_10px_35px_rgba(0,0,0,0.03)] backdrop-blur-md transition-all duration-500 hover:shadow-[0_20px_45px_rgba(224,124,142,0.12)] ${
+                      className={`card-hover-effect relative flex h-full flex-col rounded-3xl border p-6 shadow-[0_10px_35px_rgba(0,0,0,0.03)] backdrop-blur-md transition-all duration-500 hover:shadow-[0_20px_45px_rgba(89,185,230,0.14)] ${
                         isDark
                           ? "border-[#2e2e42] bg-[#14141f]/80 shadow-xl hover:bg-[#181825]"
                           : `${item.bgColor} border-white/70 bg-white/50 hover:bg-white/70`
@@ -335,7 +320,7 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
                         <div className="min-w-0 flex-1">
                           <h3
                             className={`flex items-center gap-1.5 truncate text-base font-semibold ${
-                              isDark ? "text-[#f0f0f0]" : "text-[#5e3e42]"
+                              isDark ? "text-[#f0f0f0]" : "text-[#203572]"
                             }`}
                           >
                             {item.fullName}
@@ -378,7 +363,7 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
                         </div>
                         <span
                           className={`ml-2 rounded-full px-2 py-0.5 text-[9px] font-medium ${
-                            isDark ? "bg-[#2a2a3a] text-[#b0b0c4]" : "bg-[#f7e6e3] text-[#b27a7a]"
+                            isDark ? "bg-[#2a2a3a] text-[#b0b0c4]" : "bg-[#eef9ff] text-[#5f78a6]"
                           }`}
                         >
                           {item.game}
@@ -397,35 +382,35 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
 
                       <div
                         className={`mt-auto flex items-center justify-between border-t pt-4 ${
-                          isDark ? "border-[#2a2a3a]" : "border-[#f0dbd5]/50"
+                          isDark ? "border-[#2a2a3a]" : "border-[#d8eef7]"
                         }`}
                       >
                         <button
                           onClick={(e) => handleLike(item.id, e)}
                           className={`flex items-center gap-2 rounded-full px-3 py-1.5 transition-all duration-300 ${
                             isLiked
-                              ? "bg-rose-100/50 text-rose-500"
+                              ? "bg-sky-100/60 text-sky-600"
                               : isDark
                                 ? "text-[#a0a0b4] hover:bg-[#252536]"
-                                : "text-[#b27a7a] hover:bg-white/60"
+                                : "text-[#6d7aa6] hover:bg-white/60"
                           }`}
                         >
                           <FaRegHeart
                             className={`transition-all duration-300 ${
-                              isLiked ? "scale-110 fill-rose-500 text-rose-500" : "group-hover/btn:scale-110"
+                              isLiked ? "scale-110 fill-sky-600 text-sky-600" : "group-hover/btn:scale-110"
                             }`}
                             size={12}
                           />
                           <span className="text-[11px] font-medium">{displayLikes}</span>
                         </button>
 
-                        <div className={`flex items-center gap-1 text-[9px] ${isDark ? "text-[#6a6a82]" : "text-[#c8a2a2]"}`}>
+                        <div className={`flex items-center gap-1 text-[9px] ${isDark ? "text-[#6a6a82]" : "text-[#8ca0c8]"}`}>
                           {item.timeAgo}
                         </div>
                       </div>
 
                       <div className="absolute bottom-3 left-3 opacity-20 transition-opacity group-hover:opacity-30">
-                        <GiFlowerTwirl className={`text-base ${isDark ? "text-[#ffb48a]" : "text-[#d99f8b]"}`} />
+                        <GiFlowerTwirl className={`text-base ${isDark ? "text-[#ffd98a]" : "text-[#d99f8b]"}`} />
                       </div>
                     </div>
                   </article>
@@ -437,7 +422,7 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
           <button
             className={`swiper-button-prev-custom absolute top-1/2 left-0 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border shadow-md backdrop-blur-xl transition-all duration-300 hover:scale-110 md:flex ${
               isDark
-                ? "border-[#3a3a52] bg-[#1f1f2c]/80 text-[#ffb7c5] hover:bg-[#2a2a3a]"
+                ? "border-[#3a3a52] bg-[#1f1f2c]/80 text-[#7fd3ef] hover:bg-[#2a2a3a]"
                 : "border-white/70 bg-white/70 text-[#b27a7a] hover:bg-white"
             }`}
           >
@@ -447,7 +432,7 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
           <button
             className={`swiper-button-next-custom absolute top-1/2 right-0 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border shadow-md backdrop-blur-xl transition-all duration-300 hover:scale-110 md:flex ${
               isDark
-                ? "border-[#3a3a52] bg-[#1f1f2c]/80 text-[#ffb7c5] hover:bg-[#2a2a3a]"
+                ? "border-[#3a3a52] bg-[#1f1f2c]/80 text-[#7fd3ef] hover:bg-[#2a2a3a]"
                 : "border-white/70 bg-white/70 text-[#b27a7a] hover:bg-white"
             }`}
           >
@@ -482,7 +467,7 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
         .swiper-pagination-bullet {
           width: 7px;
           height: 7px;
-          background: ${isDark ? "#3a3a52" : "#e0bcb5"};
+          background: ${isDark ? "var(--home-surface-border-soft)" : "#e0bcb5"};
           opacity: 0.5;
           transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
         }
@@ -490,7 +475,7 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
         .swiper-pagination-bullet-active {
           width: 24px;
           border-radius: 12px;
-          background: linear-gradient(135deg, #e07c8e, #c06779);
+          background: var(--home-accent-gradient);
           opacity: 1;
         }
         

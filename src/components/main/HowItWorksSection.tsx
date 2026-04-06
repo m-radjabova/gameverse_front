@@ -32,8 +32,8 @@ const steps: Step[] = [
       "Bir necha daqiqada akkaunt yarating va platformadagi barcha imkoniyatlarni ishga tushiring.",
     note: "Tez va sodda kirish jarayoni",
     image: register,
-    accent: "from-[#f6c671] via-[#eeaa64] to-[#de8b57]",
-    surface: "from-[#fff6ea] via-[#ffefdf] to-[#ffe4d0]",
+    accent: "from-[#ffd76e] via-[#ffc85f] to-[#ffb94d]",
+    surface: "from-[#fffdf0] via-[#fff8df] to-[#fff1c6]",
   },
   {
     id: "choose",
@@ -43,8 +43,8 @@ const steps: Step[] = [
       "Mavzu, sinf yoki dars maqsadiga mos o'yinni tanlab, darhol jarayonni boshlang.",
     note: "Har darsga mos format mavjud",
     image: start,
-    accent: "from-[#e58ca0] via-[#d96f8b] to-[#bc5c74]",
-    surface: "from-[#fff2f5] via-[#ffe6eb] to-[#ffdbe3]",
+    accent: "from-[#8ad8f2] via-[#69c9eb] to-[#4aaee0]",
+    surface: "from-[#f3fdff] via-[#e4f7fc] to-[#d6eef8]",
   },
   {
     id: "play",
@@ -54,8 +54,8 @@ const steps: Step[] = [
       "O'quvchilarni jamoa yoki individual formatda darsga jalb qiling va jarayonni qiziqarli qiling.",
     note: "Interaktiv va jonli tajriba",
     image: play,
-    accent: "from-[#8fd3cf] via-[#74c3bf] to-[#58aba7]",
-    surface: "from-[#eefcfb] via-[#def6f4] to-[#cfeeea]",
+    accent: "from-[#7ed8f4] via-[#61c6ee] to-[#4aafe4]",
+    surface: "from-[#f2fcff] via-[#e4f8ff] to-[#d4f0fb]",
   },
   {
     id: "feedback",
@@ -65,8 +65,8 @@ const steps: Step[] = [
       "Taklif va mulohazalaringiz orqali platformani yanada kuchli, qulay va foydali qilib boramiz.",
     note: "Har bir fikr biz uchun muhim",
     image: feedback,
-    accent: "from-[#f6b37a] via-[#ed996c] to-[#df7f62]",
-    surface: "from-[#fff5ed] via-[#ffe8db] to-[#ffdbc9]",
+    accent: "from-[#ffd66f] via-[#ffca68] to-[#ffb85b]",
+    surface: "from-[#fffcef] via-[#fff4dc] to-[#ffecc8]",
   },
 ];
 
@@ -80,36 +80,35 @@ function HowItWorksSection({ isDark = false }: { isDark?: boolean }) {
   );
 
   return (
-    <section className={`relative overflow-hidden py-18 lg:py-24 ${
-      isDark
-        ? "bg-gradient-to-b from-[#111827] via-[#0f172a] to-[#131a2d]"
-        : "bg-gradient-to-b from-[#fff7f6] via-[#fff1ef] to-[#fff9f8]"
-    }`}>
+    <section className="relative overflow-hidden bg-[image:var(--home-section-how-bg)] py-18 lg:py-24">
       <div className="absolute inset-0">
-        <div className={`absolute left-10 top-12 h-56 w-56 rounded-full blur-3xl ${isDark ? "bg-[#ff6b8a]/16" : "bg-[#f6d4da]/30"}`} />
-        <div className={`absolute right-10 top-20 h-64 w-64 rounded-full blur-3xl ${isDark ? "bg-[#1e1e2f]" : "bg-[#fbe5dd]/35"}`} />
-        <div className={`absolute bottom-0 left-1/2 h-52 w-52 -translate-x-1/2 rounded-full blur-3xl ${isDark ? "bg-[#ff4f74]/10" : "bg-[#f1d7de]/20"}`} />
+        <div className="absolute left-10 top-12 h-56 w-56 rounded-full bg-[var(--home-blob-1)] blur-3xl" />
+        <div className="absolute right-10 top-20 h-64 w-64 rounded-full bg-[var(--home-blob-2)] blur-3xl" />
+        <div className="absolute bottom-0 left-1/2 h-52 w-52 -translate-x-1/2 rounded-full bg-[var(--home-blob-3)] blur-3xl" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center" data-aos="fade-up" data-aos-delay="80">
           <div className={`mb-6 inline-flex items-center gap-2 rounded-full border px-5 py-2.5 shadow-lg backdrop-blur-sm ${
-            isDark ? "border-[#ff6b8a]/20 bg-[#1e1e2f]/80" : "border-[#f0d9d6] bg-white/90 shadow-[#d9b2b8]/20"
+            isDark ? "border-[var(--home-surface-border)] bg-[var(--home-surface-bg)] shadow-[var(--home-shadow-soft)]" : "border-[var(--home-surface-border)] bg-[var(--home-surface-bg)] shadow-[var(--home-shadow-soft)]"
           }`}>
-            <HiSparkles className="text-sm text-[#ff6b8a]" />
-            <span className={`text-[10px] font-bold uppercase tracking-[0.24em] sm:text-[11px] ${isDark ? "text-[#a1a1aa]" : "text-[#a66466]"}`}>
+            <HiSparkles className="text-sm text-[var(--home-accent)]" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--home-muted)] sm:text-[11px]">
               Qanday ishlaydi
             </span>
           </div>
 
-          <h2 className={`mx-auto max-w-4xl text-4xl font-black leading-[0.98] sm:text-5xl lg:text-6xl ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
+          <h2 className="mx-auto max-w-4xl text-4xl font-black leading-[0.98] text-[var(--home-heading)] sm:text-5xl lg:text-6xl">
             Platformadan qanday
-            <span className="mt-2 block bg-gradient-to-r from-[#ff6b8a] via-[#ff4f74] to-[#ff8ca6] bg-clip-text text-transparent">
+            <span
+              className="mt-2 block bg-clip-text text-transparent"
+              style={{ backgroundImage: "var(--home-accent-gradient)" }}
+            >
               foydalaniladi?
             </span>
           </h2>
 
-          <p className={`mx-auto mt-5 max-w-2xl text-base leading-relaxed sm:text-lg ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-[var(--home-body)] sm:text-lg">
             To'rt oddiy bosqich bilan darsni boshlaysiz, o'yinni tanlaysiz,
             o'quvchilarni jalb qilasiz va jarayonni doimiy yaxshilab borasiz.
           </p>
@@ -130,7 +129,7 @@ function HowItWorksSection({ isDark = false }: { isDark?: boolean }) {
                   className={`group relative overflow-hidden rounded-[30px] border p-5 text-left transition-all duration-300 ${
                     isActive
                       ? isDark
-                        ? "border-[#ff6b8a]/18 bg-[#1a1a28]/86 shadow-[0_24px_70px_rgba(0,0,0,0.24)] backdrop-blur-[16px] -translate-y-1"
+                        ? "border-[#59b9e6]/18 bg-[#1a1a28]/86 shadow-[0_24px_70px_rgba(0,0,0,0.24)] backdrop-blur-[16px] -translate-y-1"
                         : "border-white/80 bg-white/70 shadow-[0_24px_70px_rgba(139,92,100,0.16)] backdrop-blur-[16px] -translate-y-1"
                       : isDark
                         ? "border-[#2b3146] bg-[#1e1e2f]/78 shadow-[0_14px_40px_rgba(0,0,0,0.18)] backdrop-blur-[12px] hover:-translate-y-1 hover:bg-[#25253a]"
@@ -153,11 +152,11 @@ function HowItWorksSection({ isDark = false }: { isDark?: boolean }) {
           </div>
 
           <div className="relative" data-aos="fade-left" data-aos-delay="200">
-            <div className={`absolute inset-x-8 top-8 -z-10 h-48 rounded-full blur-3xl ${isDark ? "bg-[#ff6b8a]/14" : "bg-[#f4cfd5]/35"}`} />
+            <div className="absolute inset-x-8 top-8 -z-10 h-48 rounded-full bg-[var(--home-blob-1)] blur-3xl" />
             <div className={`rounded-[34px] border p-5 backdrop-blur-[18px] sm:p-6 ${
               isDark
-                ? "border-[#ff6b8a]/18 bg-[#1a1a28]/86 shadow-[0_28px_80px_rgba(0,0,0,0.28)]"
-                : "border-white/70 bg-white/58 shadow-[0_28px_80px_rgba(139,92,100,0.16)]"
+                ? "border-[var(--home-surface-border)] bg-[var(--home-surface-bg-faint)] shadow-[0_28px_80px_var(--home-shadow-card)]"
+                : "border-[var(--home-surface-border-soft)] bg-[var(--home-surface-bg-faint)] shadow-[0_28px_80px_var(--home-shadow-card)]"
             }`}>
               <div className={`rounded-[28px] border p-6 sm:p-7 ${
                 isDark
@@ -166,10 +165,10 @@ function HowItWorksSection({ isDark = false }: { isDark?: boolean }) {
               }`}>
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className={`text-[11px] font-bold uppercase tracking-[0.22em] ${isDark ? "text-[#a1a1aa]" : "text-[#d48d97]"}`}>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--home-soft-text)]">
                       Faol bosqich
                     </p>
-                    <h3 className={`mt-3 text-3xl font-black leading-tight sm:text-4xl ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
+                    <h3 className="mt-3 text-3xl font-black leading-tight text-[var(--home-heading)] sm:text-4xl">
                       {activeStep.title}
                     </h3>
                   </div>
@@ -186,14 +185,14 @@ function HowItWorksSection({ isDark = false }: { isDark?: boolean }) {
                   />
                 </div>
 
-                <p className={`mt-5 max-w-lg text-base leading-relaxed ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>
+                <p className="mt-5 max-w-lg text-base leading-relaxed text-[var(--home-body)]">
                   {activeStep.description}
                 </p>
 
                 <div className={`mt-6 rounded-2xl border px-4 py-4 shadow-sm ${isDark ? "border-[#2b3146] bg-[#1e1e2f]" : "border-white/70 bg-white/70"}`}>
                   <div className="flex items-center gap-3">
-                    <FaRegLightbulb className="text-[#ff6b8a]" />
-                    <p className={`text-sm font-semibold ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
+                    <FaRegLightbulb className="text-[#ffd15d]" />
+                    <p className="text-sm font-semibold text-[var(--home-heading)]">
                       {activeStep.note}
                     </p>
                   </div>
@@ -211,8 +210,8 @@ function HowItWorksSection({ isDark = false }: { isDark?: boolean }) {
                       data-aos-delay={220 + index * 60}
                       className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${isDark ? "border-[#2b3146] bg-[#1e1e2f]" : "border-white/70 bg-white/65"}`}
                     >
-                      <FaCheckCircle className="text-[#ff6b8a]" />
-                      <span className={`text-sm font-medium ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
+                      <FaCheckCircle className="text-[var(--home-accent)]" />
+                      <span className="text-sm font-medium text-[var(--home-heading)]">
                         {item}
                       </span>
                     </div>
@@ -222,7 +221,8 @@ function HowItWorksSection({ isDark = false }: { isDark?: boolean }) {
                 <div className="mt-8 flex flex-wrap gap-4">
                   <button
                     onClick={() => navigate("/games")}
-                    className="group inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-[#e07c8e] via-[#d97386] to-[#bf6474] px-7 py-4 text-sm font-bold text-white shadow-[0_18px_40px_rgba(224,124,142,0.35)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_rgba(224,124,142,0.45)]"
+                    className="group inline-flex items-center gap-3 rounded-full px-7 py-4 text-sm font-bold text-white shadow-[0_18px_40px_rgba(89,185,230,0.30)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_rgba(255,209,93,0.34)]"
+                    style={{ backgroundImage: "var(--home-accent-gradient)" }}
                   >
                     O'yinlarni ko'rish
                     <FaArrowRight className="text-xs transition-transform group-hover:translate-x-1" />

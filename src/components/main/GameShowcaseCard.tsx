@@ -41,21 +41,21 @@ export default function GameShowcaseCard({
       <div
         className={`relative flex h-full flex-col overflow-hidden rounded-[30px] border p-5 backdrop-blur-md ${
           isDark
-            ? "border-[#2b3146] bg-[#1a1a28]/88 shadow-[0_12px_36px_rgba(0,0,0,0.22)] hover:shadow-[0_18px_44px_rgba(255,107,138,0.12)]"
-            : "border-white/70 bg-white/45 shadow-[0_12px_36px_rgba(166,100,102,0.08)] hover:shadow-[0_18px_44px_rgba(224,124,142,0.12)]"
+            ? "border-[#2b3146] bg-[#1a1a28]/88 shadow-[0_12px_36px_rgba(0,0,0,0.22)] hover:shadow-[0_18px_44px_rgba(89,185,230,0.14)]"
+            : "border-[#d8eef7] bg-white/60 shadow-[0_12px_36px_rgba(89,185,230,0.10)] hover:shadow-[0_18px_44px_rgba(244,157,183,0.18)]"
         }`}
       >
         <div
           className="absolute inset-0 opacity-50"
           style={{
             backgroundImage: `radial-gradient(circle at 20px 20px, ${
-              isDark ? "#ff6b8a18" : game.gradient.includes("yellow") ? "#f7c66d20" : "#e07c8e14"
+              isDark ? "#59b9e618" : game.gradient.includes("yellow") ? "#ffd15d24" : "#78cfee18"
             } 2px, transparent 2px)`,
             backgroundSize: "38px 38px",
           }}
         />
 
-        <div className={`relative mb-4 overflow-hidden rounded-[24px] border ${isDark ? "border-[#2b3146] bg-[#1e1e2f]" : "border-white/80 bg-white/60"}`}>
+        <div className={`relative mb-4 overflow-hidden rounded-[24px] border ${isDark ? "border-[#2b3146] bg-[#1e1e2f]" : "border-[#e2f4fb] bg-white/72"}`}>
           <img
             src={game.image}
             alt={game.title}
@@ -82,7 +82,7 @@ export default function GameShowcaseCard({
               type="button"
               onClick={() => onLikeToggle(game.id)}
               className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.12em] backdrop-blur-sm transition-all sm:gap-2 sm:px-3 sm:text-[10px] sm:tracking-[0.14em] ${
-                isLiked ? "border-white bg-white text-[#ff6b8a]" : "border-white/35 bg-white/20 text-white hover:bg-white/30"
+                isLiked ? "border-white bg-white text-[#59b9e6]" : "border-white/35 bg-white/20 text-white hover:bg-white/30"
               }`}
             >
               {isLiked ? <FaHeart className="text-[11px]" /> : <FaRegHeart className="text-[11px]" />}
@@ -101,7 +101,7 @@ export default function GameShowcaseCard({
               <span
                 key={`${game.id}-${item.value}`}
                 className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-bold ${
-                  isDark ? "border-[#2b3146] bg-[#1e1e2f] text-[#a1a1aa]" : "border-white/70 bg-white/70 text-[#8f6d70]"
+                  isDark ? "border-[#2b3146] bg-[#1e1e2f] text-[#a1a1aa]" : "border-[#d8eef7] bg-white/78 text-[#6d7aa6]"
                 }`}
               >
                 <item.icon className="text-[9px]" />
@@ -109,7 +109,7 @@ export default function GameShowcaseCard({
               </span>
             ))}
             {priorityLabel ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-300/30 bg-rose-400/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-rose-200">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-300/40 bg-sky-400/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-sky-600">
                 <FaHeart className="text-[9px]" />
                 {priorityLabel}
               </span>
@@ -117,9 +117,9 @@ export default function GameShowcaseCard({
           </div>
 
           <div className="min-h-[104px] sm:min-h-[118px]">
-            <h3 className={`text-xl font-black sm:text-2xl ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>{game.title}</h3>
+            <h3 className={`text-xl font-black sm:text-2xl ${isDark ? "text-[#f1f1f1]" : "text-[#203572]"}`}>{game.title}</h3>
             <p
-              className={`mt-2 text-sm leading-relaxed ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}
+              className={`mt-2 text-sm leading-relaxed ${isDark ? "text-[#a1a1aa]" : "text-[#6d7aa6]"}`}
               style={{
                 display: "-webkit-box",
                 WebkitLineClamp: 3,
@@ -132,19 +132,19 @@ export default function GameShowcaseCard({
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className={`rounded-2xl border px-4 py-3 ${isDark ? "border-[#2b3146] bg-[#1e1e2f]" : "border-white/70 bg-white/65"}`}>
-              <p className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] ${isDark ? "text-[#a1a1aa]" : "text-[#a66466]"}`}>
+            <div className={`rounded-2xl border px-4 py-3 ${isDark ? "border-[#2b3146] bg-[#1e1e2f]" : "border-[#d8eef7] bg-white/72"}`}>
+              <p className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] ${isDark ? "text-[#a1a1aa]" : "text-[#59b9e6]"}`}>
                 <CategoryIcon className="text-[11px]" />
                 Yo'nalish
               </p>
-              <p className={`mt-2 text-sm font-semibold ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>{game.category}</p>
+              <p className={`mt-2 text-sm font-semibold ${isDark ? "text-[#f1f1f1]" : "text-[#203572]"}`}>{game.category}</p>
             </div>
-            <div className={`rounded-2xl border px-4 py-3 ${isDark ? "border-[#2b3146] bg-[#1e1e2f]" : "border-white/70 bg-white/65"}`}>
-              <p className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] ${isDark ? "text-[#a1a1aa]" : "text-[#a66466]"}`}>
+            <div className={`rounded-2xl border px-4 py-3 ${isDark ? "border-[#2b3146] bg-[#1e1e2f]" : "border-[#d8eef7] bg-white/72"}`}>
+              <p className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] ${isDark ? "text-[#a1a1aa]" : "text-[#59b9e6]"}`}>
                 <LevelIcon className="text-[11px]" />
                 Daraja
               </p>
-              <p className={`mt-2 text-sm font-semibold ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>{game.level}</p>
+              <p className={`mt-2 text-sm font-semibold ${isDark ? "text-[#f1f1f1]" : "text-[#203572]"}`}>{game.level}</p>
             </div>
           </div>
 

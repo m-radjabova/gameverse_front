@@ -66,6 +66,7 @@ function Home() {
 
   useEffect(() => {
     window.localStorage.setItem("home-theme", isDarkMode ? "dark" : "light");
+    window.dispatchEvent(new Event("home-theme-change"));
   }, [isDarkMode]);
 
   if (isLoading) {
@@ -88,9 +89,8 @@ function Home() {
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-500 ${
-        isDarkMode ? "bg-[#0f172a] text-[#f1f1f1]" : "bg-white"
-      }`}
+      data-home-theme={isDarkMode ? "dark" : "light"}
+      className="min-h-screen bg-[var(--home-page-bg)] text-[var(--home-page-text)] transition-colors duration-500"
     >
       <div>
         <div id="home">

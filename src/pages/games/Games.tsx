@@ -31,11 +31,13 @@ import {
   subscribeFavoriteGames,
   toggleFavoriteGame,
 } from "../../utils/gameFavorites";
+import useHomeTheme from "../../hooks/useHomeTheme";
 
 type Game = typeof gameCards[number];
 
 function Games() {
   const navigate = useNavigate();
+  const isDarkMode = useHomeTheme();
   const [activeCategory, setActiveCategory] = useState("Barchasi");
   const [likedGames, setLikedGames] = useState<string[]>([]);
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
@@ -107,16 +109,30 @@ function Games() {
     setLikedGames(toggleFavoriteGame(gameId));
   };
 
+  const pageBackground = isDarkMode
+    ? `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(89, 185, 230, 0.14) 0%, rgba(0, 0, 0, 0) 48%),
+       radial-gradient(circle at 82% 18%, rgba(255, 209, 93, 0.10) 0%, transparent 38%),
+       radial-gradient(circle at 18% 82%, rgba(89, 185, 230, 0.10) 0%, transparent 38%),
+       linear-gradient(135deg, #0f172a 0%, #111827 50%, #131a2d 100%)`
+    : `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(120, 207, 238, 0.20) 0%, rgba(255, 255, 255, 0) 46%),
+       radial-gradient(circle at 82% 18%, rgba(255, 209, 93, 0.18) 0%, transparent 36%),
+       radial-gradient(circle at 18% 82%, rgba(89, 185, 230, 0.12) 0%, transparent 36%),
+       linear-gradient(135deg, #fffef9 0%, #f8fcff 48%, #fff8ef 100%)`;
+
+  const particlePalette = isDarkMode
+    ? ["#59b9e6", "#ffd15d", "#f8fafc"]
+    : ["#59b9e6", "#ffd15d", "#ffffff"];
+
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[#030014]">
+    <div
+      data-home-theme={isDarkMode ? "dark" : "light"}
+      className="games-theme relative min-h-screen w-full overflow-hidden bg-[var(--games-page-base)] text-[var(--games-text)] transition-colors duration-500"
+    >
       {/* Murakkab gradient fon */}
       <div 
         className="fixed inset-0 transition-opacity duration-1000"
         style={{
-          background: `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(98, 0, 255, 0.15) 0%, rgba(0, 0, 0, 0) 50%),
-                      radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 40%),
-                      radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 40%),
-                      linear-gradient(135deg, #030014 0%, #0a0a2a 50%, #1a0a2a 100%)`
+          background: pageBackground,
         }}
       />
 
@@ -132,14 +148,14 @@ function Games() {
               top: `${Math.random() * 100}%`,
               left: `${Math.random() * 100}%`,
               background: `radial-gradient(circle, ${
-                i % 3 === 0 ? '#ff00ff' : i % 3 === 1 ? '#00ffff' : '#ffffff'
+                particlePalette[i % particlePalette.length]
               } 0%, transparent 70%)`,
               boxShadow: `0 0 ${Math.random() * 20 + 10}px ${
-                i % 3 === 0 ? '#ff00ff' : i % 3 === 1 ? '#00ffff' : '#ffffff'
+                particlePalette[i % particlePalette.length]
               }`,
               animationDelay: `${Math.random() * 5}s`,
               animationDuration: `${10 + Math.random() * 20}s`,
-              opacity: 0.2 + Math.random() * 0.3,
+              opacity: isDarkMode ? 0.16 + Math.random() * 0.24 : 0.12 + Math.random() * 0.18,
             }}
           />
         ))}
@@ -147,12 +163,12 @@ function Games() {
 
       {/* Neon chiziqlar */}
       <div className="fixed inset-0">
-        <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-purple-500/20 to-transparent" />
-        <div className="absolute top-0 left-2/4 w-px h-full bg-gradient-to-b from-transparent via-pink-500/20 to-transparent" />
-        <div className="absolute top-0 left-3/4 w-px h-full bg-gradient-to-b from-transparent via-blue-500/20 to-transparent" />
-        <div className="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
-        <div className="absolute top-2/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500/20 to-transparent" />
-        <div className="absolute top-3/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent" />
+        <div className="absolute top-0 left-1/4 h-full w-px bg-gradient-to-b from-transparent via-[var(--games-line-1)] to-transparent" />
+        <div className="absolute top-0 left-2/4 h-full w-px bg-gradient-to-b from-transparent via-[var(--games-line-2)] to-transparent" />
+        <div className="absolute top-0 left-3/4 h-full w-px bg-gradient-to-b from-transparent via-[var(--games-line-3)] to-transparent" />
+        <div className="absolute top-1/4 left-0 h-px w-full bg-gradient-to-r from-transparent via-[var(--games-line-1)] to-transparent" />
+        <div className="absolute top-2/4 left-0 h-px w-full bg-gradient-to-r from-transparent via-[var(--games-line-2)] to-transparent" />
+        <div className="absolute top-3/4 left-0 h-px w-full bg-gradient-to-r from-transparent via-[var(--games-line-3)] to-transparent" />
       </div>
 
       {/* Asosiy kontent */}
@@ -160,12 +176,12 @@ function Games() {
         {/* Orqaga qaytish tugmasi */}
         <button
           onClick={() => navigate("/")}
-          className="group relative mb-6 inline-flex items-center gap-2.5 rounded-2xl border border-white/10 bg-gradient-to-r from-white/5 to-white/10 px-4 py-2.5 text-sm font-bold text-white backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:shadow-[0_0_30px_rgba(168,85,247,0.3)] sm:mb-8 sm:gap-3 sm:px-6 sm:py-3 sm:hover:scale-105"
+          className="group relative mb-6 inline-flex cursor-pointer items-center gap-2.5 rounded-2xl border border-[var(--games-border)] bg-[var(--games-surface-soft)] px-4 py-2.5 text-sm font-bold text-[var(--games-text)] backdrop-blur-xl transition-all duration-300 hover:border-[var(--games-border-strong)] hover:shadow-[0_0_30px_var(--games-shadow)] sm:mb-8 sm:gap-3 sm:px-6 sm:py-3 sm:hover:scale-105"
         >
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-600/20 to-pink-600/20 opacity-0 group-hover:opacity-100 blur-xl transition-opacity" />
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[var(--home-accent)]/20 to-[var(--home-accent-strong)]/20 opacity-0 blur-xl transition-opacity group-hover:opacity-100" />
           <FaHome className="text-base transition-transform group-hover:-translate-x-1" />
           <span>Bosh sahifa</span>
-          <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-purple-500/50 to-pink-500/50 blur opacity-0 group-hover:opacity-30 transition-opacity" />
+          <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-[var(--home-accent)]/50 to-[var(--home-accent-strong)]/50 blur opacity-0 transition-opacity group-hover:opacity-30" />
         </button>
 
         {/* Sarlavha qismi */}
@@ -206,7 +222,7 @@ function Games() {
           </div>
 
           {/* Ta'rif */}
-          <p className="mx-auto mt-4 max-w-3xl bg-gradient-to-r from-white/80 via-white/60 to-white/80 bg-clip-text text-base leading-relaxed text-transparent sm:mt-6 sm:text-xl">
+          <p className="mx-auto mt-4 max-w-3xl bg-gradient-to-r from-[var(--games-text)] via-[var(--games-text-soft)] to-[var(--games-text)] bg-clip-text text-base leading-relaxed text-transparent sm:mt-6 sm:text-xl">
             Eng sara o'yinlar, ajoyib sarguzashtlar va unutilmas lahzalar sizni kutmoqda!
           </p>
 
@@ -235,10 +251,10 @@ function Games() {
               <button
                 key={category}
                 onClick={() => setActiveCategory(category)}
-                className={`group relative overflow-hidden rounded-2xl px-4 py-2.5 text-xs font-bold transition-all duration-500 sm:px-6 sm:py-3 sm:text-sm ${showAmbientEffects ? "transform hover:scale-110" : ""} ${
+                className={`group relative cursor-pointer overflow-hidden rounded-2xl px-4 py-2.5 text-xs font-bold transition-all duration-500 sm:px-6 sm:py-3 sm:text-sm ${showAmbientEffects ? "transform hover:scale-110" : ""} ${
                   isActive
-                    ? `bg-gradient-to-r ${colors[colorIndex]} text-white shadow-[0_0_30px_rgba(168,85,247,0.5)]`
-                    : 'bg-white/5 text-white/70 hover:bg-white/10'
+                    ? `bg-gradient-to-r ${colors[colorIndex]} text-white shadow-[0_0_30px_var(--games-shadow-strong)]`
+                    : 'border border-[var(--games-border)] bg-[var(--games-surface-soft)] text-[var(--games-text-soft)] hover:border-[var(--games-border-strong)] hover:bg-[var(--games-surface)]'
                 }`}
               >
                 {/* Hover effekti */}
@@ -260,7 +276,7 @@ function Games() {
         <div className="mb-10 flex justify-center sm:mb-12">
           <div className="relative group w-full max-w-6xl">
             <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl blur-2xl opacity-30 group-hover:opacity-50 transition-opacity" />
-            <div className="relative overflow-hidden rounded-2xl border border-white/20 bg-black/40 px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-8">
+            <div className="relative overflow-hidden rounded-2xl border border-[var(--games-border)] bg-[var(--games-surface)] px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-8">
               <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-12 xl:gap-20">
                 <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 lg:flex-1 lg:justify-start lg:gap-8">
                 <div className="flex items-center gap-3">
@@ -268,31 +284,31 @@ function Games() {
                     <div className="absolute inset-0 bg-yellow-400 rounded-full blur-md " />
                     <FaGamepad className="relative text-xl text-yellow-400" />
                   </div>
-                  <span className="text-white font-bold">
+                  <span className="font-bold text-[var(--games-text)]">
                     <span className="text-yellow-400">{totalGames}</span> ta o'yin
                   </span>
                 </div>
                 
-                <div className="hidden h-8 w-px bg-white/20 sm:block" />
+                <div className="hidden h-8 w-px bg-[var(--games-border)] sm:block" />
                 
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <div className="absolute inset-0 bg-green-400 rounded-full blur-md" />
                     <FaUsers className="relative text-xl text-green-400" />
                   </div>
-                  <span className="text-white font-bold">
+                  <span className="font-bold text-[var(--games-text)]">
                     <span className="text-green-400">5k+</span> foydalanuvchi
                   </span>
                 </div>
                 
-                <div className="hidden h-8 w-px bg-white/20 sm:block" />
+                <div className="hidden h-8 w-px bg-[var(--games-border)] sm:block" />
                 
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <div className="absolute inset-0 bg-blue-400 rounded-full blur-md " />
                     <FaFire className="relative text-xl text-blue-400" />
                   </div>
-                  <span className="text-white font-bold">
+                  <span className="font-bold text-[var(--games-text)]">
                     <span className="text-blue-400">24/7</span> jonli
                   </span>
                 </div>
@@ -305,7 +321,7 @@ function Games() {
                       type="button"
                       onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                       disabled={currentPage === 1}
-                      className="group inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:-translate-x-0.5 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-35"
+                      className="group inline-flex h-12 w-12 cursor-pointer items-center justify-center rounded-2xl border border-[var(--games-border)] bg-[var(--games-surface-soft)] text-[var(--games-text)] transition hover:-translate-x-0.5 hover:border-[var(--games-border-strong)] hover:bg-[var(--games-surface)] disabled:cursor-not-allowed disabled:opacity-35"
                       aria-label="Oldingi sahifa"
                     >
                       <FaChevronLeft className="text-sm transition-transform group-hover:-translate-x-0.5" />
@@ -320,10 +336,10 @@ function Games() {
                             key={page}
                             type="button"
                             onClick={() => setCurrentPage(page)}
-                            className={`relative h-10 min-w-10 overflow-hidden rounded-2xl border px-3 text-xs font-black transition-all duration-300 sm:h-12 sm:min-w-12 sm:px-4 sm:text-sm ${
+                            className={`relative h-10 min-w-10 cursor-pointer overflow-hidden rounded-2xl border px-3 text-xs font-black transition-all duration-300 sm:h-12 sm:min-w-12 sm:px-4 sm:text-sm ${
                               active
                                 ? "border-pink-300/60 bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 text-white shadow-[0_0_30px_rgba(217,70,239,0.35)]"
-                                : "border-white/10 bg-white/5 text-white/75 hover:-translate-y-0.5 hover:bg-white/10 hover:text-white"
+                                : "border-[var(--games-border)] bg-[var(--games-surface-soft)] text-[var(--games-text-soft)] hover:-translate-y-0.5 hover:border-[var(--games-border-strong)] hover:bg-[var(--games-surface)] hover:text-[var(--games-text)]"
                             }`}
                           >
                             {active && (
@@ -339,7 +355,7 @@ function Games() {
                       type="button"
                       onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                       disabled={currentPage === totalPages}
-                      className="group inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:translate-x-0.5 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-35"
+                      className="group inline-flex h-12 w-12 cursor-pointer items-center justify-center rounded-2xl border border-[var(--games-border)] bg-[var(--games-surface-soft)] text-[var(--games-text)] transition hover:translate-x-0.5 hover:border-[var(--games-border-strong)] hover:bg-[var(--games-surface)] disabled:cursor-not-allowed disabled:opacity-35"
                       aria-label="Keyingi sahifa"
                     >
                       <FaChevronRight className="text-sm transition-transform group-hover:translate-x-0.5" />
@@ -370,19 +386,16 @@ function Games() {
                 onMouseLeave={() => setHoveredCard(null)}
               >
                 {/* Karta gradienti - bu qatlam icon ustida emas */}
-                <div className={`absolute -inset-0.5 bg-gradient-to-r ${cardGradient} rounded-3xl blur-2xl opacity-0 group-hover:opacity-70 transition-opacity duration-500`} />
+                <div className={`absolute -inset-0.5 rounded-3xl bg-gradient-to-r ${cardGradient} blur-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-70`} />
+                <div className="pointer-events-none absolute inset-0 rounded-3xl bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.24),transparent_48%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                 
                 {/* Asosiy karta */}
                 <div
                   className={`relative w-full overflow-hidden rounded-3xl border-2 transition-all duration-500 ${
                     game.available
-                      ? `${game.bgPattern || ''} border-white/20 hover:border-white/40 ${game.borderGlow || ''}`
-                      : 'border-white/10 bg-gray-800/50 backdrop-blur-xl cursor-not-allowed'
+                      ? `border-[var(--games-border)] bg-[var(--games-card-shell)] shadow-[0_20px_50px_var(--games-card-shadow)] hover:border-[var(--games-border-strong)] hover:shadow-[0_30px_80px_var(--games-card-shadow-hover)] ${game.borderGlow || ''}`
+                      : 'cursor-not-allowed border-[var(--games-border)] bg-[var(--games-surface)] backdrop-blur-xl'
                   }`}
-                  style={{
-                    // Agar bgPattern bo'lmasa, gradient fon qo'shamiz
-                    background: game.bgPattern ? undefined : `linear-gradient(135deg, rgba(20,20,30,0.9) 0%, rgba(30,20,40,0.9) 100%)`
-                  }}
                 >
                   {/* Rasm qismi */}
                   <div className="relative z-10 h-52 w-full overflow-hidden sm:h-64">
@@ -393,7 +406,7 @@ function Games() {
                     />
                     
                     {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className={`absolute inset-0 bg-gradient-to-t ${isDarkMode ? "from-black/80 via-black/20" : "from-slate-950/55 via-slate-900/10"} to-transparent`} />
                     
                     {/* Neon chiziqlar */}
                     <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent " />
@@ -414,7 +427,7 @@ function Games() {
                     <div className="absolute right-4 top-4">
                       <div className="relative">
                         <div className="absolute inset-0 bg-black rounded-full blur-md" />
-                        <div className="relative flex items-center gap-2 rounded-full bg-black/80 backdrop-blur-sm px-4 py-2 text-xs font-bold text-white border border-white/20">
+                        <div className="relative flex items-center gap-2 rounded-full border border-white/20 bg-black/70 px-4 py-2 text-xs font-bold text-white backdrop-blur-sm">
                           <game.levelIcon className="text-yellow-300" />
                           <span>{game.level}</span>
                         </div>
@@ -427,7 +440,7 @@ function Games() {
                         event.stopPropagation();
                         handleLikeToggle(game.id);
                       }}
-                      className={`absolute right-4 bottom-4 z-50 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] backdrop-blur-md transition-all ${
+                      className={`absolute right-4 bottom-4 z-50 inline-flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] backdrop-blur-md transition-all ${
                         isLiked
                           ? "border-rose-200/60 bg-white text-[#ff5f87] shadow-[0_0_25px_rgba(255,95,135,0.35)]"
                           : "border-white/20 bg-black/45 text-white hover:bg-black/60"
@@ -451,47 +464,52 @@ function Games() {
                   </div>
 
                   {/* Kontent qismi */}
-                  <div className="relative z-0 p-4 pt-5 sm:p-6 sm:pt-6">
-                    <h3 className="mb-2 flex items-center gap-2 text-xl font-black text-white sm:text-2xl">
+                  <div className="relative z-0 overflow-hidden border-t border-[var(--games-border)] bg-[var(--games-card-surface)] p-4 pt-5 sm:p-6 sm:pt-6">
+                    <div className={`pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r ${cardGradient} opacity-90`} />
+                    <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${cardGradient} opacity-[0.08]`} />
+                    <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-white/60 dark:bg-white/10" />
+                    <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-white/30 blur-3xl" />
+                    <div className="relative">
+                    <h3 className="mb-2 flex items-center gap-2 text-xl font-black text-[var(--games-card-text)] sm:text-2xl">
                       {game.title}
                       {game.available && (
                         <FaBolt className="text-yellow-400" />
                       )}
                     </h3>
 
-                    <p className="mb-4 text-sm text-white/60 line-clamp-2">{game.description}</p>
+                    <p className="mb-4 line-clamp-2 text-sm text-[var(--games-card-text-soft)]">{game.description}</p>
 
                     {/* Ma'lumotlar gridi */}
                     <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
                       <div className="relative group/item">
                         <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} rounded-xl blur-md opacity-0 group-hover/item:opacity-30 transition-opacity`} />
-                        <div className="relative flex items-center gap-2 rounded-xl bg-white/5 p-2.5 border border-white/10 backdrop-blur-sm">
-                          <FaUsers className="text-sm text-white/60" />
-                          <span className="text-xs font-bold text-white/80">{game.players}</span>
+                        <div className="relative flex items-center gap-2 rounded-xl border border-[var(--games-chip-border)] bg-[var(--games-chip-bg)] p-2.5 shadow-[0_10px_24px_var(--games-chip-shadow)] backdrop-blur-sm">
+                          <FaUsers className="text-sm text-[var(--games-card-text-soft)]" />
+                          <span className="text-xs font-bold text-[var(--games-card-text)]">{game.players}</span>
                         </div>
                       </div>
                       
                       <div className="relative group/item">
                         <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} rounded-xl blur-md opacity-0 group-hover/item:opacity-30 transition-opacity`} />
-                        <div className="relative flex items-center gap-2 rounded-xl bg-white/5 p-2.5 border border-white/10 backdrop-blur-sm">
-                          <IoMdTimer className="text-sm text-white/60" />
-                          <span className="text-xs font-bold text-white/80">{game.time}</span>
+                        <div className="relative flex items-center gap-2 rounded-xl border border-[var(--games-chip-border)] bg-[var(--games-chip-bg)] p-2.5 shadow-[0_10px_24px_var(--games-chip-shadow)] backdrop-blur-sm">
+                          <IoMdTimer className="text-sm text-[var(--games-card-text-soft)]" />
+                          <span className="text-xs font-bold text-[var(--games-card-text)]">{game.time}</span>
                         </div>
                       </div>
                       
                       <div className="relative group/item">
                         <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} rounded-xl blur-md opacity-0 group-hover/item:opacity-30 transition-opacity`} />
-                        <div className="relative flex items-center gap-2 rounded-xl bg-white/5 p-2.5 border border-white/10 backdrop-blur-sm">
+                        <div className="relative flex items-center gap-2 rounded-xl border border-[var(--games-chip-border)] bg-[var(--games-chip-bg)] p-2.5 shadow-[0_10px_24px_var(--games-chip-shadow)] backdrop-blur-sm">
                           <FaTrophy className="text-sm text-yellow-300" />
-                          <span className="text-xs font-bold text-white/80">{game.points}</span>
+                          <span className="text-xs font-bold text-[var(--games-card-text)]">{game.points}</span>
                         </div>
                       </div>
                       
                       <div className="relative group/item">
                         <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} rounded-xl blur-md opacity-0 group-hover/item:opacity-30 transition-opacity`} />
-                        <div className="relative flex items-center gap-2 rounded-xl bg-white/5 p-2.5 border border-white/10 backdrop-blur-sm">
+                        <div className="relative flex items-center gap-2 rounded-xl border border-[var(--games-chip-border)] bg-[var(--games-chip-bg)] p-2.5 shadow-[0_10px_24px_var(--games-chip-shadow)] backdrop-blur-sm">
                           <game.categoryIcon className={`text-sm ${game.iconColor}`} />
-                          <span className="text-xs font-bold text-white/80">{game.category}</span>
+                          <span className="text-xs font-bold text-[var(--games-card-text)]">{game.category}</span>
                         </div>
                       </div>
                     </div>
@@ -507,10 +525,13 @@ function Games() {
                         disabled={!game.available}
                         className={`relative w-full overflow-hidden rounded-2xl border-2 transition-all duration-500 ${
                           game.available
-                            ? `border-yellow-400/50 bg-gradient-to-r ${cardGradient} hover:scale-[1.02] active:scale-[0.98] cursor-pointer group/btn`
-                            : 'border-gray-600 bg-gray-700/50 cursor-not-allowed'
+                            ? `group/btn cursor-pointer border-[var(--games-button-border)] bg-[var(--games-button-bg)] shadow-[0_18px_35px_var(--games-button-shadow)] hover:scale-[1.02] hover:shadow-[0_24px_50px_var(--games-button-shadow-hover)] active:scale-[0.98]`
+                            : 'cursor-not-allowed border-gray-600 bg-gray-700/50'
                         }`}
                       >
+                        {game.available && (
+                          <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} opacity-95`} />
+                        )}
                         <div className="px-4 py-3.5 sm:px-6 sm:py-4">
                           <span className="relative z-10 flex items-center justify-center gap-2.5 text-sm font-black text-white">
                             {game.available ? (
@@ -534,6 +555,7 @@ function Games() {
                         )}
                       </button>
                     </div>
+                    </div>
                   </div>
 
                   {/* Hover effektlari */}
@@ -550,7 +572,7 @@ function Games() {
         </div>
 
         {/* Footer ikonkalar */}
-        <div className="relative mt-14 flex flex-wrap justify-center gap-5 text-white/20 sm:mt-20 sm:gap-8">
+        <div className="relative mt-14 flex flex-wrap justify-center gap-5 text-[var(--games-icon-muted)] sm:mt-20 sm:gap-8">
           {[
             GiAchievement,
             GiPodium,

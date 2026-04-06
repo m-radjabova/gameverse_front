@@ -21,6 +21,7 @@ import {
   HiOutlineKey
 } from "react-icons/hi";
 import { GiCherry } from "react-icons/gi";
+import useHomeTheme from "../../hooks/useHomeTheme";
 
 type FormData = {
   current_password: string;
@@ -36,6 +37,7 @@ type Props = {
 };
 
 export default function ChangePasswordModal({ open, loading, onClose, onSubmit }: Props) {
+  const isDarkMode = useHomeTheme();
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -124,7 +126,10 @@ export default function ChangePasswordModal({ open, loading, onClose, onSubmit }
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div
+      data-home-theme={isDarkMode ? "dark" : "light"}
+      className="password-theme fixed inset-0 z-50 overflow-y-auto"
+    >
       <div className="flex min-h-screen items-center justify-center p-4 text-center">
         
         {/* Backdrop */}

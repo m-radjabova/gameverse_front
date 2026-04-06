@@ -37,6 +37,7 @@ import {
 } from "react-icons/md";
 import { GiCherry, GiFlowerTwirl, GiPlanetCore } from "react-icons/gi";
 import ChangePasswordModal from "./ChangePasswordModal";
+import useHomeTheme from "../../hooks/useHomeTheme";
 
 type ProfileForm = {
   username: string;
@@ -44,6 +45,7 @@ type ProfileForm = {
 };
 
 function Profile() {
+  const isDarkMode = useHomeTheme();
   const { dispatch } = useContextPro();
   const meQuery = useMeQuery(true);
   const user = meQuery.data;
@@ -131,7 +133,10 @@ function Profile() {
 
   if (meQuery.isLoading) {
     return (
-      <section className="min-h-screen bg-gradient-to-br from-[#fff9f8] via-[#fff1f0] to-[#fae6df] py-12">
+      <section
+        data-home-theme={isDarkMode ? "dark" : "light"}
+        className="profile-theme min-h-screen bg-[image:var(--panel-page-bg)] bg-[var(--panel-page-base)] py-12"
+      >
         <div className="mx-auto max-w-6xl px-4">
           <div className="flex items-center justify-center h-[80vh]">
             <div className="text-center">
@@ -152,7 +157,10 @@ function Profile() {
 
   if (meQuery.isError || !user) {
     return (
-      <section className="min-h-screen bg-gradient-to-br from-[#fff9f8] via-[#fff1f0] to-[#fae6df] py-12">
+      <section
+        data-home-theme={isDarkMode ? "dark" : "light"}
+        className="profile-theme min-h-screen bg-[image:var(--panel-page-bg)] bg-[var(--panel-page-base)] py-12"
+      >
         <div className="mx-auto max-w-6xl px-4">
           <div className="rounded-3xl border border-[#f0d9d6] bg-white/70 backdrop-blur-sm p-8 shadow-xl">
             <div className="text-center py-16">
@@ -179,7 +187,10 @@ function Profile() {
   }
 
   return (
-    <section className="min-h-screen  bg-gradient-to-br from-[#fff9f8] via-[#fff1f0] to-[#fae6df] py-10">
+    <section
+      data-home-theme={isDarkMode ? "dark" : "light"}
+      className="profile-theme min-h-screen bg-[image:var(--panel-page-bg)] bg-[var(--panel-page-base)] py-10"
+    >
       
       {/* Minimal Background Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">

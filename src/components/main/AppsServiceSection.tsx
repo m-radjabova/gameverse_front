@@ -54,35 +54,34 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
 
   return (
     <section
-      className={`relative overflow-hidden py-20 transition-colors duration-500 lg:py-28 ${
-        isDark
-          ? "bg-gradient-to-br from-[#111827] via-[#0f172a] to-[#131a2d]"
-          : "bg-gradient-to-br from-[#fff9f8] via-[#fff3f1] to-[#faeae5]"
-      }`}
+      className="relative overflow-hidden bg-[image:var(--home-section-games-bg)] py-20 transition-colors duration-500 lg:py-28"
     >
-      <BackgroundDecorations isDark={isDark} />
+      <BackgroundDecorations />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-14 max-w-3xl text-center" data-aos="fade-up" data-aos-delay="80">
           <div
             className={`mb-6 inline-flex items-center gap-2 rounded-full border px-5 py-2.5 shadow-lg backdrop-blur-sm ${
-              isDark ? "border-[#ff6b8a]/20 bg-[#1e1e2f]/80" : "border-[#f0d9d6] bg-white/90"
+              isDark ? "border-[var(--home-surface-border)] bg-[var(--home-surface-bg)]" : "border-[var(--home-surface-border)] bg-[var(--home-surface-bg)]"
             }`}
           >
             <div className="relative">
-              <HiSparkles className="animate-pulse-soft text-sm text-[#ff6b8a]" />
+              <HiSparkles className="animate-pulse-soft text-sm text-[var(--home-accent)]" />
               <span className="absolute -right-1 -top-1 h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#ff6b8a] opacity-75" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--home-accent)] opacity-75" />
               </span>
             </div>
-            <span className={`text-[10px] font-bold uppercase tracking-[0.2em] ${isDark ? "text-[#a1a1aa]" : "text-[#a66466]"}`}>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--home-muted)]">
               Interaktiv o'yinlar
             </span>
           </div>
 
           <h2 className="text-4xl font-black leading-tight sm:text-5xl lg:text-6xl">
-            <span className={isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}>Mavjud barcha</span>
-            <span className="block bg-gradient-to-r from-[#ff6b8a] via-[#ff4f74] to-[#ff8ca6] bg-clip-text text-transparent">
+            <span className="text-[var(--home-heading)]">Mavjud barcha</span>
+            <span
+              className="block bg-clip-text text-transparent"
+              style={{ backgroundImage: "var(--home-accent-gradient)" }}
+            >
               o'yinlarni sinab ko'ring
             </span>
           </h2>
@@ -152,21 +151,25 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
             })}
           </Swiper>
 
-          <button className={`games-swiper-prev absolute left-0 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border shadow-sm transition-all hover:-translate-x-1 md:flex ${isDark ? "border-[#2b3146] bg-[#1e1e2f] hover:bg-[#25253a]" : "border-white/70 bg-white/85 hover:bg-white"}`}>
-            <FaArrowRight className={`rotate-180 text-xs ${isDark ? "text-[#f1f1f1]" : "text-[#a66466]"}`} />
+          <button className={`games-swiper-prev absolute left-0 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border shadow-sm transition-all hover:-translate-x-1 md:flex ${isDark ? "border-[var(--home-surface-border-soft)] bg-[var(--home-surface-bg)] hover:bg-[var(--home-surface-bg-hover)]" : "border-[var(--home-surface-border-soft)] bg-[var(--home-surface-bg)] hover:bg-[var(--home-surface-bg-hover)]"}`}>
+            <FaArrowRight className="rotate-180 text-xs text-[var(--home-heading)]" />
           </button>
 
-          <button className={`games-swiper-next absolute right-0 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border shadow-sm transition-all hover:translate-x-1 md:flex ${isDark ? "border-[#2b3146] bg-[#1e1e2f] hover:bg-[#25253a]" : "border-white/70 bg-white/85 hover:bg-white"}`}>
-            <FaArrowRight className={`text-xs ${isDark ? "text-[#f1f1f1]" : "text-[#a66466]"}`} />
+          <button className={`games-swiper-next absolute right-0 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border shadow-sm transition-all hover:translate-x-1 md:flex ${isDark ? "border-[var(--home-surface-border-soft)] bg-[var(--home-surface-bg)] hover:bg-[var(--home-surface-bg-hover)]" : "border-[var(--home-surface-border-soft)] bg-[var(--home-surface-bg)] hover:bg-[var(--home-surface-bg-hover)]"}`}>
+            <FaArrowRight className="text-xs text-[var(--home-heading)]" />
           </button>
         </div>
 
         <div className="mt-16 text-center" data-aos="zoom-in-up" data-aos-delay="200">
           <div className="relative inline-block">
-            <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-[#ff6b8a] to-[#ff4f74] opacity-50 blur-xl" />
+            <div
+              className="absolute -inset-2 rounded-full opacity-50 blur-xl"
+              style={{ backgroundImage: "var(--home-accent-gradient)" }}
+            />
             <button
               onClick={() => navigate("/games")}
-              className="relative cursor-pointer inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-[#ff6b8a] to-[#ff4f74] px-8 py-4 text-base font-bold text-white shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(255,107,138,0.4)]"
+              className="relative inline-flex cursor-pointer items-center gap-3 rounded-full px-8 py-4 text-base font-bold text-white shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(89,185,230,0.34)]"
+              style={{ backgroundImage: "var(--home-accent-gradient)" }}
             >
               <MdAutoAwesome className="text-xl" />
               Barcha o'yinlarni ko'rish
@@ -192,7 +195,7 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
         .swiper-pagination-bullet {
           width: 6px;
           height: 6px;
-          background: ${isDark ? "#2b3146" : "#f0d9d6"};
+          background: ${isDark ? "var(--home-surface-border-soft)" : "var(--home-surface-border)"};
           opacity: 0.5;
           transition: all 0.3s ease;
         }
@@ -200,7 +203,7 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
         .swiper-pagination-bullet-active {
           width: 20px;
           border-radius: 4px;
-          background: linear-gradient(to right, #ff6b8a, #ff4f74);
+          background: var(--home-accent-gradient);
           opacity: 0.8;
         }
 
@@ -215,19 +218,25 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
   );
 }
 
-function BackgroundDecorations({ isDark = false }: { isDark?: boolean }) {
+function BackgroundDecorations() {
   return (
     <div className="pointer-events-none absolute inset-0">
-      <div className={`absolute left-[5%] top-[10%] h-72 w-72 rounded-full blur-3xl animate-float-soft ${isDark ? "bg-[#ff6b8a]/12" : "bg-[#f6d4da]/20"}`} />
-      <div className={`absolute right-[8%] bottom-[15%] h-80 w-80 rounded-full blur-3xl animate-float-slow ${isDark ? "bg-[#1e1e2f]" : "bg-[#fbe5dd]/20"}`} />
+      <div className="absolute left-[5%] top-[10%] h-72 w-72 animate-float-soft rounded-full bg-[var(--home-blob-1)] blur-3xl" />
+      <div className="absolute right-[8%] bottom-[15%] h-80 w-80 animate-float-slow rounded-full bg-[var(--home-blob-2)] blur-3xl" />
 
-      <GiCherry className={`absolute left-[12%] top-[20%] text-4xl animate-petal-float ${isDark ? "text-[#ff6b8a]/10" : "text-[#e07c8e]/10"}`} />
-      <GiTwirlyFlower className={`absolute right-[15%] top-[40%] text-5xl animate-float-soft ${isDark ? "text-[#a1a1aa]/10" : "text-[#a66466]/10"}`} />
+      <GiCherry
+        className="absolute left-[12%] top-[20%] animate-petal-float text-4xl"
+        style={{ color: "color-mix(in srgb, var(--home-accent) 10%, transparent)" }}
+      />
+      <GiTwirlyFlower
+        className="absolute right-[15%] top-[40%] animate-float-soft text-5xl"
+        style={{ color: "color-mix(in srgb, var(--home-muted) 10%, transparent)" }}
+      />
 
       <div
         className="absolute inset-0 opacity-[0.02]"
         style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, ${isDark ? "#ff6b8a" : "#e07c8e"} 1px, transparent 1px)`,
+          backgroundImage: "radial-gradient(circle at 1px 1px, var(--home-accent) 1px, transparent 1px)",
           backgroundSize: "40px 40px",
         }}
       />
