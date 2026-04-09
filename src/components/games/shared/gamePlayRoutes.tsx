@@ -23,6 +23,9 @@ import Millionaire from "../millionaire/Millionaire";
 import TruthDetector from "../truth_detector/TruthDetector";
 import MathChickGame from "../math_chick_game/MathChickGame";
 import IQGame from "../iq_game/IQGame";
+import PlantVRGame from "../plant_vr";
+import TugOfWar from "../tug_of_war/TugOfWar";
+import VirtualZoo from "../virtual_zoo";
 
 type GamePlayRoute = {
   path: string;
@@ -80,6 +83,11 @@ export const gamePlayRoutes: GamePlayRoute[] = [
     path: "/games/math-race/play",
     colorClassName: "from-yellow-500 via-orange-500 to-red-500",
     element: <MathRace />,
+  },
+  {
+    path: "/games/tug-of-war/play",
+    colorClassName: "from-blue-500 via-slate-700 to-orange-500",
+    element: <TugOfWar />,
   },
   {
     path: "/games/math-chick/play",
@@ -158,5 +166,15 @@ export const gamePlayRoutes: GamePlayRoute[] = [
     path: "/games/iq-game/play",
     colorClassName: "from-sky-500 via-cyan-500 to-violet-500",
     element: <IQGame />,
+  },
+  {
+    path: "/games/plant-vr/play",
+    colorClassName: "from-emerald-400 via-lime-300 to-amber-200",
+    element: <PlantVRGame />,
+  },
+  {
+    path: "/games/virtual-zoo-vr/play",
+    colorClassName: "from-emerald-400 via-lime-300 to-sky-200",
+    element: <VirtualZoo />,
   },
 ];

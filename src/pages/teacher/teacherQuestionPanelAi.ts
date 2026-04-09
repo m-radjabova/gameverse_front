@@ -7,6 +7,7 @@ export type SupportedTeacherGameKey =
   | "wheel_of_fortune"
   | "math_race"
   | "math_chick"
+  | "tug-of-war"
   | "baamboozle"
   | "jumanji"
   | "millionaire"
@@ -97,6 +98,15 @@ function buildPrompt(gameKey: SupportedTeacherGameKey, topic: string, count: num
         "- options aniq 4 ta son bo'lsin.",
         "- options ichida answer bo'lishi shart.",
         "- difficulty faqat easy, medium yoki hard bo'lsin.",
+        ...shared,
+      ].join("\n");
+    case "tug-of-war":
+      return [
+        `Tug Of War uchun ${count} ta matematik savol yarating.`,
+        'JSON: [{"prompt":"12 + 8 = ?","answer":20,"level":"easy"}]',
+        "- Har bir elementda prompt, answer, level bo'lsin.",
+        "- answer butun son bo'lsin.",
+        "- level faqat easy, medium yoki hard bo'lsin.",
         ...shared,
       ].join("\n");
     case "baamboozle":
@@ -214,6 +224,13 @@ function validateItems(gameKey: SupportedTeacherGameKey, payload: unknown, expec
           if (!options.includes(answer)) return null;
           if (new Set(options).size !== 4) return null;
           return { question, answer, options, difficulty };
+        }
+        case "tug-of-war": {
+          const prompt = String(body.prompt ?? "").trim();
+          const answer = Number(body.answer);
+          const level = normalizeDifficulty(body.level);
+          if (!prompt || !Number.isInteger(answer) || !level) return null;
+          return { prompt, answer, level };
         }
         case "baamboozle": {
           const question = String(body.question ?? "").trim();

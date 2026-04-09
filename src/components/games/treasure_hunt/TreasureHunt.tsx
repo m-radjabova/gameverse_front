@@ -27,6 +27,10 @@ import type { Riddle } from "./types";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
+import pirateShipSvg from "../../../assets/treasure-hunt/pirate-ship.svg";
+import palmIslandSvg from "../../../assets/treasure-hunt/palm-island.svg";
+import compassRoseSvg from "../../../assets/treasure-hunt/compass-rose.svg";
+import treasureChestSvg from "../../../assets/treasure-hunt/treasure-chest.svg";
 
 type Phase = "intro" | "play" | "finish";
 type RiddleDraft = {
@@ -60,6 +64,20 @@ const EMPTY_DRAFT: RiddleDraft = {
 
 const randomizeRiddles = (riddles: Riddle[]) => [...riddles].sort(() => Math.random() - 0.5);
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
+const MAP_POINTS = [
+  [10, 77],
+  [18, 70],
+  [28, 73],
+  [40, 68],
+  [48, 58],
+  [57, 61],
+  [66, 55],
+  [73, 43],
+  [81, 39],
+  [89, 26],
+] as const;
+const MAP_ROUTE_D = "M 10,77 C 16,69 22,67 29,72 C 37,78 42,73 47,62 C 52,51 59,64 67,54 C 74,44 80,45 89,26";
+const MAP_ROUTE_TRAIL_D = "M 10,77 C 16,69 22,67 29,72 C 37,78 42,73 47,62 C 52,51 59,64 67,54 C 74,44 80,45 89,26";
 const formatTime = (seconds: number) => {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -68,20 +86,11 @@ const formatTime = (seconds: number) => {
 
 // -- Realistic SVG Treasure Map ----------------------------------------------
 function TreasureMapSVG({ progress }: { progress: number }) {
-  // Path waypoints
-  const pathD = "M 9,72 C 18,58 26,78 35,65 C 44,52 52,70 62,55 C 70,43 80,48 93,30";
-  const pathGlowD = "M 8,73 C 18,57 27,79 36,66 C 45,53 53,69 63,55 C 72,42 82,47 94,29";
-
-  // Compute ship position along path (approximate)
   const t = progress / 100;
-  // Bezier approximation for ship position
-  const pts = [
-    [9,72],[18,58],[26,78],[35,65],[44,52],[52,70],[62,55],[70,43],[80,48],[93,30]
-  ];
-  const idx = Math.min(Math.floor(t * (pts.length - 1)), pts.length - 2);
-  const frac = t * (pts.length - 1) - idx;
-  const sx = pts[idx][0] + (pts[idx+1][0] - pts[idx][0]) * frac;
-  const sy = pts[idx][1] + (pts[idx+1][1] - pts[idx][1]) * frac;
+  const idx = Math.min(Math.floor(t * (MAP_POINTS.length - 1)), MAP_POINTS.length - 2);
+  const frac = t * (MAP_POINTS.length - 1) - idx;
+  const sx = MAP_POINTS[idx][0] + (MAP_POINTS[idx + 1][0] - MAP_POINTS[idx][0]) * frac;
+  const sy = MAP_POINTS[idx][1] + (MAP_POINTS[idx + 1][1] - MAP_POINTS[idx][1]) * frac;
   return (
     <svg
       viewBox="0 0 102 90"
@@ -89,56 +98,44 @@ function TreasureMapSVG({ progress }: { progress: number }) {
       style={{ fontFamily: "Georgia, serif" }}
     >
       <defs>
-        {/* Ocean gradient */}
-        <radialGradient id="oceanGrad" cx="50%" cy="50%" r="70%">
-          <stop offset="0%" stopColor="#1a5276" />
-          <stop offset="40%" stopColor="#154360" />
-          <stop offset="100%" stopColor="#0a2744" />
+        <linearGradient id="oceanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#173a52" />
+          <stop offset="45%" stopColor="#24556f" />
+          <stop offset="100%" stopColor="#091927" />
+        </linearGradient>
+        <radialGradient id="deepWaterGlow" cx="50%" cy="52%" r="68%">
+          <stop offset="0%" stopColor="#5ec2ff" stopOpacity="0.18" />
+          <stop offset="50%" stopColor="#3b82f6" stopOpacity="0.08" />
+          <stop offset="100%" stopColor="#020617" stopOpacity="0" />
         </radialGradient>
-        {/* Parchment gradient for land */}
-        <radialGradient id="landGrad1" cx="40%" cy="40%" r="60%">
-          <stop offset="0%" stopColor="#c9a96e" />
-          <stop offset="60%" stopColor="#a67c3d" />
-          <stop offset="100%" stopColor="#8b6914" />
-        </radialGradient>
-        <radialGradient id="landGrad2" cx="60%" cy="40%" r="55%">
-          <stop offset="0%" stopColor="#b8956a" />
-          <stop offset="70%" stopColor="#9a7040" />
-          <stop offset="100%" stopColor="#7a5510" />
-        </radialGradient>
-        <radialGradient id="landGrad3" cx="50%" cy="45%" r="60%">
-          <stop offset="0%" stopColor="#d4aa70" />
-          <stop offset="60%" stopColor="#b08040" />
-          <stop offset="100%" stopColor="#8a6020" />
-        </radialGradient>
-        {/* Ship glow */}
         <filter id="shipGlow">
-          <feGaussianBlur stdDeviation="1.5" result="blur" />
+          <feGaussianBlur stdDeviation="1.8" result="blur" />
           <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
         <filter id="routeGlow">
-          <feGaussianBlur stdDeviation="1.2" result="blur" />
+          <feGaussianBlur stdDeviation="1.8" result="blur" />
           <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
-        {/* Chest glow */}
         <filter id="chestGlow">
-          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feGaussianBlur stdDeviation="2.5" result="blur" />
+          <feColorMatrix
+            in="blur"
+            type="matrix"
+            values="1 0 0 0 0  0 0.8 0 0 0  0 0 0.4 0 0  0 0 0 1 0"
+          />
           <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
-        {/* Wave pattern */}
-        <pattern id="waves" x="0" y="0" width="12" height="6" patternUnits="userSpaceOnUse">
-          <path d="M0,3 Q3,0 6,3 Q9,6 12,3" stroke="#1a6ba0" strokeWidth="0.4" fill="none" opacity="0.4"/>
+        <filter id="islandShadow" x="-25%" y="-25%" width="150%" height="150%">
+          <feDropShadow dx="0" dy="2.8" stdDeviation="2.2" floodColor="#020617" floodOpacity="0.45" />
+        </filter>
+        <pattern id="waves" x="0" y="0" width="18" height="10" patternUnits="userSpaceOnUse">
+          <path d="M0,5 Q4,1 9,5 T18,5" stroke="#7dd3fc" strokeWidth="0.6" fill="none" opacity="0.18"/>
+          <path d="M0,8 Q3,6 6,8 T12,8 T18,8" stroke="#38bdf8" strokeWidth="0.35" fill="none" opacity="0.14"/>
         </pattern>
-        {/* Dotted path */}
-        <marker id="arrowhead" markerWidth="3" markerHeight="3" refX="1.5" refY="1.5" orient="auto">
-          <circle cx="1.5" cy="1.5" r="1" fill="#f59e0b" opacity="0.8"/>
-        </marker>
-        {/* Vignette */}
         <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
           <stop offset="60%" stopColor="transparent"/>
           <stop offset="100%" stopColor="rgba(5,20,40,0.7)"/>
         </radialGradient>
-        {/* Treasure glow radial */}
         <radialGradient id="treasureGlow" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.6"/>
           <stop offset="100%" stopColor="#fbbf24" stopOpacity="0"/>
@@ -161,119 +158,106 @@ function TreasureMapSVG({ progress }: { progress: number }) {
         </linearGradient>
       </defs>
 
-      {/* -- Ocean background -- */}
       <rect x="0" y="0" width="102" height="90" fill="url(#oceanGrad)" />
+      <rect x="0" y="0" width="102" height="90" fill="url(#deepWaterGlow)" />
       <rect x="0" y="0" width="102" height="90" fill="url(#waves)" opacity="0.6"/>
 
-      {/* Ocean texture lines */}
-      {[10,20,30,40,50,60,70,80].map(y => (
-        <line key={y} x1="0" y1={y} x2="102" y2={y+1} stroke="#1a6ba0" strokeWidth="0.15" opacity="0.2"/>
+      {[12, 24, 36, 48, 60, 72, 84].map((y) => (
+        <line key={y} x1="0" y1={y} x2="102" y2={y + 0.5} stroke="#93c5fd" strokeWidth="0.12" opacity="0.12"/>
       ))}
 
-      {/* -- Compass rose (background) -- */}
-      <g transform="translate(88,75)" opacity="0.25">
-        <circle cx="0" cy="0" r="7" stroke="#c9a96e" strokeWidth="0.4" fill="none"/>
-        <circle cx="0" cy="0" r="5" stroke="#c9a96e" strokeWidth="0.2" fill="none"/>
-        {[0,45,90,135,180,225,270,315].map(a => (
-          <line key={a}
-            x1={Math.cos((a-90)*Math.PI/180)*5} y1={Math.sin((a-90)*Math.PI/180)*5}
-            x2={Math.cos((a-90)*Math.PI/180)*7} y2={Math.sin((a-90)*Math.PI/180)*7}
-            stroke="#c9a96e" strokeWidth="0.3"/>
-        ))}
-        <polygon points="0,-5 0.8,-2 0,0 -0.8,-2" fill="#e8b84b"/>
-        <polygon points="0,5 0.8,2 0,0 -0.8,2" fill="#a07830"/>
-        <polygon points="5,0 2,0.8 0,0 2,-0.8" fill="#a07830"/>
-        <polygon points="-5,0 -2,0.8 0,0 -2,-0.8" fill="#a07830"/>
-        <text x="0" y="-6.5" textAnchor="middle" fontSize="2" fill="#e8b84b" fontWeight="bold">N</text>
+      {[8, 18, 30, 43, 56, 68, 80, 92].map((x) => (
+        <circle key={`bubble-${x}`} cx={x} cy={18 + ((x * 7) % 58)} r={(x % 3) * 0.55 + 0.65} fill="#e0f2fe" opacity="0.15" />
+      ))}
+
+      <image
+        href={compassRoseSvg}
+        x="80.5"
+        y="69.5"
+        width="16"
+        height="16"
+        opacity="0.22"
+        preserveAspectRatio="xMidYMid meet"
+      />
+
+      <g filter="url(#islandShadow)">
+        <image
+          href={palmIslandSvg}
+          x="1"
+          y="10"
+          width="42"
+          height="42"
+          opacity="0.97"
+          preserveAspectRatio="xMidYMid meet"
+        />
+        <image
+          href={palmIslandSvg}
+          x="35"
+          y="63"
+          width="28"
+          height="18"
+          opacity="0.92"
+          preserveAspectRatio="xMidYMid meet"
+        />
+        <image
+          href={palmIslandSvg}
+          x="67"
+          y="8"
+          width="34"
+          height="34"
+          opacity="0.98"
+          preserveAspectRatio="xMidYMid meet"
+        />
       </g>
 
-      {/* -- Main Continent (left side) -- */}
-      <path d="M0,28 C7,21 16,17 23,20 C30,23 35,19 39,23 C43,27 41,36 35,42 C29,48 20,50 12,54 C6,57 2,60 0,64 Z"
-        fill="url(#landGrad1)" stroke="#7a5510" strokeWidth="0.5"/>
-      {/* Forest details on continent */}
-      {[[8,32],[12,27],[16,24],[22,22],[26,26]].map(([x,y],i) => (
-        <g key={i} transform={`translate(${x},${y})`}>
-          <polygon points="0,-2.5 1.5,0.5 -1.5,0.5" fill="#2d5a27" opacity="0.8"/>
-          <polygon points="0,-3.5 1,-.5 -1,-.5" fill="#3a7a32" opacity="0.9"/>
-        </g>
-      ))}
-      {/* Mountain on continent */}
-      <polygon points="6,44 10,36 14,44" fill="#8a7060" stroke="#6a5040" strokeWidth="0.3"/>
-      <polygon points="9,44 13,37 17,44" fill="#9a8070" stroke="#6a5040" strokeWidth="0.3"/>
-      <polygon points="10,37 13,35 16,37" fill="white" opacity="0.6"/>
-
-      {/* -- Small island (middle) -- */}
-      <ellipse cx="50" cy="67" rx="10.5" ry="6.8" fill="url(#landGrad2)" stroke="#7a5510" strokeWidth="0.4"/>
-      <ellipse cx="50" cy="67" rx="8.2" ry="4.8" fill="#b08040" opacity="0.4"/>
-      {/* Palm tree */}
-      <line x1="50" y1="69" x2="50" y2="63" stroke="#6b4226" strokeWidth="0.6"/>
-      <ellipse cx="48" cy="63" rx="3" ry="1.5" fill="#2d7a2a" opacity="0.9" transform="rotate(-20,48,63)"/>
-      <ellipse cx="52" cy="63" rx="3" ry="1.5" fill="#3a8a32" opacity="0.9" transform="rotate(20,52,63)"/>
-      <ellipse cx="50" cy="62" rx="2.5" ry="1.2" fill="#4a9a40" opacity="0.9"/>
-      {/* Coconuts */}
-      <circle cx="49" cy="64" r="0.5" fill="#8B4513"/>
-      <circle cx="51" cy="64" r="0.5" fill="#8B4513"/>
-      {/* Sandy beach ring */}
-      <ellipse cx="50" cy="69.8" rx="11.5" ry="2.9" fill="#d4aa70" opacity="0.35"/>
-
-      {/* -- Treasure island (right side) -- */}
-      <path d="M76,16 C82,10 93,8 100,13 C107,18 107,31 101,39 C95,47 85,50 78,47 C71,44 66,35 69,25 C70,21 72,18 76,16 Z"
-        fill="url(#landGrad3)" stroke="#7a5510" strokeWidth="0.5"/>
-      {/* Jungle on treasure island */}
-      {[[82,22],[86,18],[90,16],[94,16],[88,26]].map(([x,y],i) => (
-        <g key={i} transform={`translate(${x},${y})`}>
-          <polygon points="0,-3 2,1 -2,1" fill="#1a4a18" opacity="0.85"/>
-          <polygon points="0,-4 1.5,-0.5 -1.5,-0.5" fill="#2a6a20" opacity="0.9"/>
-        </g>
-      ))}
-      {/* Treasure chest glow */}
-      <circle cx="90" cy="30" r="6.5" fill="url(#treasureGlow)">
-        <animate attributeName="r" values="5.4;8;5.4" dur="2s" repeatCount="indefinite"/>
-        <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
-      </circle>
-      {/* Treasure chest */}
-      <g transform="translate(87,26)" filter="url(#chestGlow)">
-        <rect x="0" y="2" width="7.5" height="4.9" rx="0.6" fill="#8B4513" stroke="#4a2000" strokeWidth="0.3"/>
-        <path d="M0,2 Q3.75,-0.5 7.5,2" fill="#a05020" stroke="#4a2000" strokeWidth="0.3"/>
-        <rect x="2.8" y="2.7" width="1.9" height="1.8" rx="0.3" fill="#fbbf24" stroke="#b8860b" strokeWidth="0.2"/>
-        <line x1="0" y1="4.5" x2="7.5" y2="4.5" stroke="#4a2000" strokeWidth="0.2"/>
-        {/* Gold spill */}
-        {[[1.2,1.5],[5,1.8],[3.2,1.1],[6.1,1.4]].map(([cx,cy],i) => (
-          <circle key={i} cx={cx} cy={cy} r="0.4" fill="#fbbf24" opacity="0.8"/>
-        ))}
-      </g>
-      {/* X marks the spot */}
-      <g transform="translate(86,35)" opacity="0.95">
-        <line x1="0" y1="0" x2="3.7" y2="3.7" stroke="#cc0000" strokeWidth="1" strokeLinecap="round"/>
-        <line x1="3.7" y1="0" x2="0" y2="3.7" stroke="#cc0000" strokeWidth="1" strokeLinecap="round"/>
-      </g>
-
-      {/* -- Decorative rocks / reefs -- */}
-      {[[38,40],[40,42],[42,40]].map(([x,y],i) => (
-        <ellipse key={i} cx={x} cy={y} rx="1.2" ry="0.7" fill="#556b5a" opacity="0.7"/>
-      ))}
-      {[[60,30],[62,28]].map(([x,y],i) => (
-        <ellipse key={i} cx={x} cy={y} rx="1" ry="0.6" fill="#446b55" opacity="0.6"/>
+      {[0, 1, 2, 3, 4].map((reef) => (
+        <ellipse
+          key={`reef-${reef}`}
+          cx={41 + reef * 4.2}
+          cy={44.5 + (reef % 2 === 0 ? 0.6 : -0.4)}
+          rx={reef % 2 === 0 ? 1.7 : 1.2}
+          ry={0.7}
+          fill="#d9f99d"
+          opacity="0.22"
+        />
       ))}
 
-      {/* -- Navigation route (dashed) -- */}
+      {[0, 1, 2].map((rock) => (
+        <ellipse
+          key={`rock-${rock}`}
+          cx={68 + rock * 3}
+          cy={30 + rock * 1.7}
+          rx={1.1 + rock * 0.2}
+          ry={0.7}
+          fill="#64748b"
+          opacity="0.32"
+        />
+      ))}
+
       <path
-        d={pathGlowD}
-        stroke="#fde68a"
-        strokeWidth="1.9"
+        d={MAP_ROUTE_TRAIL_D}
+        stroke="#fff7d6"
+        strokeWidth="3.8"
         fill="none"
-        opacity="0.18"
+        opacity="0.12"
         strokeLinecap="round"
         filter="url(#routeGlow)"
       />
-      {/* Completed path - bright gold */}
       <path
-        d={pathD}
-        stroke="#fbbf24"
-        strokeWidth="0.7"
+        d={MAP_ROUTE_D}
+        stroke="#d6c08a"
+        strokeWidth="1.15"
         fill="none"
-        strokeDasharray="3 2"
-        strokeDashoffset="0"
+        strokeDasharray="2.8 2.6"
+        opacity="0.52"
+        strokeLinecap="round"
+      />
+      <path
+        d={MAP_ROUTE_D}
+        stroke="#fde68a"
+        strokeWidth="1.3"
+        fill="none"
+        strokeDasharray="3.2 2.2"
         opacity="0.95"
         strokeLinecap="round"
         style={{
@@ -281,107 +265,85 @@ function TreasureMapSVG({ progress }: { progress: number }) {
           clipPath: `inset(0 ${100 - progress}% 0 0)`,
         }}
       />
-      {/* Remaining path - dim */}
-      <path
-        d={pathD}
-        stroke="#c9a96e"
-        strokeWidth="0.5"
-        fill="none"
-        strokeDasharray="2 3"
-        opacity="0.35"
-        strokeLinecap="round"
-      />
 
-      {/* Waypoint dots along path */}
-      {[0.2, 0.4, 0.6, 0.8].map((frac, i) => {
-        const fi = Math.floor(frac * (pts.length - 1));
-        const ff = frac * (pts.length - 1) - fi;
-        const wx = pts[fi][0] + (pts[fi+1]?.[0] - pts[fi][0]) * ff;
-        const wy = pts[fi][1] + (pts[fi+1]?.[1] - pts[fi][1]) * ff;
+      {[0.14, 0.3, 0.48, 0.68, 0.84].map((frac, i) => {
+        const fi = Math.floor(frac * (MAP_POINTS.length - 1));
+        const ff = frac * (MAP_POINTS.length - 1) - fi;
+        const wx = MAP_POINTS[fi][0] + (MAP_POINTS[fi + 1]?.[0] - MAP_POINTS[fi][0]) * ff;
+        const wy = MAP_POINTS[fi][1] + (MAP_POINTS[fi + 1]?.[1] - MAP_POINTS[fi][1]) * ff;
         const passed = progress >= frac * 100;
         return (
           <g key={i}>
-            <circle cx={wx} cy={wy} r="1.2" fill={passed ? "#fbbf24" : "#7a5510"} opacity={passed ? 0.9 : 0.5}/>
-            {passed && <circle cx={wx} cy={wy} r="2" fill="#fbbf24" opacity="0.2"/>}
+            <circle cx={wx} cy={wy} r="1.18" fill={passed ? "#fbbf24" : "#94a3b8"} opacity={passed ? 0.96 : 0.5}/>
+            <circle cx={wx} cy={wy} r="2.5" fill={passed ? "#f59e0b" : "#cbd5e1"} opacity={passed ? 0.12 : 0.05}/>
           </g>
         );
       })}
 
-      {/* -- Vignette overlay -- */}
-      <rect x="0" y="0" width="102" height="90" fill="url(#vignette)"/>
+      <circle cx="89" cy="25.5" r="8" fill="url(#treasureGlow)">
+        <animate attributeName="r" values="7.4;9.2;7.4" dur="2.3s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.48;0.88;0.48" dur="2.3s" repeatCount="indefinite"/>
+      </circle>
+      <image
+        href={treasureChestSvg}
+        x="85.5"
+        y="19.8"
+        width="9"
+        height="9"
+        preserveAspectRatio="xMidYMid meet"
+        filter="url(#chestGlow)"
+      />
+      <g transform="translate(86.4,33.5)" opacity="0.95">
+        <line x1="0" y1="0" x2="4.1" y2="4.1" stroke="#ef4444" strokeWidth="1.1" strokeLinecap="round"/>
+        <line x1="4.1" y1="0" x2="0" y2="4.1" stroke="#ef4444" strokeWidth="1.1" strokeLinecap="round"/>
+      </g>
 
-      {/* -- Ship (player marker) -- */}
-      <g transform={`translate(${sx}, ${sy - 3.4})`} filter="url(#shipGlow)">
-        <ellipse cx="-4.8" cy="2.5" rx="5.8" ry="1.6" fill="url(#shipWake)" opacity="0.55"/>
-        <ellipse cx="-7.2" cy="2.6" rx="2.4" ry="0.75" fill="#e0f2fe" opacity="0.4"/>
-        <ellipse cx="-10" cy="2.7" rx="1.25" ry="0.45" fill="#e0f2fe" opacity="0.3"/>
-
-        <g transform="translate(0,0.4)">
-          <path
-            d="M-4.6,1.2 Q0,-3.4 4.8,1.2 L3.4,4 Q0,5 -3.4,4 Z"
-            fill="#6b3f1d"
-            stroke="#3b2412"
-            strokeWidth="0.45"
-          />
-          <path
-            d="M-3.6,1.2 Q0,-1.5 3.8,1.2 L2.8,2.9 Q0,3.6 -2.8,2.9 Z"
-            fill="#9a5b2b"
-            opacity="0.95"
-          />
-          <line x1="0" y1="0.2" x2="0" y2="-7.2" stroke="#4a2f19" strokeWidth="0.55"/>
-          <path
-            d="M0,-6.9 Q4,-4.9 3.2,-0.4 L0,0 Z"
-            fill="#fff9eb"
-            stroke="#d6bc84"
-            strokeWidth="0.22"
-          />
-          <path
-            d="M0,-5.8 Q-1.9,-4.2 -1.7,-0.7 L0,0 Z"
-            fill="#efe0b1"
-            stroke="#ccb06e"
-            strokeWidth="0.18"
-          />
-          <line x1="-2.1" y1="1.45" x2="2.1" y2="1.45" stroke="#f8e7bf" strokeWidth="0.16" opacity="0.85"/>
-          <circle cx="0" cy="-7.55" r="0.32" fill="#fbbf24"/>
-        </g>
-
+      <g transform={`translate(${sx - 5.2}, ${sy - 7.8})`} filter="url(#shipGlow)">
+        <ellipse cx="-0.6" cy="9.2" rx="7.8" ry="2.2" fill="url(#shipWake)" opacity="0.55"/>
+        <ellipse cx="-5.8" cy="9.45" rx="3.2" ry="0.9" fill="#e0f2fe" opacity="0.4"/>
+        <image
+          href={pirateShipSvg}
+          x="-5.5"
+          y="-2.8"
+          width="12"
+          height="12"
+          preserveAspectRatio="xMidYMid meet"
+        />
         <animateTransform
           attributeName="transform"
           additive="sum"
           type="translate"
-          values="0 0; 0.18 -0.45; 0 0; -0.18 0.35; 0 0"
-          dur="2.8s"
+          values="0 0; 0.24 -0.55; 0 0; -0.22 0.4; 0 0"
+          dur="3s"
           repeatCount="indefinite"
         />
       </g>
 
-      {/* -- START marker -- */}
-      <g transform="translate(9,72)">
-        <rect x="-5" y="-3" width="10" height="6" rx="1.5" fill="#16a34a" opacity="0.9"/>
-        <text x="0" y="1.2" textAnchor="middle" fontSize="2.5" fill="white" fontWeight="bold">START</text>
+      <rect x="0" y="0" width="102" height="90" fill="url(#vignette)"/>
+
+      <g transform="translate(10,77)">
+        <circle cx="0" cy="0" r="4.5" fill="#082f49" opacity="0.82" />
+        <circle cx="0" cy="0" r="3.25" fill="#16a34a" opacity="0.95" />
+        <text x="0" y="0.9" textAnchor="middle" fontSize="2.15" fill="white" fontWeight="bold">START</text>
       </g>
 
-      {/* -- Grid lines (map aesthetic) -- */}
       {[20,40,60,80].map(x => (
-        <line key={`vg${x}`} x1={x} y1="0" x2={x} y2="90" stroke="#1a6ba0" strokeWidth="0.1" opacity="0.15"/>
+        <line key={`vg${x}`} x1={x} y1="0" x2={x} y2="90" stroke="#7dd3fc" strokeWidth="0.1" opacity="0.1"/>
       ))}
       {[20,40,60,80].map(y => (
-        <line key={`hg${y}`} x1="0" y1={y} x2="102" y2={y} stroke="#1a6ba0" strokeWidth="0.1" opacity="0.15"/>
+        <line key={`hg${y}`} x1="0" y1={y} x2="102" y2={y} stroke="#7dd3fc" strokeWidth="0.1" opacity="0.1"/>
       ))}
 
-      {/* -- Decorative border -- */}
       <rect x="0.5" y="0.5" width="101" height="89" rx="2"
-        fill="none" stroke="#c9a96e" strokeWidth="1" opacity="0.5"/>
+        fill="none" stroke="#d6c08a" strokeWidth="1" opacity="0.48"/>
       <rect x="1.5" y="1.5" width="99" height="87" rx="1.5"
-        fill="none" stroke="#8b6914" strokeWidth="0.3" opacity="0.4"/>
+        fill="none" stroke="#8b6914" strokeWidth="0.28" opacity="0.4"/>
 
-      {/* -- Sea monsters (decorative) -- */}
-      <g transform="translate(68,62)" opacity="0.35">
-        <path d="M0,0 Q2,-2 4,0 Q6,2 8,0" stroke="#1a4a6a" strokeWidth="0.8" fill="none"/>
-        <circle cx="0.5" cy="-0.5" r="0.4" fill="#1a4a6a"/>
+      <g transform="translate(70,63)" opacity="0.28">
+        <path d="M0,0 C1.8,-2.2 3.7,-2.1 5.4,0 C7.2,2.1 9.1,2.2 10.8,0" stroke="#0f3b53" strokeWidth="0.8" fill="none"/>
+        <path d="M3.6,0.3 C4.4,2.5 4.5,4.3 3.8,5.8" stroke="#0f3b53" strokeWidth="0.62" fill="none"/>
       </g>
 
-      {/* Shimmer overlay */}
       <rect x="0" y="0" width="102" height="90" fill="url(#shimmer)" opacity="0.5"/>
     </svg>
   );
@@ -608,7 +570,6 @@ export default function TreasureHunt() {
   // -- Timer ring --
   const timerPct = (questionSeconds / SECONDS_PER_QUESTION) * 100;
   const timerColor = questionSeconds <= 10 ? "#ef4444" : questionSeconds <= 20 ? "#f59e0b" : "#22c55e";
-
   return (
     <div
       className="relative min-h-screen text-white"
@@ -654,12 +615,86 @@ export default function TreasureHunt() {
       {/* -- INTRO PHASE -- */}
       {phase === "intro" && (
         <div className="space-y-6 p-4">
+          {/* Hero card */}
+          <div className="relative overflow-hidden rounded-3xl border border-amber-600/30 bg-gradient-to-br from-amber-950/50 to-stone-900/50 p-8 shadow-2xl backdrop-blur-sm">
+            <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
+            <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-yellow-600/10 blur-3xl" />
+            <div className="relative z-10 grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_360px] xl:items-start">
+              <div className="space-y-6">
+                <div className="relative overflow-hidden rounded-3xl border-2 border-amber-600/50 shadow-2xl shadow-amber-900/40" style={{ height: "420px" }}>
+                  <TreasureMapSVG progress={8} />
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent px-6 pb-5 pt-12 text-center">
+                    <p className="text-2xl font-black tracking-[0.18em] text-amber-300 drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]">
+                      🏴‍☠️ XAZINA OVCHILARI 🏴‍☠️
+                    </p>
+                    <p className="mt-1 text-xs tracking-widest text-amber-500/80">Xazinani top!</p>
+                  </div>
+                  <div className="absolute left-4 top-4 rounded-full border border-amber-600/40 bg-black/60 px-3 py-1.5 text-lg backdrop-blur-sm">🏴‍☠️</div>
+                  <div className="absolute right-4 top-4 rounded-full border border-amber-600/40 bg-black/60 px-3 py-1.5 text-lg backdrop-blur-sm">🗺️</div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-3">
+              {[
+                { icon: "🧭", title: "Qanday o'ynaladi?", text: "Har to'g'ri javob kemangizni xazinaga yaqinlashtiradi. Xato javob orqaga qaytaradi." },
+                { icon: "💰", title: "Ballar", text: `To'g'ri: +ball+vaqt bonusi\nXato: -${WRONG_PENALTY} ball\nHint: -${HINT_PENALTY} ball` },
+                { icon: "🏆", title: "G'alaba", text: `${minScoreToWin}+ ball yig'ib, xazinaga yeting!` },
+              ].map(({ icon, title, text }) => (
+                <div key={title} className="rounded-2xl border border-amber-700/20 bg-black/30 p-4 backdrop-blur-sm">
+                  <div className="mb-2 text-2xl">{icon}</div>
+                  <h4 className="mb-1 font-bold text-amber-400 text-sm">{title}</h4>
+                  <p className="text-xs text-amber-100/70 leading-relaxed whitespace-pre-line">{text}</p>
+                </div>
+              ))}
+                </div>
+              </div>
+
+              <div className="relative rounded-3xl border border-amber-500/25 bg-black/25 p-5 shadow-[0_24px_60px_rgba(0,0,0,0.28)] backdrop-blur-sm xl:sticky xl:top-6">
+                <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/50 to-transparent" />
+                <p className="text-[11px] font-black uppercase tracking-[0.28em] text-amber-500/75">Sarguzashtga tayyor</p>
+                <h3 className="mt-3 text-3xl font-black leading-tight text-amber-100">
+                  Xaritani oching va xazinaga birinchi bo'lib yetib boring
+                </h3>
+                <p className="mt-3 text-sm leading-7 text-amber-100/70">
+                  Start tugmasi endi shu yerda. O'yinni darhol boshlaysiz, savollarni boshqarish esa pastdagi panelda qoladi.
+                </p>
+                <div className="mt-5 grid grid-cols-2 gap-3">
+                  <div className="rounded-2xl border border-amber-700/25 bg-amber-950/30 p-3">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-amber-500/75">Savollar</p>
+                    <p className="mt-2 text-2xl font-black text-amber-200">{questionBank.length}</p>
+                  </div>
+                  <div className="rounded-2xl border border-amber-700/25 bg-amber-950/30 p-3">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-amber-500/75">Maqsad</p>
+                    <p className="mt-2 text-2xl font-black text-amber-200">{minScoreToWin}+</p>
+                  </div>
+                </div>
+
+                <button onClick={handleStart}
+                  className="group relative mt-6 w-full overflow-hidden rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 py-5 text-xl font-black tracking-wider text-amber-950 shadow-2xl shadow-amber-500/30 transition-all hover:scale-[1.01] hover:shadow-amber-500/50">
+                  <div className="absolute inset-0 translate-y-full bg-white/20 transition-transform duration-300 group-hover:translate-y-0" />
+                  <span className="relative flex items-center justify-center gap-4">
+                    <GiAnchor className="text-2xl" />
+                    SARGUZASHTNI BOSHLASH
+                    <FaShip className="text-2xl" />
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+
           {canManageQuestions && (
             <div className="relative overflow-hidden rounded-3xl border border-amber-600/30 bg-gradient-to-br from-amber-950/60 to-stone-900/60 p-6 shadow-2xl backdrop-blur-sm">
               <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-amber-500/10 blur-3xl" />
-              <h3 className="mb-5 flex items-center gap-2 text-xl font-black tracking-wider text-amber-300">
-                <GiPirateFlag className="text-2xl" />O'QITUVCHI PANELI
-              </h3>
+              <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <h3 className="flex items-center gap-2 text-xl font-black tracking-wider text-amber-300">
+                    <GiPirateFlag className="text-2xl" />O'QITUVCHI PANELI
+                  </h3>
+                  <p className="mt-1 text-sm text-amber-100/65">Savol qo'shish va tahrirlash paneli pastga ko'chirildi, shuning uchun start qismi yuqorida qulayroq ko'rinadi.</p>
+                </div>
+                <div className="rounded-2xl border border-amber-600/25 bg-black/20 px-4 py-2 text-sm text-amber-200/80">
+                  Jami savollar: <span className="font-black text-amber-300">{questionBank.length}</span>
+                </div>
+              </div>
               <div className="mb-3 grid gap-2 md:grid-cols-[1fr_auto]">
                 <div className="grid gap-2 md:grid-cols-[1fr_140px_140px]">
                   <textarea
@@ -786,51 +821,6 @@ export default function TreasureHunt() {
               </div>
             </div>
           )}
-
-          {/* Hero card */}
-          <div className="relative overflow-hidden rounded-3xl border border-amber-600/30 bg-gradient-to-br from-amber-950/50 to-stone-900/50 p-8 shadow-2xl backdrop-blur-sm">
-            <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
-            <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-yellow-600/10 blur-3xl" />
-
-            {/* Decorative map preview — LARGE */}
-            <div className="relative mb-6 overflow-hidden rounded-3xl border-2 border-amber-600/50 shadow-2xl shadow-amber-900/40" style={{ height: "400px" }}>
-              <TreasureMapSVG progress={8} />
-              {/* Bottom gradient title */}
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent px-6 pb-5 pt-12 text-center">
-                <p className="text-2xl font-black tracking-[0.18em] text-amber-300 drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]">
-                  🏴‍☠️ XAZINA OVCHILARI 🏴‍☠️
-                </p>
-                <p className="mt-1 text-xs tracking-widest text-amber-500/80">Xazinani top!</p>
-              </div>
-              {/* Corner badges */}
-              <div className="absolute left-4 top-4 rounded-full border border-amber-600/40 bg-black/60 px-3 py-1.5 text-lg backdrop-blur-sm">🏴‍☠️</div>
-              <div className="absolute right-4 top-4 rounded-full border border-amber-600/40 bg-black/60 px-3 py-1.5 text-lg backdrop-blur-sm">🗺️</div>
-            </div>
-
-            <div className="relative z-10 mb-6 grid gap-4 sm:grid-cols-3">
-              {[
-                { icon: "🧭", title: "Qanday o'ynaladi?", text: "Har to'g'ri javob kemangizni xazinaga yaqinlashtiradi. Xato javob orqaga qaytaradi." },
-                { icon: "💰", title: "Ballar", text: `To'g'ri: +ball+vaqt bonusi\nXato: -${WRONG_PENALTY} ball\nHint: -${HINT_PENALTY} ball` },
-                { icon: "🏆", title: "G'alaba", text: `${minScoreToWin}+ ball yig'ib, xazinaga yeting!` },
-              ].map(({ icon, title, text }) => (
-                <div key={title} className="rounded-2xl border border-amber-700/20 bg-black/30 p-4 backdrop-blur-sm">
-                  <div className="mb-2 text-2xl">{icon}</div>
-                  <h4 className="mb-1 font-bold text-amber-400 text-sm">{title}</h4>
-                  <p className="text-xs text-amber-100/70 leading-relaxed whitespace-pre-line">{text}</p>
-                </div>
-              ))}
-            </div>
-
-            <button onClick={handleStart}
-              className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 py-5 text-xl font-black tracking-wider text-amber-950 shadow-2xl shadow-amber-500/30 transition-all hover:shadow-amber-500/50 hover:scale-[1.01]">
-              <div className="absolute inset-0 bg-white/20 translate-y-full transition-transform duration-300 group-hover:translate-y-0" />
-              <span className="relative flex items-center justify-center gap-4">
-                <GiAnchor className="text-2xl" />
-                SARGUZASHTNI BOSHLASH
-                <FaShip className="text-2xl" />
-              </span>
-            </button>
-          </div>
         </div>
       )}
 
@@ -883,22 +873,22 @@ export default function TreasureHunt() {
             </div>
           </div>
 
-          <div className="flex-1 p-3 sm:p-4">
-            <div className="mx-auto grid max-w-7xl gap-4 xl:grid-cols-[1.45fr_1fr] xl:items-start">
+          <div className="flex-1 px-2 py-3 sm:px-3 sm:py-4 xl:px-4">
+            <div className="mx-auto grid max-w-[1800px] gap-4 xl:grid-cols-[minmax(0,1.85fr)_minmax(420px,0.9fr)] xl:items-start 2xl:grid-cols-[minmax(0,2.05fr)_minmax(440px,0.82fr)]">
               <div className="space-y-4">
                 {/* -- TREASURE MAP -- */}
                 <div className="relative overflow-hidden rounded-[32px] border-2 border-amber-700/50 bg-gradient-to-br from-slate-950/70 via-sky-950/40 to-amber-950/20 p-3 shadow-2xl shadow-amber-900/30">
                   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.16),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(14,165,233,0.12),transparent_30%)]" />
                   <div
                     className="relative overflow-hidden rounded-[26px] border border-amber-500/30"
-                    style={{ height: typeof window !== "undefined" && window.innerWidth < 640 ? "360px" : "min(68vh, 620px)" }}
+                    style={{ height: typeof window !== "undefined" && window.innerWidth < 640 ? "430px" : "min(82vh, 920px)" }}
                   >
                     <TreasureMapSVG progress={pathProgressPct} />
 
                     <div className="absolute left-4 top-4">
-                      <div className="rounded-2xl border border-amber-600/50 bg-black/55 px-5 py-3 shadow-lg backdrop-blur-md">
+                      <div className="rounded-2xl border border-amber-600/50 bg-black/55 px-5 py-3 shadow-lg backdrop-blur-md sm:px-6 sm:py-4">
                         <p className="text-[11px] font-bold tracking-[0.28em] text-amber-500/80">TREASURE HUNT</p>
-                        <p className="text-lg font-black tracking-[0.16em] text-amber-300">🗺️ XAZINA XARITASI 🗺️</p>
+                        <p className="text-lg font-black tracking-[0.16em] text-amber-300 sm:text-2xl">🗺️ XAZINA XARITASI 🗺️</p>
                       </div>
                     </div>
 
@@ -912,9 +902,9 @@ export default function TreasureHunt() {
                     </div>
 
                     <div className="absolute bottom-4 left-4 right-4 flex flex-wrap items-end justify-between gap-3">
-                      <div className="max-w-md rounded-2xl border border-sky-400/20 bg-slate-950/55 px-4 py-3 backdrop-blur-md">
+                      <div className="max-w-xl rounded-2xl border border-sky-400/20 bg-slate-950/55 px-4 py-3 backdrop-blur-md sm:px-5 sm:py-4">
                         <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-sky-300/80">Yo'nalish</p>
-                        <p className="mt-1 text-sm text-slate-100/90">
+                        <p className="mt-1 text-sm text-slate-100/90 sm:text-base">
                           Kema xazinaga yaqinlashmoqda. Har to'g'ri javob sayohatni oldinga suradi.
                         </p>
                       </div>
@@ -938,7 +928,7 @@ export default function TreasureHunt() {
               </div>
 
               {/* -- Question card -- */}
-              <div className="relative overflow-hidden rounded-[32px] border border-amber-700/30 bg-gradient-to-br from-amber-950/70 via-stone-950/80 to-black/80 p-4 shadow-xl backdrop-blur-sm sm:p-5 xl:sticky xl:top-20">
+              <div className="relative overflow-hidden rounded-[32px] border border-amber-700/30 bg-gradient-to-br from-amber-950/70 via-stone-950/80 to-black/80 p-4 shadow-xl backdrop-blur-sm sm:p-5 xl:sticky xl:top-20 xl:max-h-[82vh] xl:overflow-y-auto">
                 <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-amber-500/10 blur-3xl" />
                 <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-amber-500/10 to-transparent" />
 

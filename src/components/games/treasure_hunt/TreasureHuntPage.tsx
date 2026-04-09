@@ -24,7 +24,7 @@ import { RiTreasureMapFill } from "react-icons/ri";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
 
-import image from "../../../assets/map.png"
+import image from "../../../assets/treasure_hunt_img.png"
 
 function TreasureHuntPage() {
   const treasureHuntImg = image;

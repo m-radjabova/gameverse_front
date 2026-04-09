@@ -32,6 +32,7 @@ import {
   toggleFavoriteGame,
 } from "../../utils/gameFavorites";
 import useHomeTheme from "../../hooks/useHomeTheme";
+import { readLastPlayedGame } from "../../utils/gameHistory";
 
 type Game = typeof gameCards[number];
 
@@ -41,10 +42,11 @@ function Games() {
   const [activeCategory, setActiveCategory] = useState("Barchasi");
   const [likedGames, setLikedGames] = useState<string[]>([]);
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const [lastPlayedGameId, setLastPlayedGameId] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 9;
   const showAmbientEffects = typeof window !== "undefined" && window.innerWidth >= 768;
 
   useEffect(() => {
@@ -54,6 +56,10 @@ function Games() {
   useEffect(() => {
     setLikedGames(getFavoriteGameIds());
     return subscribeFavoriteGames(setLikedGames);
+  }, []);
+
+  useEffect(() => {
+    setLastPlayedGameId(readLastPlayedGame().gameId);
   }, []);
 
   useEffect(() => {
@@ -172,11 +178,11 @@ function Games() {
       </div>
 
       {/* Asosiy kontent */}
-      <div className={`relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-3 py-4 sm:px-4 sm:py-5 md:px-6 md:py-8 lg:px-8 xl:px-10 transition-opacity duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 lg:px-8 xl:px-10 transition-opacity duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
         {/* Orqaga qaytish tugmasi */}
         <button
           onClick={() => navigate("/")}
-          className="group relative mb-6 inline-flex cursor-pointer items-center gap-2.5 rounded-2xl border border-[var(--games-border)] bg-[var(--games-surface-soft)] px-4 py-2.5 text-sm font-bold text-[var(--games-text)] backdrop-blur-xl transition-all duration-300 hover:border-[var(--games-border-strong)] hover:shadow-[0_0_30px_var(--games-shadow)] sm:mb-8 sm:gap-3 sm:px-6 sm:py-3 sm:hover:scale-105"
+          className="group relative mb-6 inline-flex cursor-pointer items-center gap-2.5 rounded-2xl border border-white/20 bg-[var(--games-surface-soft)] px-4 py-2.5 text-sm font-semibold text-[var(--games-text)] shadow-[0_10px_30px_var(--games-shadow)] backdrop-blur-xl transition-all duration-300 hover:border-[var(--games-border-strong)] hover:bg-[var(--games-surface)] hover:shadow-[0_0_30px_var(--games-shadow)] sm:mb-8 sm:gap-3 sm:px-6 sm:py-3 sm:hover:scale-[1.02]"
         >
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[var(--home-accent)]/20 to-[var(--home-accent-strong)]/20 opacity-0 blur-xl transition-opacity group-hover:opacity-100" />
           <FaHome className="text-base transition-transform group-hover:-translate-x-1" />
@@ -185,11 +191,11 @@ function Games() {
         </button>
 
         {/* Sarlavha qismi */}
-        <div className="relative mb-10 text-center sm:mb-12 lg:mb-16">
+        <div className="relative mb-10 text-center sm:mb-14 lg:mb-16">
           {/* 3D effektli sarlavha */}
           <div className="relative inline-block perspective-1000">
             <div className="relative">
-              <h1 className="text-3xl font-black leading-none sm:text-4xl md:text-6xl lg:text-7xl">
+              <h1 className="text-3xl font-black leading-[0.92] tracking-[-0.04em] sm:text-4xl md:text-6xl lg:text-7xl">
                 <span className="relative inline-block">
                   <span className="absolute inset-0 blur-2xl bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 opacity-50 " />
                   <span className="relative bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 bg-clip-text text-transparent me-3">
@@ -222,7 +228,7 @@ function Games() {
           </div>
 
           {/* Ta'rif */}
-          <p className="mx-auto mt-4 max-w-3xl bg-gradient-to-r from-[var(--games-text)] via-[var(--games-text-soft)] to-[var(--games-text)] bg-clip-text text-base leading-relaxed text-transparent sm:mt-6 sm:text-xl">
+          <p className="mx-auto mt-5 max-w-3xl bg-gradient-to-r from-[var(--games-text)] via-[var(--games-text-soft)] to-[var(--games-text)] bg-clip-text px-2 text-sm leading-7 text-transparent sm:mt-6 sm:px-0 sm:text-lg lg:text-xl">
             Eng sara o'yinlar, ajoyib sarguzashtlar va unutilmas lahzalar sizni kutmoqda!
           </p>
 
@@ -235,7 +241,7 @@ function Games() {
         </div>
 
         {/* Kategoriya filtrlari */}
-        <div className="mb-10 flex flex-wrap items-center justify-center gap-2.5 sm:mb-12 sm:gap-4">
+        <div className="mb-10 flex flex-wrap items-center justify-center gap-2.5 sm:mb-12 sm:gap-3.5">
           {categories.map((category, index) => {
             const isActive = activeCategory === category;
             const colors = [
@@ -251,10 +257,10 @@ function Games() {
               <button
                 key={category}
                 onClick={() => setActiveCategory(category)}
-                className={`group relative cursor-pointer overflow-hidden rounded-2xl px-4 py-2.5 text-xs font-bold transition-all duration-500 sm:px-6 sm:py-3 sm:text-sm ${showAmbientEffects ? "transform hover:scale-110" : ""} ${
+                className={`group relative cursor-pointer overflow-hidden rounded-full px-4 py-2.5 text-xs font-semibold tracking-[0.02em] transition-all duration-500 sm:px-5 sm:py-3 sm:text-sm ${showAmbientEffects ? "transform hover:scale-[1.05]" : ""} ${
                   isActive
-                    ? `bg-gradient-to-r ${colors[colorIndex]} text-white shadow-[0_0_30px_var(--games-shadow-strong)]`
-                    : 'border border-[var(--games-border)] bg-[var(--games-surface-soft)] text-[var(--games-text-soft)] hover:border-[var(--games-border-strong)] hover:bg-[var(--games-surface)]'
+                    ? `bg-gradient-to-r ${colors[colorIndex]} text-white shadow-[0_12px_28px_var(--games-shadow-strong)]`
+                    : 'border border-white/15 bg-[var(--games-surface-soft)] text-[var(--games-text-soft)] shadow-[0_8px_20px_var(--games-shadow)] hover:border-[var(--games-border-strong)] hover:bg-[var(--games-surface)] hover:text-[var(--games-text)]'
                 }`}
               >
                 {/* Hover effekti */}
@@ -275,40 +281,36 @@ function Games() {
         {/* Statistik ma'lumotlar */}
         <div className="mb-10 flex justify-center sm:mb-12">
           <div className="relative group w-full max-w-6xl">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl blur-2xl opacity-30 group-hover:opacity-50 transition-opacity" />
-            <div className="relative overflow-hidden rounded-2xl border border-[var(--games-border)] bg-[var(--games-surface)] px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-8">
-              <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-12 xl:gap-20">
-                <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 lg:flex-1 lg:justify-start lg:gap-8">
-                <div className="flex items-center gap-3">
+            <div className="absolute inset-0 rounded-[28px] bg-gradient-to-r from-purple-500/30 to-pink-500/30 blur-2xl opacity-30 group-hover:opacity-50 transition-opacity" />
+            <div className="relative overflow-hidden rounded-[28px] border border-white/15 bg-[var(--games-surface)] px-4 py-5 shadow-[0_18px_50px_var(--games-shadow)] backdrop-blur-xl sm:px-6 lg:px-8">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-10 xl:gap-16">
+                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-4 lg:flex-1 lg:justify-start lg:gap-6">
+                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-yellow-400 rounded-full blur-md " />
+                    <div className="absolute inset-0 rounded-full bg-yellow-400 blur-md " />
                     <FaGamepad className="relative text-xl text-yellow-400" />
                   </div>
-                  <span className="font-bold text-[var(--games-text)]">
+                  <span className="text-sm font-semibold text-[var(--games-text)]">
                     <span className="text-yellow-400">{totalGames}</span> ta o'yin
                   </span>
                 </div>
                 
-                <div className="hidden h-8 w-px bg-[var(--games-border)] sm:block" />
-                
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-green-400 rounded-full blur-md" />
+                    <div className="absolute inset-0 rounded-full bg-green-400 blur-md" />
                     <FaUsers className="relative text-xl text-green-400" />
                   </div>
-                  <span className="font-bold text-[var(--games-text)]">
+                  <span className="text-sm font-semibold text-[var(--games-text)]">
                     <span className="text-green-400">5k+</span> foydalanuvchi
                   </span>
                 </div>
                 
-                <div className="hidden h-8 w-px bg-[var(--games-border)] sm:block" />
-                
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-blue-400 rounded-full blur-md " />
+                    <div className="absolute inset-0 rounded-full bg-blue-400 blur-md " />
                     <FaFire className="relative text-xl text-blue-400" />
                   </div>
-                  <span className="font-bold text-[var(--games-text)]">
+                  <span className="text-sm font-semibold text-[var(--games-text)]">
                     <span className="text-blue-400">24/7</span> jonli
                   </span>
                 </div>
@@ -321,7 +323,7 @@ function Games() {
                       type="button"
                       onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                       disabled={currentPage === 1}
-                      className="group inline-flex h-12 w-12 cursor-pointer items-center justify-center rounded-2xl border border-[var(--games-border)] bg-[var(--games-surface-soft)] text-[var(--games-text)] transition hover:-translate-x-0.5 hover:border-[var(--games-border-strong)] hover:bg-[var(--games-surface)] disabled:cursor-not-allowed disabled:opacity-35"
+                      className="group inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-[var(--games-surface-soft)] text-[var(--games-text)] transition hover:-translate-x-0.5 hover:border-[var(--games-border-strong)] hover:bg-[var(--games-surface)] disabled:cursor-not-allowed disabled:opacity-35"
                       aria-label="Oldingi sahifa"
                     >
                       <FaChevronLeft className="text-sm transition-transform group-hover:-translate-x-0.5" />
@@ -336,10 +338,10 @@ function Games() {
                             key={page}
                             type="button"
                             onClick={() => setCurrentPage(page)}
-                            className={`relative h-10 min-w-10 cursor-pointer overflow-hidden rounded-2xl border px-3 text-xs font-black transition-all duration-300 sm:h-12 sm:min-w-12 sm:px-4 sm:text-sm ${
+                            className={`relative h-10 min-w-10 cursor-pointer overflow-hidden rounded-full border px-3 text-xs font-black transition-all duration-300 sm:h-11 sm:min-w-11 sm:px-4 sm:text-sm ${
                               active
-                                ? "border-pink-300/60 bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 text-white shadow-[0_0_30px_rgba(217,70,239,0.35)]"
-                                : "border-[var(--games-border)] bg-[var(--games-surface-soft)] text-[var(--games-text-soft)] hover:-translate-y-0.5 hover:border-[var(--games-border-strong)] hover:bg-[var(--games-surface)] hover:text-[var(--games-text)]"
+                                ? "border-pink-300/40 bg-gradient-to-r from-purple-500/95 via-fuchsia-500/95 to-pink-500/95 text-white shadow-[0_14px_28px_rgba(217,70,239,0.28)]"
+                                : "border-white/15 bg-[var(--games-surface-soft)] text-[var(--games-text-soft)] hover:-translate-y-0.5 hover:border-[var(--games-border-strong)] hover:bg-[var(--games-surface)] hover:text-[var(--games-text)]"
                             }`}
                           >
                             {active && (
@@ -355,7 +357,7 @@ function Games() {
                       type="button"
                       onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                       disabled={currentPage === totalPages}
-                      className="group inline-flex h-12 w-12 cursor-pointer items-center justify-center rounded-2xl border border-[var(--games-border)] bg-[var(--games-surface-soft)] text-[var(--games-text)] transition hover:translate-x-0.5 hover:border-[var(--games-border-strong)] hover:bg-[var(--games-surface)] disabled:cursor-not-allowed disabled:opacity-35"
+                      className="group inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-[var(--games-surface-soft)] text-[var(--games-text)] transition hover:translate-x-0.5 hover:border-[var(--games-border-strong)] hover:bg-[var(--games-surface)] disabled:cursor-not-allowed disabled:opacity-35"
                       aria-label="Keyingi sahifa"
                     >
                       <FaChevronRight className="text-sm transition-transform group-hover:translate-x-0.5" />
@@ -368,12 +370,13 @@ function Games() {
         </div>
 
         {/* O'yin kartochkalari */}
-        <div className="relative z-10 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:gap-8">
+        <div className="relative z-10 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:gap-7">
           {paginatedGames.map((game, index) => {
             const isHovered = hoveredCard === game.id;
             const delay = index * 0.1;
             const cardGradient = getCardGradient(game);
             const isLiked = likedGames.includes(game.id);
+            const isLastPlayed = lastPlayedGameId === game.id;
 
             return (
               <div
@@ -386,19 +389,19 @@ function Games() {
                 onMouseLeave={() => setHoveredCard(null)}
               >
                 {/* Karta gradienti - bu qatlam icon ustida emas */}
-                <div className={`absolute -inset-0.5 rounded-3xl bg-gradient-to-r ${cardGradient} blur-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-70`} />
+                <div className={`absolute -inset-0.5 rounded-[30px] bg-gradient-to-r ${cardGradient} blur-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-50`} />
                 <div className="pointer-events-none absolute inset-0 rounded-3xl bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.24),transparent_48%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                 
                 {/* Asosiy karta */}
                 <div
                   className={`relative w-full overflow-hidden rounded-3xl border-2 transition-all duration-500 ${
                     game.available
-                      ? `border-[var(--games-border)] bg-[var(--games-card-shell)] shadow-[0_20px_50px_var(--games-card-shadow)] hover:border-[var(--games-border-strong)] hover:shadow-[0_30px_80px_var(--games-card-shadow-hover)] ${game.borderGlow || ''}`
+                      ? `border-white/15 bg-[var(--games-card-shell)] shadow-[0_18px_42px_var(--games-card-shadow)] hover:border-[var(--games-border-strong)] hover:shadow-[0_26px_68px_var(--games-card-shadow-hover)] ${game.borderGlow || ''}`
                       : 'cursor-not-allowed border-[var(--games-border)] bg-[var(--games-surface)] backdrop-blur-xl'
                   }`}
                 >
                   {/* Rasm qismi */}
-                  <div className="relative z-10 h-52 w-full overflow-hidden sm:h-64">
+                  <div className="relative z-10 h-56 w-full overflow-hidden sm:h-64">
                     <img
                       src={game.image}
                       alt={game.title}
@@ -416,18 +419,26 @@ function Games() {
                     <div className="absolute left-4 top-4">
                       <div className="relative">
                         <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full blur-md " />
-                        <div className="relative flex items-center gap-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-xl">
+                        <div className="relative flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-400/95 to-teal-500/95 px-3.5 py-2 text-[11px] font-bold text-white shadow-xl">
                           <game.badgeIcon className="text-sm" />
                           <span>{game.badge}</span>
                         </div>
                       </div>
                     </div>
 
+                    {isLastPlayed ? (
+                      <div className="absolute left-4 top-16">
+                        <div className="rounded-full border border-cyan-200/40 bg-slate-950/70 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-100 backdrop-blur-md">
+                          So'nggi o'ynalgan
+                        </div>
+                      </div>
+                    ) : null}
+
                     {/* Level */}
                     <div className="absolute right-4 top-4">
                       <div className="relative">
                         <div className="absolute inset-0 bg-black rounded-full blur-md" />
-                        <div className="relative flex items-center gap-2 rounded-full border border-white/20 bg-black/70 px-4 py-2 text-xs font-bold text-white backdrop-blur-sm">
+                        <div className="relative flex items-center gap-2 rounded-full border border-white/15 bg-black/50 px-3.5 py-2 text-[11px] font-semibold text-white backdrop-blur-md">
                           <game.levelIcon className="text-yellow-300" />
                           <span>{game.level}</span>
                         </div>
@@ -440,7 +451,7 @@ function Games() {
                         event.stopPropagation();
                         handleLikeToggle(game.id);
                       }}
-                      className={`absolute right-4 bottom-4 z-50 inline-flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] backdrop-blur-md transition-all ${
+                      className={`absolute right-4 bottom-4 z-50 inline-flex cursor-pointer items-center gap-2 rounded-full border px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.14em] backdrop-blur-md transition-all ${
                         isLiked
                           ? "border-rose-200/60 bg-white text-[#ff5f87] shadow-[0_0_25px_rgba(255,95,135,0.35)]"
                           : "border-white/20 bg-black/45 text-white hover:bg-black/60"
@@ -455,61 +466,61 @@ function Games() {
                       <div className="relative">
                         <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} rounded-2xl blur-xl opacity-50 group-hover:opacity-100 transition-opacity`} />
                         <div
-                          className={`relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${game.iconBg} text-white shadow-2xl border-2 border-white/30 transform transition-all duration-500 group-hover:scale-110 group-hover:rotate-6`}
+                          className={`relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${game.iconBg} text-white shadow-2xl border border-white/20 transform transition-all duration-500 group-hover:scale-105 group-hover:rotate-3 sm:h-16 sm:w-16`}
                         >
-                          <game.icon className="text-3xl" />
+                          <game.icon className="text-2xl sm:text-3xl" />
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Kontent qismi */}
-                  <div className="relative z-0 overflow-hidden border-t border-[var(--games-border)] bg-[var(--games-card-surface)] p-4 pt-5 sm:p-6 sm:pt-6">
+                  <div className="relative z-0 overflow-hidden border-t border-white/10 bg-[var(--games-card-surface)] p-4 pt-5 sm:p-6 sm:pt-6">
                     <div className={`pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r ${cardGradient} opacity-90`} />
                     <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${cardGradient} opacity-[0.08]`} />
                     <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-white/60 dark:bg-white/10" />
                     <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-white/30 blur-3xl" />
                     <div className="relative">
-                    <h3 className="mb-2 flex items-center gap-2 text-xl font-black text-[var(--games-card-text)] sm:text-2xl">
+                    <h3 className="mb-2 flex items-start gap-2 text-xl font-black leading-tight tracking-[-0.02em] text-[var(--games-card-text)] sm:text-[1.65rem]">
                       {game.title}
                       {game.available && (
-                        <FaBolt className="text-yellow-400" />
+                        <FaBolt className="mt-1 shrink-0 text-yellow-400" />
                       )}
                     </h3>
 
-                    <p className="mb-4 line-clamp-2 text-sm text-[var(--games-card-text-soft)]">{game.description}</p>
+                    <p className="mb-5 line-clamp-2 min-h-[44px] text-sm leading-6 text-[var(--games-card-text-soft)] sm:min-h-[48px]">{game.description}</p>
 
                     {/* Ma'lumotlar gridi */}
-                    <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div className="mb-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                       <div className="relative group/item">
                         <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} rounded-xl blur-md opacity-0 group-hover/item:opacity-30 transition-opacity`} />
-                        <div className="relative flex items-center gap-2 rounded-xl border border-[var(--games-chip-border)] bg-[var(--games-chip-bg)] p-2.5 shadow-[0_10px_24px_var(--games-chip-shadow)] backdrop-blur-sm">
+                        <div className="relative flex items-center gap-2 rounded-2xl border border-[var(--games-chip-border)] bg-[var(--games-chip-bg)] px-3 py-3 shadow-[0_10px_24px_var(--games-chip-shadow)] backdrop-blur-sm">
                           <FaUsers className="text-sm text-[var(--games-card-text-soft)]" />
-                          <span className="text-xs font-bold text-[var(--games-card-text)]">{game.players}</span>
+                          <span className="text-xs font-semibold text-[var(--games-card-text)]">{game.players}</span>
                         </div>
                       </div>
                       
                       <div className="relative group/item">
                         <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} rounded-xl blur-md opacity-0 group-hover/item:opacity-30 transition-opacity`} />
-                        <div className="relative flex items-center gap-2 rounded-xl border border-[var(--games-chip-border)] bg-[var(--games-chip-bg)] p-2.5 shadow-[0_10px_24px_var(--games-chip-shadow)] backdrop-blur-sm">
+                        <div className="relative flex items-center gap-2 rounded-2xl border border-[var(--games-chip-border)] bg-[var(--games-chip-bg)] px-3 py-3 shadow-[0_10px_24px_var(--games-chip-shadow)] backdrop-blur-sm">
                           <IoMdTimer className="text-sm text-[var(--games-card-text-soft)]" />
-                          <span className="text-xs font-bold text-[var(--games-card-text)]">{game.time}</span>
+                          <span className="text-xs font-semibold text-[var(--games-card-text)]">{game.time}</span>
                         </div>
                       </div>
                       
                       <div className="relative group/item">
                         <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} rounded-xl blur-md opacity-0 group-hover/item:opacity-30 transition-opacity`} />
-                        <div className="relative flex items-center gap-2 rounded-xl border border-[var(--games-chip-border)] bg-[var(--games-chip-bg)] p-2.5 shadow-[0_10px_24px_var(--games-chip-shadow)] backdrop-blur-sm">
+                        <div className="relative flex items-center gap-2 rounded-2xl border border-[var(--games-chip-border)] bg-[var(--games-chip-bg)] px-3 py-3 shadow-[0_10px_24px_var(--games-chip-shadow)] backdrop-blur-sm">
                           <FaTrophy className="text-sm text-yellow-300" />
-                          <span className="text-xs font-bold text-[var(--games-card-text)]">{game.points}</span>
+                          <span className="text-xs font-semibold text-[var(--games-card-text)]">{game.points}</span>
                         </div>
                       </div>
                       
                       <div className="relative group/item">
                         <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} rounded-xl blur-md opacity-0 group-hover/item:opacity-30 transition-opacity`} />
-                        <div className="relative flex items-center gap-2 rounded-xl border border-[var(--games-chip-border)] bg-[var(--games-chip-bg)] p-2.5 shadow-[0_10px_24px_var(--games-chip-shadow)] backdrop-blur-sm">
+                        <div className="relative flex items-center gap-2 rounded-2xl border border-[var(--games-chip-border)] bg-[var(--games-chip-bg)] px-3 py-3 shadow-[0_10px_24px_var(--games-chip-shadow)] backdrop-blur-sm">
                           <game.categoryIcon className={`text-sm ${game.iconColor}`} />
-                          <span className="text-xs font-bold text-[var(--games-card-text)]">{game.category}</span>
+                          <span className="text-xs font-semibold text-[var(--games-card-text)]">{game.category}</span>
                         </div>
                       </div>
                     </div>
@@ -523,17 +534,17 @@ function Games() {
                           if (game.available) navigate(game.path);
                         }}
                         disabled={!game.available}
-                        className={`relative w-full overflow-hidden rounded-2xl border-2 transition-all duration-500 ${
+                        className={`relative w-full overflow-hidden rounded-2xl border transition-all duration-500 ${
                           game.available
-                            ? `group/btn cursor-pointer border-[var(--games-button-border)] bg-[var(--games-button-bg)] shadow-[0_18px_35px_var(--games-button-shadow)] hover:scale-[1.02] hover:shadow-[0_24px_50px_var(--games-button-shadow-hover)] active:scale-[0.98]`
-                            : 'cursor-not-allowed border-gray-600 bg-gray-700/50'
+                            ? `group/btn cursor-pointer border-white/20 bg-[var(--games-button-bg)] shadow-[0_18px_35px_var(--games-button-shadow)] hover:scale-[1.01] hover:shadow-[0_24px_50px_var(--games-button-shadow-hover)] active:scale-[0.99]`
+                            : 'cursor-not-allowed border-gray-600/50 bg-gray-700/50'
                         }`}
                       >
                         {game.available && (
                           <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} opacity-95`} />
                         )}
                         <div className="px-4 py-3.5 sm:px-6 sm:py-4">
-                          <span className="relative z-10 flex items-center justify-center gap-2.5 text-sm font-black text-white">
+                          <span className="relative z-10 flex items-center justify-center gap-2.5 text-sm font-bold tracking-[0.06em] text-white">
                             {game.available ? (
                               <>
                                 <game.mainIcon className="text-base" />

@@ -97,6 +97,16 @@ const RAW_GAME_REGISTRY: GameRegistryItem[] = [
     description: "Jo'jacha uchun matematik savollar",
   },
   {
+    gameKey: "tug-of-war",
+    title: "Tug Of War",
+    path: "/games/tug-of-war",
+    emoji: "🪢",
+    accent: "from-[var(--panel-accent)] to-[var(--panel-accent-strong)]",
+    bg: "bg-[image:var(--panel-accent-gradient-soft)]",
+    template: { prompt: "", answer: 0, level: "easy" },
+    description: "Arqon tortish uchun matematik savollar",
+  },
+  {
     gameKey: "baamboozle",
     title: "Baamboozle",
     path: "/games/baamboozle",
@@ -171,7 +181,7 @@ const GAME_CARD_META = new Map(
 );
 
 const GAME_REGISTRY: GameRegistryItem[] = RAW_GAME_REGISTRY.map((game) => {
-  const localizedMeta = GAME_CARD_META.get(game.gameKey);
+  const localizedMeta = GAME_CARD_META.get(game.gameKey.replaceAll("-", "_"));
   return {
     ...game,
     title: localizedMeta?.title ?? game.title,
@@ -285,6 +295,17 @@ function validateDraftItem(gameKey: string, draftValue: unknown) {
     return "";
   }
 
+  if (gameKey === "tug-of-war") {
+    const prompt = String(value.prompt ?? "").trim();
+    const answer = Number(value.answer);
+    const level = String(value.level ?? "").trim().toLowerCase();
+
+    if (!prompt) return "Tug Of War uchun savol matnini kiriting.";
+    if (!Number.isInteger(answer)) return "Tug Of War uchun javob butun son bo'lishi kerak.";
+    if (!["easy", "medium", "hard"].includes(level)) return "Tug Of War uchun daraja easy, medium yoki hard bo'lsin.";
+    return "";
+  }
+
   if (gameKey === "baamboozle") {
     const question = String(value.question ?? "").trim();
     const answer = String(value.answer ?? "").trim();
@@ -381,6 +402,14 @@ function normalizeDraftForGame(gameKey: string, draftValue: unknown) {
       options: Array.isArray(value.options)
         ? value.options.map((item) => Number(String(item ?? "").trim()))
         : [],
+    };
+  }
+
+  if (gameKey === "tug-of-war") {
+    return {
+      ...value,
+      answer: Number(value.answer),
+      level: String(value.level ?? "easy").trim().toLowerCase(),
     };
   }
 

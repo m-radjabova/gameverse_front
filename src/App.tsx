@@ -46,6 +46,11 @@ import HelloAdmin from "./pages/admin/HelloAdmin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/users/AdminUsers";
 import AdminFeedbacks from "./pages/admin/feedbacks/AdminFeedbacks";
+import WorldExplorer from "./components/games/world_explorer";
+import PlantVRGame from "./components/games/plant_vr";
+import TugOfWarPage from "./components/games/tug_of_war/TugOfWarPage";
+import SolarSystemGame from "./components/games/vr-solar-system";
+import VirtualZoo from "./components/games/virtual_zoo";
 
 function App() {
   const {
@@ -145,6 +150,7 @@ function App() {
           element={<OceanWordFishingPage />}
         />
         <Route path="/games/math-race" element={<MathRacePage />} />
+        <Route path="/games/tug-of-war" element={<TugOfWarPage />} />
         <Route path="/games/baamboozle" element={<BaamboozlePage />} />
         <Route path="/games/find-color" element={<FindDifferentColorPage />} />
         <Route path="/games/bingo" element={<BingoPage />} />
@@ -159,6 +165,46 @@ function App() {
         <Route path="/games/truth-detector" element={<TruthDetectorPage />} />
         <Route path="/games/math-chick" element={<MathChickGamePage />} />
         <Route path="/games/iq-game" element={<IQGamePage />} />
+        <Route
+          path="/games/world-explorer"
+          element={
+            <GamePlayView colorClassName="from-sky-500 via-blue-500 to-emerald-500">
+              <WorldExplorer />
+            </GamePlayView>
+          }
+        />
+        <Route
+          path="/games/plant-vr"
+          element={
+            <GamePlayView colorClassName="from-emerald-400 via-lime-300 to-amber-200">
+              <PlantVRGame />
+            </GamePlayView>
+          }
+        />
+        <Route
+          path="/games/virtual-zoo-vr"
+          element={
+            <GamePlayView colorClassName="from-emerald-400 via-lime-300 to-sky-200">
+              <VirtualZoo />
+            </GamePlayView>
+          }
+        />
+        <Route
+          path="/games/quyosh-tizimi-vr"
+          element={
+            <GamePlayView colorClassName="from-cyan-500 via-blue-500 to-indigo-500">
+              <SolarSystemGame />
+            </GamePlayView>
+          }
+        />
+        <Route
+          path="/games/vr-solar-system"
+          element={
+            <GamePlayView colorClassName="from-cyan-500 via-blue-500 to-indigo-500">
+              <SolarSystemGame />
+            </GamePlayView>
+          }
+        />
         {gamePlayRoutes.map((route) => (
           <Route
             key={route.path}

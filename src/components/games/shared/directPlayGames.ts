@@ -7,8 +7,11 @@ export const DIRECT_PLAY_GAME_PATHS = new Set([
   "/games/jumanji",
   "/games/hangman",
   "/games/math-race",
+  "/games/tug-of-war",
   "/games/math-chick",
   "/games/baamboozle",
   "/games/word-chain",
-  "/games/mini-puzzle"
+  "/games/mini-puzzle",
+  "/games/plant-vr",
+  "/games/virtual-zoo-vr",
 ]);

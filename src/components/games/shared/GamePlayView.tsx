@@ -14,10 +14,26 @@ export default function GamePlayView({
   children,
 }: GamePlayViewProps) {
   const location = useLocation();
+  const isPlantVrRoute =
+    location.pathname === "/games/plant-vr" || location.pathname === "/games/plant-vr/play";
+  const isVirtualZooRoute =
+    location.pathname === "/games/virtual-zoo-vr" || location.pathname === "/games/virtual-zoo-vr/play";
+  const isWorldExplorerRoute =
+    location.pathname === "/games/world-explorer" || location.pathname === "/games/world-explorer/play";
+  const isFullBleedGameRoute =
+    isPlantVrRoute ||
+    isVirtualZooRoute ||
+    isWorldExplorerRoute ||
+    location.pathname === "/games/vr-solar-system" ||
+    location.pathname === "/games/quyosh-tizimi-vr";
   const game = gameCards.find(
-    (item) => `${item.path}/play` === location.pathname
+    (item) => `${item.path}/play` === location.pathname || item.path === location.pathname
   );
   const session = game ? getGameSessionConfig(game.id) : null;
+
+  if (isFullBleedGameRoute) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#050816] px-3 py-4 sm:px-4 sm:py-5 md:px-6 md:py-8">
@@ -29,7 +45,7 @@ export default function GamePlayView({
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.25em] text-white/45">
-                  Tanlangan Game Mode
+                  Tanlangan o'yin
                 </p>
                 <h2 className="mt-1 text-xl font-black text-white sm:text-2xl">
                   {game.title}
