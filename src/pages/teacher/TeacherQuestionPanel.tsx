@@ -174,6 +174,16 @@ const RAW_GAME_REGISTRY: GameRegistryItem[] = [
     template: { level: 1, question: "", options: ["", "", "", ""], correctAnswer: "", explanation: "" },
     description: "Teskari fikrlash",
   },
+  {
+    gameKey: "frog-pond",
+    title: "Frog Pond",
+    path: "/games/frog-pond",
+    emoji: "🐸",
+    accent: "from-emerald-400 to-sky-400",
+    bg: "bg-gradient-to-br from-emerald-400/10 to-sky-400/10",
+    template: { subject: "Matematika", question: "", options: ["", "", "", ""], answerIndex: 0, stage: 1 },
+    description: "Nilufarlar bo'ylab savol-javob",
+  },
 ];
 
 const GAME_CARD_META = new Map(
@@ -213,6 +223,7 @@ const LABELS_UZ: Record<string, string> = {
   subject: "Fan",
   level: "Daraja",
   timeLimit: "Vaqt limiti",
+  stage: "Bosqich",
   options: "Variantlar",
   claims: "Faktlar",
   truth: "Rost",
@@ -314,6 +325,21 @@ function validateDraftItem(gameKey: string, draftValue: unknown) {
     return "";
   }
 
+  if (gameKey === "frog-pond") {
+    const question = String(value.question ?? "").trim();
+    const rawOptions = Array.isArray(value.options) ? value.options : [];
+    const options = rawOptions.map((item) => String(item ?? "").trim()).filter(Boolean);
+    const answerIndex = Number(value.answerIndex);
+    const stage = Number(value.stage);
+
+    if (!question) return "Frog Pond uchun savol matnini kiriting.";
+    if (options.length !== 4) return "Frog Pond uchun aniq 4 ta variant kiriting.";
+    if (new Set(options.map((item) => item.toLowerCase())).size !== 4) return "Frog Pond variantlari takrorlanmasin.";
+    if (!Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex > 3) return "Frog Pond uchun to'g'ri variantni tanlang.";
+    if (!Number.isInteger(stage) || stage < 1 || stage > 3) return "Frog Pond bosqichi 1, 2 yoki 3 bo'lsin.";
+    return "";
+  }
+
   return "";
 }
 
@@ -410,6 +436,20 @@ function normalizeDraftForGame(gameKey: string, draftValue: unknown) {
       ...value,
       answer: Number(value.answer),
       level: String(value.level ?? "easy").trim().toLowerCase(),
+    };
+  }
+
+  if (gameKey === "frog-pond") {
+    const options = Array.isArray(value.options) ? value.options.map((item) => String(item ?? "").trim()) : [];
+    const answerIndex = Number(value.answerIndex);
+    return {
+      ...value,
+      subject: String(value.subject ?? "Matematika").trim() || "Matematika",
+      question: String(value.question ?? "").trim(),
+      options,
+      answerIndex,
+      answer: options[answerIndex] ?? "",
+      stage: Math.max(1, Math.min(3, Math.round(Number(value.stage) || 1))),
     };
   }
 
@@ -607,6 +647,9 @@ function SpecializedEditor({
         )}
         {"level" in value && (
           <FormField label="level" value={value.level} path={["level"]} onChange={onChange} icon={<FaCrown />} />
+        )}
+        {"stage" in value && (
+          <FormField label="stage" value={value.stage} path={["stage"]} onChange={onChange} icon={<FaLayerGroup />} />
         )}
         {"question" in value && (
           <FormField label="question" value={value.question} path={["question"]} onChange={onChange} icon={<FaRegLightbulb />} />

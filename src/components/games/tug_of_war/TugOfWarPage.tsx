@@ -11,7 +11,7 @@ import {
 import { GiRopeCoil, GiStrongMan } from "react-icons/gi";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
-import tugOfWarPreview from "../../../assets/tugofwar_image.png";
+import tugOfWarPreview from "../../../assets/tug_of_war_img.png";
 
 function TugOfWarPage() {
   const gameStats = [

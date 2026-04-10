@@ -13,7 +13,8 @@ export type SupportedTeacherGameKey =
   | "millionaire"
   | "truth_detector"
   | "treasure_hunt"
-  | "reverse_thinking";
+  | "reverse_thinking"
+  | "frog-pond";
 
 function difficultyInstruction(difficulty: GameDifficulty) {
   if (difficulty === "easy") return "Kontent oson bo'lsin, tez tushuniladigan va boshlang'ich darajaga mos bo'lsin.";
@@ -115,6 +116,16 @@ function buildPrompt(gameKey: SupportedTeacherGameKey, topic: string, count: num
         'JSON: [{"question":"...","answer":"..."}]',
         "- Har bir elementda question va answer bo'lsin.",
         "- Javoblar qisqa va aniq bo'lsin.",
+        ...shared,
+      ].join("\n");
+    case "frog-pond":
+      return [
+        `Frog Pond uchun ${count} ta 4 variantli test savol yarating.`,
+        'JSON: [{"subject":"Matematika","question":"...","options":["...","...","...","..."],"answerIndex":0,"stage":1}]',
+        "- Har bir elementda subject, question, options, answerIndex, stage bo'lsin.",
+        "- options aniq 4 ta bo'lsin.",
+        "- answerIndex 0 dan 3 gacha bo'lsin.",
+        "- stage 1, 2 yoki 3 bo'lsin. Easy savollar stage=1, medium stage=2, hard stage=3 bo'lishi ma'qul.",
         ...shared,
       ].join("\n");
     case "jumanji":
@@ -237,6 +248,16 @@ function validateItems(gameKey: SupportedTeacherGameKey, payload: unknown, expec
           const answer = String(body.answer ?? "").trim();
           if (!question || !answer) return null;
           return { question, answer };
+        }
+        case "frog-pond": {
+          const subject = String(body.subject ?? "").trim() || "AI savol";
+          const question = String(body.question ?? "").trim();
+          const options = toStringArray(body.options);
+          const answerIndex = Number(body.answerIndex);
+          const stageRaw = Number(body.stage);
+          const stage = Number.isFinite(stageRaw) ? Math.max(1, Math.min(3, Math.round(stageRaw))) : 1;
+          if (!question || !options || !Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex > 3) return null;
+          return { subject, question, options, answerIndex, answer: options[answerIndex], stage };
         }
         case "jumanji": {
           const subject = String(body.subject ?? "").trim();

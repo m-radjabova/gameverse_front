@@ -21,6 +21,8 @@ import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import tugOfWarArenaImage from "../../../assets/tug_of_war.png";
+import tugOfWarBgImage from "./tug_of_war_bg.png";
+import tugOfWarMusic from "./tug_of_war_music.m4a";
 import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
 import { generateTugOfWarProblems } from "./ai";
 import useContextPro from "../../../hooks/useContextPro";
@@ -171,6 +173,7 @@ function getLineTouchWinner(ropePosition: number, handTouchThreshold: number) {
 
 function TugOfWar() {
   const skipInitialRemoteSaveRef = useRef(true);
+  const tugMusicRef = useRef<HTMLAudioElement | null>(null);
   const {
     state: { user },
   } = useContextPro();
@@ -229,6 +232,24 @@ function TugOfWar() {
   const hasGeminiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY?.trim());
   const handTouchThreshold = getHandTouchThreshold(totalRounds);
 
+  const stopTugMusic = useCallback(() => {
+    if (!tugMusicRef.current) return;
+    tugMusicRef.current.pause();
+    tugMusicRef.current.currentTime = 0;
+  }, []);
+
+  const playTugMusic = useCallback(() => {
+    if (!tugMusicRef.current && typeof Audio !== "undefined") {
+      tugMusicRef.current = new Audio(tugOfWarMusic);
+      tugMusicRef.current.loop = true;
+      tugMusicRef.current.volume = 0.42;
+    }
+
+    if (!tugMusicRef.current) return;
+    tugMusicRef.current.currentTime = 0;
+    void tugMusicRef.current.play().catch(() => undefined);
+  }, []);
+
   const finishGame = useCallback((forcedWinner?: "left" | "right" | "draw") => {
     setPhase("finish");
     setShowConfetti(true);
@@ -237,6 +258,27 @@ function TugOfWar() {
       (getLineTouchWinner(ropePosition, handTouchThreshold) ?? getWinner(teams)?.id ?? "draw");
     setWinnerId(nextWinner);
   }, [handTouchThreshold, ropePosition, teams]);
+
+  useEffect(() => {
+    if (typeof Audio === "undefined") return;
+
+    const audio = new Audio(tugOfWarMusic);
+    audio.loop = true;
+    audio.volume = 0.42;
+    tugMusicRef.current = audio;
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+      tugMusicRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (phase === "finish" || phase === "teacher") {
+      stopTugMusic();
+    }
+  }, [phase, stopTugMusic]);
 
   useFinishApplause(phase === "finish");
   useGameResultSubmission(
@@ -362,6 +404,7 @@ function TugOfWar() {
     setWinnerId(null);
     setShowConfetti(false);
     setPhase("play");
+    playTugMusic();
     pushToast("Arqon tortish boshlandi");
   }
 
@@ -521,6 +564,7 @@ function TugOfWar() {
   }
 
   function resetGame() {
+    stopTugMusic();
     setPhase("teacher");
     setShowConfetti(false);
     setWinnerId(null);
@@ -989,7 +1033,10 @@ function TugOfWar() {
               </div>
 
               <div className="mt-6 rounded-[32px] border border-white/10 bg-white/5 p-5">
-                <div className="relative h-[340px] overflow-hidden rounded-[28px] bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.08),transparent_35%),radial-gradient(circle_at_bottom,rgba(249,115,22,0.08),transparent_30%)]">
+                <div
+                  className="relative h-[340px] overflow-hidden rounded-[28px] bg-cover bg-center bg-no-repeat"
+                  style={{ backgroundImage: `url(${tugOfWarBgImage})` }}
+                >
                   <div className="pointer-events-none absolute left-1/2 top-4 bottom-4 z-10 w-px -translate-x-1/2 border-l-2 border-dashed border-slate-300" />
                   <img
                     src={tugOfWarArenaImage}

@@ -26,6 +26,7 @@ import IQGame from "../iq_game/IQGame";
 import PlantVRGame from "../plant_vr";
 import TugOfWar from "../tug_of_war/TugOfWar";
 import VirtualZoo from "../virtual_zoo";
+import FrogPondPage from "../frog-pond/FrogPondPage";
 
 type GamePlayRoute = {
   path: string;
@@ -88,6 +89,11 @@ export const gamePlayRoutes: GamePlayRoute[] = [
     path: "/games/tug-of-war/play",
     colorClassName: "from-blue-500 via-slate-700 to-orange-500",
     element: <TugOfWar />,
+  },
+  {
+    path: "/games/frog-pond/play",
+    colorClassName: "from-emerald-500 via-sky-500 to-yellow-400",
+    element: <FrogPondPage />,
   },
   {
     path: "/games/math-chick/play",

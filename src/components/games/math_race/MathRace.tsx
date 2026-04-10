@@ -22,9 +22,9 @@ import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 
-import trackImg from "../../../assets/track-road.jpg";
-import carBlue from "../../../assets/blue-car-removebg-preview.png";
-import carBlack from "../../../assets/black-car-removebg-preview.png";
+import trackImg from "../../../assets/new_road.png";
+import carBlue from "../../../assets/car_blue.png";
+import carBlack from "../../../assets/dark_car.png";
 import carSound from "../../../assets/sounds/car_sound.mp3";
 
 import sfxCorrect from "../../../assets/sounds/ding.m4a";
@@ -716,10 +716,11 @@ export default function MathRace() {
             ref={trackRef}
             className="relative shrink-0 overflow-hidden"
             style={{
-              height: typeof window !== "undefined" && window.innerWidth < 640 ? "220px" : "320px",
+              height: typeof window !== "undefined" && window.innerWidth < 640 ? "280px" : "400px",
               backgroundImage: `url(${trackImg})`,
-              backgroundSize: "cover",
+              backgroundSize: "100% 100%",
               backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
             }}
           >
             {/* Dark overlay for contrast */}
@@ -753,14 +754,14 @@ export default function MathRace() {
               return (
                 <div
                   className="absolute z-30 transition-all duration-700 ease-out"
-                  style={{ left: `${x}px`, top: "26%", transform: "translateY(-50%)" }}
+                  style={{ left: `${x}px`, top: "34%", transform: "translateY(-50%)" }}
                 >
                   {nitro && (
                     <div className="absolute -right-8 top-1/2 -translate-y-1/2 text-orange-400 text-xl animate-pulse">🔥</div>
                   )}
                   <img src={carBlack} alt={player.name} draggable={false}
                     className="h-24 w-auto select-none drop-shadow-2xl"
-                    style={{ transform: "scaleX(-1)", filter: "brightness(1.15)" }}
+                    style={{ transform: "rotate(0deg)", filter: "brightness(1.15)" }}
                   />
                   {/* Label below car */}
                   <div className="mt-1 flex items-center justify-center gap-1.5">
@@ -783,14 +784,14 @@ export default function MathRace() {
               return (
                 <div
                   className="absolute z-30 transition-all duration-700 ease-out"
-                  style={{ left: `${x}px`, top: "74%", transform: "translateY(-50%)" }}
+                  style={{ left: `${x}px`, top: "66%", transform: "translateY(-50%)" }}
                 >
                   {nitro && (
                     <div className="absolute -right-8 top-1/2 -translate-y-1/2 text-blue-400 text-xl animate-pulse">💨</div>
                   )}
                   <img src={carBlue} alt={player.name} draggable={false}
                     className="h-24 w-auto select-none drop-shadow-2xl"
-                    style={{ transform: "scaleX(-1)", filter: "brightness(1.15)" }}
+                    style={{ transform: "rotate(0deg)", filter: "brightness(1.15)" }}
                   />
                   <div className="mt-1 flex items-center justify-center gap-1.5">
                     <span className="rounded-full bg-black/80 px-2 py-0.5 text-[12px] font-bold text-white border border-blue-500/50">
@@ -1012,5 +1013,3 @@ export default function MathRace() {
     </div>
   );
 }
-
-

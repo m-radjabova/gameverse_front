@@ -51,6 +51,7 @@ import PlantVRGame from "./components/games/plant_vr";
 import TugOfWarPage from "./components/games/tug_of_war/TugOfWarPage";
 import SolarSystemGame from "./components/games/vr-solar-system";
 import VirtualZoo from "./components/games/virtual_zoo";
+import FrogPondLandingPage from "./components/games/frog-pond/FrogPondLandingPage";
 
 function App() {
   const {
@@ -165,6 +166,7 @@ function App() {
         <Route path="/games/truth-detector" element={<TruthDetectorPage />} />
         <Route path="/games/math-chick" element={<MathChickGamePage />} />
         <Route path="/games/iq-game" element={<IQGamePage />} />
+        <Route path="/games/frog-pond" element={<FrogPondLandingPage />} />
         <Route
           path="/games/world-explorer"
           element={

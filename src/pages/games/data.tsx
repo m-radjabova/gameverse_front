@@ -21,6 +21,7 @@ import {
   FaBook,
   FaLeaf,
   FaDice,
+  FaFrog,
   FaSkull,
   FaKeyboard,
   FaBrush,
@@ -68,7 +69,7 @@ import wheelFortuneImg from "../../assets/wheel_of_fortune_image.png";
 import wordSearchImg from "../../assets/word_search_image.png";
 import wordFishImg from "../../assets/word_fish_image.png";
 import mathRaceImg from "../../assets/math_race-image.png";
-import tugOfWarImg from "../../assets/tugofwar_image.png";
+import tugOfWarImg from "../../assets/tug_of_war_img.png";
 import findColorImg from "../../assets/color_find_image.png";
 import quizChallengeImg from "../../assets/quiz_challenge_image.png";
 import wordChainImg from "../../assets/word_chain_image.png";
@@ -78,7 +79,7 @@ import worldExplorerImg from "../../assets/WorldExplorerImg.png";
 import plantImg from "../../assets/plant_vr_image.png";
 import solarSystemImg from "../../assets/solar_system_image.png";
 import virtualZooVrImg from "../../assets/virtual_zoo.png";
-
+import frogPondImg from "../../assets/frog_pond_image.png";
 
 export const gameCards = [
   {
@@ -214,6 +215,32 @@ export const gameCards = [
     categoryIcon: GiJungle,
     gradient: "from-amber-600 to-amber-400",
     borderGlow: "hover:border-amber-400/50",
+  },
+  {
+    id: "frog-pond",
+    title: "Sakra, qurbaqa!",
+    description:
+      "Nilufar bargi ustiga sakrang, savollarga javob bering va AI yoki do'stingiz bilan marraga yetib boring.",
+    mainIcon: FaFrog,
+    icon: FaFrog,
+    iconBg: "from-emerald-500 to-sky-500",
+    iconColor: "text-emerald-100",
+    shadowColor: "emerald",
+    available: true,
+    path: "/games/frog-pond",
+    bgPattern: "bg-gradient-to-br from-emerald-600 via-sky-600 to-cyan-600",
+    image: frogPondImg,
+    players: "1-2 o'yinchi",
+    level: "3 bosqich",
+    levelIcon: FaStar,
+    badge: "YANGI",
+    badgeIcon: FaBolt,
+    time: "8-12 min",
+    points: "2100+",
+    category: "Savol-javob",
+    categoryIcon: FaBook,
+    gradient: "from-emerald-400 to-sky-400",
+    borderGlow: "hover:border-emerald-400/50",
   },
   {
     id: "treasure-hunt",
