@@ -115,6 +115,19 @@ function Games() {
     setLikedGames(toggleFavoriteGame(gameId));
   };
 
+  const handleGamePlay = (game: Game) => {
+    if (!game.available) {
+      return;
+    }
+
+    if ("externalUrl" in game && typeof game.externalUrl === "string") {
+      window.location.href = game.externalUrl;
+      return;
+    }
+
+    navigate(game.path);
+  };
+
   const pageBackground = isDarkMode
     ? `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(89, 185, 230, 0.14) 0%, rgba(0, 0, 0, 0) 48%),
        radial-gradient(circle at 82% 18%, rgba(255, 209, 93, 0.10) 0%, transparent 38%),
@@ -531,7 +544,7 @@ function Games() {
                       <button
                         onClick={(event) => {
                           event.stopPropagation();
-                          if (game.available) navigate(game.path);
+                          handleGamePlay(game);
                         }}
                         disabled={!game.available}
                         className={`relative w-full overflow-hidden rounded-2xl border transition-all duration-500 ${

@@ -80,6 +80,7 @@ import plantImg from "../../assets/plant_vr_image.png";
 import solarSystemImg from "../../assets/solar_system_image.png";
 import virtualZooVrImg from "../../assets/virtual_zoo.png";
 import frogPondImg from "../../assets/frog_pond_image.png";
+import physicsImg from "../../assets/fizika_simulyatisya_image.png";
 
 export const gameCards = [
   {
@@ -189,6 +190,33 @@ export const gameCards = [
   releaseOrder: 999,
   desktopSupported: true,
   vrSupported: true,
+},
+{
+  id: "physics-vr",
+  title: "VR Fizika Elektr Zanjiri Simulyatori",
+  description:
+    "VR laboratoriyada elektr zanjirini yig‘ing, elementlarni to‘g‘ri ulang va fizikani interaktiv tarzda o‘rganing.",
+  mainIcon: FaBolt,
+  icon: FaBolt,
+  iconBg: "from-sky-500 to-indigo-500",
+  iconColor: "text-sky-200",
+  shadowColor: "blue",
+  available: true,
+  path: "/games/physics-vr",
+  externalUrl: "https://vr-vode.vercel.app/",
+  bgPattern: "bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-800",
+  image: physicsImg,
+  players: "1 o'yinchi",
+  level: "VR Interaktiv",
+  levelIcon: FaCompass,
+  badge: "VR O'YIN",
+  badgeIcon: FaBolt,
+  time: "5-12 min",
+  points: "1000+",
+  category: "VR Fan",
+  categoryIcon: FaBook,
+  gradient: "from-sky-400 to-indigo-300",
+  borderGlow: "hover:border-sky-400/50",
 },
 {
     id: "jumanji",
