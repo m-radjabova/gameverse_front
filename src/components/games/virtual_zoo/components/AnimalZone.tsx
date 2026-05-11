@@ -13,16 +13,18 @@ type AnimalZoneProps = {
   onSelect: () => void;
 };
 
+type OpenSide = "left" | "right" | "front" | "back";
+
 const zoneTrees: Array<{
   offset: [number, number, number];
   rotationY: number;
   scale: number;
   variant: TreeVariant;
 }> = [
-  { offset: [-2.2, 0, -1.6], rotationY: Math.PI * 0.12, scale: 0.7, variant: "tree" },
-  { offset: [2.1, 0, -1.8], rotationY: -Math.PI * 0.18, scale: 0.74, variant: "treeOne" },
-  { offset: [-2.35, 0, 1.5], rotationY: Math.PI * 0.3, scale: 0.72, variant: "treeTwo" },
-  { offset: [2.2, 0, 1.55], rotationY: -Math.PI * 0.08, scale: 0.76, variant: "grove" },
+  { offset: [-1.95, 0, -1.45], rotationY: Math.PI * 0.12, scale: 0.66, variant: "tree" },
+  { offset: [1.9, 0, -1.55], rotationY: -Math.PI * 0.18, scale: 0.7, variant: "treeOne" },
+  { offset: [-2.0, 0, 1.35], rotationY: Math.PI * 0.3, scale: 0.68, variant: "treeTwo" },
+  { offset: [1.98, 0, 1.38], rotationY: -Math.PI * 0.08, scale: 0.72, variant: "grove" },
 ];
 
 const zoneFenceSegments: Array<{
@@ -30,15 +32,15 @@ const zoneFenceSegments: Array<{
   rotationY: number;
   scale: number;
 }> = [
-  { position: [-2.35, 0, -1.55], rotationY: Math.PI / 2, scale: 1.02 },
-  { position: [-2.35, 0, 0.15], rotationY: Math.PI / 2, scale: 1.02 },
-  { position: [-2.35, 0, 1.85], rotationY: Math.PI / 2, scale: 0.94 },
-  { position: [2.35, 0, -1.55], rotationY: -Math.PI / 2, scale: 1.02 },
-  { position: [2.35, 0, 0.15], rotationY: -Math.PI / 2, scale: 1.02 },
-  { position: [2.35, 0, 1.85], rotationY: -Math.PI / 2, scale: 0.94 },
-  { position: [-1.45, 0, -2.35], rotationY: 0, scale: 1 },
-  { position: [0.1, 0, -2.35], rotationY: 0, scale: 1.02 },
-  { position: [1.65, 0, -2.35], rotationY: 0, scale: 0.98 },
+  { position: [-2.08, 0, -1.45], rotationY: Math.PI / 2, scale: 0.98 },
+  { position: [-2.08, 0, 0.15], rotationY: Math.PI / 2, scale: 0.98 },
+  { position: [-2.08, 0, 1.72], rotationY: Math.PI / 2, scale: 0.9 },
+  { position: [2.08, 0, -1.45], rotationY: -Math.PI / 2, scale: 0.98 },
+  { position: [2.08, 0, 0.15], rotationY: -Math.PI / 2, scale: 0.98 },
+  { position: [2.08, 0, 1.72], rotationY: -Math.PI / 2, scale: 0.9 },
+  { position: [-1.35, 0, -2.08], rotationY: 0, scale: 0.96 },
+  { position: [0.1, 0, -2.08], rotationY: 0, scale: 0.98 },
+  { position: [1.55, 0, -2.08], rotationY: 0, scale: 0.94 },
 ];
 
 const zoneHedges: Array<{
@@ -46,15 +48,15 @@ const zoneHedges: Array<{
   rotationY: number;
   scale: number;
 }> = [
-  { position: [-2.05, 0, -1.55], rotationY: Math.PI / 2, scale: 0.82 },
-  { position: [-2.05, 0, 0.2], rotationY: Math.PI / 2, scale: 0.84 },
-  { position: [2.05, 0, -1.55], rotationY: -Math.PI / 2, scale: 0.82 },
-  { position: [2.05, 0, 0.2], rotationY: -Math.PI / 2, scale: 0.84 },
-  { position: [-1.35, 0, -2.02], rotationY: 0, scale: 0.78 },
-  { position: [0.1, 0, -2.02], rotationY: 0, scale: 0.82 },
-  { position: [1.55, 0, -2.02], rotationY: 0, scale: 0.78 },
-  { position: [-1.7, 0, 2.05], rotationY: Math.PI * 0.08, scale: 0.72 },
-  { position: [1.7, 0, 2.05], rotationY: -Math.PI * 0.08, scale: 0.72 },
+  { position: [-1.82, 0, -1.45], rotationY: Math.PI / 2, scale: 0.74 },
+  { position: [-1.82, 0, 0.2], rotationY: Math.PI / 2, scale: 0.76 },
+  { position: [1.82, 0, -1.45], rotationY: -Math.PI / 2, scale: 0.74 },
+  { position: [1.82, 0, 0.2], rotationY: -Math.PI / 2, scale: 0.76 },
+  { position: [-1.25, 0, -1.78], rotationY: 0, scale: 0.7 },
+  { position: [0.1, 0, -1.78], rotationY: 0, scale: 0.74 },
+  { position: [1.45, 0, -1.78], rotationY: 0, scale: 0.7 },
+  { position: [-1.45, 0, 1.82], rotationY: Math.PI * 0.08, scale: 0.66 },
+  { position: [1.45, 0, 1.82], rotationY: -Math.PI * 0.08, scale: 0.66 },
 ];
 
 function getZoneTheme(animal: ZooAnimal) {
@@ -158,6 +160,34 @@ function getBaseFacingYaw(animal: ZooAnimal) {
   return Math.atan2(lookTargetX - animal.position[0], lookTargetZ - animal.position[2]) + Math.PI;
 }
 
+function getOpenSides(animal: ZooAnimal): OpenSide[] {
+  const sides: OpenSide[] = [];
+
+  if (animal.position[0] < 0) {
+    sides.push("right");
+  } else if (animal.position[0] > 0) {
+    sides.push("left");
+  }
+
+  if (animal.position[2] < 0) {
+    sides.push("front");
+  } else if (animal.position[2] > 0) {
+    sides.push("back");
+  }
+
+  return sides;
+}
+
+function getSegmentSide(position: [number, number, number]): OpenSide {
+  const [x, , z] = position;
+
+  if (Math.abs(x) >= Math.abs(z)) {
+    return x < 0 ? "left" : "right";
+  }
+
+  return z < 0 ? "front" : "back";
+}
+
 export default function AnimalZone({
   animal,
   active,
@@ -166,6 +196,9 @@ export default function AnimalZone({
 }: AnimalZoneProps) {
   const roamingRef = useRef<Group>(null);
   const theme = getZoneTheme(animal);
+  const openSides = getOpenSides(animal);
+  const visibleFenceSegments = zoneFenceSegments.filter((segment) => !openSides.includes(getSegmentSide(segment.position)));
+  const visibleHedgeSegments = zoneHedges.filter((segment) => !openSides.includes(getSegmentSide(segment.position)));
 
   useFrame((state) => {
     if (!roamingRef.current) {
@@ -217,7 +250,7 @@ export default function AnimalZone({
           ))
         : null}
 
-      {zoneFenceSegments.map(({ position, rotationY, scale }, index) => (
+      {visibleFenceSegments.map(({ position, rotationY, scale }, index) => (
         <WallModel
           key={`fence-${index}`}
           position={position}
@@ -227,7 +260,7 @@ export default function AnimalZone({
         />
       ))}
 
-      {zoneHedges.map(({ position, rotationY, scale }, index) => (
+      {visibleHedgeSegments.map(({ position, rotationY, scale }, index) => (
         <WallModel
           key={`hedge-${index}`}
           position={position}

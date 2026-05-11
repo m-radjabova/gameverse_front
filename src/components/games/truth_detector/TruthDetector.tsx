@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaCheck, FaEye, FaEyeSlash, FaGamepad, FaRedo, FaRobot, FaSave, FaTimes, FaTrash, FaUsers } from "react-icons/fa";
 import { PiDetective } from "react-icons/pi";
-import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import { fetchGameQuestionsByTeacher, saveGameQuestions } from "../../../hooks/useGameQuestions";
 import useContextPro from "../../../hooks/useContextPro";
 import { hasAnyRole } from "../../../utils/roles";
 import { generateTruthDetectorPacks } from "./ai";
@@ -15,6 +15,8 @@ type RoundPack = { id: string; title?: string; difficulty: Difficulty; claims: [
 type TeamId = "A" | "B";
 type Team = { id: TeamId; name: string; score: number; pickIndex: number | null };
 type PackDraft = { difficulty: Difficulty; claimA: string; claimB: string; claimC: string; fakeLetter: FakeLetter };
+type RawClaim = { id?: unknown; text?: unknown; truth?: unknown };
+type RawPack = { id?: unknown; title?: unknown; difficulty?: unknown; claims?: unknown };
 
 const TRUTH_DETECTOR_GAME_KEY = "truth_detector";
 
@@ -22,20 +24,24 @@ function safeParsePacks(jsonText: string): { ok: true; packs: RoundPack[] } | { 
   try {
     const data = JSON.parse(jsonText);
     if (!Array.isArray(data)) return { ok: false, error: "JSON massiv bo'lishi kerak" };
-    const packs: RoundPack[] = data.map((p: any, idx: number) => {
-      const claims = Array.isArray(p?.claims) ? p.claims : [];
+    const packs: RoundPack[] = data.map((value: unknown, idx: number) => {
+      const p = value && typeof value === "object" ? (value as RawPack) : {};
+      const claims = Array.isArray(p.claims) ? p.claims : [];
       if (claims.length !== 3) throw new Error(`Faktlar #${idx + 1}: 3 ta gap bo'lishi shart`);
-      const normClaims = claims.map((c: any, i: number) => ({ id: String(c?.id ?? `${p?.id ?? idx}-c${i}`), text: String(c?.text ?? "").trim(), truth: Boolean(c?.truth) })) as [Claim, Claim, Claim];
+      const normClaims = claims.map((value: unknown, i: number) => {
+        const c = value && typeof value === "object" ? (value as RawClaim) : {};
+        return { id: String(c.id ?? `${p.id ?? idx}-c${i}`), text: String(c.text ?? "").trim(), truth: Boolean(c.truth) };
+      }) as [Claim, Claim, Claim];
       if (normClaims.some((c) => !c.text)) throw new Error(`Faktlar #${idx + 1}: matnlar bo'sh bo'lmasin`);
       if (normClaims.filter((c) => c.truth).length !== 2) throw new Error(`Faktlar #${idx + 1}: 2 TRUE va 1 FAKE bo'lishi kerak`);
-      const diff = String(p?.difficulty ?? "easy").toLowerCase();
+      const diff = String(p.difficulty ?? "easy").toLowerCase();
       const difficulty = (["easy", "medium", "hard"].includes(diff) ? diff : "easy") as Difficulty;
-      return { id: String(p?.id ?? `pack-${idx}`), title: p?.title ? String(p.title) : undefined, difficulty, claims: normClaims };
+      return { id: String(p.id ?? `pack-${idx}`), title: p.title ? String(p.title) : undefined, difficulty, claims: normClaims };
     });
     if (!packs.length) return { ok: false, error: "Faktlar bo'sh" };
     return { ok: true, packs };
-  } catch (e: any) {
-    return { ok: false, error: e?.message || "JSON parse xato" };
+  } catch (error: unknown) {
+    return { ok: false, error: error instanceof Error ? error.message : "JSON parse xato" };
   }
 }
 
@@ -114,18 +120,28 @@ function TruthDetector() {
   const hasGeminiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY?.trim());
 
   useEffect(() => {
+    if (state.isLoading) return;
+
     let alive = true;
     (async () => {
-      const remotePacks = await fetchGameQuestions<RoundPack>(TRUTH_DETECTOR_GAME_KEY);
+      if (!state.user?.id) {
+        setTeacherPacks([]);
+        setRemoteLoaded(true);
+        return;
+      }
+
+      const remotePacks = await fetchGameQuestionsByTeacher<RoundPack>(TRUTH_DETECTOR_GAME_KEY, state.user.id);
       if (!alive) return;
       if (remotePacks?.length) {
         const parsed = safeParsePacks(JSON.stringify(remotePacks));
         if (parsed.ok) setTeacherPacks(parsed.packs);
+      } else {
+        setTeacherPacks([]);
       }
       setRemoteLoaded(true);
     })();
     return () => { alive = false; };
-  }, []);
+  }, [state.isLoading, state.user?.id]);
 
   useEffect(() => {
     if (!remoteLoaded || !canManageQuestions) return;

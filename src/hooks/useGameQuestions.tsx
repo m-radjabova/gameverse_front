@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "../apiClient/apiClient";
 import { getAccessToken } from "../utils/auth";
@@ -90,6 +90,13 @@ export default function useGameQuestions<T>({
   const [loadedByGame, setLoadedByGame] = useState<Record<string, boolean>>({});
   const [savingByGame, setSavingByGame] = useState<Record<string, boolean>>({});
 
+  useEffect(() => {
+    setQuestionsByGame({});
+    setLoadingByGame({});
+    setLoadedByGame({});
+    setSavingByGame({});
+  }, [teacherId]);
+
   const saveQuestionsMutation = useMutation({
     mutationFn: async ({
       gameKey,
@@ -100,6 +107,15 @@ export default function useGameQuestions<T>({
       questions: T[];
       teacherScoped: boolean;
     }) => {
+      if (teacherScoped && !teacherId) {
+        return {
+          ok: false,
+          gameKey,
+          questions,
+          teacherId: undefined,
+        };
+      }
+
       const scopedTeacherId = teacherScoped && teacherId ? teacherId : undefined;
       const ok = await saveGameQuestions(gameKey, questions, scopedTeacherId);
 
@@ -131,6 +147,14 @@ export default function useGameQuestions<T>({
       { force = false, teacherScoped = Boolean(teacherId) }: LoadQuestionsOptions = {},
     ) => {
       const scopedTeacherId = teacherScoped && teacherId ? teacherId : undefined;
+
+      if (teacherScoped && !scopedTeacherId) {
+        setQuestionsByGame((prev) => ({ ...prev, [gameKey]: [] }));
+        setLoadedByGame((prev) => ({ ...prev, [gameKey]: true }));
+        setLoadingByGame((prev) => ({ ...prev, [gameKey]: false }));
+        return [];
+      }
+
       const queryKey = gameQuestionsKeys.list(gameKey, scopedTeacherId);
       const cachedQuestions = queryClient.getQueryData<T[]>(queryKey);
 
@@ -166,6 +190,10 @@ export default function useGameQuestions<T>({
 
   const saveQuestionsForGame = useCallback(
     async (gameKey: string, questions: T[], teacherScoped = Boolean(teacherId)) => {
+      if (teacherScoped && !teacherId) {
+        return false;
+      }
+
       setSavingByGame((prev) => ({ ...prev, [gameKey]: true }));
       const { ok } = await saveQuestionsMutation.mutateAsync({
         gameKey,

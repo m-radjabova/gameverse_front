@@ -10,7 +10,6 @@ import {
 } from "react-icons/fa6";
 import { GiLilyPads, GiPathDistance } from "react-icons/gi";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
-import GameLeaderboardPanel from "../shared/GameLeaderboardPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
 import frogPondPreview from "../../../assets/frog_pond_image.png";
 
@@ -104,11 +103,12 @@ function FrogPondLandingPage() {
             />
           </div>
 
-          <div className="relative overflow-hidden border border-white/10 bg-[#05242d]/70 p-3 shadow-2xl">
+          <div className="relative overflow-hidden border border-emerald-100/20 bg-[linear-gradient(180deg,rgba(232,255,247,0.96),rgba(191,245,236,0.9))] p-4 shadow-2xl">
             <img
               src={frogPondPreview}
               alt="Frog Pond preview"
-              className="h-[320px] w-full object-cover md:h-[430px] lg:h-[540px]"
+              className="h-[320px] w-full rounded-[20px] object-contain bg-[#d9fff2] md:h-[430px] lg:h-[540px]"
+              style={{ objectPosition: "center top" }}
             />
           </div>
         </div>
@@ -152,9 +152,6 @@ function FrogPondLandingPage() {
             ))}
           </div>
         </div>
-
-        <GameLeaderboardPanel gameKey="frog-pond" title="Sakra, qurbaqa! Reytingi" />
-
         <GameFeedbackPanel gameKey="frog-pond" />
       </div>
     </div>

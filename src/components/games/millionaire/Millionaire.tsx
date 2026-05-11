@@ -19,7 +19,8 @@ import { GiMoneyStack, GiBrain } from "react-icons/gi";
 import Confetti from "react-confetti-boom";
 import millionaireSound from "../../../assets/sounds/millionaire_sound.m4a";
 import tadaSound from "../../../assets/sounds/applause.mp3";
-import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import { fetchGameQuestionsByTeacher, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import useContextPro from "../../../hooks/useContextPro";
 import GameLeaderboardPanel from "../shared/GameLeaderboardPanel";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { useGameParticipantMode } from "../../../hooks/useGameParticipantMode";
@@ -131,6 +132,9 @@ function pickQuestion(
 }
 
 function Millionaire() {
+  const {
+    state: { user, isLoading: isUserLoading },
+  } = useContextPro();
   const { session, isSinglePlayer, participantCount, primaryName, modeLabel } = useGameParticipantMode({
     gameId: "millionaire",
     fallbackPrimaryName: "O'YINCHI 1",
@@ -204,19 +208,29 @@ function Millionaire() {
   }, []);
 
   useEffect(() => {
+    if (isUserLoading) return;
+
     let alive = true;
     (async () => {
-      const remoteQuestions = await fetchGameQuestions<Question>(MILLIONAIRE_GAME_KEY);
+      if (!user?.id) {
+        setQuestionBank(QUESTION_BANK);
+        setRemoteLoaded(true);
+        return;
+      }
+
+      const remoteQuestions = await fetchGameQuestionsByTeacher<Question>(MILLIONAIRE_GAME_KEY, user.id);
       if (!alive) return;
       if (remoteQuestions && remoteQuestions.length > 0) {
         setQuestionBank(remoteQuestions);
+      } else {
+        setQuestionBank(QUESTION_BANK);
       }
       setRemoteLoaded(true);
     })();
     return () => {
       alive = false;
     };
-  }, []);
+  }, [isUserLoading, user?.id]);
 
   useEffect(() => {
     if (!remoteLoaded) return;
@@ -225,10 +239,11 @@ function Millionaire() {
       return;
     }
     const t = window.setTimeout(() => {
-      void saveGameQuestions<Question>(MILLIONAIRE_GAME_KEY, questionBank);
+      if (!user?.id) return;
+      void saveGameQuestions<Question>(MILLIONAIRE_GAME_KEY, questionBank, user.id);
     }, 500);
     return () => window.clearTimeout(t);
-  }, [questionBank, remoteLoaded]);
+  }, [questionBank, remoteLoaded, user?.id]);
 
   function playSfx(ref: { current: HTMLAudioElement | null }) {
     const audio = ref.current;
@@ -291,7 +306,7 @@ function Millionaire() {
   }, [currentPlayer, phase]);
 
   function normalizeNames(arr: string[]) {
-    let next = arr.slice(0, requiredPlayers);
+    const next = arr.slice(0, requiredPlayers);
     while (next.length < requiredPlayers) next.push("");
     return next;
   }

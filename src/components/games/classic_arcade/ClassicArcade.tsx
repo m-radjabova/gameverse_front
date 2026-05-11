@@ -8,7 +8,8 @@ import {
 } from "react-icons/gi";
 import { 
   MdSkipNext, } from "react-icons/md";
-import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import { fetchGameQuestionsByTeacher, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import useContextPro from "../../../hooks/useContextPro";
 import { generateClassicArcadeChallenges } from "./ai";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
@@ -68,6 +69,9 @@ const buildPattern = (): PatternRound => {
 const buildOdd = (teacher: OddRound[]): OddRound => (teacher.length ? [...teacher, ...BUILTIN_ODD] : BUILTIN_ODD)[r(0, (teacher.length ? teacher.length + BUILTIN_ODD.length : BUILTIN_ODD.length) - 1)];
 
 export default function ClassicArcade() {
+  const {
+    state: { user, isLoading: isUserLoading },
+  } = useContextPro();
   const skipInitialRemoteSaveRef = useRef(true);
   const [phase, setPhase] = useState<Phase>("teacher");
   useFinishApplause(phase === "finish");
@@ -160,19 +164,25 @@ export default function ClassicArcade() {
     };
   }, []);
   useEffect(() => {
+    if (isUserLoading) return;
+
     let alive = true;
     (async () => {
-      const remoteRounds = await fetchGameQuestions<OddRound>(CLASSIC_ARCADE_GAME_KEY);
-      if (!alive) return;
-      if (remoteRounds && remoteRounds.length > 0) {
-        setTeacherRounds(remoteRounds);
+      if (!user?.id) {
+        setTeacherRounds([]);
+        setRemoteLoaded(true);
+        return;
       }
+
+      const remoteRounds = await fetchGameQuestionsByTeacher<OddRound>(CLASSIC_ARCADE_GAME_KEY, user.id);
+      if (!alive) return;
+      setTeacherRounds(remoteRounds ?? []);
       setRemoteLoaded(true);
     })();
     return () => {
       alive = false;
     };
-  }, []);
+  }, [isUserLoading, user?.id]);
   useEffect(() => {
     if (!remoteLoaded) return;
     if (skipInitialRemoteSaveRef.current) {
@@ -180,10 +190,11 @@ export default function ClassicArcade() {
       return;
     }
     const t = window.setTimeout(() => {
-      void saveGameQuestions<OddRound>(CLASSIC_ARCADE_GAME_KEY, teacherRounds);
+      if (!user?.id) return;
+      void saveGameQuestions<OddRound>(CLASSIC_ARCADE_GAME_KEY, teacherRounds, user.id);
     }, 500);
     return () => window.clearTimeout(t);
-  }, [teacherRounds, remoteLoaded]);
+  }, [teacherRounds, remoteLoaded, user?.id]);
   useEffect(() => { if (phase !== "play") return; if (sessionLeft <= 0) { setPhase("finish"); return; } const t = window.setTimeout(() => setSessionLeft((s) => s - 1), 1000); return () => window.clearTimeout(t); }, [phase, sessionLeft]);
   useEffect(() => { if (phase !== "play" || locked) return; if (roundLeft <= 0) { onSkip(true); return; } const t = window.setTimeout(() => setRoundLeft((s) => s - 1), 1000); return () => window.clearTimeout(t); }, [phase, roundLeft, locked]);
   useEffect(() => {

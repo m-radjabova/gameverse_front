@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import Confetti from "react-confetti-boom";
 import {
   FaDice,
@@ -18,7 +18,8 @@ import correctSound from "../../../assets/sounds/correct.m4a";
 import wrongSound from "../../../assets/sounds/wrong.mp3";
 import winSound from "../../../assets/sounds/applause.mp3";
 import jumanjiSound from "../../../assets/sounds/jumanji_sound.m4a";
-import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import { fetchGameQuestionsByTeacher, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import useContextPro from "../../../hooks/useContextPro";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { generateJumanjiQuestions } from "./ai";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
@@ -57,8 +58,14 @@ const AI_DIFFICULTY_OPTIONS = [
   { value: "mixed", label: "Aralash" },
 ] as const;
 const AI_SUBJECT_OPTIONS = ["Aralash fanlar", ...SUBJECTS] as const;
+const DEFAULT_QUESTION_IDS = new Set(DEFAULT_QUESTIONS.map((question) => question.id));
+
+const isDefaultQuestion = (question: Question) => DEFAULT_QUESTION_IDS.has(question.id);
 
 function Jumanji() {
+  const {
+    state: { user, isLoading: isUserLoading },
+  } = useContextPro();
   const skipInitialRemoteSaveRef = useRef(true);
   const [phase, setPhase] = useState<Phase>("setup");
   useFinishApplause(phase === "finish");
@@ -120,14 +127,39 @@ function Jumanji() {
   const { countdownValue, countdownVisible, runStartCountdown } =
     useGameStartCountdown();
   const hasGeminiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY?.trim());
+  const tiles = useMemo(() => createTiles(questions.length), [questions.length]);
+  const roadPoints = useMemo(() => createRoadPoints(tiles.length), [tiles.length]);
+  const specialTileIndexes = useMemo(
+    () =>
+      new Set(
+        tiles
+          .map((tile, idx) =>
+            tile.type === "bonus" || tile.type === "trap" || tile.type === "challenge"
+              ? idx
+              : null,
+          )
+          .filter((idx): idx is number => idx !== null),
+      ),
+    [tiles],
+  );
 
   useEffect(() => {
+    if (isUserLoading) return;
+
     let alive = true;
     (async () => {
-      const remoteQuestions = await fetchGameQuestions<Question>(JUMANJI_GAME_KEY);
+      if (!user?.id) {
+        setQuestions(DEFAULT_QUESTIONS);
+        setRemoteLoaded(true);
+        return;
+      }
+
+      const remoteQuestions = await fetchGameQuestionsByTeacher<Question>(JUMANJI_GAME_KEY, user.id);
       if (!alive) return;
       if (remoteQuestions && remoteQuestions.length > 0) {
         setQuestions(remoteQuestions);
+      } else {
+        setQuestions(DEFAULT_QUESTIONS);
       }
       setRemoteLoaded(true);
     })();
@@ -135,7 +167,7 @@ function Jumanji() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [isUserLoading, user?.id]);
 
   useEffect(() => {
     if (!remoteLoaded) return;
@@ -145,11 +177,12 @@ function Jumanji() {
     }
 
     const timer = window.setTimeout(() => {
-      void saveGameQuestions<Question>(JUMANJI_GAME_KEY, questions);
+      if (!user?.id) return;
+      void saveGameQuestions<Question>(JUMANJI_GAME_KEY, questions, user.id);
     }, 500);
 
     return () => window.clearTimeout(timer);
-  }, [questions, remoteLoaded]);
+  }, [questions, remoteLoaded, user?.id]);
 
   useEffect(() => {
     diceAudioRef.current = new Audio(diceSound);
@@ -199,22 +232,6 @@ function Jumanji() {
     return () => clearTimeout(timer);
   }, [gameTime, isTimerActive, phase]);
 
-  // Question timer
-  useEffect(() => {
-    if (phase !== "question" || !currentQuestion || showResult) return;
-
-    if (timeLeft <= 0) {
-      handleTimeout();
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [timeLeft, phase, currentQuestion, showResult]);
-
   // Toast messages
   const showToastMessage = (message: string) => {
     setToast(message);
@@ -237,7 +254,7 @@ function Jumanji() {
   };
 
   // Play sound
-  const playSound = (type: "dice" | "correct" | "wrong" | "win") => {
+  const playSound = useCallback((type: "dice" | "correct" | "wrong" | "win") => {
     if (isMuted) return;
 
     const audioMap = {
@@ -252,7 +269,7 @@ function Jumanji() {
       audio.currentTime = 0;
       audio.play().catch(() => {});
     }
-  };
+  }, [isMuted]);
 
   // Add team
   const addTeam = () => {
@@ -486,7 +503,24 @@ function Jumanji() {
     );
   };
 
-  const moveTeamByDelta = (
+  // Finish game
+  const finishGame = useCallback((winningTeam?: Team) => {
+    setIsTimerActive(false);
+    playSound("win");
+    setShowConfetti(true);
+
+    if (winningTeam) {
+      setWinner(winningTeam);
+    } else {
+      // Find winner by score
+      const sorted = [...teams].sort((a, b) => b.score - a.score);
+      setWinner(sorted[0]);
+    }
+
+    setPhase("finish");
+  }, [playSound, teams]);
+
+  const moveTeamByDelta = useCallback((
     currentTeam: Team,
     delta: number,
     historyEntry: string,
@@ -530,7 +564,7 @@ function Jumanji() {
       },
       Math.max(1, totalSteps) * stepDuration + MOVE_FINISH_BUFFER_MS,
     );
-  };
+  }, [finishGame, tiles.length]);
 
   // Handle tile action
   const handleTileAction = (tile: Tile) => {
@@ -622,26 +656,6 @@ function Jumanji() {
     setPhase("question");
   };
 
-  // Handle timeout
-  const handleTimeout = () => {
-    const currentTeam = teams[currentTeamIndex];
-    const backSteps = 3;
-
-    playSound("wrong");
-    setShowResult(true);
-    setIsCorrect(false);
-
-    setTimeout(() => {
-      resetQuestionState();
-      moveTeamByDelta(
-        currentTeam,
-        -backSteps,
-        `${currentTeam.name} vaqtida javob bermadi: -${backSteps} qadam`,
-        advanceTurn,
-      );
-    }, 1200);
-  };
-
   // Handle answer
   const handleAnswer = (answer: string) => {
     if (!currentQuestion) return;
@@ -686,7 +700,7 @@ function Jumanji() {
     }, 2000);
   };
 
-  const resetQuestionState = () => {
+  const resetQuestionState = useCallback(() => {
     setPhase("game");
     setCurrentTile(null);
     setCurrentQuestion(null);
@@ -694,36 +708,61 @@ function Jumanji() {
     setShowResult(false);
     setScoreAnnouncement(null);
     setTimeLeft(30);
-  };
+  }, []);
 
-  const advanceTurn = () => {
+  const advanceTurn = useCallback(() => {
     const nextIndex = (currentTeamIndex + 1) % teams.length;
     setCurrentTeamIndex(nextIndex);
     setTeams((prev) =>
       prev.map((t, i) => ({ ...t, isActive: i === nextIndex })),
     );
     resetQuestionState();
-  };
+  }, [currentTeamIndex, resetQuestionState, teams.length]);
 
-  // Finish game
-  const finishGame = (winningTeam?: Team) => {
-    setIsTimerActive(false);
-    playSound("win");
-    setShowConfetti(true);
+  // Question timer
+  useEffect(() => {
+    if (phase !== "question" || !currentQuestion || showResult) return;
 
-    if (winningTeam) {
-      setWinner(winningTeam);
-    } else {
-      // Find winner by score
-      const sorted = [...teams].sort((a, b) => b.score - a.score);
-      setWinner(sorted[0]);
+    if (timeLeft <= 0) {
+      const currentTeam = teams[currentTeamIndex];
+      const backSteps = 3;
+
+      playSound("wrong");
+      setShowResult(true);
+      setIsCorrect(false);
+
+      setTimeout(() => {
+        resetQuestionState();
+        moveTeamByDelta(
+          currentTeam,
+          -backSteps,
+          `${currentTeam.name} vaqtida javob bermadi: -${backSteps} qadam`,
+          advanceTurn,
+        );
+      }, 1200);
+      return;
     }
 
-    setPhase("finish");
-  };
+    const timer = setTimeout(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [
+    advanceTurn,
+    currentQuestion,
+    currentTeamIndex,
+    moveTeamByDelta,
+    phase,
+    playSound,
+    resetQuestionState,
+    showResult,
+    teams,
+    timeLeft,
+  ]);
 
   // Reset game
-  const resetGame = () => {
+  const resetGame = useCallback(() => {
     setPhase("setup");
     setTeams([]);
     setCurrentTeamIndex(0);
@@ -741,28 +780,12 @@ function Jumanji() {
     setIsTimerActive(false);
     setWinner(null);
     setScoreAnnouncement(null);
-  };
+  }, []);
 
   // Toggle mute
-  const toggleMute = () => {
+  const toggleMute = useCallback(() => {
     setIsMuted(!isMuted);
-  };
-
-  const tiles = useMemo(() => createTiles(questions.length), [questions.length]);
-  const roadPoints = useMemo(() => createRoadPoints(tiles.length), [tiles.length]);
-  const specialTileIndexes = useMemo(
-    () =>
-      new Set(
-        tiles
-          .map((tile, idx) =>
-            tile.type === "bonus" || tile.type === "trap" || tile.type === "challenge"
-              ? idx
-              : null,
-          )
-          .filter((idx): idx is number => idx !== null),
-      ),
-    [tiles],
-  );
+  }, [isMuted]);
 
   const getDisplayPosition = (team: Team) => {
     const rawPosition = visualPositions[team.id] ?? team.position;
@@ -1105,7 +1128,7 @@ function Jumanji() {
                     onChange={(e) =>
                       setNewQuestion({
                         ...newQuestion,
-                        difficulty: e.target.value as any,
+                        difficulty: e.target.value as Question["difficulty"],
                       })
                     }
                     className="px-3 py-2 rounded-xl border border-amber-500/30 bg-amber-950/30 text-white"
@@ -1733,4 +1756,3 @@ function Jumanji() {
 }
 
 export default Jumanji;
-

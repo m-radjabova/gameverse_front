@@ -7,9 +7,9 @@ import { Euler, Vector3 } from "three";
 
 const moveVector = new Vector3();
 const worldPosition = new Vector3();
-const zooBoundsX = 18.6;
-const zooBoundsZMin = -18.6;
-const zooBoundsZMax = 18.6;
+const zooBoundsX = 25;
+const zooBoundsZMin = -25;
+const zooBoundsZMax = 25;
 const maxPitch = Math.PI / 2.8;
 
 type UseXRMovementParams = {

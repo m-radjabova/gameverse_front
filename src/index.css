@@ -42,6 +42,9 @@
   --home-shadow-soft: rgba(120, 207, 238, 0.18);
   --home-shadow-card: rgba(98, 149, 198, 0.16);
   --home-shadow-card-soft: rgba(110, 176, 215, 0.14);
+  --home-accent-secondary: #a855f7;
+  --home-section-games-bg-start: #f8fcff;
+  --home-section-games-bg-end: #fff4e8;
 }
 
 [data-home-theme="dark"] {
@@ -56,10 +59,13 @@
   --home-accent-strong: #ffd15d;
   --home-accent-soft: #7fd3ef;
   --home-accent-gradient: linear-gradient(90deg, #59b9e6 0%, #7fd3ef 52%, #ffd15d 100%);
+  --home-accent-secondary: #8b5cf6;
 
   --home-section-hero-bg: #0f172a;
   --home-section-trial-bg: linear-gradient(180deg, #0f172a 0%, #141c31 52%, #111827 100%);
   --home-section-games-bg: linear-gradient(135deg, #111827 0%, #0f172a 48%, #131a2d 100%);
+  --home-section-games-bg-start: #111827;
+  --home-section-games-bg-end: #131a2d;
   --home-section-how-bg: linear-gradient(180deg, #111827 0%, #0f172a 55%, #131a2d 100%);
   --home-section-comments-bg: linear-gradient(135deg, #0a0a1a 0%, #111122 55%, #0f0f1f 100%);
 

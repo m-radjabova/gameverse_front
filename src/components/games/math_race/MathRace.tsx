@@ -15,7 +15,8 @@ import {
 } from "react-icons/fa";
 import { GiRaceCar, GiCheckeredFlag } from "react-icons/gi";
 import Confetti from "react-confetti-boom";
-import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import { fetchGameQuestionsByTeacher, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import useContextPro from "../../../hooks/useContextPro";
 import { generateMathRaceQuestions } from "./ai";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
@@ -46,6 +47,9 @@ const AI_DIFFICULTY_OPTIONS = [
 ] as const;
 
 export default function MathRace() {
+  const {
+    state: { user, isLoading: isUserLoading },
+  } = useContextPro();
   const skipInitialRemoteSaveRef = useRef(true);
   const [phase, setPhase] = useState<Phase>("teacher");
   useFinishApplause(phase === "finish");
@@ -104,12 +108,22 @@ export default function MathRace() {
   const hasGeminiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY?.trim());
 
   useEffect(() => {
+    if (isUserLoading) return;
+
     let alive = true;
     (async () => {
-      const remoteQuestions = await fetchGameQuestions<MathQuestion>(MATH_RACE_GAME_KEY);
+      if (!user?.id) {
+        setQuestions(DEFAULT_QUESTIONS);
+        setRemoteLoaded(true);
+        return;
+      }
+
+      const remoteQuestions = await fetchGameQuestionsByTeacher<MathQuestion>(MATH_RACE_GAME_KEY, user.id);
       if (!alive) return;
       if (remoteQuestions && remoteQuestions.length > 0) {
         setQuestions(remoteQuestions);
+      } else {
+        setQuestions(DEFAULT_QUESTIONS);
       }
       setRemoteLoaded(true);
     })();
@@ -117,7 +131,7 @@ export default function MathRace() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [isUserLoading, user?.id]);
 
   useEffect(() => {
     if (!remoteLoaded) return;
@@ -127,11 +141,12 @@ export default function MathRace() {
     }
 
     const timer = window.setTimeout(() => {
-      void saveGameQuestions<MathQuestion>(MATH_RACE_GAME_KEY, questions);
+      if (!user?.id) return;
+      void saveGameQuestions<MathQuestion>(MATH_RACE_GAME_KEY, questions, user.id);
     }, 500);
 
     return () => window.clearTimeout(timer);
-  }, [questions, remoteLoaded]);
+  }, [questions, remoteLoaded, user?.id]);
 
   useEffect(() => {
     if (phase !== "play" || !trackRef.current) return;
@@ -330,12 +345,13 @@ export default function MathRace() {
         difficulty: aiDifficulty,
         gradeRange: aiGradeRange,
       });
-      setQuestions(
-        generated.map((item, index) => ({
+      setQuestions((prev) => [
+        ...prev,
+        ...generated.map((item, index) => ({
           ...item,
           id: `ai-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 7)}`,
         })),
-      );
+      ]);
       showToast(`${generated.length} ta AI misol yuklandi`);
     } catch (error) {
       const message = error instanceof Error ? error.message : "AI misollar yaratib bo'lmadi.";

@@ -33,6 +33,14 @@ export default function GameShowcaseCard({
   const Icon = game.mainIcon;
   const CategoryIcon = game.categoryIcon;
   const LevelIcon = game.levelIcon;
+  const openGame = () => {
+    if ("externalUrl" in game && typeof game.externalUrl === "string") {
+      window.location.href = game.externalUrl;
+      return;
+    }
+
+    onOpen(game.path);
+  };
 
   return (
     <article className="group relative h-full">
@@ -150,7 +158,7 @@ export default function GameShowcaseCard({
 
           <button
             type="button"
-            onClick={() => onOpen(game.path)}
+            onClick={openGame}
             className={`group/btn relative mt-auto w-full overflow-hidden rounded-2xl bg-gradient-to-r ${game.gradient} p-3.5 text-sm font-bold text-white shadow-lg transition-all duration-300 sm:hover:-translate-y-1`}
           >
             <span className="absolute inset-0 translate-y-full bg-white/20 transition-transform duration-300 group-hover/btn:translate-y-0" />

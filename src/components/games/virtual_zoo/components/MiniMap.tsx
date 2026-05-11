@@ -1,6 +1,8 @@
 import { RoundedBox, Text } from "@react-three/drei";
 import type { ZooAnimal } from "../types";
 
+const mapRange = 23.6;
+
 type MiniMapProps = {
   animals: ZooAnimal[];
   discoveredIds: string[];
@@ -51,8 +53,8 @@ export default function MiniMap({
       {animals.map((animal) => {
         const isDiscovered = discoveredIds.includes(animal.id);
         const isFocused = focusedAnimalId === animal.id;
-        const x = (animal.position[0] / 18) * 0.38;
-        const y = (-animal.position[2] / 18) * 0.22;
+        const x = (animal.position[0] / mapRange) * 0.38;
+        const y = (-animal.position[2] / mapRange) * 0.22;
 
         return (
           <group key={animal.id} position={[x, y, 0.08]}>

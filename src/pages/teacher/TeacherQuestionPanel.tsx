@@ -1311,7 +1311,7 @@ export default function TeacherQuestionPanel() {
                     }}
                     className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium transition-all ${
                       selectedIndex === null
-                        ? "border-[var(--panel-accent)] bg-[var(--panel-accent-gradient)] text-white shadow-md"
+                        ? "border-[var(--panel-accent)] bg-[image:var(--panel-accent-gradient)] text-[#203572] shadow-md"
                         : "border-[var(--panel-border)] bg-[var(--panel-surface-strong)] text-[var(--panel-text)] hover:border-[var(--panel-accent)]"
                     }`}
                   >

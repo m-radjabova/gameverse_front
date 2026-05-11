@@ -16,7 +16,8 @@ import {
 } from "react-icons/fa";
 import { GiSwapBag } from "react-icons/gi";
 import Confetti from "react-confetti-boom";
-import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import { fetchGameQuestionsByTeacher, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import useContextPro from "../../../hooks/useContextPro";
 import { generateBaamboozleQuestions } from "./ai";
 import { DEFAULT_QUESTION_BANK } from "./data";
 import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
@@ -117,6 +118,9 @@ interface BaamboozleProps {
 }
 
 const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
+  const {
+    state: { user, isLoading: isUserLoading },
+  } = useContextPro();
   const skipInitialRemoteSaveRef = useRef(true);
   const initialQuestionsRef = useRef<QuestionBankItem[]>(initialQuestions ?? []);
   const [phase, setPhase] = useState<Phase>("setup");
@@ -166,14 +170,26 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
   }, [gameFinished]);
 
   useEffect(() => {
+    if (isUserLoading) return;
+
     let alive = true;
     (async () => {
-      const remoteQuestions = await fetchGameQuestions<QuestionBankItem>(BAAMBOOZLE_GAME_KEY);
+      if (!user?.id) {
+        if (initialQuestionsRef.current.length > 0) {
+          setQuestionBank(initialQuestionsRef.current);
+        }
+        setRemoteLoaded(true);
+        return;
+      }
+
+      const remoteQuestions = await fetchGameQuestionsByTeacher<QuestionBankItem>(BAAMBOOZLE_GAME_KEY, user.id);
       if (!alive) return;
       if (remoteQuestions && remoteQuestions.length > 0) {
         setQuestionBank(remoteQuestions);
       } else if (initialQuestionsRef.current.length > 0) {
         setQuestionBank(initialQuestionsRef.current);
+      } else {
+        setQuestionBank([]);
       }
       setRemoteLoaded(true);
     })();
@@ -181,7 +197,7 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [isUserLoading, user?.id]);
 
   useEffect(() => {
     if (!remoteLoaded) return;
@@ -191,11 +207,12 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
     }
 
     const timer = window.setTimeout(() => {
-      void saveGameQuestions<QuestionBankItem>(BAAMBOOZLE_GAME_KEY, questionBank);
+      if (!user?.id) return;
+      void saveGameQuestions<QuestionBankItem>(BAAMBOOZLE_GAME_KEY, questionBank, user.id);
     }, 500);
 
     return () => window.clearTimeout(timer);
-  }, [questionBank, remoteLoaded]);
+  }, [questionBank, remoteLoaded, user?.id]);
 
   const addQuestion = () => {
     const question = draft.question.trim();
@@ -591,7 +608,7 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
                     </button>
                   </div>
                   <p className="mt-3 text-xs text-cyan-200/80">
-                    Avval mavzu, keyin fan va kerak bo'lsa sinf oralig'ini tanlang. AI yaratgan savollar hozirgi Baamboozle savollariga qo'shiladi.
+                    Avval mavzu, keyin fan va kerak bo'lsa sinf oralig'ini tanlang. AI yaratgan savollar Baamboozle ro'yxatiga qo'shiladi.
                   </p>
                 </div>
 

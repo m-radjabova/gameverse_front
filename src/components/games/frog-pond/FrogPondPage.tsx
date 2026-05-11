@@ -12,7 +12,7 @@ import pondBackground from './images/pond_frog_bg.png'
 import frogPondMusic from './Children_s_Music_Children_s_Music_Happy_Upbeat_Music_Instrume.m4a'
 import useContextPro from '../../../hooks/useContextPro'
 import { useGameResultSubmission } from '../../../hooks/useGameResultSubmission'
-import { fetchGameQuestions, fetchGameQuestionsByTeacher } from '../../../hooks/useGameQuestions'
+import { fetchGameQuestionsByTeacher } from '../../../hooks/useGameQuestions'
 
 type GameStatus = 'idle' | 'question' | 'jumping' | 'sinking' | 'feedback' | 'won' | 'lost'
 type GameMode = 'solo' | 'team' | 'ai'
@@ -575,7 +575,7 @@ function EndOverlay({
 export default function FrogPondPage({ onBack }: { onBack?: () => void }) {
   const navigate = useNavigate()
   const {
-    state: { user },
+    state: { user, isLoading: isUserLoading },
   } = useContextPro()
   const pageRef = useRef<HTMLElement | null>(null)
   const autoFullscreenTriedRef = useRef(false)
@@ -680,23 +680,26 @@ export default function FrogPondPage({ onBack }: { onBack?: () => void }) {
   }, [stageIndex, teacherQuestions])
 
   useEffect(() => {
-    let alive = true
-    const teacherScoped = Boolean(
-      user?.id && user.roles?.some((role: string) => role === 'teacher' || role === 'admin'),
-    )
+    if (isUserLoading) return
 
-    void (teacherScoped && user?.id
-      ? fetchGameQuestionsByTeacher<FrogPondTeacherQuestion>('frog-pond', user.id)
-      : fetchGameQuestions<FrogPondTeacherQuestion>('frog-pond')
-    ).then((items) => {
-      if (!alive || !items?.length) return
-      setTeacherQuestions(items)
+    let alive = true
+
+    if (!user?.id) {
+      setTeacherQuestions([])
+      return () => {
+        alive = false
+      }
+    }
+
+    void fetchGameQuestionsByTeacher<FrogPondTeacherQuestion>('frog-pond', user.id).then((items) => {
+      if (!alive) return
+      setTeacherQuestions(items ?? [])
     })
 
     return () => {
       alive = false
     }
-  }, [user?.id, user?.roles])
+  }, [isUserLoading, user?.id])
 
   useEffect(() => {
     if (typeof window === 'undefined') return

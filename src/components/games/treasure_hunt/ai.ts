@@ -1,5 +1,6 @@
 import { generateGeminiJson, type GameDifficulty } from "../../../apiClient/gemini";
 import { getGradeRangeInstruction, getGradeRangeLabel, type GradeRange } from "../../../utils/aiGeneration";
+import { TREASURE_RIDDLES } from "./data/riddles";
 import type { Riddle } from "./types";
 
 type TreasureHuntGeneratedRiddle = Omit<Riddle, "id">;
@@ -77,6 +78,55 @@ function toValidatedRiddles(payload: unknown, expectedCount: number): TreasureHu
   return riddles.slice(0, expectedCount);
 }
 
+function normalizeTreasureHuntPayload(payload: unknown, expectedCount: number): unknown {
+  if (expectedCount === 1) {
+    if (Array.isArray(payload)) {
+      if (payload.length === 0) {
+        throw new Error("AI savol qaytarmadi.");
+      }
+
+      return payload[0];
+    }
+
+    return payload;
+  }
+
+  if (!Array.isArray(payload)) {
+    throw new Error("AI javobi ro'yxat formatida kelmadi. Qayta urinib ko'ring.");
+  }
+
+  return payload;
+}
+
+function buildLocalFallbackRiddles(count: number): TreasureHuntGeneratedRiddle[] {
+  const pool = [...TREASURE_RIDDLES];
+
+  if (pool.length === 0) {
+    return Array.from({ length: count }, () => ({
+      title: "Xazina topildi",
+      story: "Qadimiy xarita sizni navbatdagi bekatga boshlaydi.",
+      question: "Qaysi javob to'g'ri?",
+      options: ["A", "B", "C", "D"] as [string, string, string, string],
+      answerIndex: 0,
+      hint: "To'g'ri javobni ehtiyotkorlik bilan tanlang.",
+      reward: 120,
+    }));
+  }
+
+  return Array.from({ length: count }, (_, index) => {
+    const source = pool[index % pool.length];
+    return {
+      title: source.title,
+      story: source.story,
+      question: source.question,
+      options: [...source.options] as [string, string, string, string],
+      answerIndex: source.answerIndex,
+      hint: source.hint,
+      reward: source.reward,
+    };
+  });
+}
+
 export async function generateTreasureHuntRiddle(topic?: string): Promise<TreasureHuntGeneratedRiddle> {
   const theme = topic?.trim() || "general knowledge";
   const [riddle] = await generateTreasureHuntRiddles({ topic: theme, count: 1 });
@@ -99,6 +149,17 @@ export async function generateTreasureHuntRiddles({
   const safeDifficulty = difficulty ?? "medium";
   const safeGradeRange = gradeRange ?? "none";
   const prompt = buildTreasureHuntPrompt(theme, safeCount, safeDifficulty, safeGradeRange);
-  const parsed = await generateGeminiJson(prompt);
-  return safeCount === 1 ? [toValidatedRiddle(parsed)] : toValidatedRiddles(parsed, safeCount);
+  try {
+    const parsed = await generateGeminiJson(prompt);
+    const normalized = normalizeTreasureHuntPayload(parsed, safeCount);
+    const generated = safeCount === 1 ? [toValidatedRiddle(normalized)] : toValidatedRiddles(normalized, safeCount);
+
+    if (generated.length >= safeCount) {
+      return generated;
+    }
+  } catch {
+    // Fall back to local questions below.
+  }
+
+  return buildLocalFallbackRiddles(safeCount);
 }

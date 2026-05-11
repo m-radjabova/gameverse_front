@@ -43,6 +43,69 @@ function extractJsonBlock(rawText: string): string {
   return match?.[1]?.trim() ?? trimmed;
 }
 
+function extractBalancedJsonSubstring(rawText: string): string | null {
+  const text = rawText.trim();
+  const objectIndex = text.indexOf("{");
+  const arrayIndex = text.indexOf("[");
+  const startIndex =
+    objectIndex < 0 ? arrayIndex : arrayIndex < 0 ? objectIndex : Math.min(objectIndex, arrayIndex);
+
+  if (startIndex < 0) {
+    return null;
+  }
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  let startChar = "";
+
+  for (let index = startIndex; index < text.length; index += 1) {
+    const char = text[index];
+
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+
+      if (char === "\\") {
+        escaped = true;
+        continue;
+      }
+
+      if (char === '"') {
+        inString = false;
+      }
+
+      continue;
+    }
+
+    if (char === '"') {
+      inString = true;
+      continue;
+    }
+
+    if (char === "{" || char === "[") {
+      if (depth === 0) {
+        startChar = char;
+      }
+
+      depth += 1;
+      continue;
+    }
+
+    if (char === "}" || char === "]") {
+      depth -= 1;
+
+      if (depth === 0 && startChar) {
+        return text.slice(startIndex, index + 1).trim();
+      }
+    }
+  }
+
+  return null;
+}
+
 const normalizeModelName = (name: string) => name.replace(/^models\//, "");
 
 async function getAvailableGenerateModels(apiKey: string): Promise<string[]> {
@@ -133,6 +196,16 @@ export async function generateGeminiJson(prompt: string): Promise<unknown> {
   try {
     return JSON.parse(jsonText);
   } catch {
+    const fallbackJson = extractBalancedJsonSubstring(text);
+
+    if (fallbackJson) {
+      try {
+        return JSON.parse(fallbackJson);
+      } catch {
+        // fall through to the user-facing error below
+      }
+    }
+
     throw new Error("AI javobi JSON emas. Qayta urinib ko'ring.");
   }
 }

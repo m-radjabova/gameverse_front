@@ -156,9 +156,9 @@ function SolarLights() {
   return (
     <>
       <ambientLight intensity={0.12} />
-      <hemisphereLight args={["#6f94c7", "#02050d", 0.48]} />
-      <directionalLight color="#b8ceff" intensity={0.22} position={[-120, 50, -150]} />
-      <directionalLight color="#ffd7a0" intensity={0.16} position={[120, 24, 110]} />
+      <hemisphereLight args={["#8fd0ff", "#02050d", 0.54]} />
+      <directionalLight color="#f2fbff" intensity={0.72} position={[-160, 70, -160]} />
+      <directionalLight color="#ffe1b8" intensity={0.16} position={[120, 30, 110]} />
     </>
   );
 }

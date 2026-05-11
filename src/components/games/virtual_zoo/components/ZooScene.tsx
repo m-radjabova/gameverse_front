@@ -4,6 +4,7 @@ import { XR, XROrigin } from "@react-three/xr";
 import type { Group } from "three";
 import { Vector3 } from "three";
 import AnimalZone from "./AnimalZone";
+import FlowerModel, { type FlowerVariant } from "./FlowerModel";
 import InfoPanel from "./InfoPanel";
 import StreetLightModel from "./StreetLightModel";
 import TreeModel, { type TreeVariant } from "./TreeModel";
@@ -23,6 +24,29 @@ type ZooSceneProps = {
 };
 
 type SceneContentProps = Omit<ZooSceneProps, "store">;
+
+const zooLayoutScale = 1.22;
+
+function scaleValue(value: number) {
+  return value * zooLayoutScale;
+}
+
+function scalePosition(position: [number, number, number]): [number, number, number] {
+  return [scaleValue(position[0]), scaleValue(position[1]), scaleValue(position[2])];
+}
+
+function scaleSegment(
+  segment: [number, number, number, number, number, number],
+): [number, number, number, number, number, number] {
+  return [
+    scaleValue(segment[0]),
+    scaleValue(segment[1]),
+    scaleValue(segment[2]),
+    scaleValue(segment[3]),
+    scaleValue(segment[4]),
+    scaleValue(segment[5]),
+  ];
+}
 
 const pathSegments: Array<[number, number, number, number, number, number]> = [
   [0, 0.01, 10, 3.2, 0.04, 12],
@@ -100,6 +124,83 @@ const grassTufts: Array<[number, number, number, number]> = [
   [11.6, 0, -12.2, 0.9],
 ];
 
+const meadowTufts: Array<[number, number, number, number]> = [
+  [-8.9, 0, 8.8, 0.92],
+  [-6.8, 0, 7.1, 0.82],
+  [-4.4, 0, 6.2, 0.78],
+  [-2.3, 0, 8.4, 0.84],
+  [1.8, 0, 7.8, 0.76],
+  [4.2, 0, 6.4, 0.8],
+  [6.6, 0, 8.2, 0.88],
+  [8.7, 0, 6.8, 0.82],
+  [-9.4, 0, -6.8, 0.86],
+  [-6.6, 0, -8.8, 0.8],
+  [-3.8, 0, -7.2, 0.74],
+  [2.2, 0, -8.4, 0.78],
+  [5.2, 0, -6.9, 0.8],
+  [8.4, 0, -7.8, 0.84],
+];
+
+const flowerPlacements: Array<{
+  position: [number, number, number];
+  rotationY: number;
+  scale: number;
+  variant: FlowerVariant;
+}> = [
+  { position: [-10.8, 0, 6.6], rotationY: Math.PI * 0.2, scale: 0.92, variant: "grassPatch" },
+  { position: [-8.7, 0, 4.1], rotationY: -Math.PI * 0.12, scale: 0.78, variant: "flowerGroup" },
+  { position: [-6.2, 0, 8.0], rotationY: Math.PI * 0.34, scale: 0.72, variant: "roses" },
+  { position: [-3.8, 0, 5.2], rotationY: -Math.PI * 0.08, scale: 0.7, variant: "flower1" },
+  { position: [-1.2, 0, 7.2], rotationY: Math.PI * 0.14, scale: 0.74, variant: "tulip3" },
+  { position: [1.8, 0, 6.1], rotationY: -Math.PI * 0.28, scale: 0.85, variant: "grassPatch" },
+  { position: [4.3, 0, 4.0], rotationY: Math.PI * 0.08, scale: 0.8, variant: "flowerGroup" },
+  { position: [7.0, 0, 7.8], rotationY: -Math.PI * 0.18, scale: 0.68, variant: "roses" },
+  { position: [9.6, 0, 5.0], rotationY: Math.PI * 0.22, scale: 0.78, variant: "flower1" },
+  { position: [11.4, 0, 8.6], rotationY: -Math.PI * 0.1, scale: 0.88, variant: "tulip3" },
+  { position: [-9.0, 0, 1.9], rotationY: Math.PI * 0.1, scale: 0.66, variant: "flower1" },
+  { position: [-6.6, 0, 2.2], rotationY: -Math.PI * 0.24, scale: 0.58, variant: "tulip3" },
+  { position: [-3.0, 0, 1.4], rotationY: Math.PI * 0.18, scale: 0.62, variant: "roses" },
+  { position: [0.0, 0, 2.4], rotationY: -Math.PI * 0.06, scale: 0.68, variant: "flowerGroup" },
+  { position: [3.4, 0, 1.6], rotationY: Math.PI * 0.27, scale: 0.6, variant: "flower1" },
+  { position: [6.8, 0, 2.3], rotationY: -Math.PI * 0.14, scale: 0.64, variant: "tulip3" },
+  { position: [9.8, 0, 1.8], rotationY: Math.PI * 0.21, scale: 0.62, variant: "roses" },
+  { position: [-10.7, 0, -5.8], rotationY: Math.PI * 0.16, scale: 0.84, variant: "grassPatch" },
+  { position: [-7.6, 0, -8.2], rotationY: -Math.PI * 0.2, scale: 0.7, variant: "flowerGroup" },
+  { position: [-4.5, 0, -6.0], rotationY: Math.PI * 0.12, scale: 0.66, variant: "roses" },
+  { position: [0.0, 0, -7.8], rotationY: -Math.PI * 0.06, scale: 0.74, variant: "flower1" },
+  { position: [3.9, 0, -5.9], rotationY: Math.PI * 0.26, scale: 0.76, variant: "tulip3" },
+  { position: [7.1, 0, -7.7], rotationY: -Math.PI * 0.14, scale: 0.8, variant: "grassPatch" },
+  { position: [10.0, 0, -5.4], rotationY: Math.PI * 0.18, scale: 0.72, variant: "flowerGroup" },
+  { position: [-9.6, 0, -1.9], rotationY: -Math.PI * 0.08, scale: 0.6, variant: "roses" },
+  { position: [-6.1, 0, -2.8], rotationY: Math.PI * 0.22, scale: 0.62, variant: "flower1" },
+  { position: [-2.6, 0, -1.7], rotationY: -Math.PI * 0.16, scale: 0.58, variant: "tulip3" },
+  { position: [1.4, 0, -2.2], rotationY: Math.PI * 0.11, scale: 0.6, variant: "flowerGroup" },
+  { position: [5.0, 0, -1.8], rotationY: -Math.PI * 0.27, scale: 0.64, variant: "roses" },
+  { position: [8.2, 0, -2.5], rotationY: Math.PI * 0.15, scale: 0.6, variant: "flower1" },
+];
+
+const edgeFloraRows: Array<{
+  position: [number, number, number];
+  rotationY: number;
+  scale: number;
+  variant: FlowerVariant;
+}> = [
+  { position: [-14.0, 0, 12.4], rotationY: Math.PI * 0.1, scale: 0.7, variant: "grassPatch" },
+  { position: [-12.6, 0, 9.6], rotationY: -Math.PI * 0.2, scale: 0.58, variant: "flower1" },
+  { position: [-13.8, 0, 4.6], rotationY: Math.PI * 0.32, scale: 0.66, variant: "roses" },
+  { position: [-12.2, 0, -1.8], rotationY: -Math.PI * 0.16, scale: 0.62, variant: "tulip3" },
+  { position: [13.2, 0, 12.0], rotationY: -Math.PI * 0.08, scale: 0.72, variant: "grassPatch" },
+  { position: [12.4, 0, 8.8], rotationY: Math.PI * 0.18, scale: 0.6, variant: "flowerGroup" },
+  { position: [13.6, 0, 4.0], rotationY: -Math.PI * 0.12, scale: 0.66, variant: "roses" },
+  { position: [12.8, 0, -3.6], rotationY: Math.PI * 0.24, scale: 0.64, variant: "flower1" },
+  { position: [-14.4, 0, 0.9], rotationY: Math.PI * 0.12, scale: 0.58, variant: "flowerGroup" },
+  { position: [-13.1, 0, -6.2], rotationY: -Math.PI * 0.14, scale: 0.6, variant: "roses" },
+  { position: [-12.0, 0, -10.8], rotationY: Math.PI * 0.2, scale: 0.64, variant: "flower1" },
+  { position: [13.5, 0, 1.0], rotationY: -Math.PI * 0.18, scale: 0.58, variant: "tulip3" },
+  { position: [12.2, 0, -7.6], rotationY: Math.PI * 0.16, scale: 0.62, variant: "flowerGroup" },
+  { position: [13.7, 0, -11.1], rotationY: -Math.PI * 0.1, scale: 0.66, variant: "roses" },
+];
+
 const signPosts: Array<[number, number, number, string]> = [
   [-6.5, 0, 9.3, "Safari Way"],
   [6.5, 0, 9.3, "Tropical Trail"],
@@ -126,21 +227,19 @@ const centerShowcasePlanters: Array<[number, number, number, number, string]> = 
 ];
 
 function getApproachOffsets(animal: ZooAnimal): Array<[number, number]> {
-  const frontDistance =
-    animal.id === "elephant" ? 1.75 : animal.id === "giraffe" ? 1.95 : 1.65;
-  const diagonalDistance =
-    animal.id === "elephant" ? 1.45 : animal.id === "giraffe" ? 1.6 : 1.35;
-  const sideDistance = animal.id === "giraffe" ? 1.55 : 1.4;
+  const sideX = animal.position[0] < 0 ? 2.4 : animal.position[0] > 0 ? -2.4 : 0;
+  const sideZ = animal.position[2] < 0 ? 2.1 : animal.position[2] > 0 ? -2.1 : 0;
+  const forwardX = sideX !== 0 ? sideX * 0.74 : 0;
+  const forwardZ = sideZ !== 0 ? sideZ * 0.74 : 1.55;
+  const diagonalX = sideX !== 0 ? sideX * 0.88 : 1.15;
+  const diagonalZ = sideZ !== 0 ? sideZ * 0.55 : 1.1;
 
   return [
-    [0, frontDistance],
-    [diagonalDistance, frontDistance - 0.25],
-    [-diagonalDistance, frontDistance - 0.25],
-    [sideDistance, 0.55],
-    [-sideDistance, 0.55],
-    [0, -1.25],
-    [diagonalDistance, -0.95],
-    [-diagonalDistance, -0.95],
+    [sideX, sideZ],
+    [forwardX, forwardZ],
+    [diagonalX, diagonalZ],
+    [diagonalX, -diagonalZ],
+    [forwardX * 0.55, forwardZ * 0.62],
   ];
 }
 
@@ -288,6 +387,14 @@ function SceneContent({
   const [selectedAnimalId, setSelectedAnimalId] = useState<string | null>(null);
   const [autoMoveTarget, setAutoMoveTarget] = useState<[number, number, number] | null>(null);
   const [autoMoveAnimalId, setAutoMoveAnimalId] = useState<string | null>(null);
+  const scaledAnimals = useMemo(
+    () =>
+      animals.map((animal) => ({
+        ...animal,
+        position: scalePosition(animal.position),
+      })),
+    [animals],
+  );
   const { playerPosition } = useXRMovement({
     autoMoveTarget,
     onAutoMoveComplete: () => {
@@ -303,9 +410,9 @@ function SceneContent({
   });
 
   const { activeAnimalId } = useProximityTrigger({
-    animals,
+    animals: scaledAnimals,
     playerPosition,
-    threshold: 4.35,
+    threshold: 4.95,
     onEnterAnimal: (animal) => {
       setSelectedAnimalId(animal.id);
       onDiscoverAnimal(animal.id);
@@ -316,8 +423,8 @@ function SceneContent({
 
   const isNight = sceneMode === "night";
   const focusedAnimal = useMemo(
-    () => animals.find((animal) => animal.id === focusedAnimalId) ?? null,
-    [animals, focusedAnimalId],
+    () => scaledAnimals.find((animal) => animal.id === focusedAnimalId) ?? null,
+    [focusedAnimalId, scaledAnimals],
   );
   const panelStatusText =
     autoMoveAnimalId && focusedAnimalId === autoMoveAnimalId
@@ -380,68 +487,76 @@ function SceneContent({
           <meshStandardMaterial color={isNight ? "#2f4a2c" : "#557c46"} roughness={1} />
         </mesh>
 
-        {pathSegments.map(([x, y, z, width, height, depth], index) => (
+        {pathSegments.map((segment, index) => {
+          const [x, y, z, width, height, depth] = scaleSegment(segment);
+
+          return (
           <mesh key={index} receiveShadow position={[x, y, z]}>
             <boxGeometry args={[width, height, depth]} />
             <meshStandardMaterial color={isNight ? "#bca683" : "#e2d0ad"} roughness={0.95} />
           </mesh>
-        ))}
+          );
+        })}
 
-        {pathSegments.map(([x, , z, width, , depth], index) => (
+        {pathSegments.map((segment, index) => {
+          const [x, , z, width, , depth] = scaleSegment(segment);
+
+          return (
           <mesh key={`path-edge-${index}`} receiveShadow position={[x, 0.016, z]}>
             <boxGeometry args={[width + 0.32, 0.012, depth + 0.32]} />
             <meshStandardMaterial color="#b89c72" roughness={0.98} />
           </mesh>
-        ))}
+          );
+        })}
 
-        <mesh position={[0, 3.8, 18.3]}>
+        <mesh position={scalePosition([0, 3.8, 18.3])}>
           <boxGeometry args={[6.6, 0.26, 0.26]} />
           <meshStandardMaterial color="#73502e" roughness={0.9} />
         </mesh>
         {[-2.8, 2.8].map((x) => (
-          <mesh key={x} castShadow position={[x, 2.1, 18.3]}>
+          <mesh key={x} castShadow position={scalePosition([x, 2.1, 18.3])}>
             <boxGeometry args={[0.28, 3.6, 0.28]} />
             <meshStandardMaterial color="#7a5431" roughness={0.92} />
           </mesh>
         ))}
-        <mesh castShadow position={[0, 0.92, 18.36]}>
+        <mesh castShadow position={scalePosition([0, 0.92, 18.36])}>
           <boxGeometry args={[3.1, 1.7, 0.16]} />
           <meshStandardMaterial color="#8d6440" roughness={0.9} />
         </mesh>
-        <mesh castShadow position={[-1.64, 0.92, 18.36]}>
+        <mesh castShadow position={scalePosition([-1.64, 0.92, 18.36])}>
           <boxGeometry args={[0.14, 1.7, 0.2]} />
           <meshStandardMaterial color="#5b402c" roughness={0.94} />
         </mesh>
-        <mesh castShadow position={[1.64, 0.92, 18.36]}>
+        <mesh castShadow position={scalePosition([1.64, 0.92, 18.36])}>
           <boxGeometry args={[0.14, 1.7, 0.2]} />
           <meshStandardMaterial color="#5b402c" roughness={0.94} />
         </mesh>
-        <HedgeRow length={14} position={[-10.7, 0, 15.85]} />
-        <HedgeRow length={14} position={[10.7, 0, 15.85]} />
-        <HedgeRow length={39} position={[-19.3, 0, 0]} rotationY={Math.PI / 2} />
-        <HedgeRow length={39} position={[19.3, 0, 0]} rotationY={Math.PI / 2} />
-        <HedgeRow length={39} position={[0, 0, -19.25]} />
+        <HedgeRow length={scaleValue(14)} position={scalePosition([-10.7, 0, 15.85])} />
+        <HedgeRow length={scaleValue(14)} position={scalePosition([10.7, 0, 15.85])} />
+        <HedgeRow length={scaleValue(39)} position={scalePosition([-19.3, 0, 0])} rotationY={Math.PI / 2} />
+        <HedgeRow length={scaleValue(39)} position={scalePosition([19.3, 0, 0])} rotationY={Math.PI / 2} />
+        <HedgeRow length={scaleValue(39)} position={scalePosition([0, 0, -19.25])} />
 
-        <WallModel position={[-11.8, 0, 0.8]} rotationY={Math.PI * 0.18} scale={0.92} variant="fountain" />
-        <WallModel position={[0, 0, -13.7]} rotationY={Math.PI} scale={0.84} variant="fountain" />
+        <WallModel position={scalePosition([-11.8, 0, 0.8])} rotationY={Math.PI * 0.18} scale={0.92} variant="fountain" />
+        <WallModel position={scalePosition([0, 0, -13.7])} rotationY={Math.PI} scale={0.84} variant="fountain" />
 
-        <WallModel position={[-2.7, 0, 9.4]} rotationY={Math.PI} scale={1.02} variant="bench" />
-        <WallModel position={[2.7, 0, 9.4]} rotationY={Math.PI} scale={1.02} variant="bench" />
+        <WallModel position={scalePosition([-2.7, 0, 9.4])} rotationY={Math.PI} scale={1.02} variant="bench" />
+        <WallModel position={scalePosition([2.7, 0, 9.4])} rotationY={Math.PI} scale={1.02} variant="bench" />
 
         {lamps.map(({ position, rotationY, scale }, index) => (
           <group key={index}>
-            <StreetLightModel position={position} rotationY={rotationY} scale={scale} />
+            <StreetLightModel position={scalePosition(position)} rotationY={rotationY} scale={scale} />
             <pointLight
               color={isNight ? "#ffe8a6" : "#fff1b5"}
               distance={10}
               intensity={isNight ? 1.7 : 1.1}
-              position={[position[0], 3.28, position[2]]}
+              position={scalePosition([position[0], 3.28, position[2]])}
             />
           </group>
         ))}
 
         {shrubs.map((position, index) => (
-          <group key={index} position={position}>
+          <group key={index} position={scalePosition(position)}>
             <mesh castShadow position={[0, 0.3, 0]}>
               <sphereGeometry args={[0.56, 14, 14]} />
               <meshStandardMaterial color="#4f8b4a" roughness={0.96} />
@@ -456,7 +571,7 @@ function SceneContent({
         {decorativeTrees.map(({ position, rotationY, scale, variant }, index) => (
           <TreeModel
             key={index}
-            position={position}
+            position={scalePosition(position)}
             rotationY={rotationY}
             scale={scale}
             variant={variant}
@@ -466,7 +581,7 @@ function SceneContent({
         {centerShowcaseHedges.map(({ position, rotationY, scale }, index) => (
           <WallModel
             key={`showcase-hedge-${index}`}
-            position={position}
+            position={scalePosition(position)}
             rotationY={rotationY}
             scale={scale}
             variant="hedge"
@@ -474,39 +589,63 @@ function SceneContent({
         ))}
 
         {pathPlanters.map(([x, y, z, scale, color], index) => (
-          <Planter key={index} color={color} position={[x, y, z]} scale={scale} />
+          <Planter key={index} color={color} position={scalePosition([x, y, z])} scale={scale} />
         ))}
 
         {centerShowcasePlanters.map(([x, y, z, scale, color], index) => (
-          <Planter key={`showcase-planter-${index}`} color={color} position={[x, y, z]} scale={scale} />
+          <Planter key={`showcase-planter-${index}`} color={color} position={scalePosition([x, y, z])} scale={scale} />
         ))}
 
         {grassTufts.map(([x, y, z, scale], index) => (
-          <GrassTuft key={index} position={[x, y, z]} scale={scale} />
+          <GrassTuft key={index} position={scalePosition([x, y, z])} scale={scale} />
+        ))}
+
+        {meadowTufts.map(([x, y, z, scale], index) => (
+          <GrassTuft key={`meadow-${index}`} position={scalePosition([x, y, z])} scale={scale} />
+        ))}
+
+        {flowerPlacements.map(({ position, rotationY, scale, variant }, index) => (
+          <FlowerModel
+            key={`flower-${index}`}
+            position={scalePosition(position)}
+            rotationY={rotationY}
+            scale={scale}
+            variant={variant}
+          />
+        ))}
+
+        {edgeFloraRows.map(({ position, rotationY, scale, variant }, index) => (
+          <FlowerModel
+            key={`edge-flora-${index}`}
+            position={scalePosition(position)}
+            rotationY={rotationY}
+            scale={scale}
+            variant={variant}
+          />
         ))}
 
         {signPosts.map(([x, y, z, label], index) => (
-          <SignPost key={index} label={label} position={[x, y, z]} />
+          <SignPost key={index} label={label} position={scalePosition([x, y, z])} />
         ))}
 
-        <mesh castShadow position={[0, 4.65, 17.7]}>
+        <mesh castShadow position={scalePosition([0, 4.65, 17.7])}>
           <boxGeometry args={[4.5, 1.1, 0.18]} />
           <meshStandardMaterial color="#24452f" roughness={0.86} />
         </mesh>
-        <mesh castShadow position={[0, 4.65, 17.82]}>
+        <mesh castShadow position={scalePosition([0, 4.65, 17.82])}>
           <boxGeometry args={[3.7, 0.18, 0.05]} />
           <meshStandardMaterial color="#d9c48b" roughness={0.8} />
         </mesh>
-        <mesh castShadow position={[-1.65, 4.9, 17.82]}>
+        <mesh castShadow position={scalePosition([-1.65, 4.9, 17.82])}>
           <boxGeometry args={[0.16, 0.38, 0.05]} />
           <meshStandardMaterial color="#d9c48b" roughness={0.8} />
         </mesh>
-        <mesh castShadow position={[1.65, 4.9, 17.82]}>
+        <mesh castShadow position={scalePosition([1.65, 4.9, 17.82])}>
           <boxGeometry args={[0.16, 0.38, 0.05]} />
           <meshStandardMaterial color="#d9c48b" roughness={0.8} />
         </mesh>
 
-        {animals.map((animal) => (
+        {scaledAnimals.map((animal) => (
           <AnimalZone
             key={animal.id}
             active={focusedAnimalId === animal.id}

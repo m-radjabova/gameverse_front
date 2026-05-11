@@ -39,7 +39,8 @@ import { BsLightningChargeFill, BsFlower1, BsFlower2, BsFlower3 } from "react-ic
 import { RiHeart2Fill, RiHeart3Fill, RiStarSmileFill } from "react-icons/ri";
 import Confetti from "react-confetti-boom";
 
-import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import { fetchGameQuestionsByTeacher, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import useContextPro from "../../../hooks/useContextPro";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
@@ -79,6 +80,9 @@ const STUDENT_EMOJIS = [
 ];
 
 export default function WheelOfFortune() {
+  const {
+    state: { user, isLoading: isUserLoading },
+  } = useContextPro();
   const skipInitialRemoteSaveRef = useRef(true);
 
   const [phase, setPhase] = useState<Phase>("setup");
@@ -149,12 +153,22 @@ export default function WheelOfFortune() {
   }, [showWinnerOverlay]);
 
   useEffect(() => {
+    if (isUserLoading) return;
+
     let alive = true;
     (async () => {
-      const remoteQuestions = await fetchGameQuestions<Question>(WHEEL_OF_FORTUNE_GAME_KEY);
+      if (!user?.id) {
+        setQuestions(SAMPLE_QUESTIONS);
+        setRemoteLoaded(true);
+        return;
+      }
+
+      const remoteQuestions = await fetchGameQuestionsByTeacher<Question>(WHEEL_OF_FORTUNE_GAME_KEY, user.id);
       if (!alive) return;
       if (remoteQuestions && remoteQuestions.length > 0) {
         setQuestions(normalizeQuestions(remoteQuestions));
+      } else {
+        setQuestions(SAMPLE_QUESTIONS);
       }
       setRemoteLoaded(true);
     })();
@@ -162,7 +176,7 @@ export default function WheelOfFortune() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [isUserLoading, user?.id]);
 
   useEffect(() => {
     if (!remoteLoaded) return;
@@ -172,11 +186,12 @@ export default function WheelOfFortune() {
     }
 
     const t = window.setTimeout(() => {
-      void saveGameQuestions<Question>(WHEEL_OF_FORTUNE_GAME_KEY, questions);
+      if (!user?.id) return;
+      void saveGameQuestions<Question>(WHEEL_OF_FORTUNE_GAME_KEY, questions, user.id);
     }, 500);
 
     return () => window.clearTimeout(t);
-  }, [questions, remoteLoaded]);
+  }, [questions, remoteLoaded, user?.id]);
 
   useEffect(() => {
     return () => {

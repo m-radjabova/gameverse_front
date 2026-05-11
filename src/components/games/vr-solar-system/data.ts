@@ -147,7 +147,7 @@ export const solarSystemPlanets: SolarSystemPlanet[] = [
     ],
     visual: {
       accentColor: "#5ec7ff",
-      surfaceColors: ["#1f4f8b", "#4fa2ff", "#0f2747"],
+      surfaceColors: ["#1e6b9c", "#4cc0d6", "#154a7d"],
       textureVariant: "earth",
       cloudColor: "#ffffff",
       atmosphereColor: "#8fe5ff",

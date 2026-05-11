@@ -15,7 +15,8 @@ import {
   FaEdit,
   FaSave,
 } from "react-icons/fa";
-import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import { fetchGameQuestionsByTeacher, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import useContextPro from "../../../hooks/useContextPro";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { useGameParticipantMode } from "../../../hooks/useGameParticipantMode";
@@ -46,6 +47,9 @@ const createConfiguredTeams = (
 };
 
 function ReverseThinking() {
+  const {
+    state: { user, isLoading: isUserLoading },
+  } = useContextPro();
   const skipInitialRemoteSaveRef = useRef(true);
   const { isSinglePlayer, primaryName, secondaryName, modeLabel } = useGameParticipantMode({
     gameId: "reverse-thinking",
@@ -122,12 +126,22 @@ function ReverseThinking() {
   }, [isSinglePlayer, primaryName, secondaryName, phase]);
 
   useEffect(() => {
+    if (isUserLoading) return;
+
     let alive = true;
     (async () => {
-      const remoteQuestions = await fetchGameQuestions<Question>(REVERSE_THINKING_GAME_KEY);
+      if (!user?.id) {
+        setQuestions(MORE_QUESTIONS);
+        setRemoteLoaded(true);
+        return;
+      }
+
+      const remoteQuestions = await fetchGameQuestionsByTeacher<Question>(REVERSE_THINKING_GAME_KEY, user.id);
       if (!alive) return;
       if (remoteQuestions && remoteQuestions.length > 0) {
         setQuestions(remoteQuestions);
+      } else {
+        setQuestions(MORE_QUESTIONS);
       }
       setRemoteLoaded(true);
     })();
@@ -135,7 +149,7 @@ function ReverseThinking() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [isUserLoading, user?.id]);
 
   useEffect(() => {
     if (!remoteLoaded) return;
@@ -145,11 +159,12 @@ function ReverseThinking() {
     }
 
     const timer = window.setTimeout(() => {
-      void saveGameQuestions<Question>(REVERSE_THINKING_GAME_KEY, questions);
+      if (!user?.id) return;
+      void saveGameQuestions<Question>(REVERSE_THINKING_GAME_KEY, questions, user.id);
     }, 500);
 
     return () => window.clearTimeout(timer);
-  }, [questions, remoteLoaded]);
+  }, [questions, remoteLoaded, user?.id]);
 
   // Initialize audio
   useEffect(() => {
@@ -1066,5 +1081,4 @@ function ReverseThinking() {
 }
 
 export default ReverseThinking;
-
 

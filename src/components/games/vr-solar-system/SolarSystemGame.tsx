@@ -56,22 +56,23 @@ export default function SolarSystemGame() {
     <section className="relative h-[100dvh] min-h-[100dvh] w-full overflow-hidden rounded-[32px] bg-[radial-gradient(circle_at_top,_rgba(30,41,59,0.55),_transparent_28%),linear-gradient(135deg,_#02040a_0%,_#050b17_42%,_#010206_100%)]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_14%_18%,rgba(34,211,238,0.15),transparent_16%),radial-gradient(circle_at_84%_10%,rgba(56,189,248,0.12),transparent_20%),radial-gradient(circle_at_50%_100%,rgba(249,115,22,0.08),transparent_28%)]" />
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex justify-between gap-3 p-3 sm:p-4">
-        <div className="pointer-events-auto rounded-full border border-white/12 bg-slate-950/85 px-4 py-2 text-xs font-bold text-white shadow-[0_16px_40px_rgba(2,6,23,0.45)] backdrop-blur-2xl">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex justify-between gap-2 p-2 sm:gap-3 sm:p-4">
+        <div className="pointer-events-auto max-w-[calc(100%-74px)] rounded-full border border-white/12 bg-slate-950/85 px-3 py-2 text-[11px] font-bold text-white shadow-[0_16px_40px_rgba(2,6,23,0.45)] backdrop-blur-2xl sm:max-w-none sm:px-4 sm:text-xs">
           <span className="inline-flex items-center gap-2">
             <FaRocket className="text-cyan-300" />
-            Koinot sayohati: Quyosh tizimi
+            <span className="truncate">Koinot sayohati: Quyosh tizimi</span>
           </span>
         </div>
 
         <button
-          className="pointer-events-auto inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan-300 via-sky-300 to-blue-400 px-5 py-3 text-sm font-black text-slate-950 shadow-[0_18px_44px_rgba(34,211,238,0.34)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
+          className="pointer-events-auto inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-cyan-300 via-sky-300 to-blue-400 text-sm font-black text-slate-950 shadow-[0_18px_44px_rgba(34,211,238,0.34)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70 sm:h-auto sm:w-auto sm:gap-2 sm:px-5 sm:py-3"
           disabled={xrSupport.checked && !xrSupport.isVRSupported}
           onClick={enterVr}
           type="button"
+          title="VR rejimiga kirish"
         >
           <FaVrCardboard />
-          VR rejimiga kirish
+          <span className="hidden sm:inline">VR rejimiga kirish</span>
         </button>
       </div>
 

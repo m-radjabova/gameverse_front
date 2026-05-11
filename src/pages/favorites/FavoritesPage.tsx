@@ -8,28 +8,16 @@ import {
   subscribeFavoriteGames,
   toggleFavoriteGame,
 } from "../../utils/gameFavorites";
+import useHomeTheme from "../../hooks/useHomeTheme";
 
 export default function FavoritesPage() {
   const navigate = useNavigate();
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const isDarkMode = useHomeTheme();
 
   useEffect(() => {
     setFavoriteIds(getFavoriteGameIds());
     return subscribeFavoriteGames(setFavoriteIds);
-  }, []);
-
-  useEffect(() => {
-    const syncTheme = () => {
-      setIsDarkMode(window.localStorage.getItem("home-theme") === "dark");
-    };
-
-    syncTheme();
-    window.addEventListener("storage", syncTheme);
-
-    return () => {
-      window.removeEventListener("storage", syncTheme);
-    };
   }, []);
 
   const favoriteGames = useMemo(

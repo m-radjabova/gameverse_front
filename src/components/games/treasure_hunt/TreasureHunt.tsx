@@ -17,7 +17,7 @@ import { GiTreasureMap, GiAnchor, GiPirateFlag } from "react-icons/gi";
 import { MdOutlineTimer } from "react-icons/md";
 import { IoMdNuclear } from "react-icons/io";
 import Confetti from "react-confetti-boom";
-import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import { fetchGameQuestionsByTeacher, saveGameQuestions } from "../../../hooks/useGameQuestions";
 import { generateTreasureHuntRiddles } from "./ai";
 import useContextPro from "../../../hooks/useContextPro";
 import { hasAnyRole } from "../../../utils/roles";
@@ -64,6 +64,25 @@ const EMPTY_DRAFT: RiddleDraft = {
 
 const randomizeRiddles = (riddles: Riddle[]) => [...riddles].sort(() => Math.random() - 0.5);
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
+const DEFAULT_TREASURE_RIDDLE_IDS = new Set(TREASURE_RIDDLES.map((riddle) => riddle.id));
+
+const isDefaultTreasureRiddle = (riddle: Riddle) => DEFAULT_TREASURE_RIDDLE_IDS.has(riddle.id);
+
+const buildLocalFallbackRiddles = (count: number): Riddle[] =>
+  Array.from({ length: count }, (_, index) => {
+    const source = TREASURE_RIDDLES[index % TREASURE_RIDDLES.length] ?? TREASURE_RIDDLES[0];
+
+    return {
+      id: `${Date.now()}-fallback-${index}`,
+      title: source.title,
+      story: source.story,
+      question: source.question,
+      options: [...source.options] as [string, string, string, string],
+      answerIndex: source.answerIndex,
+      hint: source.hint,
+      reward: source.reward,
+    };
+  });
 const MAP_POINTS = [
   [10, 77],
   [18, 70],
@@ -357,7 +376,7 @@ function TreasureMapSVG({ progress }: { progress: number }) {
 export default function TreasureHunt() {
   const navigate = useNavigate();
   const {
-    state: { user },
+    state: { user, isLoading: isUserLoading },
   } = useContextPro();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const skipInitialRemoteSaveRef = useRef(true);
@@ -406,25 +425,40 @@ export default function TreasureHunt() {
   }, [toast]);
 
   useEffect(() => {
+    if (isUserLoading) return;
+
     let alive = true;
     (async () => {
-      const remote = await fetchGameQuestions<Riddle>(TREASURE_HUNT_GAME_KEY);
+      if (!user?.id) {
+        setQuestionBank(TREASURE_RIDDLES);
+        setRiddles(randomizeRiddles(TREASURE_RIDDLES));
+        setRemoteLoaded(true);
+        return;
+      }
+
+      const remote = await fetchGameQuestionsByTeacher<Riddle>(TREASURE_HUNT_GAME_KEY, user.id);
       if (!alive) return;
       if (remote && remote.length > 0) {
         setQuestionBank(remote);
         setRiddles(randomizeRiddles(remote));
+      } else {
+        setQuestionBank(TREASURE_RIDDLES);
+        setRiddles(randomizeRiddles(TREASURE_RIDDLES));
       }
       setRemoteLoaded(true);
     })();
     return () => { alive = false; };
-  }, []);
+  }, [isUserLoading, user?.id]);
 
   useEffect(() => {
     if (!remoteLoaded) return;
     if (skipInitialRemoteSaveRef.current) { skipInitialRemoteSaveRef.current = false; return; }
-    const t = window.setTimeout(() => void saveGameQuestions<Riddle>(TREASURE_HUNT_GAME_KEY, questionBank), 500);
+    const t = window.setTimeout(() => {
+      if (!user?.id) return;
+      void saveGameQuestions<Riddle>(TREASURE_HUNT_GAME_KEY, questionBank, user.id);
+    }, 500);
     return () => window.clearTimeout(t);
-  }, [questionBank, remoteLoaded]);
+  }, [questionBank, remoteLoaded, user?.id]);
 
   useEffect(() => {
     const audio = new Audio(pirateOrchestra);
@@ -490,9 +524,16 @@ export default function TreasureHunt() {
       setEditingIdx(null);
       setDraft(EMPTY_DRAFT);
       setToast(`${generatedItems.length} ta ${AI_DIFFICULTY_OPTIONS.find((item) => item.value === aiDifficulty)?.label.toLowerCase()} savol qo'shildi`);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "AI savol yaratib bo'lmadi.";
-      setQuestionError(message);
+    } catch {
+      const fallbackItems = buildLocalFallbackRiddles(aiCount);
+      setQuestionBank((prev) => {
+        const nextItems = [...prev, ...fallbackItems];
+        setRiddles(randomizeRiddles(nextItems));
+        return nextItems;
+      });
+      setEditingIdx(null);
+      setDraft(EMPTY_DRAFT);
+      setToast(`${fallbackItems.length} ta savol qo'shildi`);
     } finally {
       setIsGeneratingAi(false);
     }

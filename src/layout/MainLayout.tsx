@@ -18,11 +18,17 @@ export default function MainLayout() {
     };
 
     window.addEventListener("storage", syncTheme);
-    return () => window.removeEventListener("storage", syncTheme);
+    window.addEventListener("home-theme-change", syncTheme);
+
+    return () => {
+      window.removeEventListener("storage", syncTheme);
+      window.removeEventListener("home-theme-change", syncTheme);
+    };
   }, []);
 
   useEffect(() => {
     window.localStorage.setItem("home-theme", isDarkMode ? "dark" : "light");
+    window.dispatchEvent(new Event("home-theme-change"));
   }, [isDarkMode]);
 
   return (
