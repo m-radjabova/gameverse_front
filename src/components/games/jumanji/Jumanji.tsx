@@ -58,9 +58,6 @@ const AI_DIFFICULTY_OPTIONS = [
   { value: "mixed", label: "Aralash" },
 ] as const;
 const AI_SUBJECT_OPTIONS = ["Aralash fanlar", ...SUBJECTS] as const;
-const DEFAULT_QUESTION_IDS = new Set(DEFAULT_QUESTIONS.map((question) => question.id));
-
-const isDefaultQuestion = (question: Question) => DEFAULT_QUESTION_IDS.has(question.id);
 
 function Jumanji() {
   const {

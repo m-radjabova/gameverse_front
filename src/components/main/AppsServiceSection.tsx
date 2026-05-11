@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   FaArrowRight,
   FaPlay,
-  FaStar,
   FaHeart,
   FaRegHeart,
 } from "react-icons/fa";

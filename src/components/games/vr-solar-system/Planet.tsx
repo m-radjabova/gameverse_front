@@ -153,7 +153,10 @@ export function Planet({
               lastX: event.clientX,
               lastY: event.clientY,
             }
-            event.currentTarget.setPointerCapture(event.pointerId)
+            const pointerTarget = event.currentTarget as unknown as {
+              setPointerCapture?: (pointerId: number) => void
+            } | null
+            pointerTarget?.setPointerCapture?.(event.pointerId)
           }}
           onPointerMove={(event) => {
             const dragState = dragStateRef.current
@@ -179,7 +182,10 @@ export function Planet({
               dragStateRef.current.active = false
             }
 
-            event.currentTarget.releasePointerCapture(event.pointerId)
+            const pointerTarget = event.currentTarget as unknown as {
+              releasePointerCapture?: (pointerId: number) => void
+            } | null
+            pointerTarget?.releasePointerCapture?.(event.pointerId)
           }}
           onPointerOut={() => setHovered(false)}
           onPointerOver={(event) => {

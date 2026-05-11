@@ -64,9 +64,6 @@ const EMPTY_DRAFT: RiddleDraft = {
 
 const randomizeRiddles = (riddles: Riddle[]) => [...riddles].sort(() => Math.random() - 0.5);
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
-const DEFAULT_TREASURE_RIDDLE_IDS = new Set(TREASURE_RIDDLES.map((riddle) => riddle.id));
-
-const isDefaultTreasureRiddle = (riddle: Riddle) => DEFAULT_TREASURE_RIDDLE_IDS.has(riddle.id);
 
 const buildLocalFallbackRiddles = (count: number): Riddle[] =>
   Array.from({ length: count }, (_, index) => {
