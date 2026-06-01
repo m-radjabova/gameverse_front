@@ -226,6 +226,11 @@ export default function ClassicArcade() {
   };
 
   const addTeacherRound = () => {
+    if (!user?.id) {
+      setTeacherError("Iltimos, avval ro'yxatdan o'ting. Keyin savol qo'shishingiz mumkin.");
+      return;
+    }
+
     const prompt = draft.prompt.trim(); const options = draft.options.map((o) => o.trim()) as [string, string, string, string]; const reason = draft.reason.trim();
     if (!prompt) return setTeacherError("Savol kiriting.");
     if (options.some((o) => !o)) return setTeacherError("4 ta variant kiriting.");
@@ -262,6 +267,11 @@ export default function ClassicArcade() {
 
   const generateAiChallenges = async () => {
     if (isGeneratingAi) return;
+    if (!user?.id) {
+      setTeacherError("Iltimos, avval ro'yxatdan o'ting. Keyin AI bilan savol qo'shishingiz mumkin.");
+      return;
+    }
+
     setTeacherError("");
     setIsGeneratingAi(true);
 

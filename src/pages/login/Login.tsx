@@ -78,13 +78,14 @@ function LoginForm() {
       toast.success("Xush kelibsiz! 🎉");
     } catch (error: unknown) {
       const status = isAxiosError(error) ? error.response?.status : undefined;
+      const message = getErrorMessage(error);
 
       if (status === 401) {
-        toast.error("Email yoki parol noto'g'ri");
+        toast.error(message || "Email yoki parol noto'g'ri");
       } else if (status === 404) {
         toast.error("Akkaunt topilmadi");
       } else {
-        toast.error(getErrorMessage(error));
+        toast.error(message);
       }
     }
   };

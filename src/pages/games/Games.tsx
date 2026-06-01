@@ -471,7 +471,7 @@ function Games() {
                       }`}
                     >
                       {isLiked ? <FaHeart className="text-[12px]" /> : <FaRegHeart className="text-[12px]" />}
-                      {isLiked ? "Favourite" : "Like"}
+                      {/* {isLiked ? "Favourite" : "Like"} */}
                     </button>
 
                     {/* O'yin iconkasi - endi bu gradient ustida va ko'rinadi */}

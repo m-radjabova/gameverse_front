@@ -270,6 +270,11 @@ export default function WheelOfFortune() {
   };
 
   const beginEditQuestion = (question: Question) => {
+    if (!user?.id) {
+      setQuestionError("Iltimos, avval ro'yxatdan o'ting. Keyin savolni tahrirlashingiz mumkin.");
+      return;
+    }
+
     setEditingQuestionId(question.id);
     setQuestionText(question.question);
     setQuestionOptions([...question.options] as [string, string, string, string]);
@@ -280,6 +285,11 @@ export default function WheelOfFortune() {
   };
 
   const addQuestion = () => {
+    if (!user?.id) {
+      setQuestionError("Iltimos, avval ro'yxatdan o'ting. Keyin savol qo'shishingiz mumkin.");
+      return;
+    }
+
     const q = questionText.trim();
     const options = questionOptions.map((option) => option.trim()) as [string, string, string, string];
 

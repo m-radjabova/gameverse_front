@@ -1,7 +1,6 @@
 import { useEffect, useReducer, type Dispatch, type ReactNode } from "react";
 import { MyContext } from "../context/MyContext";
 import type { User } from "../types/types";
-import { useNavigate } from "react-router-dom";
 import { clearAuthStorage } from "../utils/auth";
 import { useMeQuery } from "./useProfile";
 
@@ -52,8 +51,6 @@ function reducer(state: TypeState, action: Action): TypeState {
 }
 
 function CreateContextPro({ children }: { children: ReactNode }) {
-  const navigate = useNavigate();
-
   const [state, dispatch] = useReducer(reducer, {
     user: null,
     isLoading: true,
@@ -80,16 +77,15 @@ function CreateContextPro({ children }: { children: ReactNode }) {
       clearAuthStorage();
       dispatch({ type: "SET_USER", payload: null });
       dispatch({ type: "SET_LOADING", payload: false });
-      navigate("/login");
     }
-  }, [hasToken, meQuery.data, meQuery.error, meQuery.isLoading, navigate]);
+  }, [hasToken, meQuery.data, meQuery.error, meQuery.isLoading]);
 
   // role redirect
   useEffect(() => {
     if (!state.user) return;
 
     if (state.user.roles?.includes("admin")) return;
-  }, [state.user, navigate]);
+  }, [state.user]);
 
   return <MyContext.Provider value={{ state, dispatch }}>{children}</MyContext.Provider>;
 }

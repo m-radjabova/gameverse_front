@@ -675,10 +675,7 @@ export default function MathChickGame() {
   const persistCustomProblems = useCallback(
     async (nextProblems: Problem[], successMessage: string) => {
       if (!hasAuth || !user?.id) {
-        setSavedProblems(nextProblems);
-        setCustomProblems(nextProblems);
-        customProblemsRef.current = nextProblems;
-        setTeacherMessage("Backendga saqlash uchun avval tizimga kiring.");
+        setTeacherMessage("Iltimos, avval ro'yxatdan o'ting. Keyin savol qo'shishingiz mumkin.");
         return false;
       }
 
@@ -755,6 +752,11 @@ export default function MathChickGame() {
   );
 
   const handleGenerateAiQuestions = useCallback(async () => {
+    if (!hasAuth || !user?.id) {
+      setTeacherMessage("Iltimos, avval ro'yxatdan o'ting. Keyin AI bilan savol qo'shishingiz mumkin.");
+      return;
+    }
+
     setTeacherMessage("");
     setIsGeneratingAi(true);
 
@@ -778,7 +780,7 @@ export default function MathChickGame() {
     } finally {
       setIsGeneratingAi(false);
     }
-  }, [aiCount, aiDifficulty, aiGradeRange, aiTopic, hasAuth, persistCustomProblems, savedProblems]);
+  }, [aiCount, aiDifficulty, aiGradeRange, aiTopic, hasAuth, persistCustomProblems, savedProblems, user?.id]);
 
   const handleAnswer = useCallback(
     (player: PlayerId, value: number) => {
@@ -1688,4 +1690,3 @@ export default function MathChickGame() {
     </div>
   );
 }
-

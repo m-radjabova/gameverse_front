@@ -24,6 +24,7 @@ import fish3 from "../../../assets/fish-removebg-preview.png";
 
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
+import useContextPro from "../../../hooks/useContextPro";
 
 type Phase = "teacher" | "play" | "finish";
 type FishVariant = 0 | 1 | 2;
@@ -229,6 +230,9 @@ const FishImage = ({ fish }: { fish: Fish }) => {
 };
 
 export default function OceanWordFishing() {
+  const {
+    state: { user },
+  } = useContextPro();
   const [phase, setPhase] = useState<Phase>("teacher");
   const [words, setWords] = useState<WordItem[]>([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -414,6 +418,11 @@ export default function OceanWordFishing() {
   }, [phase, isPlaying, timeLeft]);
 
   const addWord = () => {
+    if (!user?.id) {
+      setDraftError("Iltimos, avval ro'yxatdan o'ting. Keyin so'z qo'shishingiz mumkin.");
+      return;
+    }
+
     const word = normalizeWord(draftWord.trim());
     if (!word) return setDraftError("Faqat lotin harflari bilan so'z kiriting.");
     if (word.length < 3) return setDraftError("So'z kamida 3 harf bo'lishi kerak.");

@@ -314,6 +314,11 @@ export default function MathRace() {
 
   // Teacher actions
   const addQuestion = () => {
+    if (!user?.id) {
+      setDraftError("Iltimos, avval ro'yxatdan o'ting. Keyin savol qo'shishingiz mumkin.");
+      return;
+    }
+
     const question = draftQuestion.question.trim();
     const answer = parseInt(draftQuestion.answer);
     if (!question) return setDraftError("Savolni kiriting!");
@@ -335,6 +340,11 @@ export default function MathRace() {
 
   const generateAiQuestions = async () => {
     if (isGeneratingAi) return;
+    if (!user?.id) {
+      setDraftError("Iltimos, avval ro'yxatdan o'ting. Keyin AI bilan savol qo'shishingiz mumkin.");
+      return;
+    }
+
     setDraftError("");
     setIsGeneratingAi(true);
 

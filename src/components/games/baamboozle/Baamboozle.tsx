@@ -215,6 +215,11 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
   }, [questionBank, remoteLoaded, user?.id]);
 
   const addQuestion = () => {
+    if (!user?.id) {
+      setQuestionError("Iltimos, avval ro'yxatdan o'ting. Keyin savol qo'shishingiz mumkin.");
+      return;
+    }
+
     const question = draft.question.trim();
     const answer = draft.answer.trim();
 
@@ -240,6 +245,11 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
 
   const generateWithAi = async () => {
     if (isGeneratingAi) return;
+    if (!user?.id) {
+      setQuestionError("Iltimos, avval ro'yxatdan o'ting. Keyin AI bilan savol qo'shishingiz mumkin.");
+      return;
+    }
+
     setQuestionError("");
     setIsGeneratingAi(true);
 

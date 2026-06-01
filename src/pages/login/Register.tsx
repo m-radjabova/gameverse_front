@@ -98,11 +98,11 @@ function Register() {
       toast.success("Hisob muvaffaqiyatli yaratildi!");
 
       reset();
-      navigate("/login");
+      navigate("/login", { replace: true });
     } catch (error: unknown) {
       const status = isAxiosError(error) ? error.response?.status : undefined;
 
-      if (status === 409) {
+      if (status === 400 || status === 409) {
         toast.error("Bu email allaqachon ro'yxatdan o'tgan");
       } else {
         toast.error(getErrorMessage(error) || "Ro'yxatdan o'tish amalga oshmadi");

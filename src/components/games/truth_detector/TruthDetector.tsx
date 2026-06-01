@@ -241,6 +241,11 @@ function TruthDetector() {
   }
 
   function addTeacherPack() {
+    if (!state.user?.id) {
+      setTeacherMsg("Iltimos, avval ro'yxatdan o'ting. Keyin savol qo'shishingiz mumkin.");
+      return;
+    }
+
     const a = draft.claimA.trim();
     const b = draft.claimB.trim();
     const c = draft.claimC.trim();
@@ -274,6 +279,10 @@ function TruthDetector() {
 
   async function generateAiPacks() {
     if (isGeneratingAi) return;
+    if (!state.user?.id) {
+      setTeacherMsg("Iltimos, avval ro'yxatdan o'ting. Keyin AI bilan savol qo'shishingiz mumkin.");
+      return;
+    }
 
     try {
       setIsGeneratingAi(true);

@@ -12,6 +12,10 @@ type RetryableRequestConfig = InternalAxiosRequestConfig & {
   _retry?: boolean;
 };
 
+function isAuthEndpoint(url?: string) {
+  return Boolean(url && /^\/auth\/(login|google|refresh)$/.test(url));
+}
+
 const apiClient = axios.create({
   baseURL: API_ORIGIN,
   headers: { "Content-Type": "application/json" },
@@ -52,7 +56,12 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config as RetryableRequestConfig | undefined;
     const status = error.response?.status;
 
-    if (!originalRequest || status !== 401 || originalRequest._retry) {
+    if (
+      !originalRequest ||
+      status !== 401 ||
+      originalRequest._retry ||
+      isAuthEndpoint(originalRequest.url)
+    ) {
       return Promise.reject(error);
     }
 

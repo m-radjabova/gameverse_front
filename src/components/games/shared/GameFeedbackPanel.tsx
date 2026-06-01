@@ -60,6 +60,7 @@ function GameFeedbackPanel({ gameKey }: Props) {
   const [success, setSuccess] = useState("");
 
   const canLeaveFeedback = hasAnyRole(user, ["teacher"]);
+  const canShowFeedbackForm = !user || canLeaveFeedback;
   const hasOverflowComments = comments.length > 6;
 
   useEffect(() => {
@@ -69,6 +70,11 @@ function GameFeedbackPanel({ gameKey }: Props) {
   }, [summary?.my_rating]);
 
   const handleSubmit = async () => {
+    if (!user) {
+      setError("Iltimos, avval ro'yxatdan o'ting. Keyin comment yozishingiz mumkin.");
+      return;
+    }
+
     if (!canLeaveFeedback) {
       setError("Faqat teacher reyting va comment yubora oladi.");
       return;
@@ -174,12 +180,12 @@ function GameFeedbackPanel({ gameKey }: Props) {
         <p className="mb-4 text-xs text-white/60">Hozircha comment yo'q.</p>
       )}
 
-      {canLeaveFeedback && (
+      {canShowFeedbackForm && (
         <div className="rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.03))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
           <div className="mb-3 flex items-center justify-between gap-3">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/72">Teacher feedback</p>
             <span className="rounded-full border border-white/10 bg-black/15 px-2.5 py-1 text-[11px] text-white/45">
-              Baho + izoh
+              {user ? "Baho + izoh" : "Ro'yxatdan o'tish kerak"}
             </span>
           </div>
 

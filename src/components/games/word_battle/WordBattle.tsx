@@ -12,6 +12,7 @@ import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
 import { useGameParticipantMode } from "../../../hooks/useGameParticipantMode";
+import useContextPro from "../../../hooks/useContextPro";
 
 type Phase = "setup" | "play" | "round" | "finish";
 type TeamId = 0 | 1;
@@ -72,6 +73,9 @@ const scrambleWord = (answer: string) => {
 const sanitizeWord = (value: string) => value.toUpperCase().replace(/[^A-Z]/g, "");
 
 export default function WordBattle() {
+  const {
+    state: { user },
+  } = useContextPro();
   const { isSinglePlayer, primaryName, secondaryName, modeLabel } = useGameParticipantMode({
     gameId: "word-battle",
     fallbackPrimaryName: "1-JAMOA",
@@ -194,6 +198,11 @@ export default function WordBattle() {
   const handleStartGame = () => runStartCountdown(startGame);
 
   const addTeacherPuzzle = () => {
+    if (!user?.id) {
+      setDraftError("Iltimos, avval ro'yxatdan o'ting. Keyin savol qo'shishingiz mumkin.");
+      return;
+    }
+
     const answer = sanitizeWord(draft.answer);
     const category = draft.category.trim() || "Teacher";
 

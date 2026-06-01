@@ -309,6 +309,11 @@ function Jumanji() {
 
   // Add question
   const addQuestion = () => {
+    if (!user?.id) {
+      setQuestionError("Iltimos, avval ro'yxatdan o'ting. Keyin savol qo'shishingiz mumkin.");
+      return;
+    }
+
     if (!newQuestion.question) {
       setQuestionError("Savol matnini kiriting!");
       return;
@@ -362,6 +367,11 @@ function Jumanji() {
 
   const generateAiQuestionBank = async () => {
     if (isGeneratingAi) return;
+    if (!user?.id) {
+      setQuestionError("Iltimos, avval ro'yxatdan o'ting. Keyin AI bilan savol qo'shishingiz mumkin.");
+      return;
+    }
+
     setQuestionError("");
     setIsGeneratingAi(true);
 

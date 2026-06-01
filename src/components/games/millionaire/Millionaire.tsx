@@ -312,6 +312,11 @@ function Millionaire() {
   }
 
   function addTeacherQuestion() {
+    if (!user?.id) {
+      setDraftError("Iltimos, avval ro'yxatdan o'ting. Keyin savol qo'shishingiz mumkin.");
+      return;
+    }
+
     const text = draftQuestion.text.trim();
     const optionA = draftQuestion.optionA.trim();
     const optionB = draftQuestion.optionB.trim();

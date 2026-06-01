@@ -191,6 +191,7 @@ export function useSubmitGameResultMutation(gameKey: string) {
 
 export default function useGameLeaderboard(gameKey: string, limit = 100) {
   const queryClient = useQueryClient();
+  const enabled = Boolean(gameKey);
 
   const leaderboardQuery = useQuery({
     queryKey: gameLeaderboardKeys.list(gameKey, limit),
@@ -200,10 +201,14 @@ export default function useGameLeaderboard(gameKey: string, limit = 100) {
         data.filter((entry) => !entry.game_key || entry.game_key === gameKey),
       );
     },
-    enabled: Boolean(gameKey),
+    enabled,
   });
 
   const reload = useCallback(async () => {
+    if (!enabled) {
+      return [];
+    }
+
     return queryClient.fetchQuery({
       queryKey: gameLeaderboardKeys.list(gameKey, limit),
       queryFn: async () => {
@@ -213,22 +218,22 @@ export default function useGameLeaderboard(gameKey: string, limit = 100) {
         );
       },
     });
-  }, [gameKey, limit, queryClient]);
+  }, [enabled, gameKey, limit, queryClient]);
 
   useEffect(() => {
     clearLocalEntries(gameKey);
   }, [gameKey]);
 
   const entries = useMemo(
-    () => leaderboardQuery.data ?? [],
-    [leaderboardQuery.data],
+    () => (enabled ? leaderboardQuery.data ?? [] : []),
+    [enabled, leaderboardQuery.data],
   );
   const topThree = useMemo(() => entries.slice(0, 3), [entries]);
 
   return {
     entries,
     topThree,
-    loading: leaderboardQuery.isLoading,
+    loading: enabled && leaderboardQuery.isLoading,
     reload,
   };
 }

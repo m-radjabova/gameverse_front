@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaBolt,
   FaCheckCircle,
@@ -31,6 +32,7 @@ function getDefaultTeamNames(isSinglePlayer: boolean, singlePlayerName: string):
 }
 
 function QuizBattle() {
+  const navigate = useNavigate();
   const session = getGameSessionConfig("quiz-battle");
   const {
     state: { user },
@@ -181,7 +183,16 @@ function QuizBattle() {
     setQuestionError("");
   };
 
+  const requireRegisteredUserForQuestions = () => {
+    if (user) return true;
+
+    setQuestionError("Avval ro'yxatdan o'ting. Keyin o'yinga savol qo'shishingiz mumkin.");
+    return false;
+  };
+
   const beginEditQuestion = (idx: number) => {
+    if (!requireRegisteredUserForQuestions()) return;
+
     const item = questions[idx];
     if (!item) return;
     setEditingQuestionIndex(idx);
@@ -195,6 +206,8 @@ function QuizBattle() {
   };
 
   const addQuestion = () => {
+    if (!requireRegisteredUserForQuestions()) return;
+
     const questionText = draft.question.trim();
     const categoryText = draft.category.trim();
     const cleanedOptions = draft.options.map((item) => item.trim()) as [string, string, string, string];
@@ -247,6 +260,8 @@ function QuizBattle() {
   };
 
   const removeQuestion = (idx: number) => {
+    if (!requireRegisteredUserForQuestions()) return;
+
     setEditingQuestionIndex((prev) => {
       if (prev === null) return prev;
       if (prev === idx) {
@@ -488,7 +503,16 @@ function QuizBattle() {
               {/* Error Message */}
               {questionError && (
                 <div className="rounded-xl bg-rose-500/20 p-3 text-rose-300 border border-rose-500/30">
-                  ⚠️ {questionError}
+                  <p>⚠️ {questionError}</p>
+                  {!user && (
+                    <button
+                      type="button"
+                      onClick={() => navigate("/register")}
+                      className="mt-3 rounded-lg bg-white px-4 py-2 text-sm font-black text-rose-600 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                      Ro'yxatdan o'tish
+                    </button>
+                  )}
                 </div>
               )}
 

@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import useContextPro from "../hooks/useContextPro";
 import type { AppRole } from "../utils/roles";
 import { hasAnyRole } from "../utils/roles";
@@ -9,6 +9,7 @@ interface Props {
   children: React.ReactNode;
 }
 function ProtectedRoute({ role, roles, children }: Props) {
+  const location = useLocation();
 
   const { state: { user,isLoading } } = useContextPro();
   const requiredRoles = roles ?? (role ? [role] : []);
@@ -22,7 +23,7 @@ function ProtectedRoute({ role, roles, children }: Props) {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
   if (requiredRoles.length && !hasAnyRole(user, requiredRoles)) {

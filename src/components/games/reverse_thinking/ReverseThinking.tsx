@@ -266,6 +266,11 @@ function ReverseThinking() {
 
   // Add question
   const addQuestion = () => {
+    if (!user?.id) {
+      setQuestionError("Iltimos, avval ro'yxatdan o'ting. Keyin savol qo'shishingiz mumkin.");
+      return;
+    }
+
     if (!newQuestion.question) {
       setQuestionError("Savol matnini kiriting!");
       return;
@@ -1081,4 +1086,3 @@ function ReverseThinking() {
 }
 
 export default ReverseThinking;
-

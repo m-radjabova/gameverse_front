@@ -419,7 +419,7 @@ function TugOfWar() {
 
   function addTeacherProblem() {
     if (!user?.id) {
-      setTeacherMessage("Backendga saqlash uchun teacher akkaunt bilan login qiling.");
+      setTeacherMessage("Iltimos, avval ro'yxatdan o'ting. Keyin savol qo'shishingiz mumkin.");
       return;
     }
 
@@ -457,7 +457,7 @@ function TugOfWar() {
     if (isGeneratingAi) return;
 
     if (!user?.id) {
-      setTeacherMessage("AI savollarni backendga saqlash uchun teacher akkaunt bilan login qiling.");
+      setTeacherMessage("Iltimos, avval ro'yxatdan o'ting. Keyin AI bilan savol qo'shishingiz mumkin.");
       return;
     }
 

@@ -38,6 +38,7 @@ import {
 import { GiCherry, GiFlowerTwirl, GiPlanetCore } from "react-icons/gi";
 import ChangePasswordModal from "./ChangePasswordModal";
 import useHomeTheme from "../../hooks/useHomeTheme";
+import { useNavigate } from "react-router-dom";
 
 type ProfileForm = {
   username: string;
@@ -45,6 +46,7 @@ type ProfileForm = {
 };
 
 function Profile() {
+  const navigate = useNavigate();
   const isDarkMode = useHomeTheme();
   const { dispatch } = useContextPro();
   const meQuery = useMeQuery(true);
@@ -173,7 +175,7 @@ function Profile() {
                 Profil ma'lumotlarini ko'rish va tahrirlash uchun tizimga kiring.
               </p>
               <button 
-                onClick={() => window.location.href = '/login'}
+                onClick={() => navigate('/login')}
                 className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#e07c8e] to-[#a66466] px-6 py-3 text-sm font-medium text-white shadow-lg hover:-translate-y-1 transition-all"
               >
                 <HiOutlineUserCircle className="w-5 h-5" />

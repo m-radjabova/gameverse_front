@@ -76,7 +76,7 @@ function App() {
 
     const timer = window.setTimeout(() => {
       setIsGamesRouteLoading(false);
-    }, 900);
+    }, 500);
 
     return () => {
       window.clearTimeout(timer);
@@ -115,7 +115,6 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route index path="/" element={<Home />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/favorites" element={<FavoritesPage />} />
       </Route>
@@ -131,11 +130,7 @@ function App() {
       </Route>
 
       <Route
-        element={
-          <ProtectedRoute>
-            <GameLayout />
-          </ProtectedRoute>
-        }
+        element={<GameLayout />}
       >
         <Route path="/games" element={<Games />} />
         <Route path="/games/quiz-battle" element={<QuizBattlePage />} />

@@ -152,7 +152,7 @@ function Header({
       dispatch({ type: "LOGOUT" });
       setIsLoggingOut(false);
       closePanels();
-      navigate("/login");
+      navigate("/");
     }
   };
 
@@ -307,7 +307,7 @@ function Header({
             ) : (
               <button
                 onClick={() => navigate("/login")}
-                className="hidden rounded-full bg-[#ffd15d] px-6 py-3 text-sm font-bold tracking-wide text-[#203572] shadow-[0_12px_24px_rgba(255,209,93,0.32)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#ffc949] sm:inline-flex"
+                className="hidden cursor-pointer rounded-full bg-[#ffd15d] px-6 py-3 text-sm font-bold tracking-wide text-[#203572] shadow-[0_12px_24px_rgba(255,209,93,0.32)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#ffc949] sm:inline-flex"
               >
                 <span className="flex items-center gap-2">
                   <FaUser className="text-sm" />
@@ -427,7 +427,7 @@ function Header({
                     navigate("/login");
                     setIsMobileOpen(false);
                   }}
-                  className="mt-2 flex items-center justify-center rounded-2xl bg-[#ffd15d] px-4 py-3 text-sm font-bold text-[#203572] transition-all hover:bg-[#ffc949]"
+                  className="mt-2 cursor-pointer flex items-center justify-center rounded-2xl bg-[#ffd15d] px-4 py-3 text-sm font-bold text-[#203572] transition-all hover:bg-[#ffc949]"
                 >
                   <FaUser className="mr-2" />
                   Ro'yxatdan o'tish

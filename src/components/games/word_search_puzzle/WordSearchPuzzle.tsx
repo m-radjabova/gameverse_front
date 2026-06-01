@@ -10,6 +10,7 @@ import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { useGameParticipantMode } from "../../../hooks/useGameParticipantMode";
 import { generateWordSearchWords } from "./ai";
 import wordSearchGameSound from "../../../assets/sounds/word_search_game_sound.m4a";
+import useContextPro from "../../../hooks/useContextPro";
 
 type TeamId = 0 | 1;
 type Phase = "teacher" | "play" | "finish";
@@ -106,6 +107,9 @@ const isStraightSelection = (selected: CellPos[], row: number, col: number) => {
 const normalizeWord = (value: string) => value.trim().toUpperCase().replace(/[^A-Z]/g, "");
 
 export default function WordSearchPuzzle() {
+  const {
+    state: { user },
+  } = useContextPro();
   const { isSinglePlayer, primaryName, secondaryName } = useGameParticipantMode({
     gameId: "word-search",
     fallbackPrimaryName: "1-O'YINCHI",
@@ -196,6 +200,11 @@ export default function WordSearchPuzzle() {
     return { grid, placedIds };
   };
   const addWord = () => {
+    if (!user?.id) {
+      setDraftError("Iltimos, avval ro'yxatdan o'ting. Keyin so'z qo'shishingiz mumkin.");
+      return;
+    }
+
     const word = normalizeWord(draft.word);
     if (!word) return setDraftError("So'z kiriting!");
     if (word.length < 3) return setDraftError("So'z kamida 3 harf bo'lishi kerak!");
@@ -231,6 +240,11 @@ export default function WordSearchPuzzle() {
 
   const generateWordsWithAi = async () => {
     if (isGeneratingAi) return;
+    if (!user?.id) {
+      setDraftError("Iltimos, avval ro'yxatdan o'ting. Keyin AI bilan so'z qo'shishingiz mumkin.");
+      return;
+    }
+
     setDraftError("");
     setIsGeneratingAi(true);
 

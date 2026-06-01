@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "../apiClient/apiClient";
 import type { AdminGameComment, GameComment, GameRatingSummary } from "../types/types";
 import { getAccessToken } from "../utils/auth";
+import useContextPro from "./useContextPro";
+import { hasAnyRole } from "../utils/roles";
 
 type RatingSummaryResponse = {
   game_key: string;
@@ -86,6 +88,8 @@ export async function fetchRecentGameComments(limit = 20): Promise<GameComment[]
 }
 
 export async function fetchPendingGameComments(): Promise<AdminGameComment[]> {
+  if (!getAccessToken()) return [];
+
   try {
     const { data } = await apiClient.get<AdminCommentsResponse>(toPendingCommentsPath);
     const items = data?.items ?? [];
@@ -96,6 +100,8 @@ export async function fetchPendingGameComments(): Promise<AdminGameComment[]> {
 }
 
 export async function fetchApprovedGameComments(): Promise<AdminGameComment[]> {
+  if (!getAccessToken()) return [];
+
   try {
     const { data } = await apiClient.get<AdminCommentsResponse>(toApprovedCommentsPath);
     const items = data?.items ?? [];
@@ -162,6 +168,10 @@ export default function useGameFeedback(gameKey: string) {
   });
 
   const reload = useCallback(async () => {
+    if (!enabled) {
+      return { summary: null, comments: [] };
+    }
+
     const [summaryData, commentsData] = await Promise.all([
       queryClient.fetchQuery({
         queryKey: gameFeedbackKeys.summary(gameKey),
@@ -174,7 +184,7 @@ export default function useGameFeedback(gameKey: string) {
     ]);
 
     return { summary: summaryData, comments: commentsData };
-  }, [gameKey, queryClient]);
+  }, [enabled, gameKey, queryClient]);
 
   const submitFeedbackMutation = useMutation({
     mutationFn: async (payload: { rating: number; comment: string }) =>
@@ -199,13 +209,14 @@ export default function useGameFeedback(gameKey: string) {
 
   return {
     loading:
-      summaryQuery.isLoading ||
-      commentsQuery.isLoading ||
-      summaryQuery.isFetching ||
-      commentsQuery.isFetching,
+      enabled &&
+      (summaryQuery.isLoading ||
+        commentsQuery.isLoading ||
+        summaryQuery.isFetching ||
+        commentsQuery.isFetching),
     submitting: submitFeedbackMutation.isPending,
-    summary: summaryQuery.data ?? null,
-    comments: commentsQuery.data ?? [],
+    summary: enabled ? summaryQuery.data ?? null : null,
+    comments: enabled ? commentsQuery.data ?? [] : [],
     reload,
     submitFeedback,
   };
@@ -224,10 +235,15 @@ export function useRecentGameFeedback(limit = 20) {
 }
 
 export function useAdminPendingGameFeedback() {
+  const {
+    state: { user },
+  } = useContextPro();
+  const enabled = Boolean(user?.id && getAccessToken() && hasAnyRole(user, ["admin"]));
   const queryClient = useQueryClient();
   const pendingQuery = useQuery({
     queryKey: gameFeedbackKeys.pending,
     queryFn: fetchPendingGameComments,
+    enabled,
   });
 
   const approveMutation = useMutation({
@@ -253,20 +269,25 @@ export function useAdminPendingGameFeedback() {
   });
 
   return {
-    loading: pendingQuery.isLoading || pendingQuery.isFetching,
+    loading: enabled && (pendingQuery.isLoading || pendingQuery.isFetching),
     approving: approveMutation.isPending,
     rejecting: rejectMutation.isPending,
-    comments: pendingQuery.data ?? [],
+    comments: enabled ? pendingQuery.data ?? [] : [],
     approve: (feedbackId: string) => approveMutation.mutateAsync(feedbackId),
     reject: (feedbackId: string) => rejectMutation.mutateAsync(feedbackId),
   };
 }
 
 export function useAdminApprovedGameFeedback() {
+  const {
+    state: { user },
+  } = useContextPro();
+  const enabled = Boolean(user?.id && getAccessToken() && hasAnyRole(user, ["admin"]));
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: gameFeedbackKeys.approved,
     queryFn: fetchApprovedGameComments,
+    enabled,
   });
 
   const unapproveMutation = useMutation({
@@ -282,9 +303,9 @@ export function useAdminApprovedGameFeedback() {
   });
 
   return {
-    loading: query.isLoading || query.isFetching,
+    loading: enabled && (query.isLoading || query.isFetching),
     unapproving: unapproveMutation.isPending,
-    comments: query.data ?? [],
+    comments: enabled ? query.data ?? [] : [],
     unapprove: (feedbackId: string) => unapproveMutation.mutateAsync(feedbackId),
   };
 }
