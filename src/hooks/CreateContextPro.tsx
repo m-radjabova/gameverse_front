@@ -1,7 +1,13 @@
-import { useEffect, useReducer, type Dispatch, type ReactNode } from "react";
+import { useEffect, useReducer, useState, type Dispatch, type ReactNode } from "react";
 import { MyContext } from "../context/MyContext";
 import type { User } from "../types/types";
-import { clearAuthStorage } from "../utils/auth";
+import {
+  clearAuthStorage,
+  getAccessToken,
+  getRefreshToken,
+  isTokenExpired,
+  refreshSession,
+} from "../utils/auth";
 import { useMeQuery } from "./useProfile";
 
 export interface TypeState {
@@ -56,11 +62,63 @@ function CreateContextPro({ children }: { children: ReactNode }) {
     isLoading: true,
     roles: [],
   });
+  const [authReady, setAuthReady] = useState(false);
 
-  const hasToken = Boolean(localStorage.getItem("accessToken"));
-  const meQuery = useMeQuery(hasToken);
+  const hasToken = Boolean(getAccessToken());
+  const meQuery = useMeQuery(authReady && hasToken);
 
   useEffect(() => {
+    let isMounted = true;
+
+    async function bootstrapAuth() {
+      const accessToken = getAccessToken();
+      const refreshToken = getRefreshToken();
+
+      if (!accessToken) {
+        if (!isMounted) return;
+        dispatch({ type: "SET_USER", payload: null });
+        dispatch({ type: "SET_LOADING", payload: false });
+        setAuthReady(true);
+        return;
+      }
+
+      if (!isTokenExpired(accessToken)) {
+        if (!isMounted) return;
+        setAuthReady(true);
+        return;
+      }
+
+      if (!refreshToken || isTokenExpired(refreshToken)) {
+        clearAuthStorage();
+        if (!isMounted) return;
+        dispatch({ type: "SET_USER", payload: null });
+        dispatch({ type: "SET_LOADING", payload: false });
+        setAuthReady(true);
+        return;
+      }
+
+      const nextAccessToken = await refreshSession();
+
+      if (!isMounted) return;
+
+      if (!nextAccessToken) {
+        dispatch({ type: "SET_USER", payload: null });
+        dispatch({ type: "SET_LOADING", payload: false });
+      }
+
+      setAuthReady(true);
+    }
+
+    void bootstrapAuth();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!authReady) return;
+
     if (!hasToken) {
       dispatch({ type: "SET_USER", payload: null });
       dispatch({ type: "SET_LOADING", payload: false });
@@ -78,7 +136,7 @@ function CreateContextPro({ children }: { children: ReactNode }) {
       dispatch({ type: "SET_USER", payload: null });
       dispatch({ type: "SET_LOADING", payload: false });
     }
-  }, [hasToken, meQuery.data, meQuery.error, meQuery.isLoading]);
+  }, [authReady, hasToken, meQuery.data, meQuery.error, meQuery.isLoading]);
 
   // role redirect
   useEffect(() => {

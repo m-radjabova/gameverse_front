@@ -3,8 +3,7 @@ import type { AxiosError, InternalAxiosRequestConfig } from "axios";
 import {
   clearAuthStorage,
   getAccessToken,
-  getRefreshToken,
-  setTokens,
+  refreshSession,
 } from "../utils/auth";
 import { API_ORIGIN } from "../utils";
 
@@ -29,27 +28,6 @@ apiClient.interceptors.request.use((config) => {
 
 let refreshPromise: Promise<string | null> | null = null;
 
-async function refreshAccessToken(): Promise<string | null> {
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) return null;
-
-  try {
-    const response = await axios.post(`${API_ORIGIN}/auth/refresh`, {
-      refresh_token: refreshToken,
-    });
-
-    const nextAccessToken = response.data?.access_token as string | undefined;
-    const nextRefreshToken = response.data?.refresh_token as string | undefined;
-
-    if (!nextAccessToken) return null;
-
-    setTokens(nextAccessToken, nextRefreshToken);
-    return nextAccessToken;
-  } catch {
-    return null;
-  }
-}
-
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
@@ -68,7 +46,7 @@ apiClient.interceptors.response.use(
     originalRequest._retry = true;
 
     if (!refreshPromise) {
-      refreshPromise = refreshAccessToken().finally(() => {
+      refreshPromise = refreshSession().finally(() => {
         refreshPromise = null;
       });
     }

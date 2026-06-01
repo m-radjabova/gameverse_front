@@ -44,6 +44,9 @@ export function useMeQuery(enabled = true) {
       return res.data;
     },
     staleTime: 30_000,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 
