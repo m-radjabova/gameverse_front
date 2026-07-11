@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /profile
+Disallow: /favorites
+Disallow: /teacher-panel
+
+Sitemap: https://gameverse-front.vercel.app/sitemap.xml

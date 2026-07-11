@@ -52,6 +52,8 @@ import TugOfWarPage from "./components/games/tug_of_war/TugOfWarPage";
 import SolarSystemGame from "./components/games/vr-solar-system";
 import VirtualZoo from "./components/games/virtual_zoo";
 import FrogPondLandingPage from "./components/games/frog-pond/FrogPondLandingPage";
+import ScrollToTop from "./components/ScrollToTop";
+import Seo from "./components/seo/Seo";
 
 function App() {
   const {
@@ -76,7 +78,7 @@ function App() {
 
     const timer = window.setTimeout(() => {
       setIsGamesRouteLoading(false);
-    }, 500);
+    }, 1600);
 
     return () => {
       window.clearTimeout(timer);
@@ -86,6 +88,9 @@ function App() {
   if (isLoading || isGamesRouteLoading) return <SiteLoader />;
 
   return (
+    <>
+    <Seo />
+    <ScrollToTop />
     <Routes>
       <Route path="/" element={<Home />} />
 
@@ -217,6 +222,7 @@ function App() {
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
+    </>
   );
 }
 

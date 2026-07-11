@@ -29,13 +29,20 @@ import {
   FiEdit2,
   FiLoader,
   FiCalendar,
-  FiHeart
+  FiHeart,
+  FiAtSign,
+  FiInfo,
+  FiArrowRight
 } from "react-icons/fi";
 import { 
   MdOutlineBadge,
-  MdOutlineVerified
+  MdOutlineVerified,
+  MdOutlineEmail,
+  MdOutlinePersonOutline,
+  MdOutlinePhotoSizeSelectSmall
 } from "react-icons/md";
-import { GiCherry, GiFlowerTwirl, GiPlanetCore } from "react-icons/gi";
+import { GiCherry, GiFlowerTwirl, GiPlanetCore, GiSparklingSabre, GiSpiralBloom } from "react-icons/gi";
+import { BsStars } from "react-icons/bs";
 import ChangePasswordModal from "./ChangePasswordModal";
 import useHomeTheme from "../../hooks/useHomeTheme";
 import { useNavigate } from "react-router-dom";
@@ -61,6 +68,15 @@ function Profile() {
   const [error, setError] = useState("");
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [hasAvatarError, setHasAvatarError] = useState(false);
+  const [avatarHover, setAvatarHover] = useState(false);
+
+  // Re-initialize AOS for footer animations when profile page loads
+  useEffect(() => {
+    import("aos").then((AOS) => {
+      AOS.init({ duration: 900 });
+      setTimeout(() => AOS.refresh(), 100);
+    });
+  }, []);
 
   const { 
     register, 
@@ -143,13 +159,17 @@ function Profile() {
           <div className="flex items-center justify-center h-[80vh]">
             <div className="text-center">
               <div className="relative">
-                <div className="absolute inset-0 bg-[#e07c8e] rounded-full blur-3xl opacity-20 animate-pulse-soft" />
-                <div className="relative w-24 h-24 mx-auto mb-6">
-                  <GiPlanetCore className="w-24 h-24 text-[#e07c8e] animate-spin-slow" />
+                <div className="absolute inset-0 bg-[var(--panel-accent)] rounded-full blur-3xl opacity-20 animate-pulse" />
+                <div className="relative w-28 h-28 mx-auto mb-6">
+                  <div className="absolute inset-0 rounded-full border-2 border-dashed border-[var(--panel-accent)] opacity-30 animate-spin" style={{ animationDuration: '8s' }} />
+                  <div className="absolute inset-2 rounded-full border-2 border-dashed border-[var(--panel-accent-strong)] opacity-20 animate-spin" style={{ animationDuration: '12s', animationDirection: 'reverse' }} />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <GiPlanetCore className="w-14 h-14 text-[var(--panel-accent)] animate-pulse" />
+                  </div>
                 </div>
               </div>
-              <h3 className="text-xl font-light text-[#7b4f53] mb-2">Profil yuklanmoqda</h3>
-              <p className="text-[#8f6d70]">Iltimos, biroz kuting...</p>
+              <h3 className="text-xl font-light text-[var(--panel-text)] mb-2">Profil yuklanmoqda</h3>
+              <p className="text-[var(--panel-text-soft)]">Iltimos, biroz kuting...</p>
             </div>
           </div>
         </div>
@@ -164,22 +184,26 @@ function Profile() {
         className="profile-theme min-h-screen bg-[image:var(--panel-page-bg)] bg-[var(--panel-page-base)] py-12"
       >
         <div className="mx-auto max-w-6xl px-4">
-          <div className="rounded-3xl border border-[#f0d9d6] bg-white/70 backdrop-blur-sm p-8 shadow-xl">
-            <div className="text-center py-16">
-              <div className="relative inline-block mb-4">
-                <div className="absolute inset-0 bg-[#e07c8e] rounded-full blur-xl opacity-30" />
-                <FiAlertCircle className="relative w-16 h-16 text-[#e07c8e]" />
+          <div className="group relative rounded-3xl border border-[var(--panel-border)] bg-[var(--panel-surface)] backdrop-blur-sm p-8 shadow-xl hover:shadow-2xl transition-all duration-500">
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[var(--panel-accent)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="relative text-center py-16">
+              <div className="relative inline-block mb-6">
+                <div className="absolute inset-0 bg-[var(--panel-accent)] rounded-full blur-2xl opacity-30 animate-pulse" />
+                <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-[var(--panel-accent)]/20 to-[var(--panel-accent-strong)]/10 flex items-center justify-center">
+                  <FiAlertCircle className="w-10 h-10 text-[var(--panel-accent)]" />
+                </div>
               </div>
-              <h2 className="text-2xl font-light text-[#7b4f53] mb-2">Autentifikatsiya talab qilinadi</h2>
-              <p className="text-[#8f6d70] mb-6 max-w-md mx-auto">
+              <h2 className="text-2xl font-light text-[var(--panel-text)] mb-3">Autentifikatsiya talab qilinadi</h2>
+              <p className="text-[var(--panel-text-soft)] mb-8 max-w-md mx-auto leading-relaxed">
                 Profil ma'lumotlarini ko'rish va tahrirlash uchun tizimga kiring.
               </p>
               <button 
                 onClick={() => navigate('/login')}
-                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#e07c8e] to-[#a66466] px-6 py-3 text-sm font-medium text-white shadow-lg hover:-translate-y-1 transition-all"
+                className="group/btn inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--panel-accent)] to-[var(--panel-accent-strong)] px-7 py-3.5 text-sm font-medium text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
               >
                 <HiOutlineUserCircle className="w-5 h-5" />
-                Kirish sahifasiga o'tish
+                <span>Kirish sahifasiga o'tish</span>
+                <FiArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
               </button>
             </div>
           </div>
@@ -191,75 +215,105 @@ function Profile() {
   return (
     <section
       data-home-theme={isDarkMode ? "dark" : "light"}
-      className="profile-theme min-h-screen bg-[image:var(--panel-page-bg)] bg-[var(--panel-page-base)] py-10"
+      className="profile-theme bg-[image:var(--panel-page-bg)] bg-[var(--panel-page-base)] py-8 md:py-12"
     >
-      
-      {/* Minimal Background Elements */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute left-[5%] top-[10%] h-72 w-72 rounded-full bg-[#f6d4da]/20 blur-3xl animate-float-soft" />
-        <div className="absolute right-[8%] bottom-[15%] h-80 w-80 rounded-full bg-[#fbe5dd]/20 blur-3xl animate-float-slow" />
-        <GiCherry className="absolute left-[12%] top-[20%] text-6xl text-[#e07c8e]/10 animate-petal-float" />
-        <GiFlowerTwirl className="absolute right-[15%] top-[40%] text-7xl text-[#a66466]/10 animate-float-soft" />
+      {/* ===== ANIMATED BACKGROUND ===== */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+        {/* Large floating orbs */}
+        <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-[var(--panel-accent)]/8 blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute -right-32 top-1/3 h-80 w-80 rounded-full bg-[var(--panel-accent-strong)]/6 blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '1s' }} />
+        <div className="absolute left-1/4 bottom-0 h-72 w-72 rounded-full bg-[var(--panel-accent)]/5 blur-3xl animate-pulse" style={{ animationDuration: '12s', animationDelay: '2s' }} />
+        
+        {/* Floating decorative icons */}
+        <GiCherry className="absolute left-[8%] top-[15%] text-5xl text-[var(--panel-accent)]/10 animate-bounce" style={{ animationDuration: '6s', animationDelay: '0.5s' }} />
+        <GiFlowerTwirl className="absolute right-[12%] top-[35%] text-6xl text-[var(--panel-accent-strong)]/10 animate-bounce" style={{ animationDuration: '7s', animationDelay: '1.2s' }} />
+        <GiSpiralBloom className="absolute left-[15%] bottom-[25%] text-5xl text-[var(--panel-accent)]/8 animate-bounce" style={{ animationDuration: '8s', animationDelay: '2s' }} />
+        <GiSparklingSabre className="absolute right-[20%] bottom-[40%] text-4xl text-[var(--panel-accent-strong)]/8 animate-bounce" style={{ animationDuration: '9s', animationDelay: '0.8s' }} />
+        
+        {/* Subtle grid pattern */}
+        <div 
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, var(--panel-accent) 1px, transparent 0)`,
+            backgroundSize: '40px 40px'
+          }}
+        />
       </div>
 
-      <div className="mx-auto mt-20 max-w-8xl px-4 relative z-10">
+      <div className="mx-auto mt-16 md:mt-20 max-w-7xl px-4 sm:px-6 relative" style={{ zIndex: 1 }}>
         
-        {/* Header */}
-        <div className="mb-10">
+        {/* ===== HEADER SECTION ===== */}
+        <div className="mb-10 md:mb-12 animate-[fadeIn_0.6s_ease-out]">
           <div className="inline-flex flex-col">
-            <div className="flex items-baseline gap-3">
-              <h1 className="text-4xl font-light text-[#7b4f53] tracking-tight">
+            <div className="flex items-baseline gap-4 flex-wrap">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-light text-[var(--panel-text)] tracking-tight">
                 Profil sozlamalari
               </h1>
-              <span className="text-[10px] font-medium px-2 py-1 bg-gradient-to-r from-[#e07c8e] to-[#a66466] text-white rounded-full shadow-sm">
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-3 py-1.5 bg-gradient-to-r from-[var(--panel-accent)] to-[var(--panel-accent-strong)] text-white rounded-full shadow-lg shadow-[var(--panel-accent)]/20">
+                <BsStars className="w-3 h-3" />
                 SHAXSIY
               </span>
             </div>
             
-            <div className="mt-4 relative">
-              <p className="text-[#8f6d70] text-base pl-8 relative z-10">
-                Shaxsiy ma'lumotlaringiz va hisob sozlamalarini yangilang
-              </p>
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-px bg-gradient-to-r from-[#e07c8e] to-transparent" />
+            <div className="mt-5 relative">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-px bg-gradient-to-r from-[var(--panel-accent)] to-transparent shrink-0" />
+                <p className="text-[var(--panel-text-soft)] text-sm sm:text-base">
+                  Shaxsiy ma'lumotlaringiz va hisob sozlamalarini yangilang
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 lg:gap-8 lg:grid-cols-3">
           
-          {/* Left Panel - Profile Info */}
-          <div className="lg:col-span-1 space-y-6">
+          {/* ===== LEFT COLUMN ===== */}
+          <div className="lg:col-span-1 space-y-6 lg:space-y-8">
             
-            {/* Profile Card */}
-            <div className="rounded-3xl border border-[#f0d9d6] bg-white/70 backdrop-blur-sm p-6 shadow-xl">
+            {/* --- Profile Card --- */}
+            <div className="group/card relative rounded-3xl border border-[var(--panel-border)] bg-[var(--panel-surface)] backdrop-blur-sm p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-500 animate-[fadeIn_0.6s_ease-out_0.1s_both]">
+              {/* Card glow effect */}
+              <div className="absolute -inset-0.5 rounded-3xl bg-gradient-to-br from-[var(--panel-accent)]/20 to-[var(--panel-accent-strong)]/10 opacity-0 group-hover/card:opacity-100 blur-sm transition-opacity duration-500 pointer-events-none" />
+              
               <div className="relative">
+                {/* Decorative top accent */}
+                <div className="absolute -top-6 -left-6 -right-6 h-28 bg-gradient-to-br from-[var(--panel-accent)]/10 via-[var(--panel-accent)]/5 to-transparent rounded-t-3xl opacity-60" />
+                <div className="absolute -top-6 -left-6 w-24 h-24 bg-gradient-to-br from-[var(--panel-accent)]/20 to-transparent rounded-tl-3xl blur-xl" />
                 
-                {/* Decorative top gradient */}
-                <div className="absolute -top-6 -left-6 -right-6 h-24 bg-gradient-to-r from-[#fceae8] to-[#ffe1de] rounded-t-3xl opacity-50" />
-                
-                <div className="relative flex flex-col items-center text-center mt-4">
+                <div className="relative flex flex-col items-center text-center mt-2">
                   
-                  {/* Avatar Upload */}
-                  <div className="relative group mb-4">
-                    <div className="absolute -inset-2 bg-gradient-to-r from-[#e07c8e] to-[#a66466] rounded-full opacity-0 group-hover:opacity-30 blur-lg transition-opacity" />
+                  {/* Avatar with animated ring */}
+                  <div 
+                    className="relative group/avatar mb-5"
+                    onMouseEnter={() => setAvatarHover(true)}
+                    onMouseLeave={() => setAvatarHover(false)}
+                  >
+                    {/* Animated rings */}
+                    <div className={`absolute -inset-3 rounded-full bg-gradient-to-r from-[var(--panel-accent)] via-[var(--panel-accent-strong)] to-[var(--panel-accent)] opacity-30 blur-sm transition-all duration-700 ${avatarHover ? 'scale-110 opacity-50' : 'scale-100 opacity-30'}`} />
+                    <div className={`absolute -inset-1.5 rounded-full border-2 border-dashed border-[var(--panel-accent)]/40 transition-all duration-700 ${avatarHover ? 'animate-spin' : ''}`} style={{ animationDuration: '10s' }} />
                     
                     {avatarSrc && !hasAvatarError ? (
-                      <img
-                        src={avatarSrc}
-                        alt={userDisplayName}
-                        className="relative h-28 w-28 rounded-full border-4 border-white object-cover shadow-lg"
-                        onError={() => setHasAvatarError(true)}
-                      />
+                      <div className="relative">
+                        <img
+                          src={avatarSrc}
+                          alt={userDisplayName}
+                          className={`relative h-28 w-28 sm:h-32 sm:w-32 rounded-full border-[3px] border-white/80 object-cover shadow-xl transition-all duration-500 ${avatarHover ? 'scale-105' : 'scale-100'}`}
+                          onError={() => setHasAvatarError(true)}
+                        />
+                        <div className={`absolute inset-0 rounded-full bg-gradient-to-t from-black/20 to-transparent transition-opacity duration-300 ${avatarHover ? 'opacity-100' : 'opacity-0'}`} />
+                      </div>
                     ) : (
-                      <div className="relative flex h-28 w-28 items-center justify-center rounded-full border-4 border-white bg-gradient-to-br from-[#fceae8] via-[#f4cdd1] to-[#e07c8e] text-4xl font-semibold text-[#7b4f53] shadow-lg">
+                      <div className="relative flex h-28 w-28 sm:h-32 sm:w-32 items-center justify-center rounded-full border-[3px] border-white/80 bg-gradient-to-br from-[var(--panel-accent)]/20 via-[var(--panel-accent)]/10 to-[var(--panel-accent-strong)]/20 text-4xl sm:text-5xl font-semibold text-[var(--panel-text)] shadow-xl transition-all duration-500">
                         {userInitial}
                       </div>
                     )}
                     
-                    <label className="absolute bottom-2 right-2 cursor-pointer">
+                    {/* Camera button */}
+                    <label className="absolute -bottom-1 -right-1 cursor-pointer z-10">
                       <div className="relative">
-                        <div className="absolute inset-0 bg-[#e07c8e] rounded-full blur-md opacity-0 group-hover:opacity-50 transition-opacity" />
-                        <div className="relative flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-r from-[#e07c8e] to-[#a66466] text-white shadow-lg hover:-translate-y-1 transition-all">
+                        <div className={`absolute inset-0 bg-[var(--panel-accent)] rounded-full blur-md transition-opacity duration-300 ${avatarHover ? 'opacity-60' : 'opacity-0'}`} />
+                        <div className="relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-r from-[var(--panel-accent)] to-[var(--panel-accent-strong)] text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
                           {isUploadingAvatar ? (
                             <FiLoader className="w-4 h-4 animate-spin" />
                           ) : (
@@ -278,23 +332,23 @@ function Profile() {
                   </div>
 
                   {/* User Info */}
-                  <div className="mb-4">
-                    <h1 className="text-2xl font-medium text-[#7b4f53] mb-1">
+                  <div className="mb-5">
+                    <h1 className="text-2xl sm:text-3xl font-medium text-[var(--panel-text)] mb-1.5">
                       {userDisplayName}
                     </h1>
-                    <div className="flex items-center justify-center gap-1 text-sm text-[#8f6d70]">
-                      <FiMail className="text-[#e07c8e] text-xs" />
-                      {user.email}
+                    <div className="flex items-center justify-center gap-1.5 text-sm text-[var(--panel-text-soft)]">
+                      <FiMail className="text-[var(--panel-accent)] text-xs shrink-0" />
+                      <span className="truncate max-w-[200px]">{user.email}</span>
                     </div>
                   </div>
 
                   {/* Role Badges */}
                   <div className="flex flex-wrap gap-2 justify-center mb-6">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#fceae8] px-4 py-1.5 text-xs font-medium text-[#e07c8e] border border-[#f0d9d6]">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--panel-accent)]/10 px-4 py-1.5 text-xs font-medium text-[var(--panel-accent)] border border-[var(--panel-border)]">
                       <MdOutlineBadge className="w-3.5 h-3.5" />
                       {(user.roles && user.roles.length ? user.roles.join(", ") : "foydalanuvchi")}
                     </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-4 py-1.5 text-xs font-medium text-emerald-600 border border-emerald-200">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-4 py-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-500/20">
                       <MdOutlineVerified className="w-3.5 h-3.5" />
                       Tasdiqlangan
                     </span>
@@ -305,237 +359,271 @@ function Profile() {
                     <button
                       type="button"
                       onClick={() => setPasswordOpen(true)}
-                      className="flex items-center justify-center gap-2 w-full rounded-xl border border-[#f0d9d6] bg-white/50 backdrop-blur-sm px-4 py-3 text-sm font-medium text-[#7b4f53] transition-all hover:bg-gradient-to-r hover:from-[#e07c8e] hover:to-[#a66466] hover:text-white hover:border-transparent hover:-translate-y-1 hover:shadow-lg group"
+                      className="group/btn flex items-center justify-center gap-2.5 w-full rounded-xl border border-[var(--panel-border)] bg-[var(--panel-surface)]/50 backdrop-blur-sm px-4 py-3.5 text-sm font-medium text-[var(--panel-text)] transition-all duration-300 hover:bg-gradient-to-r hover:from-[var(--panel-accent)] hover:to-[var(--panel-accent-strong)] hover:text-white hover:border-transparent hover:-translate-y-0.5 hover:shadow-lg"
                     >
-                      <FiLock className="w-4 h-4 group-hover:text-white transition-colors" />
-                      Parolni o'zgartirish
+                      <FiLock className="w-4 h-4 group-hover/btn:text-white transition-colors" />
+                      <span>Parolni o'zgartirish</span>
+                      <FiArrowRight className="w-3.5 h-3.5 ml-auto opacity-0 -translate-x-2 group-hover/btn:opacity-100 group-hover/btn:translate-x-0 transition-all duration-300" />
                     </button>
                   </div>
                 </div>
               </div>
             </div>
             
-            {/* Account Stats Card */}
-            <div className="rounded-3xl border border-[#f0d9d6] bg-white/70 backdrop-blur-sm p-6 shadow-xl">
-              <h3 className="text-sm font-medium text-[#7b4f53] mb-4 flex items-center gap-2">
-                <HiOutlineClock className="w-4 h-4 text-[#e07c8e]" />
-                Hisob haqida
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-xl bg-[#fceae8]/50">
-                  <span className="text-xs text-[#8f6d70]">Ro'yxatdan o'tgan</span>
-                  <span className="text-xs font-medium text-[#7b4f53] flex items-center gap-1">
-                    <FiCalendar className="w-3 h-3 text-[#e07c8e]" />
-                    {formatUserCreatedAt(user)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-xl bg-[#fceae8]/50">
-                  <span className="text-xs text-[#8f6d70]">Holat</span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-medium text-emerald-600">
-                    <FiCheckCircle className="w-3 h-3" />
-                    Faol
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-xl bg-[#fceae8]/50">
-                  <span className="text-xs text-[#8f6d70]">Hisob turi</span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#fceae8] px-3 py-1 text-[10px] font-medium text-[#e07c8e]">
-                    <HiOutlineSparkles className="w-3 h-3" />
-                    Premium
-                  </span>
+            {/* --- Account Stats Card --- */}
+            <div className="group/card relative rounded-3xl border border-[var(--panel-border)] bg-[var(--panel-surface)] backdrop-blur-sm p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-500 animate-[fadeIn_0.6s_ease-out_0.2s_both]">
+              <div className="absolute -inset-0.5 rounded-3xl bg-gradient-to-br from-[var(--panel-accent)]/20 to-[var(--panel-accent-strong)]/10 opacity-0 group-hover/card:opacity-100 blur-sm transition-opacity duration-500 pointer-events-none" />
+              
+              <div className="relative">
+                <h3 className="text-sm font-semibold text-[var(--panel-text)] mb-5 flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-[var(--panel-accent)]/10">
+                    <HiOutlineClock className="w-4 h-4 text-[var(--panel-accent)]" />
+                  </div>
+                  Hisob haqida
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3.5 rounded-xl bg-[var(--panel-accent)]/5 border border-[var(--panel-border)]/50 hover:bg-[var(--panel-accent)]/10 transition-colors duration-300">
+                    <span className="text-xs text-[var(--panel-text-soft)]">Ro'yxatdan o'tgan</span>
+                    <span className="text-xs font-medium text-[var(--panel-text)] flex items-center gap-1.5">
+                      <FiCalendar className="w-3 h-3 text-[var(--panel-accent)]" />
+                      {formatUserCreatedAt(user)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-3.5 rounded-xl bg-[var(--panel-accent)]/5 border border-[var(--panel-border)]/50 hover:bg-[var(--panel-accent)]/10 transition-colors duration-300">
+                    <span className="text-xs text-[var(--panel-text-soft)]">Holat</span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-500/20">
+                      <FiCheckCircle className="w-3 h-3" />
+                      Faol
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-3.5 rounded-xl bg-[var(--panel-accent)]/5 border border-[var(--panel-border)]/50 hover:bg-[var(--panel-accent)]/10 transition-colors duration-300">
+                    <span className="text-xs text-[var(--panel-text-soft)]">Hisob turi</span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--panel-accent)]/10 px-3 py-1 text-[10px] font-semibold text-[var(--panel-accent)] border border-[var(--panel-border)]">
+                      <HiOutlineSparkles className="w-3 h-3" />
+                      Premium
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Panel - Edit Form */}
-          <div className="lg:col-span-2 space-y-6">
+          {/* ===== RIGHT COLUMN ===== */}
+          <div className="lg:col-span-2 space-y-6 lg:space-y-8">
             
-            {/* Edit Profile Form */}
-            <div className="rounded-3xl border border-[#f0d9d6] bg-white/70 backdrop-blur-sm p-6 shadow-xl">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-2xl font-light text-[#7b4f53]">Profilni tahrirlash</h2>
-                  <p className="text-[#8f6d70] text-sm mt-1">
-                    Shaxsiy ma'lumotlaringiz va email manzilingizni yangilang
-                  </p>
-                </div>
-                <div className="w-10 h-10 rounded-xl bg-[#fceae8] flex items-center justify-center">
-                  <FiEdit2 className="w-5 h-5 text-[#e07c8e]" />
-                </div>
-              </div>
-
-              <form onSubmit={handleSubmit(handleSave)} className="space-y-5">
-                
-                {/* Username Field */}
-                <div>
-                  <label className="mb-2 flex items-center gap-2 text-xs font-medium text-[#7b4f53]">
-                    <FiUser className="w-3.5 h-3.5 text-[#e07c8e]" />
-                    Foydalanuvchi nomi
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      {...register("username", {
-                        required: "Foydalanuvchi nomi majburiy",
-                        minLength: {
-                          value: 3,
-                          message: "Kamida 3 ta belgi"
-                        }
-                      })}
-                      className={`w-full rounded-xl border ${errors.username ? 'border-rose-300' : 'border-[#f0d9d6]'} bg-white/80 px-4 py-3 pl-10 text-sm text-[#7b4f53] placeholder:text-[#b38b8d] outline-none focus:border-[#e07c8e] focus:shadow-[0_0_0_3px_rgba(224,124,142,0.1)] transition-all`}
-                      placeholder="Foydalanuvchi nomingiz"
-                    />
-                    <HiOutlineUserCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#b38b8d]" />
-                  </div>
-                  {errors.username && (
-                    <p className="mt-1 flex items-center gap-1 text-xs text-rose-500">
-                      <FiAlertCircle className="w-3 h-3" />
-                      {errors.username.message}
+            {/* --- Edit Profile Form --- */}
+            <div className="group/card relative rounded-3xl border border-[var(--panel-border)] bg-[var(--panel-surface)] backdrop-blur-sm p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-500 animate-[fadeIn_0.6s_ease-out_0.15s_both]">
+              <div className="absolute -inset-0.5 rounded-3xl bg-gradient-to-br from-[var(--panel-accent)]/20 to-[var(--panel-accent-strong)]/10 opacity-0 group-hover/card:opacity-100 blur-sm transition-opacity duration-500 pointer-events-none" />
+              
+              <div className="relative">
+                <div className="flex items-start justify-between mb-8">
+                  <div>
+                    <h2 className="text-2xl sm:text-3xl font-light text-[var(--panel-text)]">Profilni tahrirlash</h2>
+                    <p className="text-[var(--panel-text-soft)] text-sm mt-1.5 max-w-md">
+                      Shaxsiy ma'lumotlaringiz va email manzilingizni yangilang
                     </p>
-                  )}
+                  </div>
+                  <div className="hidden sm:flex w-12 h-12 rounded-xl bg-[var(--panel-accent)]/10 items-center justify-center shrink-0">
+                    <FiEdit2 className="w-5 h-5 text-[var(--panel-accent)]" />
+                  </div>
                 </div>
 
-                {/* Email Field */}
-                <div>
-                  <label className="mb-2 flex items-center gap-2 text-xs font-medium text-[#7b4f53]">
-                    <FiMail className="w-3.5 h-3.5 text-[#e07c8e]" />
-                    Email manzil
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="email"
-                      {...register("email", {
-                        required: "Email talab qilinadi",
-                        pattern: {
-                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                          message: "Noto'g'ri email format"
-                        }
-                      })}
-                      className={`w-full rounded-xl border ${errors.email ? 'border-rose-300' : 'border-[#f0d9d6]'} bg-white/80 px-4 py-3 pl-10 text-sm text-[#7b4f53] placeholder:text-[#b38b8d] outline-none focus:border-[#e07c8e] focus:shadow-[0_0_0_3px_rgba(224,124,142,0.1)] transition-all`}
-                      placeholder="email@example.com"
-                    />
-                    <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#b38b8d]" />
-                  </div>
-                  {errors.email && (
-                    <p className="mt-1 flex items-center gap-1 text-xs text-rose-500">
-                      <FiAlertCircle className="w-3 h-3" />
-                      {errors.email.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* Messages */}
-                {success && (
-                  <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
-                    <div className="flex items-start gap-2">
-                      <FiCheckCircle className="w-4 h-4 text-emerald-600 mt-0.5" />
-                      <div>
-                        <p className="text-xs font-medium text-emerald-800">{success}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {error && (
-                  <div className="rounded-xl border border-rose-200 bg-rose-50/50 p-4">
-                    <div className="flex items-start gap-2">
-                      <FiAlertCircle className="w-4 h-4 text-rose-600 mt-0.5" />
-                      <div>
-                        <p className="text-xs font-medium text-rose-800">{error}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Save Button */}
-                <div className="pt-4 border-t border-[#f0d9d6]">
-                  <button
-                    type="submit"
-                    disabled={updateMe.isPending || !isDirty}
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#e07c8e] to-[#a66466] px-6 py-3 text-sm font-medium text-white shadow-lg hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
-                  >
-                    {updateMe.isPending ? (
-                      <>
-                        <FiLoader className="w-4 h-4 animate-spin" />
-                        Saqlanmoqda...
-                      </>
-                    ) : (
-                      <>
-                        <FiSave className="w-4 h-4" />
-                        O'zgarishlarni saqlash
-                      </>
-                    )}
-                  </button>
+                <form onSubmit={handleSubmit(handleSave)} className="space-y-6">
                   
-                  {!isDirty && (
-                    <p className="mt-3 text-xs text-[#b38b8d] flex items-center gap-1">
-                      <FiAlertCircle className="w-3 h-3" />
-                      Saqlash uchun o'zgarish yo'q
-                    </p>
+                  {/* Username Field */}
+                  <div className="group/field">
+                    <label className="mb-2.5 flex items-center gap-2 text-xs font-semibold text-[var(--panel-text)] uppercase tracking-wider">
+                      <FiUser className="w-3.5 h-3.5 text-[var(--panel-accent)]" />
+                      Foydalanuvchi nomi
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 z-10">
+                        <MdOutlinePersonOutline className="w-4 h-4 text-[var(--panel-text-soft)] group-focus-within/field:text-[var(--panel-accent)] transition-colors duration-300" />
+                      </div>
+                      <input
+                        type="text"
+                        {...register("username", {
+                          required: "Foydalanuvchi nomi majburiy",
+                          minLength: {
+                            value: 3,
+                            message: "Kamida 3 ta belgi"
+                          }
+                        })}
+                        className={`w-full rounded-xl border ${errors.username ? 'border-rose-300 dark:border-rose-500/50' : 'border-[var(--panel-border)]'} bg-[var(--panel-surface)]/50 px-4 py-3.5 pl-11 text-sm text-[var(--panel-text)] placeholder:text-[var(--panel-text-soft)]/50 outline-none focus:border-[var(--panel-accent)] focus:shadow-[0_0_0_3px_var(--panel-focus-ring)] transition-all duration-300`}
+                        placeholder="Foydalanuvchi nomingiz"
+                      />
+                      <div className="absolute right-3.5 top-1/2 -translate-y-1/2">
+                        <FiEdit2 className="w-3.5 h-3.5 text-[var(--panel-text-soft)]/30" />
+                      </div>
+                    </div>
+                    {errors.username && (
+                      <p className="mt-1.5 flex items-center gap-1.5 text-xs text-rose-500 dark:text-rose-400">
+                        <FiAlertCircle className="w-3 h-3 shrink-0" />
+                        {errors.username.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Email Field */}
+                  <div className="group/field">
+                    <label className="mb-2.5 flex items-center gap-2 text-xs font-semibold text-[var(--panel-text)] uppercase tracking-wider">
+                      <FiMail className="w-3.5 h-3.5 text-[var(--panel-accent)]" />
+                      Email manzil
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 z-10">
+                        <MdOutlineEmail className="w-4 h-4 text-[var(--panel-text-soft)] group-focus-within/field:text-[var(--panel-accent)] transition-colors duration-300" />
+                      </div>
+                      <input
+                        type="email"
+                        {...register("email", {
+                          required: "Email talab qilinadi",
+                          pattern: {
+                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                            message: "Noto'g'ri email format"
+                          }
+                        })}
+                        className={`w-full rounded-xl border ${errors.email ? 'border-rose-300 dark:border-rose-500/50' : 'border-[var(--panel-border)]'} bg-[var(--panel-surface)]/50 px-4 py-3.5 pl-11 text-sm text-[var(--panel-text)] placeholder:text-[var(--panel-text-soft)]/50 outline-none focus:border-[var(--panel-accent)] focus:shadow-[0_0_0_3px_var(--panel-focus-ring)] transition-all duration-300`}
+                        placeholder="email@example.com"
+                      />
+                      <div className="absolute right-3.5 top-1/2 -translate-y-1/2">
+                        <FiAtSign className="w-3.5 h-3.5 text-[var(--panel-text-soft)]/30" />
+                      </div>
+                    </div>
+                    {errors.email && (
+                      <p className="mt-1.5 flex items-center gap-1.5 text-xs text-rose-500 dark:text-rose-400">
+                        <FiAlertCircle className="w-3 h-3 shrink-0" />
+                        {errors.email.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Messages */}
+                  {success && (
+                    <div className="group/msg rounded-xl border border-emerald-200/50 dark:border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-500/5 p-4 animate-[fadeIn_0.3s_ease-out]">
+                      <div className="flex items-start gap-3">
+                        <div className="p-1 rounded-full bg-emerald-500/10">
+                          <FiCheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-emerald-800 dark:text-emerald-300">{success}</p>
+                        </div>
+                      </div>
+                    </div>
                   )}
-                </div>
-              </form>
+                  
+                  {error && (
+                    <div className="group/msg rounded-xl border border-rose-200/50 dark:border-rose-500/20 bg-rose-50/50 dark:bg-rose-500/5 p-4 animate-[fadeIn_0.3s_ease-out]">
+                      <div className="flex items-start gap-3">
+                        <div className="p-1 rounded-full bg-rose-500/10">
+                          <FiAlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-rose-800 dark:text-rose-300">{error}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Save Button */}
+                  <div className="pt-6 border-t border-[var(--panel-border)]">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                      <button
+                        type="submit"
+                        disabled={updateMe.isPending || !isDirty}
+                        className="group/btn inline-flex items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-[var(--panel-accent)] to-[var(--panel-accent-strong)] px-7 py-3.5 text-sm font-medium text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-40 disabled:hover:translate-y-0 disabled:cursor-not-allowed"
+                      >
+                        {updateMe.isPending ? (
+                          <>
+                            <FiLoader className="w-4 h-4 animate-spin" />
+                            Saqlanmoqda...
+                          </>
+                        ) : (
+                          <>
+                            <FiSave className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+                            O'zgarishlarni saqlash
+                          </>
+                        )}
+                      </button>
+                      
+                      {!isDirty && (
+                        <p className="text-xs text-[var(--panel-text-soft)] flex items-center gap-1.5">
+                          <FiInfo className="w-3 h-3 shrink-0" />
+                          Saqlash uchun o'zgarish yo'q
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </form>
+              </div>
             </div>
 
-            {/* Image Settings Panel */}
-            <div className="rounded-3xl border border-[#f0d9d6] bg-white/70 backdrop-blur-sm p-6 shadow-xl">
-              <h3 className="text-sm font-medium text-[#7b4f53] mb-4 flex items-center gap-2">
-                <HiOutlinePhotograph className="w-4 h-4 text-[#e07c8e]" />
-                Rasm sozlamalari
-              </h3>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="p-4 rounded-xl border border-[#f0d9d6] bg-white/50">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="p-1.5 rounded-lg bg-[#fceae8]">
-                      <HiOutlinePhotograph className="w-4 h-4 text-[#e07c8e]" />
-                    </div>
-                    <h4 className="text-xs font-medium text-[#7b4f53]">Yuklash talablari</h4>
+            {/* --- Image Settings Panel --- */}
+            <div className="group/card relative rounded-3xl border border-[var(--panel-border)] bg-[var(--panel-surface)] backdrop-blur-sm p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-500 animate-[fadeIn_0.6s_ease-out_0.25s_both]">
+              <div className="absolute -inset-0.5 rounded-3xl bg-gradient-to-br from-[var(--panel-accent)]/20 to-[var(--panel-accent-strong)]/10 opacity-0 group-hover/card:opacity-100 blur-sm transition-opacity duration-500 pointer-events-none" />
+              
+              <div className="relative">
+                <h3 className="text-sm font-semibold text-[var(--panel-text)] mb-6 flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-[var(--panel-accent)]/10">
+                    <HiOutlinePhotograph className="w-4 h-4 text-[var(--panel-accent)]" />
                   </div>
-                  <ul className="space-y-2 text-xs text-[#8f6d70]">
-                    <li className="flex items-start gap-2">
-                      <div className="w-1 h-1 rounded-full bg-[#e07c8e] mt-1.5"></div>
-                      <span>Maksimal fayl hajmi: 5MB</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <div className="w-1 h-1 rounded-full bg-[#e07c8e] mt-1.5"></div>
-                      <span>Tavsiya etiladi: Kvadrat rasm</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <div className="w-1 h-1 rounded-full bg-[#e07c8e] mt-1.5"></div>
-                      <span>Formatlar: JPG, PNG, WebP</span>
-                    </li>
-                  </ul>
-                </div>
+                  Rasm sozlamalari
+                </h3>
                 
-                <div className="p-4 rounded-xl border border-[#f0d9d6] bg-gradient-to-br from-[#fceae8] to-[#ffe1de]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="p-1.5 rounded-lg bg-white">
-                      <FiUpload className="w-4 h-4 text-[#e07c8e]" />
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="p-5 rounded-xl border border-[var(--panel-border)] bg-[var(--panel-surface)]/50 hover:bg-[var(--panel-accent)]/5 transition-colors duration-300">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 rounded-lg bg-[var(--panel-accent)]/10">
+                        <MdOutlinePhotoSizeSelectSmall className="w-4 h-4 text-[var(--panel-accent)]" />
+                      </div>
+                      <h4 className="text-xs font-semibold text-[var(--panel-text)] uppercase tracking-wider">Yuklash talablari</h4>
                     </div>
-                    <h4 className="text-xs font-medium text-[#7b4f53]">Tezkor yuklash</h4>
+                    <ul className="space-y-3 text-xs text-[var(--panel-text-soft)]">
+                      <li className="flex items-start gap-3">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--panel-accent)] mt-1.5 shrink-0" />
+                        <span>Maksimal fayl hajmi: <strong className="text-[var(--panel-text)]">5MB</strong></span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--panel-accent)] mt-1.5 shrink-0" />
+                        <span>Tavsiya etiladi: <strong className="text-[var(--panel-text)]">Kvadrat rasm</strong></span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--panel-accent)] mt-1.5 shrink-0" />
+                        <span>Formatlar: <strong className="text-[var(--panel-text)]">JPG, PNG, WebP</strong></span>
+                      </li>
+                    </ul>
                   </div>
-                  <p className="text-xs text-[#8f6d70] mb-4">
-                    Profil rasmingizni tezda o'zgartirish uchun rasmingiz ustidagi kamera ikonkasini bosing.
-                  </p>
-                  <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#e07c8e] to-[#a66466] px-4 py-2 text-xs font-medium text-white shadow-lg hover:-translate-y-1 transition-all">
-                    <FiUpload className="w-3 h-3" />
-                    Rasm tanlash
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleAvatarUpload}
-                      disabled={uploadAvatar.isPending || isUploadingAvatar}
-                    />
-                  </label>
+                  
+                  <div className="p-5 rounded-xl border border-[var(--panel-border)] bg-gradient-to-br from-[var(--panel-accent)]/10 via-[var(--panel-accent)]/5 to-[var(--panel-accent-strong)]/10 hover:from-[var(--panel-accent)]/15 hover:via-[var(--panel-accent)]/8 hover:to-[var(--panel-accent-strong)]/15 transition-all duration-300">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 rounded-lg bg-white/60 dark:bg-white/10">
+                        <FiUpload className="w-4 h-4 text-[var(--panel-accent)]" />
+                      </div>
+                      <h4 className="text-xs font-semibold text-[var(--panel-text)] uppercase tracking-wider">Tezkor yuklash</h4>
+                    </div>
+                    <p className="text-xs text-[var(--panel-text-soft)] mb-5 leading-relaxed">
+                      Profil rasmingizni tezda o'zgartirish uchun rasmingiz ustidagi kamera ikonkasini bosing.
+                    </p>
+                    <label className="group/btn inline-flex cursor-pointer items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-[var(--panel-accent)] to-[var(--panel-accent-strong)] px-5 py-2.5 text-xs font-medium text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+                      <FiUpload className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" />
+                      Rasm tanlash
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvatarUpload}
+                        disabled={uploadAvatar.isPending || isUploadingAvatar}
+                      />
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Made with love */}
-            <div className="flex items-center justify-center gap-1 text-xs text-[#b38b8d]">
+            {/* --- Footer --- */}
+            <div className="flex items-center justify-center gap-2 text-xs text-[var(--panel-text-soft)]/60 animate-[fadeIn_0.6s_ease-out_0.35s_both]">
               <span>Profil</span>
-              <FiHeart className="text-[#e07c8e] text-xs animate-pulse-soft" />
+              <FiHeart className="text-[var(--panel-accent)] text-xs animate-pulse" />
               <span>bilan yaratildi</span>
             </div>
           </div>
@@ -559,6 +647,14 @@ function Profile() {
           }
         }}
       />
+
+      {/* ===== KEYFRAMES ===== */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </section>
   );
 }

@@ -29,9 +29,7 @@ function Hero({
         <img
           src={isDark ? darkHeroImg : heroImg}
           alt="Hero background"
-          className={`h-full w-full object-cover transition-all duration-700 ${
-            isDark ? "scale-105" : ""
-          }`}
+          className="h-full w-full object-cover animate-hero-ken-burns"
         />
 
         <div
@@ -74,6 +72,19 @@ function Hero({
           <div className="absolute right-[24%] bottom-[20%] animate-hero-drift text-[var(--home-accent)]/20">
             <HiSparkles className="text-2xl" />
           </div>
+          {/* yangi zarrachalar animatsiyalari */}
+          <div className="absolute left-[8%] top-[30%] animate-hero-float-particle text-[var(--home-accent)]/20">
+            <HiSparkles className="text-lg" />
+          </div>
+          <div className="absolute right-[30%] top-[18%] animate-hero-float-particle-2 text-[var(--home-accent-strong)]/20">
+            <HiSparkles className="text-base" />
+          </div>
+          <div className="absolute left-[32%] top-[76%] animate-hero-float-particle-2 text-[var(--home-soft-text)]/20">
+            <HiSparkles className="text-lg" />
+          </div>
+          <div className="absolute right-[8%] top-[58%] animate-hero-float-particle text-[var(--home-accent)]/15">
+            <HiSparkles className="text-base" />
+          </div>
         </div>
       </div>
       <Header
@@ -86,9 +97,7 @@ function Hero({
       <div className="relative z-20 mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4 pb-14 pt-26 sm:px-6 sm:pt-30 lg:justify-start">
         <div className="w-full max-w-4xl text-center lg:-translate-y-20 lg:ml-40 lg:max-w-[50rem] lg:text-left xl:-translate-y-24">
           <div
-            data-aos="zoom-in"
-            data-aos-delay="120"
-            className={`mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-2 shadow-[0_10px_35px_rgba(89,185,230,0.16)] backdrop-blur-md ${
+            className={`mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-2 backdrop-blur-md animate-hero-scale-in animate-hero-pulse-soft ${
               isDark
                 ? "border-[#59b9e6]/25 bg-[#121c2d]/78"
                 : "border-[var(--home-surface-border)] bg-[var(--home-surface-bg)]"
@@ -113,11 +122,8 @@ function Hero({
           </div>
 
           <h1
-            data-aos="fade-up"
-            data-aos-delay="180"
-            className={`mx-auto max-w-4xl text-4xl font-black leading-[0.96] tracking-tight sm:text-5xl md:text-6xl lg:mx-0 lg:max-w-[46rem] lg:text-[5.25rem] ${
-              isDark ? "text-[var(--home-heading)]" : "text-[var(--home-heading)]"
-            }`}
+            className="animate-hero-fade-in-up mx-auto max-w-4xl text-4xl font-black leading-[0.96] tracking-tight sm:text-5xl md:text-6xl lg:mx-0 lg:max-w-[46rem] lg:text-[5.25rem]"
+            style={{ animationDelay: "0.15s", animationFillMode: "both" }}
           >
             Ta'lim jarayonini
             <span
@@ -136,11 +142,8 @@ function Hero({
           </h1>
 
           <p
-            data-aos="fade-up"
-            data-aos-delay="240"
-            className={`mx-auto mt-5 max-w-2xl text-sm leading-7 sm:text-base sm:leading-8 md:text-lg lg:mx-0 lg:max-w-[44rem] ${
-              isDark ? "text-[var(--home-body)]" : "text-[var(--home-body)]"
-            }`}
+            className="animate-hero-fade-in-up mx-auto mt-5 max-w-2xl text-sm leading-7 sm:text-base sm:leading-8 md:text-lg lg:mx-0 lg:max-w-[44rem]"
+            style={{ animationDelay: "0.3s", animationFillMode: "both" }}
           >
             Interaktiv topshiriqlar, oson boshqaruv va natijalarni qulay
             kuzatish imkoniyati. O'qituvchi, o'quvchi va maktab uchun mos,
@@ -148,18 +151,20 @@ function Hero({
           </p>
 
           <div
-            className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start"
-            data-aos="fade-up"
-            data-aos-delay="300"
+            className="animate-hero-fade-in-up mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start"
+            style={{ animationDelay: "0.45s", animationFillMode: "both" }}
           >
             <button
               onClick={() => navigate("/games")}
-              className="group inline-flex cursor-pointer items-center gap-3 rounded-full px-7 py-4 text-sm font-extrabold tracking-[0.06em] text-white shadow-[0_18px_34px_rgba(89,185,230,0.28)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_40px_rgba(255,209,93,0.32)]"
+              className="group relative inline-flex cursor-pointer items-center gap-3 rounded-full px-7 py-4 text-sm font-extrabold tracking-[0.06em] text-white shadow-[0_18px_34px_rgba(89,185,230,0.28)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_40px_rgba(255,209,93,0.32)] overflow-hidden"
               style={{ backgroundImage: "var(--home-accent-gradient)" }}
             >
-              <FaGraduationCap className="text-base" />
-              Boshlash
-              <FaArrowRight className="text-xs transition-transform duration-300 group-hover:translate-x-1" />
+              <span className="absolute inset-0 animate-hero-shimmer bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.18)_50%,transparent_100%)]" />
+              <span className="relative z-10 flex items-center gap-3">
+                <FaGraduationCap className="text-base" />
+                Boshlash
+                <FaArrowRight className="text-xs transition-transform duration-300 group-hover:translate-x-1" />
+              </span>
             </button>
           </div>
         </div>
@@ -167,7 +172,7 @@ function Hero({
         <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[34rem] xl:block">
           <div className="absolute right-20 top-30 h-80 w-80 rounded-full bg-[var(--home-blob-2)] blur-[120px] animate-hero-glow" />
           <div className="absolute bottom-[18%] right-[32%] animate-hero-float">
-            <div className="flex h-18 w-18 items-center justify-center rounded-[1.75rem] border border-white/30 bg-[var(--home-accent-gradient)] shadow-[0_20px_40px_var(--home-shadow-card)]">
+            <div className="flex h-18 w-18 items-center justify-center rounded-[1.75rem] border border-white/30 bg-[var(--home-accent-gradient)] shadow-[0_20px_40px_var(--home-shadow-card)] animate-hero-scale-in">
               <HiSparkles className="text-2xl text-white" />
             </div>
           </div>

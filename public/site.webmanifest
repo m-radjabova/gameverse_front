@@ -1,0 +1,45 @@
+{
+  "name": "GAMEVERSE - Interaktiv ta'lim o'yinlari",
+  "short_name": "GAMEVERSE",
+  "description": "O'quvchilar va o'qituvchilar uchun interaktiv ta'lim o'yinlari, quizlar, 3D va VR simulyatorlar platformasi.",
+  "lang": "uz",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#12172a",
+  "theme_color": "#12172a",
+  "categories": ["education", "games"],
+  "icons": [
+    {
+      "src": "/bunny.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/og-cover-share.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "O'yinlar",
+      "short_name": "O'yinlar",
+      "description": "GAMEVERSE o'yinlar katalogini ochish",
+      "url": "/games",
+      "icons": [
+        {
+          "src": "/bunny.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

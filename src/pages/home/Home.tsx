@@ -39,7 +39,7 @@ function Home() {
 
     const timer = window.setTimeout(() => {
       setIsLoading(false);
-    }, 2200);
+    }, 3000);
 
     return () => {
       window.clearTimeout(timer);

@@ -5,7 +5,7 @@ import { getAccessToken } from "../utils/auth";
 
 type QuestionPayload<T> = {
   game_key?: string;
-  teacher_id?: string;
+  teacher_id?: string | null;
   questions?: T[];
   data?: T[];
 };
@@ -23,8 +23,12 @@ const toPath = (gameKey: string) => `/game-questions/${encodeURIComponent(gameKe
 
 const gameQuestionsKeys = {
   list: (gameKey: string, teacherId?: string) =>
-    ["game-questions", gameKey, teacherId ?? "global"] as const,
+    ["game-questions", gameKey, teacherId ?? "current-teacher"] as const,
 };
+
+function teacherParams(teacherId?: string) {
+  return teacherId ? { teacher_id: teacherId } : undefined;
+}
 
 function extractQuestions<T>(payload: unknown): T[] | null {
   if (Array.isArray(payload)) return payload as T[];
@@ -45,14 +49,20 @@ export async function fetchGameQuestions<T>(gameKey: string): Promise<T[] | null
   }
 }
 
+export async function fetchCurrentTeacherGameQuestions<T>(
+  gameKey: string,
+): Promise<T[] | null> {
+  return fetchGameQuestions<T>(gameKey);
+}
+
 export async function fetchGameQuestionsByTeacher<T>(
   gameKey: string,
-  teacherId: string,
+  teacherId?: string,
 ): Promise<T[] | null> {
   if (!getAccessToken()) return null;
   try {
     const { data } = await apiClient.get<QuestionPayload<T> | T[]>(toPath(gameKey), {
-      params: { teacher_id: teacherId },
+      params: teacherParams(teacherId),
     });
     return extractQuestions<T>(data);
   } catch {
@@ -68,12 +78,12 @@ export async function saveGameQuestions<T>(
   if (!getAccessToken()) return false;
   const payload: QuestionPayload<T> = {
     questions,
-    ...(teacherId ? { teacher_id: teacherId } : {}),
+    teacher_id: teacherId ?? null,
   };
 
   try {
     await apiClient.put<QuestionPayload<T>>(toPath(gameKey), payload, {
-      params: teacherId ? { teacher_id: teacherId } : undefined,
+      params: teacherParams(teacherId),
     });
     return true;
   } catch {
@@ -148,7 +158,7 @@ export default function useGameQuestions<T>({
     ) => {
       const scopedTeacherId = teacherScoped && teacherId ? teacherId : undefined;
 
-      if (teacherScoped && !scopedTeacherId) {
+      if (teacherScoped && !getAccessToken()) {
         setQuestionsByGame((prev) => ({ ...prev, [gameKey]: [] }));
         setLoadedByGame((prev) => ({ ...prev, [gameKey]: true }));
         setLoadingByGame((prev) => ({ ...prev, [gameKey]: false }));
@@ -174,8 +184,8 @@ export default function useGameQuestions<T>({
       const items = await queryClient.fetchQuery({
         queryKey,
         queryFn: () =>
-          teacherScoped && teacherId
-            ? fetchGameQuestionsByTeacher<T>(gameKey, teacherId)
+          teacherScoped
+            ? fetchGameQuestionsByTeacher<T>(gameKey, scopedTeacherId)
             : fetchGameQuestions<T>(gameKey),
       });
 
