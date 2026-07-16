@@ -9,6 +9,7 @@ import {
   FaSearch,
   FaTrash,
   FaGraduationCap,
+  FaGamepad,
   FaBookOpen,
   FaStar,
   FaClock,
@@ -922,6 +923,36 @@ function FormField({
   );
 }
 
+function QuestionListSkeleton() {
+  return (
+    <div className="space-y-3" aria-label="Savollar yuklanmoqda">
+      {[0, 1, 2, 3].map((item) => (
+        <div key={item} className="animate-pulse rounded-lg border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1 space-y-3">
+              <div className="h-3 w-20 rounded bg-[var(--panel-border)]" />
+              <div className="h-4 w-4/5 rounded bg-[var(--panel-border)]" />
+              <div className="h-3 w-2/5 rounded bg-[var(--panel-border)]" />
+            </div>
+            <div className="h-8 w-20 rounded-md bg-[var(--panel-border)]" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EditorSkeleton() {
+  return (
+    <div className="space-y-5 animate-pulse" aria-label="Editor yuklanmoqda">
+      <div className="h-14 rounded-lg bg-[var(--panel-border)]" />
+      <div className="space-y-2"><div className="h-3 w-28 rounded bg-[var(--panel-border)]" /><div className="h-12 rounded-lg bg-[var(--panel-border)]" /></div>
+      <div className="space-y-2"><div className="h-3 w-24 rounded bg-[var(--panel-border)]" /><div className="h-28 rounded-lg bg-[var(--panel-border)]" /></div>
+      <div className="h-11 w-36 rounded-lg bg-[var(--panel-border)]" />
+    </div>
+  );
+}
+
 export default function TeacherQuestionPanel() {
   const isDarkMode = useHomeTheme();
   const {
@@ -1142,6 +1173,27 @@ export default function TeacherQuestionPanel() {
           </div>
         </div>
 
+        <section className="mb-6 border-y border-[var(--panel-border)] bg-[var(--panel-surface)]/70 backdrop-blur-xl">
+          <div className="grid divide-y divide-[var(--panel-border)] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+            {[
+              { number: "01", title: "O'yinni tanlang", text: "Quyidagi ro'yxatdan darsingizga mos o'yinni oching.", icon: FaGamepad },
+              { number: "02", title: "Savolni tayyorlang", text: "Qo'lda yozing yoki AI yordamida yangi savollar yarating.", icon: FaEdit },
+              { number: "03", title: "Saqlang va tekshiring", text: "O'zgarishlarni saqlab, o'yin ichida natijani ko'ring.", icon: FaSave },
+            ].map((step) => {
+              const Icon = step.icon;
+              return (
+                <div key={step.number} className="flex min-h-28 items-start gap-4 p-5 sm:p-6">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[var(--panel-accent)]/10 text-xs font-black text-[var(--panel-accent)]">{step.number}</span>
+                  <div>
+                    <div className="flex items-center gap-2 text-sm font-bold text-[var(--panel-text)]"><Icon className="text-[var(--panel-accent)]" />{step.title}</div>
+                    <p className="mt-2 text-xs leading-5 text-[var(--panel-text-soft)]">{step.text}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
         {/* Game Cards Section */}
         <section className="mb-6 overflow-hidden rounded-3xl border border-[var(--panel-border)] bg-[var(--panel-surface)] p-5 shadow-lg shadow-[var(--panel-accent)]/5 backdrop-blur-xl sm:p-6 transition-all duration-300">
           <div className="mb-5 flex items-center justify-between gap-3">
@@ -1237,7 +1289,8 @@ export default function TeacherQuestionPanel() {
                       </div>
                       <Link
                         to={activeGame.path}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] px-5 py-2.5 text-xs font-medium text-[var(--panel-text)] transition-all hover:border-[var(--panel-accent)] hover:bg-[image:var(--panel-accent-gradient-soft)] hover:shadow-md"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--panel-border)] px-5 py-2.5 text-xs font-bold transition-all hover:border-[var(--panel-accent)] hover:bg-[image:var(--panel-accent-gradient-soft)] hover:shadow-md"
+                        style={{ color: "var(--panel-text)", backgroundColor: "var(--panel-surface-strong)" }}
                       >
                         O'yinga o'tish
                         <FaArrowRight className="h-3 w-3" />
@@ -1270,7 +1323,7 @@ export default function TeacherQuestionPanel() {
 
                 {/* Question List */}
                 <div className="space-y-3 pr-1 max-h-[600px] overflow-y-auto">
-                  {filteredItems.map(({ item, index: realIndex }) => {
+                  {loading ? <QuestionListSkeleton /> : filteredItems.map(({ item, index: realIndex }) => {
                     const meta = extractMeta(item);
                     const selected = selectedIndex === realIndex;
 
@@ -1373,6 +1426,7 @@ export default function TeacherQuestionPanel() {
           <aside className="rounded-3xl border border-[var(--panel-border)] bg-[var(--panel-surface)] p-5 shadow-lg shadow-[var(--panel-accent)]/5 backdrop-blur-xl sm:p-6 xl:sticky xl:top-6 xl:self-start transition-all duration-300">
             {activeGame ? (
               <>
+                {loading ? <EditorSkeleton /> : <>
                 {/* Panel Header */}
                 <div className="mb-5 flex items-start justify-between gap-3">
                   <div>
@@ -1647,6 +1701,7 @@ export default function TeacherQuestionPanel() {
                   <FaHeart className="text-[var(--panel-accent)] text-[8px] animate-pulse-soft" />
                   <span>bilan yaratilmoqda</span>
                 </div>
+                </>}
               </>
             ) : (
               <div className="flex min-h-[420px] items-center justify-center rounded-2xl border border-dashed border-[var(--panel-border)] bg-[var(--panel-surface-strong)] text-center">

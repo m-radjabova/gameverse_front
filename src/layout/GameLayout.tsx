@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaExclamationTriangle, FaGamepad } from "react-icons/fa";
 import { MdFullscreen, MdFullscreenExit } from "react-icons/md";
 
 export default function GameLayout() {
@@ -8,6 +8,7 @@ export default function GameLayout() {
   const location = useLocation();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const [pendingExit, setPendingExit] = useState<(() => void) | null>(null);
   const lastScrollYRef = useRef(0);
   const controlTheme = (() => {
     if (location.pathname.includes("/mini-puzzle")) {
@@ -81,6 +82,8 @@ export default function GameLayout() {
   })();
 
   const showGameControls = location.pathname.startsWith("/games/") && location.pathname !== "/games";
+  const showFullscreenControl = location.pathname.endsWith("/play");
+  const isActiveGameplay = location.pathname.endsWith("/play");
   const isMobileViewport =
     typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
 
@@ -95,6 +98,29 @@ export default function GameLayout() {
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isActiveGameplay) return;
+
+    const warnBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", warnBeforeUnload);
+    return () => window.removeEventListener("beforeunload", warnBeforeUnload);
+  }, [isActiveGameplay]);
+
+  useEffect(() => {
+    if (!pendingExit) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setPendingExit(null);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [pendingExit]);
 
   // Hide/show buttons on scroll
   useEffect(() => {
@@ -125,9 +151,19 @@ export default function GameLayout() {
     }
   };
 
+  const requestGameExit = (onConfirm: () => void) => {
+    setPendingExit(() => onConfirm);
+  };
+
+  const confirmExit = () => {
+    const exit = pendingExit;
+    setPendingExit(null);
+    exit?.();
+  };
+
   const goBack = () => {
-    if (window.history.length > 1) {
-      navigate(-1);
+    if (isActiveGameplay) {
+      requestGameExit(() => navigate(location.pathname.endsWith("/play") ? location.pathname.replace(/\/play$/, "") : "/games"));
       return;
     }
     navigate("/games");
@@ -137,71 +173,97 @@ export default function GameLayout() {
     <div className="game-layout relative min-h-screen bg-[#04111f]">
       {showGameControls && (
         <>
-          {/* Left Button - Back to Games */}
           <div
-            className={`fixed left-4 top-1/2 z-50 transform -translate-y-1/2 transition-all duration-300 ${
-              showControls ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-full"
-            } hidden md:block`}
-          >
-            <button
-              onClick={goBack}
-              className={`group relative h-14 w-14 overflow-hidden rounded-2xl ${controlTheme.button} text-white shadow-2xl transition-all hover:scale-110 active:scale-95 ${controlTheme.backShadow}`}
-              aria-label="O'yinlar ro'yxatiga qaytish"
-            >
-              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-              <FaArrowLeft className="relative mx-auto text-xl" />
-              <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap rounded-full bg-black/80 px-3 py-1.5 text-xs font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                O'yinlar
-              </span>
-            </button>
-          </div>
-
-          {/* Right Button - Fullscreen Toggle */}
-          <div
-            className={`fixed right-4 top-1/2 z-50 transform -translate-y-1/2 transition-all duration-300 ${
-              showControls ? "opacity-100 translate-x-0" : "opacity-100 translate-x-0"
-            } hidden md:block`}
-          >
-            <button
-              onClick={toggleFullscreen}
-              className={`group relative h-14 w-14 overflow-hidden rounded-2xl ${controlTheme.button} text-white shadow-2xl transition-all hover:scale-110 active:scale-95 ${controlTheme.fullscreenShadow}`}
-              aria-label={isFullscreen ? "Fullscreen dan chiqish" : "Fullscreen"}
-            >
-              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-              {isFullscreen ? (
-                <MdFullscreenExit className="relative mx-auto text-xl" />
-              ) : (
-                <MdFullscreen className="relative mx-auto text-xl" />
-              )}
-              <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap rounded-full bg-black/80 px-3 py-1.5 text-xs font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                {isFullscreen ? "Chiqish" : "To'liq ekran"}
-              </span>
-            </button>
-          </div>
-
-          {/* Mobile Bottom Buttons (for small screens) */}
-          <div
-            className={`fixed bottom-4 left-0 right-0 z-50 flex justify-center gap-4 md:hidden transition-all duration-300 ${
-              showControls ? "translate-y-0" : "translate-y-full"
+            className={`fixed left-4 top-1/2 z-50 hidden -translate-y-1/2 transition-all duration-300 md:block ${
+              showControls ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0"
             }`}
           >
-            {/* Back to Games */}
             <button
+              type="button"
               onClick={goBack}
-              className={`group relative h-11 w-11 overflow-hidden rounded-xl ${controlTheme.button} text-white shadow-2xl transition-all active:scale-95`}
-              aria-label="O'yinlar"
+              title="O'yin sahifasiga qaytish"
+              className={`group relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl ${controlTheme.button} text-white shadow-2xl transition-all hover:scale-110 active:scale-95 ${controlTheme.backShadow}`}
+              aria-label="O'yin sahifasiga qaytish"
             >
-              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-              <FaArrowLeft className="relative mx-auto text-base" />
+              <span className="absolute inset-0 translate-y-full bg-white/20 transition-transform duration-300 group-hover:translate-y-0" />
+              <FaArrowLeft className="relative text-xl" />
+              <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/80 px-3 py-1.5 text-xs font-bold text-white opacity-0 transition-opacity group-hover:opacity-100">
+                Orqaga
+              </span>
             </button>
           </div>
+
+          {showFullscreenControl ? (
+            <div
+              className={`fixed right-4 top-1/2 z-50 hidden -translate-y-1/2 transition-all duration-300 md:block ${
+                showControls ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
+              }`}
+            >
+              <button
+                type="button"
+                onClick={toggleFullscreen}
+                className={`group relative h-14 w-14 overflow-hidden rounded-2xl ${controlTheme.button} text-white shadow-2xl transition-all hover:scale-110 active:scale-95 ${controlTheme.fullscreenShadow}`}
+                aria-label={isFullscreen ? "Fullscreen dan chiqish" : "Fullscreen"}
+              >
+                <div className="absolute inset-0 translate-y-full bg-white/20 transition-transform duration-300 group-hover:translate-y-0" />
+                {isFullscreen ? (
+                  <MdFullscreenExit className="relative mx-auto text-xl" />
+                ) : (
+                  <MdFullscreen className="relative mx-auto text-xl" />
+                )}
+                <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/80 px-3 py-1.5 text-xs font-bold text-white opacity-0 transition-opacity group-hover:opacity-100">
+                  {isFullscreen ? "Chiqish" : "To'liq ekran"}
+                </span>
+              </button>
+            </div>
+          ) : null}
         </>
       )}
 
       {/* Main Content */}
       <main className="min-h-[100dvh] bg-[#04111f] pb-20 md:pb-0">
-        <Outlet />
+        <Outlet context={{ requestGameExit }} />
       </main>
+
+      {pendingExit ? (
+        <div className="fixed inset-0 z-[100] grid place-items-center p-4" role="dialog" aria-modal="true" aria-labelledby="game-exit-title">
+          <button
+            type="button"
+            className="absolute inset-0 bg-slate-950/75 backdrop-blur-sm"
+            onClick={() => setPendingExit(null)}
+            aria-label="Dialogni yopish"
+          />
+          <div className="relative w-full max-w-md overflow-hidden rounded-lg border border-white/15 bg-[#101a2b] p-6 text-white shadow-[0_28px_80px_rgba(0,0,0,0.52)] sm:p-7">
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500" />
+            <div className="flex items-start gap-4">
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-lg border border-amber-300/25 bg-amber-300/10 text-amber-300">
+                <FaExclamationTriangle className="text-lg" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200/70">O'yin jarayoni</p>
+                <h2 id="game-exit-title" className="mt-1 text-xl font-black">O'yinni tark etmoqchimisiz?</h2>
+                <p className="mt-2 text-sm leading-6 text-white/65">Hozir chiqilsa, tugallanmagan o'yin jarayoni saqlanmasligi mumkin.</p>
+              </div>
+            </div>
+            <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setPendingExit(null)}
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-4 py-3 text-sm font-bold text-white/85 transition hover:bg-white/[0.12]"
+              >
+                <FaGamepad /> Davom etaman
+              </button>
+              <button
+                type="button"
+                onClick={confirmExit}
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-rose-500 to-orange-500 px-4 py-3 text-sm font-bold text-white transition hover:brightness-110"
+              >
+                <FaArrowLeft /> Ha, chiqaman
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

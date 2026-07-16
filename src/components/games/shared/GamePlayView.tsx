@@ -1,19 +1,23 @@
 import type { ReactNode } from "react";
-import { FaSlidersH } from "react-icons/fa";
-import { useLocation } from "react-router-dom";
+import { FaArrowLeft, FaClock, FaGamepad, FaUsers } from "react-icons/fa6";
+import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { gameCards } from "../../../pages/games/data";
 import { getGameSessionConfig } from "../../../hooks/gameSession";
+import { ReactBitsPageEnter } from "./ReactBitsMotion";
 
 type GamePlayViewProps = {
   colorClassName: string;
   children: ReactNode;
 };
 
-export default function GamePlayView({
-  colorClassName,
-  children,
-}: GamePlayViewProps) {
+type GameLayoutContext = {
+  requestGameExit: (onConfirm: () => void) => void;
+};
+
+export default function GamePlayView({ colorClassName, children }: GamePlayViewProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { requestGameExit } = useOutletContext<GameLayoutContext>();
   const isPlantVrRoute =
     location.pathname === "/games/plant-vr" || location.pathname === "/games/plant-vr/play";
   const isVirtualZooRoute =
@@ -24,61 +28,64 @@ export default function GamePlayView({
     isPlantVrRoute ||
     isVirtualZooRoute ||
     isWorldExplorerRoute ||
-    location.pathname === "/games/vr-solar-system" ||
-    location.pathname === "/games/quyosh-tizimi-vr";
+    location.pathname === "/games/vr-solar-system/play" ||
+    location.pathname === "/games/quyosh-tizimi-vr/play";
   const game = gameCards.find(
     (item) => `${item.path}/play` === location.pathname || item.path === location.pathname
   );
   const session = game ? getGameSessionConfig(game.id) : null;
 
-  if (isFullBleedGameRoute) {
-    return <>{children}</>;
-  }
+  if (isFullBleedGameRoute) return <>{children}</>;
+
+  const goBack = () => requestGameExit(() => navigate(game?.path || "/games"));
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#050816] px-3 py-4 sm:px-4 sm:py-5 md:px-6 md:py-8">
-      <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${colorClassName} opacity-15`} />
+    <main className="relative min-h-screen overflow-hidden bg-[#050816] px-3 py-3 text-white sm:px-5 sm:py-5 lg:px-8 lg:py-7">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.028)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.028)_1px,transparent_1px)] bg-[size:40px_40px]" />
+      <div className={`pointer-events-none absolute -right-24 top-0 h-[360px] w-[360px] rotate-45 border-l border-b bg-gradient-to-br ${colorClassName} opacity-[0.09]`} />
+      <div className={`pointer-events-none absolute -bottom-28 -left-24 h-80 w-80 rotate-12 border border-dashed bg-gradient-to-tr ${colorClassName} opacity-[0.07]`} />
 
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-[440px] flex-col sm:max-w-3xl md:min-h-[calc(100vh-4rem)] md:max-w-[1600px]">
-        {game && (
-          <div className="mb-3 rounded-[28px] border border-white/12 bg-white/6 p-4 backdrop-blur-xl md:mb-4 md:rounded-3xl md:p-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.25em] text-white/45">
-                  Tanlangan o'yin
-                </p>
-                <h2 className="mt-1 text-xl font-black text-white sm:text-2xl">
-                  {game.title}
-                </h2>
-                <p className="mt-1 text-sm text-white/60">
-                  {session
-                    ? `${session.participantCount} ${session.participantLabel} · ${game.time}`
-                    : `${game.players} · ${game.time}`}
-                </p>
-              </div>
+      <ReactBitsPageEnter className="relative mx-auto w-full max-w-[1720px]">
+        {game ? (
+          <header className="mb-4 flex min-h-16 flex-wrap items-center gap-3 border-b border-white/10 pb-4 sm:mb-5 sm:flex-nowrap sm:gap-4 sm:pb-5">
+            <button
+              type="button"
+              onClick={goBack}
+              title="O'yin sahifasiga qaytish"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/[0.045] text-white/80 transition hover:border-white/30 hover:bg-white/[0.1] hover:text-white md:hidden"
+              aria-label="O'yin sahifasiga qaytish"
+            >
+              <FaArrowLeft />
+            </button>
 
-              <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white/80 sm:w-auto">
-                <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-r ${colorClassName}`}
-                >
-                  <FaSlidersH className="text-sm text-white" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/45">
-                    Rejim
-                  </p>
-                  <p className="text-sm font-bold text-white">
-                    {session ? `${session.participantCount} ${session.participantLabel}` : game.players}
-                  </p>
-                </div>
-              </div>
+            <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${colorClassName} shadow-lg shadow-black/20`}>
+              <FaGamepad className="text-lg" />
             </div>
-          </div>
-        )}
-        <div className="rounded-[28px] border border-white/12 bg-white/5 p-3 backdrop-blur-xl sm:p-4 md:rounded-3xl md:p-6">
-          {children}
-        </div>
-      </div>
-    </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/45">O'yin maydoni</p>
+              <h1 className="truncate text-base font-black text-white sm:text-xl">{game.title}</h1>
+            </div>
+
+            <div className="order-3 flex w-full items-center gap-2 sm:order-none sm:w-auto sm:gap-3">
+              <span className="inline-flex min-w-0 items-center gap-2 border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-bold text-white/70">
+                <FaUsers className="shrink-0 text-white/45" />
+                <span className="truncate">{session ? `${session.participantCount} ${session.participantLabel}` : game.players}</span>
+              </span>
+              <span className="inline-flex shrink-0 items-center gap-2 border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-bold text-white/70">
+                <FaClock className="text-white/45" />
+                {game.time}
+              </span>
+            </div>
+          </header>
+        ) : null}
+
+        <section className="relative">
+          <div className={`pointer-events-none absolute -left-1 -top-1 h-9 w-9 border-l-2 border-t-2 ${colorClassName.includes("yellow") || colorClassName.includes("orange") ? "border-amber-300" : "border-cyan-300"} opacity-70`} />
+          <div className="pointer-events-none absolute -bottom-1 -right-1 h-9 w-9 border-b-2 border-r-2 border-white/30" />
+          <div className="relative py-2 sm:py-3">{children}</div>
+        </section>
+      </ReactBitsPageEnter>
+    </main>
   );
 }

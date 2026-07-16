@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaBolt,
@@ -26,6 +26,7 @@ import { TREASURE_RIDDLES } from "./data/riddles";
 import type { Riddle } from "./types";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
+import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
 import pirateShipSvg from "../../../assets/treasure-hunt/pirate-ship.svg";
 import palmIslandSvg from "../../../assets/treasure-hunt/palm-island.svg";
@@ -101,7 +102,7 @@ const formatTime = (seconds: number) => {
 };
 
 // -- Realistic SVG Treasure Map ----------------------------------------------
-function TreasureMapSVG({ progress }: { progress: number }) {
+const TreasureMapSVG = memo(function TreasureMapSVG({ progress }: { progress: number }) {
   const t = progress / 100;
   const idx = Math.min(Math.floor(t * (MAP_POINTS.length - 1)), MAP_POINTS.length - 2);
   const frac = t * (MAP_POINTS.length - 1) - idx;
@@ -124,26 +125,6 @@ function TreasureMapSVG({ progress }: { progress: number }) {
           <stop offset="50%" stopColor="#3b82f6" stopOpacity="0.08" />
           <stop offset="100%" stopColor="#020617" stopOpacity="0" />
         </radialGradient>
-        <filter id="shipGlow">
-          <feGaussianBlur stdDeviation="1.8" result="blur" />
-          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-        <filter id="routeGlow">
-          <feGaussianBlur stdDeviation="1.8" result="blur" />
-          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-        <filter id="chestGlow">
-          <feGaussianBlur stdDeviation="2.5" result="blur" />
-          <feColorMatrix
-            in="blur"
-            type="matrix"
-            values="1 0 0 0 0  0 0.8 0 0 0  0 0 0.4 0 0  0 0 0 1 0"
-          />
-          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-        <filter id="islandShadow" x="-25%" y="-25%" width="150%" height="150%">
-          <feDropShadow dx="0" dy="2.8" stdDeviation="2.2" floodColor="#020617" floodOpacity="0.45" />
-        </filter>
         <pattern id="waves" x="0" y="0" width="18" height="10" patternUnits="userSpaceOnUse">
           <path d="M0,5 Q4,1 9,5 T18,5" stroke="#7dd3fc" strokeWidth="0.6" fill="none" opacity="0.18"/>
           <path d="M0,8 Q3,6 6,8 T12,8 T18,8" stroke="#38bdf8" strokeWidth="0.35" fill="none" opacity="0.14"/>
@@ -160,17 +141,10 @@ function TreasureMapSVG({ progress }: { progress: number }) {
           <stop offset="0%" stopColor="#dbeafe" stopOpacity="0.45"/>
           <stop offset="100%" stopColor="#dbeafe" stopOpacity="0"/>
         </radialGradient>
-        {/* Shimmer animation */}
         <linearGradient id="shimmer" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.1">
-            <animate attributeName="stopOpacity" values="0.05;0.25;0.05" dur="3s" repeatCount="indefinite"/>
-          </stop>
-          <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.2">
-            <animate attributeName="stopOpacity" values="0.1;0.4;0.1" dur="3s" repeatCount="indefinite"/>
-          </stop>
-          <stop offset="100%" stopColor="#fbbf24" stopOpacity="0.05">
-            <animate attributeName="stopOpacity" values="0.05;0.2;0.05" dur="3s" repeatCount="indefinite"/>
-          </stop>
+          <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.08" />
+          <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#fbbf24" stopOpacity="0.04" />
         </linearGradient>
       </defs>
 
@@ -196,7 +170,7 @@ function TreasureMapSVG({ progress }: { progress: number }) {
         preserveAspectRatio="xMidYMid meet"
       />
 
-      <g filter="url(#islandShadow)">
+      <g>
         <image
           href={palmIslandSvg}
           x="1"
@@ -257,7 +231,6 @@ function TreasureMapSVG({ progress }: { progress: number }) {
         fill="none"
         opacity="0.12"
         strokeLinecap="round"
-        filter="url(#routeGlow)"
       />
       <path
         d={MAP_ROUTE_D}
@@ -296,10 +269,7 @@ function TreasureMapSVG({ progress }: { progress: number }) {
         );
       })}
 
-      <circle cx="89" cy="25.5" r="8" fill="url(#treasureGlow)">
-        <animate attributeName="r" values="7.4;9.2;7.4" dur="2.3s" repeatCount="indefinite"/>
-        <animate attributeName="opacity" values="0.48;0.88;0.48" dur="2.3s" repeatCount="indefinite"/>
-      </circle>
+      <circle cx="89" cy="25.5" r="8" fill="url(#treasureGlow)" opacity="0.68" />
       <image
         href={treasureChestSvg}
         x="85.5"
@@ -307,14 +277,13 @@ function TreasureMapSVG({ progress }: { progress: number }) {
         width="9"
         height="9"
         preserveAspectRatio="xMidYMid meet"
-        filter="url(#chestGlow)"
       />
       <g transform="translate(86.4,33.5)" opacity="0.95">
         <line x1="0" y1="0" x2="4.1" y2="4.1" stroke="#ef4444" strokeWidth="1.1" strokeLinecap="round"/>
         <line x1="4.1" y1="0" x2="0" y2="4.1" stroke="#ef4444" strokeWidth="1.1" strokeLinecap="round"/>
       </g>
 
-      <g transform={`translate(${sx - 5.2}, ${sy - 7.8})`} filter="url(#shipGlow)">
+      <g transform={`translate(${sx - 5.2}, ${sy - 7.8})`}>
         <ellipse cx="-0.6" cy="9.2" rx="7.8" ry="2.2" fill="url(#shipWake)" opacity="0.55"/>
         <ellipse cx="-5.8" cy="9.45" rx="3.2" ry="0.9" fill="#e0f2fe" opacity="0.4"/>
         <image
@@ -324,14 +293,6 @@ function TreasureMapSVG({ progress }: { progress: number }) {
           width="12"
           height="12"
           preserveAspectRatio="xMidYMid meet"
-        />
-        <animateTransform
-          attributeName="transform"
-          additive="sum"
-          type="translate"
-          values="0 0; 0.24 -0.55; 0 0; -0.22 0.4; 0 0"
-          dur="3s"
-          repeatCount="indefinite"
         />
       </g>
 
@@ -363,7 +324,7 @@ function TreasureMapSVG({ progress }: { progress: number }) {
       <rect x="0" y="0" width="102" height="90" fill="url(#shimmer)" opacity="0.5"/>
     </svg>
   );
-}
+});
 
 // pts for ship position calculation - needs to be accessible in component
 // const pts: [number,number][] = [
@@ -614,6 +575,18 @@ export default function TreasureHunt() {
     if (score >= 700) return { name: "Dengiz Bo'risi", color: "from-emerald-400 to-teal-600", icon: FaShip };
     return { name: "Jake Varabey", color: "from-stone-400 to-stone-600", icon: GiPirateFlag };
   }, [score]);
+  const backgroundStars = useMemo(
+    () => Array.from({ length: 18 }, (_, index) => ({
+      id: index,
+      size: Math.random() * 2 + 1,
+      left: Math.random() * 100,
+      top: Math.random() * 60,
+      opacity: Math.random() * 0.45 + 0.1,
+      duration: Math.random() * 3 + 2,
+      delay: Math.random() * 3,
+    })),
+    []
+  );
 
   // -- Timer ring --
   const timerPct = (questionSeconds / SECONDS_PER_QUESTION) * 100;
@@ -626,17 +599,16 @@ export default function TreasureHunt() {
       {/* -- Atmospheric background -- */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-[#08151f] via-[#0d1f2d] to-[#060e16]" />
-        {/* Animated stars */}
-        {[...Array(30)].map((_, i) => (
-          <div key={i} className="absolute rounded-full bg-white"
+        {backgroundStars.map((star) => (
+          <div key={star.id} className="absolute rounded-full bg-white"
             style={{
-              width: Math.random() * 2 + 1,
-              height: Math.random() * 2 + 1,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 60}%`,
-              opacity: Math.random() * 0.5 + 0.1,
-              animation: `pulse ${Math.random() * 3 + 2}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 3}s`,
+              width: star.size,
+              height: star.size,
+              left: `${star.left}%`,
+              top: `${star.top}%`,
+              opacity: star.opacity,
+              animation: `pulse ${star.duration}s ease-in-out infinite`,
+              animationDelay: `${star.delay}s`,
             }}
           />
         ))}
@@ -1124,40 +1096,7 @@ export default function TreasureHunt() {
         </div>
       )}
 
-      {/* -- Countdown Overlay -- */}
-      {countdownVisible && countdownValue !== null && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center" style={{ pointerEvents: "all" }}>
-          {/* Dark backdrop */}
-          <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" />
-          {/* Countdown content */}
-          <div className="relative flex flex-col items-center gap-6">
-            {/* Animated rings */}
-            <div className="relative flex items-center justify-center">
-              <div className="absolute h-48 w-48 rounded-full border-4 border-amber-400/20" />
-              <div className="absolute h-40 w-40 rounded-full border-2 border-amber-400/40" style={{ animation: "spin 3s linear infinite" }} />
-              {/* Main circle */}
-              <div className="relative flex h-36 w-36 items-center justify-center rounded-full border-4 border-amber-400 bg-gradient-to-br from-amber-900/80 to-black/80 shadow-2xl shadow-amber-500/50 backdrop-blur-md">
-                <span
-                  className="font-black text-amber-300"
-                  style={{
-                    fontSize: "72px",
-                    lineHeight: 1,
-                    textShadow: "0 0 30px rgba(251,191,36,0.8), 0 0 60px rgba(251,191,36,0.4)",
-                    fontFamily: "Georgia, serif",
-                  }}
-                >
-                  {countdownValue}
-                </span>
-              </div>
-            </div>
-            <div className="rounded-full border border-amber-600/40 bg-black/60 px-6 py-2 backdrop-blur-sm">
-              <p className="font-black tracking-[0.2em] text-amber-400" style={{ fontSize: "14px" }}>
-                BOSHLANMOQDA
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue} />
     </div>
   );
 }

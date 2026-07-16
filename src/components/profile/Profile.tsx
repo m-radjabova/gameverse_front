@@ -41,11 +41,13 @@ import {
   MdOutlinePersonOutline,
   MdOutlinePhotoSizeSelectSmall
 } from "react-icons/md";
-import { GiCherry, GiFlowerTwirl, GiPlanetCore, GiSparklingSabre, GiSpiralBloom } from "react-icons/gi";
+import { GiPlanetCore } from "react-icons/gi";
 import { BsStars } from "react-icons/bs";
 import ChangePasswordModal from "./ChangePasswordModal";
 import useHomeTheme from "../../hooks/useHomeTheme";
 import { useNavigate } from "react-router-dom";
+import profileLightBackground from "./profile_light_mode.png";
+import profileDarkBackground from "./profile_dark_mode.png";
 
 type ProfileForm = {
   username: string;
@@ -55,6 +57,8 @@ type ProfileForm = {
 function Profile() {
   const navigate = useNavigate();
   const isDarkMode = useHomeTheme();
+  const profileBackground = isDarkMode ? profileDarkBackground : profileLightBackground;
+  const panelSurfaceClass = "relative overflow-hidden rounded-lg border border-[var(--panel-border)] bg-[var(--panel-surface)]/90 p-6 shadow-[0_16px_36px_rgba(55,80,130,0.12)] backdrop-blur-xl md:p-8";
   const { dispatch } = useContextPro();
   const meQuery = useMeQuery(true);
   const user = meQuery.data;
@@ -154,6 +158,7 @@ function Profile() {
       <section
         data-home-theme={isDarkMode ? "dark" : "light"}
         className="profile-theme min-h-screen bg-[image:var(--panel-page-bg)] bg-[var(--panel-page-base)] py-12"
+        style={{ backgroundImage: `url(${profileBackground})`, backgroundPosition: "center", backgroundSize: "cover", backgroundAttachment: "fixed" }}
       >
         <div className="mx-auto max-w-6xl px-4">
           <div className="flex items-center justify-center h-[80vh]">
@@ -182,6 +187,7 @@ function Profile() {
       <section
         data-home-theme={isDarkMode ? "dark" : "light"}
         className="profile-theme min-h-screen bg-[image:var(--panel-page-bg)] bg-[var(--panel-page-base)] py-12"
+        style={{ backgroundImage: `url(${profileBackground})`, backgroundPosition: "center", backgroundSize: "cover", backgroundAttachment: "fixed" }}
       >
         <div className="mx-auto max-w-6xl px-4">
           <div className="group relative rounded-3xl border border-[var(--panel-border)] bg-[var(--panel-surface)] backdrop-blur-sm p-8 shadow-xl hover:shadow-2xl transition-all duration-500">
@@ -215,32 +221,14 @@ function Profile() {
   return (
     <section
       data-home-theme={isDarkMode ? "dark" : "light"}
-      className="profile-theme bg-[image:var(--panel-page-bg)] bg-[var(--panel-page-base)] py-8 md:py-12"
+      className="profile-theme relative isolate min-h-screen bg-[var(--panel-page-base)] bg-cover bg-center bg-fixed bg-no-repeat py-8 md:py-12"
+      style={{ backgroundImage: `url(${profileBackground})` }}
     >
-      {/* ===== ANIMATED BACKGROUND ===== */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
-        {/* Large floating orbs */}
-        <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-[var(--panel-accent)]/8 blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute -right-32 top-1/3 h-80 w-80 rounded-full bg-[var(--panel-accent-strong)]/6 blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '1s' }} />
-        <div className="absolute left-1/4 bottom-0 h-72 w-72 rounded-full bg-[var(--panel-accent)]/5 blur-3xl animate-pulse" style={{ animationDuration: '12s', animationDelay: '2s' }} />
-        
-        {/* Floating decorative icons */}
-        <GiCherry className="absolute left-[8%] top-[15%] text-5xl text-[var(--panel-accent)]/10 animate-bounce" style={{ animationDuration: '6s', animationDelay: '0.5s' }} />
-        <GiFlowerTwirl className="absolute right-[12%] top-[35%] text-6xl text-[var(--panel-accent-strong)]/10 animate-bounce" style={{ animationDuration: '7s', animationDelay: '1.2s' }} />
-        <GiSpiralBloom className="absolute left-[15%] bottom-[25%] text-5xl text-[var(--panel-accent)]/8 animate-bounce" style={{ animationDuration: '8s', animationDelay: '2s' }} />
-        <GiSparklingSabre className="absolute right-[20%] bottom-[40%] text-4xl text-[var(--panel-accent-strong)]/8 animate-bounce" style={{ animationDuration: '9s', animationDelay: '0.8s' }} />
-        
-        {/* Subtle grid pattern */}
-        <div 
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, var(--panel-accent) 1px, transparent 0)`,
-            backgroundSize: '40px 40px'
-          }}
-        />
-      </div>
-
-      <div className="mx-auto mt-16 md:mt-20 max-w-7xl px-4 sm:px-6 relative" style={{ zIndex: 1 }}>
+      <div
+        className={`pointer-events-none absolute inset-0 ${isDarkMode ? "bg-slate-950/20" : "bg-white/60"}`}
+        aria-hidden="true"
+      />
+      <div className="relative z-10 mx-auto mt-16 max-w-7xl px-4 sm:px-6 md:mt-20">
         
         {/* ===== HEADER SECTION ===== */}
         <div className="mb-10 md:mb-12 animate-[fadeIn_0.6s_ease-out]">
@@ -272,14 +260,9 @@ function Profile() {
           <div className="lg:col-span-1 space-y-6 lg:space-y-8">
             
             {/* --- Profile Card --- */}
-            <div className="group/card relative rounded-3xl border border-[var(--panel-border)] bg-[var(--panel-surface)] backdrop-blur-sm p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-500 animate-[fadeIn_0.6s_ease-out_0.1s_both]">
-              {/* Card glow effect */}
-              <div className="absolute -inset-0.5 rounded-3xl bg-gradient-to-br from-[var(--panel-accent)]/20 to-[var(--panel-accent-strong)]/10 opacity-0 group-hover/card:opacity-100 blur-sm transition-opacity duration-500 pointer-events-none" />
-              
+            <div className={`${panelSurfaceClass} animate-[fadeIn_0.6s_ease-out_0.1s_both]`}>
               <div className="relative">
-                {/* Decorative top accent */}
-                <div className="absolute -top-6 -left-6 -right-6 h-28 bg-gradient-to-br from-[var(--panel-accent)]/10 via-[var(--panel-accent)]/5 to-transparent rounded-t-3xl opacity-60" />
-                <div className="absolute -top-6 -left-6 w-24 h-24 bg-gradient-to-br from-[var(--panel-accent)]/20 to-transparent rounded-tl-3xl blur-xl" />
+                <div className="mb-6 h-1 w-16 rounded-full" style={{ backgroundImage: "var(--home-accent-gradient)" }} />
                 
                 <div className="relative flex flex-col items-center text-center mt-2">
                   
@@ -289,9 +272,7 @@ function Profile() {
                     onMouseEnter={() => setAvatarHover(true)}
                     onMouseLeave={() => setAvatarHover(false)}
                   >
-                    {/* Animated rings */}
-                    <div className={`absolute -inset-3 rounded-full bg-gradient-to-r from-[var(--panel-accent)] via-[var(--panel-accent-strong)] to-[var(--panel-accent)] opacity-30 blur-sm transition-all duration-700 ${avatarHover ? 'scale-110 opacity-50' : 'scale-100 opacity-30'}`} />
-                    <div className={`absolute -inset-1.5 rounded-full border-2 border-dashed border-[var(--panel-accent)]/40 transition-all duration-700 ${avatarHover ? 'animate-spin' : ''}`} style={{ animationDuration: '10s' }} />
+                    <div className={`absolute -inset-2 rounded-full border border-dashed border-[var(--panel-accent)]/45 transition-transform duration-500 ${avatarHover ? 'rotate-12 scale-105' : ''}`} />
                     
                     {avatarSrc && !hasAvatarError ? (
                       <div className="relative">
@@ -371,9 +352,7 @@ function Profile() {
             </div>
             
             {/* --- Account Stats Card --- */}
-            <div className="group/card relative rounded-3xl border border-[var(--panel-border)] bg-[var(--panel-surface)] backdrop-blur-sm p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-500 animate-[fadeIn_0.6s_ease-out_0.2s_both]">
-              <div className="absolute -inset-0.5 rounded-3xl bg-gradient-to-br from-[var(--panel-accent)]/20 to-[var(--panel-accent-strong)]/10 opacity-0 group-hover/card:opacity-100 blur-sm transition-opacity duration-500 pointer-events-none" />
-              
+            <div className={`${panelSurfaceClass} animate-[fadeIn_0.6s_ease-out_0.2s_both]`}>
               <div className="relative">
                 <h3 className="text-sm font-semibold text-[var(--panel-text)] mb-5 flex items-center gap-2.5">
                   <div className="p-1.5 rounded-lg bg-[var(--panel-accent)]/10">
@@ -412,9 +391,7 @@ function Profile() {
           <div className="lg:col-span-2 space-y-6 lg:space-y-8">
             
             {/* --- Edit Profile Form --- */}
-            <div className="group/card relative rounded-3xl border border-[var(--panel-border)] bg-[var(--panel-surface)] backdrop-blur-sm p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-500 animate-[fadeIn_0.6s_ease-out_0.15s_both]">
-              <div className="absolute -inset-0.5 rounded-3xl bg-gradient-to-br from-[var(--panel-accent)]/20 to-[var(--panel-accent-strong)]/10 opacity-0 group-hover/card:opacity-100 blur-sm transition-opacity duration-500 pointer-events-none" />
-              
+            <div className={`${panelSurfaceClass} animate-[fadeIn_0.6s_ease-out_0.15s_both]`}>
               <div className="relative">
                 <div className="flex items-start justify-between mb-8">
                   <div>
@@ -531,7 +508,7 @@ function Profile() {
                       <button
                         type="submit"
                         disabled={updateMe.isPending || !isDirty}
-                        className="group/btn inline-flex items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-[var(--panel-accent)] to-[var(--panel-accent-strong)] px-7 py-3.5 text-sm font-medium text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-40 disabled:hover:translate-y-0 disabled:cursor-not-allowed"
+                        className="group/btn inline-flex items-center justify-center gap-2.5 rounded-lg bg-gradient-to-r from-[var(--panel-accent)] to-[var(--panel-accent-strong)] px-6 py-3.5 text-sm font-medium text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-40 disabled:hover:translate-y-0 disabled:cursor-not-allowed"
                       >
                         {updateMe.isPending ? (
                           <>
@@ -559,9 +536,7 @@ function Profile() {
             </div>
 
             {/* --- Image Settings Panel --- */}
-            <div className="group/card relative rounded-3xl border border-[var(--panel-border)] bg-[var(--panel-surface)] backdrop-blur-sm p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-500 animate-[fadeIn_0.6s_ease-out_0.25s_both]">
-              <div className="absolute -inset-0.5 rounded-3xl bg-gradient-to-br from-[var(--panel-accent)]/20 to-[var(--panel-accent-strong)]/10 opacity-0 group-hover/card:opacity-100 blur-sm transition-opacity duration-500 pointer-events-none" />
-              
+            <div className={`${panelSurfaceClass} animate-[fadeIn_0.6s_ease-out_0.25s_both]`}>
               <div className="relative">
                 <h3 className="text-sm font-semibold text-[var(--panel-text)] mb-6 flex items-center gap-2.5">
                   <div className="p-1.5 rounded-lg bg-[var(--panel-accent)]/10">

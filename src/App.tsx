@@ -36,6 +36,7 @@ import MillionairePage from "./components/games/millionaire/MillionairePage";
 // import PictionaryPage from "./components/games/pictionary/PictionaryPage";
 import TruthDetectorPage from "./components/games/truth_detector/TruthDetectorPage";
 import GamePlayView from "./components/games/shared/GamePlayView";
+import VrGameBriefingPage from "./components/games/shared/VrGameBriefingPage";
 import { gamePlayRoutes } from "./components/games/shared/gamePlayRoutes";
 import MathChickGamePage from "./components/games/math_chick_game/MathChickGamePage";
 import TeacherQuestionPanel from "./pages/teacher/TeacherQuestionPanel";
@@ -47,10 +48,8 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/users/AdminUsers";
 import AdminFeedbacks from "./pages/admin/feedbacks/AdminFeedbacks";
 import WorldExplorer from "./components/games/world_explorer";
-import PlantVRGame from "./components/games/plant_vr";
 import TugOfWarPage from "./components/games/tug_of_war/TugOfWarPage";
 import SolarSystemGame from "./components/games/vr-solar-system";
-import VirtualZoo from "./components/games/virtual_zoo";
 import FrogPondLandingPage from "./components/games/frog-pond/FrogPondLandingPage";
 import ScrollToTop from "./components/ScrollToTop";
 import Seo from "./components/seo/Seo";
@@ -169,6 +168,26 @@ function App() {
         <Route path="/games/frog-pond" element={<FrogPondLandingPage />} />
         <Route
           path="/games/world-explorer"
+          element={<VrGameBriefingPage gameId="world-explorer" playPath="/games/world-explorer/play" />}
+        />
+        <Route
+          path="/games/plant-vr"
+          element={<VrGameBriefingPage gameId="plant-vr" playPath="/games/plant-vr/play" />}
+        />
+        <Route
+          path="/games/virtual-zoo-vr"
+          element={<VrGameBriefingPage gameId="virtual-zoo-vr" playPath="/games/virtual-zoo-vr/play" />}
+        />
+        <Route
+          path="/games/quyosh-tizimi-vr"
+          element={<VrGameBriefingPage gameId="vr-solar-system" playPath="/games/quyosh-tizimi-vr/play" />}
+        />
+        <Route
+          path="/games/vr-solar-system"
+          element={<VrGameBriefingPage gameId="vr-solar-system" playPath="/games/quyosh-tizimi-vr/play" />}
+        />
+        <Route
+          path="/games/world-explorer/play"
           element={
             <GamePlayView colorClassName="from-sky-500 via-blue-500 to-emerald-500">
               <WorldExplorer />
@@ -176,31 +195,7 @@ function App() {
           }
         />
         <Route
-          path="/games/plant-vr"
-          element={
-            <GamePlayView colorClassName="from-emerald-400 via-lime-300 to-amber-200">
-              <PlantVRGame />
-            </GamePlayView>
-          }
-        />
-        <Route
-          path="/games/virtual-zoo-vr"
-          element={
-            <GamePlayView colorClassName="from-emerald-400 via-lime-300 to-sky-200">
-              <VirtualZoo />
-            </GamePlayView>
-          }
-        />
-        <Route
-          path="/games/quyosh-tizimi-vr"
-          element={
-            <GamePlayView colorClassName="from-cyan-500 via-blue-500 to-indigo-500">
-              <SolarSystemGame />
-            </GamePlayView>
-          }
-        />
-        <Route
-          path="/games/vr-solar-system"
+          path="/games/quyosh-tizimi-vr/play"
           element={
             <GamePlayView colorClassName="from-cyan-500 via-blue-500 to-indigo-500">
               <SolarSystemGame />

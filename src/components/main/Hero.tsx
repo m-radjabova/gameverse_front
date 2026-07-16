@@ -32,11 +32,18 @@ function Hero({
           className="h-full w-full object-cover animate-hero-ken-burns"
         />
 
-        <div
+        {/* <div
           className={`absolute inset-0 ${
             isDark
               ? "bg-[linear-gradient(180deg,rgba(7,11,24,0.30)_0%,rgba(10,15,30,0.46)_28%,rgba(12,18,36,0.58)_62%,rgba(12,18,36,0.72)_100%)]"
               : "bg-[linear-gradient(180deg,rgba(255,250,250,0.16)_0%,rgba(255,248,248,0.28)_30%,rgba(255,247,247,0.46)_62%,rgba(255,246,246,0.62)_100%)]"
+          }`}
+        /> */}
+       <div
+          className={`absolute inset-0 ${
+            isDark
+              ? "bg-[linear-gradient(180deg,rgba(7,11,24,0.08)_0%,rgba(10,15,30,0.12)_35%,rgba(12,18,36,0.18)_70%,rgba(12,18,36,0.24)_100%)]"
+              : "bg-[linear-gradient(180deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0.08)_35%,rgba(255,255,255,0.12)_70%,rgba(255,255,255,0.18)_100%)]"
           }`}
         />
         <div

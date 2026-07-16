@@ -15,6 +15,7 @@ type GamePagePlayButtonProps = {
   colorClassName: string;
   className?: string;
   modeSelectionEnabled?: boolean;
+  showGameModeShowcase?: boolean;
 };
 
 export default function GamePagePlayButton({
@@ -22,6 +23,7 @@ export default function GamePagePlayButton({
   colorClassName,
   className = "",
   modeSelectionEnabled = false,
+  showGameModeShowcase = true,
 }: GamePagePlayButtonProps) {
   const navigate = useNavigate();
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
@@ -94,7 +96,7 @@ export default function GamePagePlayButton({
           <FaArrowRight className="text-sm" />
         </button>
 
-        {game && (
+        {showGameModeShowcase && game && (
           <GameModeShowcase
             gamePath={game.path}
             colorClassName={colorClassName}

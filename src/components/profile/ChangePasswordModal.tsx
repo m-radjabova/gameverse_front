@@ -9,7 +9,8 @@ import {
   FiAlertCircle, 
   FiLoader,
   FiShield,
-  FiInfo
+  FiInfo,
+  FiStar
 } from "react-icons/fi";
 import { 
   MdOutlinePassword,
@@ -20,7 +21,6 @@ import {
   HiOutlineShieldCheck,
   HiOutlineKey
 } from "react-icons/hi";
-import { GiCherry } from "react-icons/gi";
 import useHomeTheme from "../../hooks/useHomeTheme";
 
 type FormData = {
@@ -38,6 +38,27 @@ type Props = {
 
 export default function ChangePasswordModal({ open, loading, onClose, onSubmit }: Props) {
   const isDarkMode = useHomeTheme();
+  const modalTheme = isDarkMode
+    ? {
+        panel: "border-[#344865] bg-[#101a2b]",
+        title: "text-[#f2f7ff]",
+        body: "text-[#b7c7dc]",
+        label: "text-[#e2edf9]",
+        input: "border-[#3b506d] bg-[#19283b] text-[#e8f5ff] placeholder:text-[#8ba1b9] focus:border-[#59b9e6] focus:shadow-[0_0_0_3px_rgba(89,185,230,0.16)]",
+        inputIcon: "text-[#7fd3ef]",
+        soft: "border-[#344865] bg-[#18263a]",
+        cancel: "border-[#3b506d] bg-[#18263a] text-[#e2edf9] hover:bg-[#22354e]",
+      }
+    : {
+        panel: "border-white/70 bg-[#fffaf8]",
+        title: "text-[#294476]",
+        body: "text-[#7185ad]",
+        label: "text-[#294476]",
+        input: "border-[#cfe8f4] bg-white/80 text-[#294476] placeholder:text-[#91a4c3] focus:border-[#59b9e6] focus:shadow-[0_0_0_3px_rgba(89,185,230,0.12)]",
+        inputIcon: "text-[#59b9e6]",
+        soft: "border-[#d7edf6] bg-[#f4fbff]/85",
+        cancel: "border-[#cfe8f4] bg-white/75 text-[#294476] hover:bg-white",
+      };
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -140,27 +161,27 @@ export default function ChangePasswordModal({ open, loading, onClose, onSubmit }
         />
         
         {/* Modal Panel */}
-        <div className="relative transform overflow-hidden rounded-3xl bg-gradient-to-br from-[#fff9f8] to-[#fff1f0] text-left shadow-2xl transition-all w-full max-w-md border border-white/60">
+        <div className={`relative w-full max-w-md overflow-hidden rounded-lg border text-left shadow-2xl transition-all ${modalTheme.panel}`}>
           
           {/* Decorative Elements */}
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#e07c8e] to-[#a66466]" />
-          <GiCherry className="absolute -top-6 -right-6 text-8xl text-[#e07c8e]/10 rotate-12" />
-          <GiCherry className="absolute -bottom-6 -left-6 text-8xl text-[#a66466]/10 -rotate-12" />
+          <div className="absolute left-0 right-0 top-0 h-1.5 bg-gradient-to-r from-[#59b9e6] to-[#ffd15d]" />
+          <FiStar className="absolute -right-4 -top-4 text-8xl text-[#59b9e6]/15 rotate-12" />
+          <FiStar className="absolute -bottom-5 -left-5 text-7xl text-[#ffd15d]/15 -rotate-12" />
           
           {/* Header */}
           <div className="px-6 pt-8 pb-4 relative">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-[#e07c8e] to-[#a66466] rounded-xl blur-lg opacity-50" />
-                  <div className="relative flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-r from-[#e07c8e] to-[#a66466] shadow-lg">
+                  <div className="absolute -inset-1 rounded-lg bg-gradient-to-r from-[#59b9e6] to-[#ffd15d] opacity-35 blur-lg" />
+                  <div className="relative flex h-14 w-14 items-center justify-center rounded-lg bg-gradient-to-r from-[#59b9e6] to-[#ffd15d] shadow-lg">
                     <MdOutlinePassword className="h-6 w-6 text-white" />
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-light text-[#7b4f53]">Parolni o'zgartirish</h3>
-                  <p className="text-xs text-[#8f6d70] mt-1 flex items-center gap-1">
-                    <HiOutlineShieldCheck className="h-3.5 w-3.5 text-[#e07c8e]" />
+                  <h3 className={`text-2xl font-light ${modalTheme.title}`}>Parolni o'zgartirish</h3>
+                  <p className={`mt-1 flex items-center gap-1 text-xs ${modalTheme.body}`}>
+                    <HiOutlineShieldCheck className="h-3.5 w-3.5 text-[#59b9e6]" />
                     Xavfsizlikni oshirish uchun parolingizni yangilang
                   </p>
                 </div>
@@ -168,7 +189,7 @@ export default function ChangePasswordModal({ open, loading, onClose, onSubmit }
               <button
                 onClick={onClose}
                 disabled={loading}
-                className="rounded-lg p-1.5 text-[#b38b8d] hover:bg-[#fceae8] hover:text-[#e07c8e] transition-all disabled:opacity-50"
+                className={`rounded-md p-2 ${modalTheme.body} transition-colors hover:bg-[#59b9e6]/10 hover:text-[#59b9e6] disabled:opacity-50`}
               >
                 <FiX className="h-4 w-4" />
               </button>
@@ -181,8 +202,8 @@ export default function ChangePasswordModal({ open, loading, onClose, onSubmit }
               
               {/* Current Password */}
               <div>
-                <label className="mb-2 flex items-center gap-2 text-xs font-medium text-[#7b4f53]">
-                  <FiLock className="h-3.5 w-3.5 text-[#e07c8e]" />
+                <label className={`mb-2 flex items-center gap-2 text-xs font-medium ${modalTheme.label}`}>
+                  <FiLock className="h-3.5 w-3.5 text-[#59b9e6]" />
                   Joriy parol
                 </label>
                 <div className="relative">
@@ -195,15 +216,15 @@ export default function ChangePasswordModal({ open, loading, onClose, onSubmit }
                         message: "Kamida 6 ta belgi",
                       },
                     })}
-                    className={`w-full rounded-xl border ${errors.current_password ? "border-rose-300" : "border-[#f0d9d6]"} bg-white/80 px-4 py-3 pl-10 pr-10 text-sm text-[#7b4f53] placeholder:text-[#b38b8d] outline-none focus:border-[#e07c8e] focus:shadow-[0_0_0_3px_rgba(224,124,142,0.1)] transition-all`}
+                    className={`w-full rounded-lg border px-4 py-3 pl-10 pr-10 text-sm outline-none transition-all ${errors.current_password ? "border-rose-400" : modalTheme.input}`}
                     placeholder="Joriy parolingiz"
                     disabled={loading}
                   />
-                  <HiOutlineKey className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#b38b8d]" />
+                  <HiOutlineKey className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 ${modalTheme.inputIcon}`} />
                   <button
                     type="button"
                     onClick={() => setShowCurrent(!showCurrent)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#b38b8d] hover:text-[#e07c8e] transition-colors"
+                    className={`absolute right-3 top-1/2 -translate-y-1/2 ${modalTheme.inputIcon} transition-colors hover:text-[#ffd15d]`}
                   >
                     {showCurrent ? <FiEyeOff className="w-4 h-4" /> : <FiEye className="w-4 h-4" />}
                   </button>
@@ -218,8 +239,8 @@ export default function ChangePasswordModal({ open, loading, onClose, onSubmit }
 
               {/* New Password */}
               <div>
-                <label className="mb-2 flex items-center gap-2 text-xs font-medium text-[#7b4f53]">
-                  <FiLock className="h-3.5 w-3.5 text-[#e07c8e]" />
+                <label className={`mb-2 flex items-center gap-2 text-xs font-medium ${modalTheme.label}`}>
+                  <FiLock className="h-3.5 w-3.5 text-[#59b9e6]" />
                   Yangi parol
                 </label>
                 <div className="relative">
@@ -238,15 +259,15 @@ export default function ChangePasswordModal({ open, loading, onClose, onSubmit }
                         return true;
                       },
                     })}
-                    className={`w-full rounded-xl border ${errors.new_password ? "border-rose-300" : "border-[#f0d9d6]"} bg-white/80 px-4 py-3 pl-10 pr-10 text-sm text-[#7b4f53] placeholder:text-[#b38b8d] outline-none focus:border-[#e07c8e] focus:shadow-[0_0_0_3px_rgba(224,124,142,0.1)] transition-all`}
+                    className={`w-full rounded-lg border px-4 py-3 pl-10 pr-10 text-sm outline-none transition-all ${errors.new_password ? "border-rose-400" : modalTheme.input}`}
                     placeholder="Yangi parolingiz"
                     disabled={loading}
                   />
-                  <MdOutlineSecurity className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#b38b8d]" />
+                  <MdOutlineSecurity className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 ${modalTheme.inputIcon}`} />
                   <button
                     type="button"
                     onClick={() => setShowNew(!showNew)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#b38b8d] hover:text-[#e07c8e] transition-colors"
+                    className={`absolute right-3 top-1/2 -translate-y-1/2 ${modalTheme.inputIcon} transition-colors hover:text-[#ffd15d]`}
                   >
                     {showNew ? <FiEyeOff className="w-4 h-4" /> : <FiEye className="w-4 h-4" />}
                   </button>
@@ -254,9 +275,9 @@ export default function ChangePasswordModal({ open, loading, onClose, onSubmit }
                 
                 {/* Password Strength Indicator */}
                 {newPassword && (
-                  <div className="mt-3 p-3 rounded-xl bg-[#fceae8]/50 border border-[#f0d9d6]">
+                  <div className={`mt-3 rounded-lg border p-3 ${modalTheme.soft}`}>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-medium text-[#8f6d70]">Parol kuchliligi</span>
+                      <span className={`text-[10px] font-medium ${modalTheme.body}`}>Parol kuchliligi</span>
                       <span className={`text-[8px] font-medium px-2 py-0.5 rounded-full bg-gradient-to-r ${getPasswordStrengthColor()} text-white`}>
                         {getPasswordStrengthText()}
                       </span>
@@ -270,7 +291,7 @@ export default function ChangePasswordModal({ open, loading, onClose, onSubmit }
                           className={`h-1 flex-1 rounded-full transition-all duration-300 ${
                             level <= passwordStrength 
                               ? `bg-gradient-to-r ${getPasswordStrengthColor()}` 
-                              : "bg-[#f0d9d6]"
+                              : isDarkMode ? "bg-[#3b506d]" : "bg-[#d7edf6]"
                           }`}
                         />
                       ))}
@@ -285,8 +306,8 @@ export default function ChangePasswordModal({ open, loading, onClose, onSubmit }
                         { test: /[^A-Za-z0-9]/.test(newPassword), text: "Maxsus belgi" },
                       ].map((req, i) => (
                         <div key={i} className="flex items-center gap-2">
-                          <div className={`w-1.5 h-1.5 rounded-full ${req.test ? 'bg-emerald-400' : 'bg-[#f0d9d6]'}`} />
-                          <span className={`text-[9px] ${req.test ? 'text-emerald-600' : 'text-[#b38b8d]'}`}>
+                          <div className={`h-1.5 w-1.5 rounded-full ${req.test ? 'bg-emerald-400' : isDarkMode ? 'bg-[#3b506d]' : 'bg-[#d7edf6]'}`} />
+                          <span className={`text-[9px] ${req.test ? 'text-emerald-500' : modalTheme.body}`}>
                             {req.text}
                           </span>
                         </div>
@@ -305,8 +326,8 @@ export default function ChangePasswordModal({ open, loading, onClose, onSubmit }
 
               {/* Confirm Password */}
               <div>
-                <label className="mb-2 flex items-center gap-2 text-xs font-medium text-[#7b4f53]">
-                  <FiLock className="h-3.5 w-3.5 text-[#e07c8e]" />
+                <label className={`mb-2 flex items-center gap-2 text-xs font-medium ${modalTheme.label}`}>
+                  <FiLock className="h-3.5 w-3.5 text-[#59b9e6]" />
                   Parolni tasdiqlang
                 </label>
                 <div className="relative">
@@ -317,15 +338,15 @@ export default function ChangePasswordModal({ open, loading, onClose, onSubmit }
                       validate: (value) =>
                         value === watch("new_password") || "Parollar mos kelmadi",
                     })}
-                    className={`w-full rounded-xl border ${errors.confirm_password ? "border-rose-300" : "border-[#f0d9d6]"} bg-white/80 px-4 py-3 pl-10 pr-10 text-sm text-[#7b4f53] placeholder:text-[#b38b8d] outline-none focus:border-[#e07c8e] focus:shadow-[0_0_0_3px_rgba(224,124,142,0.1)] transition-all`}
+                    className={`w-full rounded-lg border px-4 py-3 pl-10 pr-10 text-sm outline-none transition-all ${errors.confirm_password ? "border-rose-400" : modalTheme.input}`}
                     placeholder="Yangi parolni qayta kiriting"
                     disabled={loading}
                   />
-                  <MdOutlineVerifiedUser className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#b38b8d]" />
+                  <MdOutlineVerifiedUser className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 ${modalTheme.inputIcon}`} />
                   <button
                     type="button"
                     onClick={() => setShowConfirm(!showConfirm)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#b38b8d] hover:text-[#e07c8e] transition-colors"
+                    className={`absolute right-3 top-1/2 -translate-y-1/2 ${modalTheme.inputIcon} transition-colors hover:text-[#ffd15d]`}
                   >
                     {showConfirm ? <FiEyeOff className="w-4 h-4" /> : <FiEye className="w-4 h-4" />}
                   </button>
@@ -339,25 +360,25 @@ export default function ChangePasswordModal({ open, loading, onClose, onSubmit }
               </div>
 
               {/* Security Tips */}
-              <div className="rounded-xl border border-[#f0d9d6] bg-[#fceae8]/50 p-4">
+              <div className={`rounded-lg border p-4 ${modalTheme.soft}`}>
                 <div className="flex items-start gap-2">
-                  <FiShield className="w-4 h-4 text-[#e07c8e] mt-0.5" />
+                  <FiShield className="mt-0.5 h-4 w-4 text-[#59b9e6]" />
                   <div>
-                    <h4 className="text-xs font-medium text-[#7b4f53] flex items-center gap-1">
-                      <FiInfo className="w-3 h-3 text-[#e07c8e]" />
+                    <h4 className={`flex items-center gap-1 text-xs font-medium ${modalTheme.label}`}>
+                      <FiInfo className="h-3 w-3 text-[#59b9e6]" />
                       Xavfsizlik maslahatlari
                     </h4>
-                    <ul className="mt-2 space-y-1 text-[10px] text-[#8f6d70]">
+                    <ul className={`mt-2 space-y-1 text-[10px] ${modalTheme.body}`}>
                       <li className="flex items-start gap-1.5">
-                        <span className="text-[#e07c8e]">•</span>
+                        <span className="text-[#59b9e6]">•</span>
                         <span>Boshqa saytlarda ishlatmagan unikal parol tanlang</span>
                       </li>
                       <li className="flex items-start gap-1.5">
-                        <span className="text-[#e07c8e]">•</span>
+                        <span className="text-[#59b9e6]">•</span>
                         <span>Harflar, raqamlar va maxsus belgilardan foydalaning</span>
                       </li>
                       <li className="flex items-start gap-1.5">
-                        <span className="text-[#e07c8e]">•</span>
+                        <span className="text-[#59b9e6]">•</span>
                         <span>Oddiy so'zlar va shaxsiy ma'lumotlardan saqlaning</span>
                       </li>
                     </ul>
@@ -372,7 +393,7 @@ export default function ChangePasswordModal({ open, loading, onClose, onSubmit }
                 type="button"
                 onClick={onClose}
                 disabled={loading}
-                className="flex-1 rounded-xl border border-[#f0d9d6] bg-white/50 backdrop-blur-sm px-4 py-3 text-xs font-medium text-[#7b4f53] transition-all hover:bg-white hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50"
+                className={`flex-1 rounded-lg border px-4 py-3 text-xs font-medium transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 ${modalTheme.cancel}`}
               >
                 Bekor qilish
               </button>
@@ -380,7 +401,7 @@ export default function ChangePasswordModal({ open, loading, onClose, onSubmit }
               <button
                 type="submit"
                 disabled={loading}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#e07c8e] to-[#a66466] px-4 py-3 text-xs font-medium text-white shadow-lg hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#59b9e6] to-[#ffd15d] px-4 py-3 text-xs font-medium text-white shadow-lg transition-all hover:-translate-y-1 disabled:opacity-50 disabled:hover:translate-y-0"
               >
                 {loading ? (
                   <>
@@ -412,11 +433,6 @@ export default function ChangePasswordModal({ open, loading, onClose, onSubmit }
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
-        @keyframes petal-float {
-          0% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-15px) rotate(5deg); }
-          100% { transform: translateY(0px) rotate(0deg); }
-        }
         .animate-float-soft {
           animation: float-soft 4s ease-in-out infinite;
         }
@@ -428,9 +444,6 @@ export default function ChangePasswordModal({ open, loading, onClose, onSubmit }
         }
         .animate-spin-slow {
           animation: spin-slow 8s linear infinite;
-        }
-        .animate-petal-float {
-          animation: petal-float 5s ease-in-out infinite;
         }
       `}</style>
     </div>

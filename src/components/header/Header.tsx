@@ -169,21 +169,22 @@ function Header({
     <>
       <header className="fixed left-0 right-0 top-0 z-50 px-4 pt-4 sm:px-6 lg:px-8">
         <div
-          className={`mx-auto flex max-w-7xl items-center justify-between rounded-[28px] border px-4 py-3 shadow-[0_12px_35px_rgba(166,100,102,0.12)] backdrop-blur-xl sm:px-6 ${
+          className={`relative mx-auto flex max-w-7xl items-center justify-between overflow-hidden rounded-[28px] border px-4 py-3 shadow-[0_18px_50px_rgba(23,65,105,0.16)] backdrop-blur-2xl sm:px-6 ${
             isDark
-              ? "border-[#59b9e6]/18 bg-[#121c2d]/80"
-              : "border-[#d8eef7] bg-white/82"
+              ? "border-white/12 bg-[#081326]/58"
+              : "border-white/55 bg-white/46"
           }`}
         >
+          <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent opacity-80" />
           <div
             onClick={() => navigate("/")}
             className="group flex cursor-pointer items-center gap-2 sm:gap-2.5"
           >
             <div
-              className={`relative flex h-[58px] w-[58px] items-center justify-center rounded-[22px] border shadow-[0_8px_20px_rgba(89,185,230,0.18)] transition-transform duration-300 group-hover:scale-105 sm:h-16 sm:w-16 ${
+              className={`relative flex h-[58px] w-[58px] items-center justify-center rounded-[22px] border shadow-[0_8px_20px_rgba(89,185,230,0.15)] transition-transform duration-300 group-hover:scale-105 sm:h-16 sm:w-16 ${
                 isDark
-                  ? "border-[#59b9e6]/20 bg-gradient-to-br from-[#1b2a41] via-[#121c2d] to-[#0f172a]"
-                  : "border-[#d8eef7] bg-gradient-to-br from-[#f4fcff] via-[#fffdf7] to-[#fff4d8]"
+                  ? "border-white/12 bg-white/[0.055]"
+                  : "border-white/60 bg-white/36"
               }`}
             >
               <img
@@ -219,8 +220,8 @@ function Header({
                     isActive
                       ? "bg-[#59b9e6] text-white shadow-[0_8px_20px_rgba(89,185,230,0.35)]"
                       : isDark
-                        ? "text-[#f1f1f1] hover:bg-[#1b2a41] hover:text-[#7fd3ef]"
-                        : "text-[#506494] hover:bg-[#eefaff] hover:text-[#59b9e6]"
+                        ? "text-[#f1f1f1] hover:bg-white/10 hover:text-[#7fd3ef]"
+                        : "text-[#506494] hover:bg-white/45 hover:text-[#329dcc]"
                   }`}
                 >
                   {item.icon}
@@ -236,8 +237,8 @@ function Header({
               onClick={() => navigate("/favorites")}
               className={`relative hidden h-11 w-11 items-center justify-center rounded-full border transition-all hover:-translate-y-0.5 sm:flex ${
                 isDark
-                  ? "border-[#59b9e6]/20 bg-[#1b2a41] text-[#7fd3ef] hover:bg-[#243652]"
-                  : "border-[#d8eef7] bg-white text-[#59b9e6] hover:bg-[#f4fcff]"
+                  ? "border-white/12 bg-white/[0.07] text-[#7fd3ef] hover:bg-white/14"
+                  : "border-white/60 bg-white/38 text-[#329dcc] hover:bg-white/65"
               }`}
               aria-label="Open favourites"
             >
@@ -250,18 +251,42 @@ function Header({
             </button>
 
             {onThemeToggle && (
-              <button
-                type="button"
-                onClick={onThemeToggle}
-                className={` cursor-pointer hidden h-11 w-11 items-center justify-center rounded-full border transition-all hover:-translate-y-0.5 sm:flex ${
-                  isDark
-                    ? "border-[#59b9e6]/20 bg-[#1b2a41] text-[#7fd3ef] hover:bg-[#243652]"
-                    : "border-[#d8eef7] bg-white text-[#59b9e6] hover:bg-[#f4fcff]"
+              <div
+                className={`hidden items-center gap-1 rounded-full border p-1 shadow-[0_8px_20px_rgba(89,185,230,0.08)] sm:flex ${
+                  isDark ? "border-white/12 bg-white/[0.07]" : "border-white/60 bg-white/38"
                 }`}
-                aria-label="Toggle theme"
+                role="group"
+                aria-label="Rang mavzusi"
               >
-                {isDark ? <FaSun className="text-sm" /> : <FaMoon className="text-sm" />}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => isDark && onThemeToggle()}
+                  aria-label="Light mode"
+                  aria-pressed={!isDark}
+                  className={`relative grid h-9 w-9 place-items-center rounded-full transition-all ${
+                    !isDark
+                      ? "bg-white text-[#329dcc] shadow-[0_4px_12px_rgba(89,185,230,0.2)]"
+                      : "text-[#8ca2bd] hover:bg-white/10 hover:text-[#7fd3ef]"
+                  }`}
+                >
+                  <FaSun className="text-sm" />
+                  {!isDark && <span className="absolute -bottom-0.5 h-1 w-1 rounded-full bg-[#ffd15d]" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => !isDark && onThemeToggle()}
+                  aria-label="Dark mode"
+                  aria-pressed={isDark}
+                  className={`relative grid h-9 w-9 place-items-center rounded-full transition-all ${
+                    isDark
+                      ? "bg-[#294365] text-[#7fd3ef] shadow-[0_4px_12px_rgba(0,0,0,0.24)]"
+                      : "text-[#7290ad] hover:bg-white/60 hover:text-[#329dcc]"
+                  }`}
+                >
+                  <FaMoon className="text-sm" />
+                  {isDark && <span className="absolute -bottom-0.5 h-1 w-1 rounded-full bg-[#ffd15d]" />}
+                </button>
+              </div>
             )}
 
             {user ? (
@@ -270,8 +295,8 @@ function Header({
                 onClick={() => setIsUserPanelOpen(true)}
                 className={`hidden cursor-pointer items-center gap-3 rounded-[22px] border px-3 py-2 text-left shadow-[0_10px_25px_rgba(166,100,102,0.08)] transition-all hover:-translate-y-0.5 sm:flex ${
                   isDark
-                    ? "border-[#59b9e6]/18 bg-gradient-to-r from-[#1b2a41] to-[#121c2d] hover:bg-[#1b2a41]"
-                    : "border-[#d8eef7] bg-gradient-to-r from-white to-[#f4fcff] hover:bg-white"
+                    ? "border-white/12 bg-white/[0.07] hover:bg-white/12"
+                    : "border-white/60 bg-white/32 hover:bg-white/58"
                 }`}
               >
                 <div className="relative">
@@ -320,8 +345,8 @@ function Header({
               onClick={() => setIsMobileOpen((prev) => !prev)}
               className={`flex h-11 w-11 items-center justify-center rounded-full border shadow-[0_8px_20px_rgba(166,100,102,0.08)] transition-all lg:hidden ${
                 isDark
-                  ? "border-[#59b9e6]/18 bg-[#1b2a41] text-[#f1f1f1] hover:bg-[#243652]"
-                  : "border-[#d8eef7] bg-white text-[#59b9e6] hover:bg-[#f4fcff]"
+                  ? "border-white/12 bg-white/[0.07] text-[#f1f1f1] hover:bg-white/14"
+                  : "border-white/60 bg-white/38 text-[#329dcc] hover:bg-white/65"
               }`}
               aria-label="Menu"
             >
@@ -333,26 +358,35 @@ function Header({
         {isMobileOpen && (
           <div className={`mx-auto mt-3 max-w-7xl rounded-[26px] border p-4 shadow-[0_18px_40px_rgba(166,100,102,0.14)] backdrop-blur-xl lg:hidden ${
             isDark
-              ? "border-[#59b9e6]/18 bg-[#121c2d]/95"
-              : "border-[#d8eef7] bg-white/92"
+              ? "border-white/12 bg-[#081326]/72"
+              : "border-white/55 bg-white/56"
           }`}>
             <div className="flex flex-col gap-2">
               {onThemeToggle && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onThemeToggle();
-                    setIsMobileOpen(false);
-                  }}
-                  className={`flex items-center rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
-                    isDark
-                      ? "bg-[#1b2a41] text-[#f1f1f1]"
-                      : "bg-[#f4fcff] text-[#203572]"
-                  }`}
-                >
-                  {isDark ? <FaSun className="mr-2 text-[13px]" /> : <FaMoon className="mr-2 text-[13px]" />}
-                  {isDark ? "Light Mode" : "Dark Mode"}
-                </button>
+                <div className={`flex items-center rounded-lg border p-1.5 ${isDark ? "border-white/12 bg-[#1b2a41]" : "border-white/65 bg-[#f4fcff]"}`}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isDark) onThemeToggle();
+                      setIsMobileOpen(false);
+                    }}
+                    aria-pressed={!isDark}
+                    className={`flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold transition-all ${!isDark ? "bg-white text-[#329dcc] shadow-sm" : "text-[#8ca2bd]"}`}
+                  >
+                    <FaSun className="text-[13px]" /> Light
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!isDark) onThemeToggle();
+                      setIsMobileOpen(false);
+                    }}
+                    aria-pressed={isDark}
+                    className={`flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold transition-all ${isDark ? "bg-[#294365] text-[#7fd3ef] shadow-sm" : "text-[#7290ad]"}`}
+                  >
+                    <FaMoon className="text-[13px]" /> Dark
+                  </button>
+                </div>
               )}
 
               <button

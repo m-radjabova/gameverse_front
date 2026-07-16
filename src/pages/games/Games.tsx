@@ -41,7 +41,6 @@ function Games() {
   const isDarkMode = useHomeTheme();
   const [activeCategory, setActiveCategory] = useState("Barchasi");
   const [likedGames, setLikedGames] = useState<string[]>([]);
-  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [lastPlayedGameId, setLastPlayedGameId] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
@@ -385,7 +384,6 @@ function Games() {
         {/* O'yin kartochkalari */}
         <div className="relative z-10 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:gap-7">
           {paginatedGames.map((game, index) => {
-            const isHovered = hoveredCard === game.id;
             const delay = index * 0.1;
             const cardGradient = getCardGradient(game);
             const isLiked = likedGames.includes(game.id);
@@ -394,68 +392,44 @@ function Games() {
             return (
               <div
                 key={game.id}
-                className={`group relative transform-gpu transition-all duration-700 ${showAmbientEffects ? "hover:scale-[1.03] hover:-translate-y-3" : ""} ${
+                className={`group relative transform-gpu transition-all duration-500 ${showAmbientEffects ? "hover:-translate-y-1" : ""} ${
                   isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
                 }`}
                 style={{ transitionDelay: `${delay}s` }}
-                onMouseEnter={() => setHoveredCard(game.id)}
-                onMouseLeave={() => setHoveredCard(null)}
               >
-                {/* Karta gradienti - bu qatlam icon ustida emas */}
-                <div className={`absolute -inset-0.5 rounded-[30px] bg-gradient-to-r ${cardGradient} blur-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-50`} />
-                <div className="pointer-events-none absolute inset-0 rounded-3xl bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.24),transparent_48%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                
-                {/* Asosiy karta */}
-                <div
-                  className={`relative w-full overflow-hidden rounded-3xl border-2 transition-all duration-500 ${
+                <article
+                  className={`relative flex h-full w-full flex-col overflow-hidden rounded-lg border transition-[border-color,box-shadow] duration-500 ${
                     game.available
-                      ? `border-white/15 bg-[var(--games-card-shell)] shadow-[0_18px_42px_var(--games-card-shadow)] hover:border-[var(--games-border-strong)] hover:shadow-[0_26px_68px_var(--games-card-shadow-hover)] ${game.borderGlow || ''}`
-                      : 'cursor-not-allowed border-[var(--games-border)] bg-[var(--games-surface)] backdrop-blur-xl'
+                      ? `border-[var(--games-border)] bg-[var(--games-card-shell)] shadow-[0_14px_34px_var(--games-card-shadow)] group-hover:border-[var(--games-border-strong)] group-hover:shadow-[0_22px_48px_var(--games-card-shadow-hover)] ${game.borderGlow || ''}`
+                      : 'border-[var(--games-border)] bg-[var(--games-surface)] opacity-70'
                   }`}
                 >
-                  {/* Rasm qismi */}
-                  <div className="relative z-10 h-56 w-full overflow-hidden sm:h-64">
+                  <div className="relative aspect-[16/10] w-full overflow-hidden border-b border-[var(--games-border)]">
                     <img
                       src={game.image}
                       alt={game.title}
-                      className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                      className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.045]"
                     />
-                    
-                    {/* Gradient overlay */}
-                    <div className={`absolute inset-0 bg-gradient-to-t ${isDarkMode ? "from-black/80 via-black/20" : "from-slate-950/55 via-slate-900/10"} to-transparent`} />
-                    
-                    {/* Neon chiziqlar */}
-                    <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent " />
-                    <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent " />
+                    <div className={`absolute inset-0 bg-gradient-to-t ${isDarkMode ? "from-slate-950/90 via-slate-950/10" : "from-slate-950/65 via-transparent"} to-transparent`} />
 
-                    {/* Badge */}
-                    <div className="absolute left-4 top-4">
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full blur-md " />
-                        <div className="relative flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-400/95 to-teal-500/95 px-3.5 py-2 text-[11px] font-bold text-white shadow-xl">
-                          <game.badgeIcon className="text-sm" />
-                          <span>{game.badge}</span>
-                        </div>
-                      </div>
+
+                    <div className="absolute left-4 top-4 flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-md border border-white/20 bg-slate-950/65 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white backdrop-blur-md">
+                        <game.badgeIcon className="text-xs text-emerald-300" />
+                        {game.badge}
+                      </span>
+                      {isLastPlayed ? (
+                        <span className="rounded-md bg-cyan-400 px-2 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-slate-950">
+                          Davom etish
+                        </span>
+                      ) : null}
                     </div>
 
-                    {isLastPlayed ? (
-                      <div className="absolute left-4 top-16">
-                        <div className="rounded-full border border-cyan-200/40 bg-slate-950/70 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-100 backdrop-blur-md">
-                          So'nggi o'ynalgan
-                        </div>
-                      </div>
-                    ) : null}
-
-                    {/* Level */}
                     <div className="absolute right-4 top-4">
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-black rounded-full blur-md" />
-                        <div className="relative flex items-center gap-2 rounded-full border border-white/15 bg-black/50 px-3.5 py-2 text-[11px] font-semibold text-white backdrop-blur-md">
-                          <game.levelIcon className="text-yellow-300" />
-                          <span>{game.level}</span>
-                        </div>
-                      </div>
+                      <span className="inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-slate-950/60 px-2.5 py-1.5 text-[10px] font-bold text-white backdrop-blur-md">
+                        <game.levelIcon className="text-yellow-300" />
+                        {game.level}
+                      </span>
                     </div>
 
                     <button
@@ -464,132 +438,65 @@ function Games() {
                         event.stopPropagation();
                         handleLikeToggle(game.id);
                       }}
-                      className={`absolute right-4 bottom-4 z-50 inline-flex cursor-pointer items-center gap-2 rounded-full border px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.14em] backdrop-blur-md transition-all ${
+                      className={`absolute right-4 bottom-4 z-10 inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border backdrop-blur-md transition-colors ${
                         isLiked
-                          ? "border-rose-200/60 bg-white text-[#ff5f87] shadow-[0_0_25px_rgba(255,95,135,0.35)]"
-                          : "border-white/20 bg-black/45 text-white hover:bg-black/60"
+                          ? "border-rose-200/60 bg-white text-[#ff5f87]"
+                          : "border-white/20 bg-slate-950/45 text-white hover:bg-slate-950/75"
                       }`}
+                      aria-label={isLiked ? "Sevimlilardan olib tashlash" : "Sevimliga qo'shish"}
                     >
                       {isLiked ? <FaHeart className="text-[12px]" /> : <FaRegHeart className="text-[12px]" />}
-                      {/* {isLiked ? "Favourite" : "Like"} */}
                     </button>
 
-                    {/* O'yin iconkasi - endi bu gradient ustida va ko'rinadi */}
-                    <div className="absolute bottom-4 left-6 z-50">
-                      <div className="relative">
-                        <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} rounded-2xl blur-xl opacity-50 group-hover:opacity-100 transition-opacity`} />
-                        <div
-                          className={`relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${game.iconBg} text-white shadow-2xl border border-white/20 transform transition-all duration-500 group-hover:scale-105 group-hover:rotate-3 sm:h-16 sm:w-16`}
-                        >
-                          <game.icon className="text-2xl sm:text-3xl" />
-                        </div>
-                      </div>
+                    <div className={`absolute bottom-4 left-4 flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br ${game.iconBg} text-white shadow-lg ring-1 ring-white/25`}>
+                      <game.icon className="text-xl" />
                     </div>
                   </div>
 
-                  {/* Kontent qismi */}
-                  <div className="relative z-0 overflow-hidden border-t border-white/10 bg-[var(--games-card-surface)] p-4 pt-5 sm:p-6 sm:pt-6">
-                    <div className={`pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r ${cardGradient} opacity-90`} />
-                    <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${cardGradient} opacity-[0.08]`} />
-                    <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-white/60 dark:bg-white/10" />
-                    <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-white/30 blur-3xl" />
-                    <div className="relative">
-                    <h3 className="mb-2 flex items-start gap-2 text-xl font-black leading-tight tracking-[-0.02em] text-[var(--games-card-text)] sm:text-[1.65rem]">
-                      {game.title}
-                      {game.available && (
-                        <FaBolt className="mt-1 shrink-0 text-yellow-400" />
-                      )}
-                    </h3>
-
-                    <p className="mb-5 line-clamp-2 min-h-[44px] text-sm leading-6 text-[var(--games-card-text-soft)] sm:min-h-[48px]">{game.description}</p>
-
-                    {/* Ma'lumotlar gridi */}
-                    <div className="mb-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                      <div className="relative group/item">
-                        <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} rounded-xl blur-md opacity-0 group-hover/item:opacity-30 transition-opacity`} />
-                        <div className="relative flex items-center gap-2 rounded-2xl border border-[var(--games-chip-border)] bg-[var(--games-chip-bg)] px-3 py-3 shadow-[0_10px_24px_var(--games-chip-shadow)] backdrop-blur-sm">
-                          <FaUsers className="text-sm text-[var(--games-card-text-soft)]" />
-                          <span className="text-xs font-semibold text-[var(--games-card-text)]">{game.players}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="relative group/item">
-                        <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} rounded-xl blur-md opacity-0 group-hover/item:opacity-30 transition-opacity`} />
-                        <div className="relative flex items-center gap-2 rounded-2xl border border-[var(--games-chip-border)] bg-[var(--games-chip-bg)] px-3 py-3 shadow-[0_10px_24px_var(--games-chip-shadow)] backdrop-blur-sm">
-                          <IoMdTimer className="text-sm text-[var(--games-card-text-soft)]" />
-                          <span className="text-xs font-semibold text-[var(--games-card-text)]">{game.time}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="relative group/item">
-                        <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} rounded-xl blur-md opacity-0 group-hover/item:opacity-30 transition-opacity`} />
-                        <div className="relative flex items-center gap-2 rounded-2xl border border-[var(--games-chip-border)] bg-[var(--games-chip-bg)] px-3 py-3 shadow-[0_10px_24px_var(--games-chip-shadow)] backdrop-blur-sm">
-                          <FaTrophy className="text-sm text-yellow-300" />
-                          <span className="text-xs font-semibold text-[var(--games-card-text)]">{game.points}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="relative group/item">
-                        <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} rounded-xl blur-md opacity-0 group-hover/item:opacity-30 transition-opacity`} />
-                        <div className="relative flex items-center gap-2 rounded-2xl border border-[var(--games-chip-border)] bg-[var(--games-chip-bg)] px-3 py-3 shadow-[0_10px_24px_var(--games-chip-shadow)] backdrop-blur-sm">
-                          <game.categoryIcon className={`text-sm ${game.iconColor}`} />
-                          <span className="text-xs font-semibold text-[var(--games-card-text)]">{game.category}</span>
-                        </div>
-                      </div>
+                  <div className="flex flex-1 flex-col bg-[var(--games-card-surface)] p-5 sm:p-6">
+                    <div className="mb-3 flex items-start justify-between gap-3">
+                      <h3 className="text-xl font-black leading-tight tracking-normal text-[var(--games-card-text)] sm:text-2xl">
+                        {game.title}
+                      </h3>
+                      {game.available && <FaBolt className="mt-1 shrink-0 text-sm text-yellow-400" />}
                     </div>
 
-                    {/* O'ynash tugmasi */}
-                    <div className="relative">
-                      <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} rounded-2xl blur-xl opacity-0 group-hover:opacity-70 transition-opacity`} />
+                    <p className="line-clamp-2 min-h-[44px] text-sm leading-6 text-[var(--games-card-text-soft)]">
+                      {game.description}
+                    </p>
+
+                    <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 border-y border-[var(--games-border)] py-4 text-xs font-semibold text-[var(--games-card-text-soft)]">
+                      <span className="flex items-center gap-2"><FaUsers className="text-[var(--games-card-text)]" />{game.players}</span>
+                      <span className="flex items-center gap-2"><IoMdTimer className="text-[var(--games-card-text)]" />{game.time}</span>
+                      <span className="flex items-center gap-2"><FaTrophy className="text-yellow-400" />{game.points}</span>
+                      <span className="flex items-center gap-2 truncate"><game.categoryIcon className={game.iconColor} />{game.category}</span>
+                    </div>
+
+                    <div className="mt-auto pt-5">
                       <button
                         onClick={(event) => {
                           event.stopPropagation();
                           handleGamePlay(game);
                         }}
                         disabled={!game.available}
-                        className={`relative w-full overflow-hidden rounded-2xl border transition-all duration-500 ${
+                        className={`group/btn flex w-full items-center justify-between rounded-lg border px-4 py-3 text-sm font-bold transition-all ${
                           game.available
-                            ? `group/btn cursor-pointer border-white/20 bg-[var(--games-button-bg)] shadow-[0_18px_35px_var(--games-button-shadow)] hover:scale-[1.01] hover:shadow-[0_24px_50px_var(--games-button-shadow-hover)] active:scale-[0.99]`
-                            : 'cursor-not-allowed border-gray-600/50 bg-gray-700/50'
+                            ? `cursor-pointer border-transparent bg-gradient-to-r ${cardGradient} text-white shadow-[0_12px_24px_var(--games-button-shadow)] hover:brightness-110 active:scale-[0.99]`
+                            : 'cursor-not-allowed border-[var(--games-border)] bg-[var(--games-surface-soft)] text-[var(--games-card-text-soft)]'
                         }`}
                       >
-                        {game.available && (
-                          <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} opacity-95`} />
-                        )}
-                        <div className="px-4 py-3.5 sm:px-6 sm:py-4">
-                          <span className="relative z-10 flex items-center justify-center gap-2.5 text-sm font-bold tracking-[0.06em] text-white">
-                            {game.available ? (
-                              <>
-                                <game.mainIcon className="text-base" />
-                                <span>O'YNASH</span>
-                                <FaArrowRight className="text-sm transition-transform group-hover/btn:translate-x-2" />
-                              </>
-                            ) : (
-                              <>
-                                <FaLock className="text-sm" />
-                                <span>TEZ KUNDA</span>
-                              </>
-                            )}
-                          </span>
-                        </div>
-
-                        {/* Animatsion chiziq */}
-                        {game.available && (
-                          <div className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12" />
+                        {game.available ? (
+                          <>
+                            <span className="flex items-center gap-2"><game.mainIcon /> O'ynash</span>
+                            <FaArrowRight className="transition-transform duration-300 group-hover/btn:translate-x-1" />
+                          </>
+                        ) : (
+                          <><span className="flex items-center gap-2"><FaLock /> Tez kunda</span></>
                         )}
                       </button>
                     </div>
-                    </div>
                   </div>
-
-                  {/* Hover effektlari */}
-                  {isHovered && game.available && (
-                    <>
-                      <div className={`absolute top-0 left-0 w-20 h-20 bg-gradient-to-r ${cardGradient} rounded-full blur-3xl opacity-30`} />
-                      <div className={`absolute bottom-0 right-0 w-20 h-20 bg-gradient-to-r ${cardGradient} rounded-full blur-3xl opacity-30`} />
-                    </>
-                  )}
-                </div>
+                </article>
               </div>
             );
           })}
