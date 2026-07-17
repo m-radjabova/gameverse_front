@@ -104,6 +104,16 @@ const themes: Record<string, GameLandingTheme> = {
     mutedText: "text-pink-50/72",
     glow: "via-pink-300",
   },
+  pizza: {
+    accent: "from-red-500 via-orange-500 to-yellow-400",
+    accentSoft: "from-yellow-100 via-orange-100 to-red-100",
+    page: "bg-[linear-gradient(135deg,#3a1308_0%,#721d09_46%,#3a1608_100%)]",
+    panel: "bg-[linear-gradient(145deg,rgba(255,222,170,0.16),rgba(255,255,255,0.05))]",
+    border: "border-orange-200/25",
+    text: "text-yellow-200",
+    mutedText: "text-orange-50/80",
+    glow: "via-yellow-300",
+  },
 };
 
 const fallbackTheme = themes.blue;
@@ -128,10 +138,10 @@ const themeKeyByGameId: Record<string, keyof typeof themes> = {
   "reverse-thinking": "green",
   hangman: "amber",
   millionaire: "yellow",
-  pictionary: "indigo",
   "truth-detector": "indigo",
   "math-chick": "purple",
   "iq-game": "blue",
+  "pizza-master": "pizza",
 };
 
 const playAccentByGameId: Record<string, string> = {
@@ -154,10 +164,10 @@ const playAccentByGameId: Record<string, string> = {
   "reverse-thinking": "from-green-500 via-emerald-500 to-teal-500",
   hangman: "from-amber-500 via-orange-500 to-red-500",
   millionaire: "from-yellow-500 via-amber-500 to-orange-500",
-  pictionary: "from-indigo-500 via-purple-500 to-pink-500",
   "truth-detector": "from-indigo-500 via-purple-500 to-blue-500",
   "math-chick": "from-[#3b82f6] via-[#7c3aed] to-[#ec4899]",
   "iq-game": "from-sky-500 via-cyan-500 to-violet-500",
+  "pizza-master": "from-red-500 via-orange-500 to-yellow-400",
 };
 
 function splitTitle(title: string): [string, string] {
@@ -183,7 +193,9 @@ function createConfig(game: GameCard): GameLandingPageConfig {
     imageAlt: `${game.title} o'yini`,
     playPath: `${game.path}/play`,
     gameKey: game.id,
-    modeSelectionEnabled: true,
+    // Pizza Master o'zining Solo/Battle tanlovini gameplay ichida ko'rsatadi.
+    // Umumiy ishtirokchi oynasi uni ikkinchi marta so'ramasligi kerak.
+    modeSelectionEnabled: game.id !== "pizza-master",
     theme,
     metrics: [
       { icon: FaUsers, label: "O'yinchilar", value: game.players },

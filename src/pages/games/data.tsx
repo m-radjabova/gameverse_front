@@ -24,9 +24,9 @@ import {
   FaFrog,
   FaSkull,
   FaKeyboard,
-  FaBrush,
   FaEye,
   FaUsers,
+  FaPizzaSlice,
 } from "react-icons/fa";
 import {
   GiPuzzle,
@@ -43,7 +43,6 @@ import {
   GiJungle,
   GiJigsawPiece,
   GiMoneyStack,
-  GiPaintBrush,
   GiPerspectiveDiceSixFacesRandom,
   GiChicken,
   GiRopeCoil,
@@ -81,8 +80,34 @@ import solarSystemImg from "../../assets/solar_system_image.png";
 import virtualZooVrImg from "../../assets/virtual_zoo.png";
 import frogPondImg from "../../assets/frog_pond_image.png";
 import physicsImg from "../../assets/fizika_simulyatisya_image.png";
+import pizzaBaseImg from "../../assets/pizza_master_img.png";
 
 export const gameCards = [
+  {
+    id: "pizza-master",
+    title: "Pizza Master",
+    description: "To'g'ri javoblar bilan pizzangizni ingredientlarga to'ldiring va Pizza Battle'da do'stingiz bilan bellashing.",
+    mainIcon: FaPizzaSlice,
+    icon: FaPizzaSlice,
+    iconBg: "from-orange-500 to-red-500",
+    iconColor: "text-orange-100",
+    shadowColor: "orange",
+    available: true,
+    path: "/games/pizza-master",
+    bgPattern: "bg-gradient-to-br from-red-600 via-orange-500 to-yellow-400",
+    image: pizzaBaseImg,
+    players: "1-2 o'yinchi",
+    level: "Pizza Battle",
+    levelIcon: FaUsers,
+    badge: "YANGI O'YIN",
+    badgeIcon: FaPizzaSlice,
+    time: "5-10 min",
+    points: "500+",
+    category: "Matematika",
+    categoryIcon: MdNumbers,
+    gradient: "from-orange-400 to-red-500",
+    borderGlow: "hover:border-orange-400/50",
+  },
   {
     id: "plant-vr",
     title: "VR O'simlik O'stirish Simulyatori",
@@ -784,33 +809,6 @@ export const gameCards = [
     categoryIcon: FaQuestion,
     gradient: "from-yellow-400 to-amber-400",
     borderGlow: "hover:border-yellow-400/50",
-  },
-  {
-    id: "pictionary",
-    title: "Chiz va Top!",
-    description:
-      "2 jamoa. Bir jamoa chizadi, ikkinchisi so'zni topadi. Har bir to'g'ri javob uchun 1 ball. Raund oshgani sari so'zlar qiyinlashadi!",
-    mainIcon: GiPaintBrush,
-    icon: FaBrush,
-    iconBg: "from-indigo-500 to-purple-500",
-    iconColor: "text-indigo-300",
-    shadowColor: "indigo",
-    available: false,
-    path: "/games/pictionary",
-    bgPattern: "bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500",
-    image:
-      "https://media.istockphoto.com/id/2225108078/vector/hand-drawn-doodle-rock-punk-pop-music-festival-funky-background-karaoke-bachelorette-girly.jpg?s=612x612&w=0&k=20&c=fQGF0A9QZClxs8hFGG6RbtSsxqfWIy0X2NiB31G1aUU=",
-    players: "1-2 jamoa",
-    level: "3 daraja",
-    levelIcon: FaStar,
-    badge: "YANGI",
-    badgeIcon: FaCrown,
-    time: "30-90 s",
-    points: "1 ball / raund",
-    category: "Chizish",
-    categoryIcon: FaBrush,
-    gradient: "from-indigo-400 to-purple-400",
-    borderGlow: "hover:border-indigo-400/50",
   },
   {
     id: "truth-detector",

@@ -403,45 +403,6 @@ button:disabled {
   animation-delay: 1000ms;
 }
 
-@keyframes loader-pan {
-  0% {
-    background-position: 0% 50%;
-  }
-  100% {
-    background-position: 100% 50%;
-  }
-}
-
-@keyframes loader-orbit {
-  from {
-    transform: rotate(0deg) translateX(66px) rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg) translateX(66px) rotate(-360deg);
-  }
-}
-
-@keyframes loader-pop {
-  0%,
-  100% {
-    transform: scale(0.98);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.06);
-    opacity: 1;
-  }
-}
-
-@keyframes loader-shine {
-  from {
-    transform: translateX(-130%);
-  }
-  to {
-    transform: translateX(130%);
-  }
-}
-
 @keyframes hero-float {
   0%,
   100% {
@@ -655,39 +616,6 @@ button:disabled {
   animation: hero-ken-burns 12s ease-in-out infinite alternate;
 }
 
-.site-loader-bg {
-  background: linear-gradient(115deg, #d42d73, #c2185b, #ff8b40, #ffd966);
-  background-size: 300% 300%;
-  animation: loader-pan 3.6s ease-in-out infinite alternate;
-}
-
-.site-loader-orbit {
-  animation: loader-orbit 3s linear infinite;
-}
-
-.site-loader-core {
-  animation: loader-pop 1.8s ease-in-out infinite;
-}
-
-.site-loader-shine {
-  animation: loader-shine 1.4s ease-in-out infinite;
-}
-
-@keyframes slide-game {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(300%);
-  }
-}
-.animate-slide-game {
-  animation: slide 3s ease-in-out infinite;
-}
-.perspective-game {
-  perspective: 1000px;
-}
-
 @keyframes shake {
   0%,
   100% {
@@ -755,17 +683,6 @@ button:disabled {
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-@keyframes countdownPop {
-  0% {
-    opacity: 0;
-    transform: scale(0.84) translateY(16px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
 .wheel-leaderboard-scroll::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, rgba(253, 224, 71, 0.95), rgba(244, 114, 182, 0.9));
   border-radius: 999px;
@@ -785,86 +702,6 @@ button:disabled {
 
 .teacher-games-scroll::-webkit-scrollbar {
   display: none;
-}
-
-
-@keyframes floatBall {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  25% {
-    transform: translateY(-6px) rotate(-2deg);
-  }
-  50% {
-    transform: translateY(-10px) rotate(2deg);
-  }
-  75% {
-    transform: translateY(-4px) rotate(-1deg);
-  }
-}
-
-@keyframes shadowPulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.28;
-  }
-  50% {
-    transform: scale(0.82);
-    opacity: 0.15;
-  }
-}
-
-/* --- Mystic UI helpers (cosmic + dungeon) --- */
-.glass {
-  background: rgba(10, 8, 18, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow:
-    0 20px 60px rgba(0,0,0,0.45),
-    inset 0 1px 0 rgba(255,255,255,0.06);
-}
-
-.neon-border { position: relative; }
-.neon-border::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(90deg, rgba(255,0,214,0.75), rgba(0,255,255,0.65));
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: .95;
-  pointer-events: none;
-}
-
-.neon-glow {
-  box-shadow:
-    0 0 18px rgba(255,0,214,0.20),
-    0 0 30px rgba(0,255,255,0.14),
-    0 20px 70px rgba(0,0,0,0.45);
-}
-
-.neon-text {
-  text-shadow:
-    0 0 10px rgba(255,0,214,0.32),
-    0 0 14px rgba(0,255,255,0.22);
-}
-
-/* Dungeon-ish frame */
-.dungeon-frame {
-  background: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.15));
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  box-shadow: 0 18px 50px rgba(0,0,0,0.55);
-}
-
-.badge {
-  background: rgba(0,0,0,0.45);
-  border: 1px solid rgba(255,255,255,0.12);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
 }
 
 .token-move {

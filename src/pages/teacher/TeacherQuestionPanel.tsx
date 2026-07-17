@@ -68,6 +68,7 @@ const GAME_TEMPLATES: Record<string, unknown> = {
   treasure_hunt: { title: "", story: "", question: "", options: ["", "", "", ""], answerIndex: 0, hint: "", reward: 120 },
   reverse_thinking: { level: 1, question: "", options: ["", "", "", ""], correctAnswer: "", explanation: "" },
   frog_pond: { subject: "Matematika", question: "", options: ["", "", "", ""], answerIndex: 0, stage: 1 },
+  pizza_master: { subject: "Matematika", question: "", options: ["", "", "", ""], answerIndex: 0 },
 };
 
 const GAME_EMOJIS: Record<string, string> = {
@@ -84,6 +85,7 @@ const GAME_EMOJIS: Record<string, string> = {
   treasure_hunt: "🗺️",
   reverse_thinking: "🔄",
   frog_pond: "🐸",
+  pizza_master: "🍕",
 };
 
 
@@ -101,6 +103,7 @@ const GAME_ACCENTS: Record<string, string> = {
   treasure_hunt: "from-[var(--panel-accent)] to-[var(--panel-accent-strong)]",
   reverse_thinking: "from-[var(--panel-accent)] to-[var(--panel-accent-strong)]",
   frog_pond: "from-emerald-400 to-sky-400",
+  pizza_master: "from-orange-500 to-red-500",
 };
 
 
@@ -118,6 +121,7 @@ const GAME_BGS: Record<string, string> = {
   treasure_hunt: "bg-[image:var(--panel-accent-gradient-soft)]",
   reverse_thinking: "bg-[image:var(--panel-accent-gradient-soft)]",
   frog_pond: "bg-gradient-to-br from-emerald-400/10 to-sky-400/10",
+  pizza_master: "bg-gradient-to-br from-orange-400/10 to-red-400/10",
 };
 
 function cardIdToGameKey(id: string): string {
@@ -196,6 +200,12 @@ const SUBJECT_OPTIONS = [
   "Biologiya",
   "Fizika",
   "Kimyo",
+  "Adabiyot",
+  "Informatika",
+  "Iqtisodiyot",
+  "Huquq asoslari",
+  "Musiqa",
+  "Jismoniy tarbiya",
   "Aralash fanlar",
 ];
 
@@ -278,6 +288,18 @@ function validateDraftItem(gameKey: string, draftValue: unknown) {
     if (new Set(options.map((item) => item.toLowerCase())).size !== 4) return "Frog Pond variantlari takrorlanmasin.";
     if (!Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex > 3) return "Frog Pond uchun to'g'ri variantni tanlang.";
     if (!Number.isInteger(stage) || stage < 1 || stage > 3) return "Frog Pond bosqichi 1, 2 yoki 3 bo'lsin.";
+    return "";
+  }
+
+  if (gameKey === "pizza_master") {
+    const question = String(value.question ?? "").trim();
+    const rawOptions = Array.isArray(value.options) ? value.options : [];
+    const options = rawOptions.map((item) => String(item ?? "").trim()).filter(Boolean);
+    const answerIndex = Number(value.answerIndex);
+    if (!question) return "Pizza Master uchun savol matnini kiriting.";
+    if (options.length !== 4) return "Pizza Master uchun aniq 4 ta variant kiriting.";
+    if (new Set(options.map((item) => item.toLowerCase())).size !== 4) return "Pizza Master variantlari takrorlanmasin.";
+    if (!Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex > 3) return "Pizza Master uchun to'g'ri variantni tanlang.";
     return "";
   }
 
@@ -967,6 +989,7 @@ export default function TeacherQuestionPanel() {
   const [showExtraFields, setShowExtraFields] = useState(false);
   const [editorMode, setEditorMode] = useState<EditorMode>("manual");
   const [aiTopic, setAiTopic] = useState("");
+  const [aiSubject, setAiSubject] = useState("Matematika");
   const [aiGradeRange, setAiGradeRange] = useState<GradeRange>("none");
   const [aiCount, setAiCount] = useState<(typeof AI_COUNT_OPTIONS)[number]>(5);
   const [aiDifficulty, setAiDifficulty] = useState<GameDifficulty>("mixed");
@@ -1077,6 +1100,7 @@ export default function TeacherQuestionPanel() {
       const generated = await generateTeacherPanelQuestions({
         gameKey: activeGame.gameKey as SupportedTeacherGameKey,
         topic: aiTopic,
+        subject: aiSubject,
         count: aiCount,
         difficulty: aiDifficulty,
         gradeRange: aiGradeRange,
@@ -1491,6 +1515,17 @@ export default function TeacherQuestionPanel() {
                         <p className="mt-1 text-[10px] leading-4 text-[var(--panel-text-soft)]">{aiPanelContent.description}</p>
                       </div>
                     </div>
+
+                    <label className="block space-y-2">
+                      <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--panel-text-soft)]">Fan</span>
+                      <select
+                        value={aiSubject}
+                        onChange={(event) => setAiSubject(event.target.value)}
+                        className="w-full rounded-xl border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] px-4 py-3 text-sm text-[var(--panel-text)] outline-none transition-all duration-200 focus:border-[var(--panel-accent)] focus:shadow-[0_0_0_3px_var(--panel-focus-ring)]"
+                      >
+                        {SUBJECT_OPTIONS.map((subject) => <option key={subject} value={subject}>{subject}</option>)}
+                      </select>
+                    </label>
 
                     <label className="block space-y-2">
                       <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--panel-text-soft)]">{aiPanelContent.topicLabel}</span>

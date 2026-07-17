@@ -67,7 +67,9 @@ export default function Seo() {
   const shouldNoIndex =
     isPlayPage || noIndexPrefixes.some((prefix) => pathname.startsWith(prefix));
 
-  const game = gameCards.find((item) => item.path === pathname || item.route === pathname);
+  // O'yin ichidagi /play route ham landing route bilan bir xil o'yinga tegishli.
+  const gamePath = isPlayPage ? pathname.replace(/\/play$/, "") : pathname;
+  const game = gameCards.find((item) => item.path === gamePath || item.route === gamePath);
   const routeSeo = pageSeo[pathname];
   const title = game
     ? `${game.title} | GAMEVERSE`

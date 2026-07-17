@@ -1,32 +1,33 @@
-import type { ReactNode } from "react";
-import QuizBattle from "../quiz_battle/QuizBattle";
-import TreasureHunt from "../treasure_hunt/TreasureHunt";
-import MemoryRush from "../memory_rush/MemoryRush";
-import ClassicArcade from "../classic_arcade/ClassicArcade";
-import WordBattle from "../word_battle/WordBattle";
-import FlagBattle from "../flag_battle/FlagBattle";
-import WheelOfFortune from "../wheel_of_fortune/WheelOfFortune";
-import WordSearchPuzzle from "../word_search_puzzle/WordSearchPuzzle";
-import OceanWordFishing from "../ocean_word_fishing/OceanWordFishing";
-import MathRace from "../math_race/MathRace";
-import Baamboozle from "../baamboozle/Baamboozle";
-import FindDifferentColor from "../find_color/FindDifferentColor";
-import Bingo from "../bingo/Bingo";
-import WordChain from "../word_chain/WordChain";
-import MemoryChainArena from "../memory_chain_arena/MemoryChainArena";
-import Jumanji from "../jumanji/Jumanji";
-import MiniPuzzle from "../mini_puzzle/MiniPuzzle";
-import ReverseThinking from "../reverse_thinking/ReverseThinking";
-import Hangman from "../hangman/Hangman";
-import Millionaire from "../millionaire/Millionaire";
-// import Pictionary from "../pictionary/Pictionary";
-import TruthDetector from "../truth_detector/TruthDetector";
-import MathChickGame from "../math_chick_game/MathChickGame";
-import IQGame from "../iq_game/IQGame";
-import PlantVRGame from "../plant_vr";
-import TugOfWar from "../tug_of_war/TugOfWar";
-import VirtualZoo from "../virtual_zoo";
-import FrogPondPage from "../frog-pond/FrogPondPage";
+import { lazy, type ReactNode } from "react";
+
+const QuizBattle = lazy(() => import("../quiz_battle/QuizBattle"));
+const TreasureHunt = lazy(() => import("../treasure_hunt/TreasureHunt"));
+const MemoryRush = lazy(() => import("../memory_rush/MemoryRush"));
+const ClassicArcade = lazy(() => import("../classic_arcade/ClassicArcade"));
+const WordBattle = lazy(() => import("../word_battle/WordBattle"));
+const FlagBattle = lazy(() => import("../flag_battle/FlagBattle"));
+const WheelOfFortune = lazy(() => import("../wheel_of_fortune/WheelOfFortune"));
+const WordSearchPuzzle = lazy(() => import("../word_search_puzzle/WordSearchPuzzle"));
+const OceanWordFishing = lazy(() => import("../ocean_word_fishing/OceanWordFishing"));
+const MathRace = lazy(() => import("../math_race/MathRace"));
+const Baamboozle = lazy(() => import("../baamboozle/Baamboozle"));
+const FindDifferentColor = lazy(() => import("../find_color/FindDifferentColor"));
+const Bingo = lazy(() => import("../bingo/Bingo"));
+const WordChain = lazy(() => import("../word_chain/WordChain"));
+const MemoryChainArena = lazy(() => import("../memory_chain_arena/MemoryChainArena"));
+const Jumanji = lazy(() => import("../jumanji/Jumanji"));
+const MiniPuzzle = lazy(() => import("../mini_puzzle/MiniPuzzle"));
+const ReverseThinking = lazy(() => import("../reverse_thinking/ReverseThinking"));
+const Hangman = lazy(() => import("../hangman/Hangman"));
+const Millionaire = lazy(() => import("../millionaire/Millionaire"));
+const TruthDetector = lazy(() => import("../truth_detector/TruthDetector"));
+const MathChickGame = lazy(() => import("../math_chick_game/MathChickGame"));
+const IQGame = lazy(() => import("../iq_game/IQGame"));
+const PlantVRGame = lazy(() => import("../plant_vr"));
+const TugOfWar = lazy(() => import("../tug_of_war/TugOfWar"));
+const VirtualZoo = lazy(() => import("../virtual_zoo"));
+const FrogPondPage = lazy(() => import("../frog-pond/FrogPondPage"));
+const PizzaMaster = lazy(() => import("../pizza_master/PizzaMaster"));
 
 type GamePlayRoute = {
   path: string;
@@ -35,6 +36,11 @@ type GamePlayRoute = {
 };
 
 export const gamePlayRoutes: GamePlayRoute[] = [
+  {
+    path: "/games/pizza-master/play",
+    colorClassName: "from-red-500 via-orange-500 to-yellow-400",
+    element: <PizzaMaster />,
+  },
   {
     path: "/games/quiz-battle/play",
     colorClassName: "from-yellow-500 via-orange-500 to-red-500",
@@ -158,11 +164,6 @@ export const gamePlayRoutes: GamePlayRoute[] = [
     colorClassName: "from-yellow-500 via-amber-500 to-orange-500",
     element: <Millionaire />,
   },
-  // {
-  //   path: "/games/pictionary/play",
-  //   colorClassName: "from-indigo-500 via-purple-500 to-pink-500",
-  //   element: <Pictionary />,
-  // },
   {
     path: "/games/truth-detector/play",
     colorClassName: "from-indigo-500 via-purple-500 to-blue-500",

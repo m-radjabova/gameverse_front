@@ -8,7 +8,9 @@ export default function GameLayout() {
   const location = useLocation();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [pendingExit, setPendingExit] = useState<(() => void) | null>(null);
+  const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
+  const pendingExitRef = useRef<(() => void) | null>(null);
+  const isIntentionalExitRef = useRef(false);
   const lastScrollYRef = useRef(0);
   const controlTheme = (() => {
     if (location.pathname.includes("/mini-puzzle")) {
@@ -33,6 +35,7 @@ export default function GameLayout() {
       location.pathname.includes("/math-race") ||
       location.pathname.includes("/quiz-battle") ||
       location.pathname.includes("/treasure-hunt") ||
+      location.pathname.includes("/pizza-master") ||
       location.pathname.includes("/baamboozle") ||
       location.pathname.includes("/hangman")
     ) {
@@ -45,7 +48,6 @@ export default function GameLayout() {
 
     if (
       location.pathname.includes("/truth-detector") ||
-      // location.pathname.includes("/pictionary") ||
       location.pathname.includes("/wheel-of-fortune") ||
       location.pathname.includes("/classic-arcade") ||
       location.pathname.includes("/word-chain") ||
@@ -84,6 +86,8 @@ export default function GameLayout() {
   const showGameControls = location.pathname.startsWith("/games/") && location.pathname !== "/games";
   const showFullscreenControl = location.pathname.endsWith("/play");
   const isActiveGameplay = location.pathname.endsWith("/play");
+  const isPizzaMasterRoute = location.pathname.startsWith("/games/pizza-master");
+  const controlsAreVisible = isPizzaMasterRoute || showControls;
   const isMobileViewport =
     typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
 
@@ -103,6 +107,7 @@ export default function GameLayout() {
     if (!isActiveGameplay) return;
 
     const warnBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (isIntentionalExitRef.current) return;
       event.preventDefault();
       event.returnValue = "";
     };
@@ -112,15 +117,18 @@ export default function GameLayout() {
   }, [isActiveGameplay]);
 
   useEffect(() => {
-    if (!pendingExit) return;
+    if (!isExitDialogOpen) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setPendingExit(null);
+      if (event.key === "Escape") {
+        pendingExitRef.current = null;
+        setIsExitDialogOpen(false);
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [pendingExit]);
+  }, [isExitDialogOpen]);
 
   // Hide/show buttons on scroll
   useEffect(() => {
@@ -152,13 +160,30 @@ export default function GameLayout() {
   };
 
   const requestGameExit = (onConfirm: () => void) => {
-    setPendingExit(() => onConfirm);
+    pendingExitRef.current = onConfirm;
+    setIsExitDialogOpen(true);
   };
 
   const confirmExit = () => {
-    const exit = pendingExit;
-    setPendingExit(null);
-    exit?.();
+    const exit = pendingExitRef.current;
+    pendingExitRef.current = null;
+    setIsExitDialogOpen(false);
+
+    // Pizza Master mode selector o'z state'ini gameplay ichida ushlab turadi.
+    // Shu sabab chiqishda callbackdan qat'i nazar landingga aniq qaytamiz.
+    if (location.pathname === "/games/pizza-master/play") {
+      isIntentionalExitRef.current = true;
+      window.location.replace("/games/pizza-master");
+      return;
+    }
+
+    // Dialog yopilgach yo'naltiramiz, shunda callback UI holatiga bog'lanib qolmaydi.
+    window.setTimeout(() => exit?.(), 0);
+  };
+
+  const cancelExit = () => {
+    pendingExitRef.current = null;
+    setIsExitDialogOpen(false);
   };
 
   const goBack = () => {
@@ -170,12 +195,12 @@ export default function GameLayout() {
   };
 
   return (
-    <div className="game-layout relative min-h-screen bg-[#04111f]">
+    <div className={`game-layout relative min-h-screen ${isPizzaMasterRoute ? "bg-[#fff7df]" : "bg-[#04111f]"}`}>
       {showGameControls && (
         <>
           <div
-            className={`fixed left-4 top-1/2 z-50 hidden -translate-y-1/2 transition-all duration-300 md:block ${
-              showControls ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0"
+            className={`fixed left-4 top-1/2 z-[120] hidden -translate-y-1/2 transition-all duration-300 md:block ${
+              controlsAreVisible ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0"
             }`}
           >
             <button
@@ -195,8 +220,8 @@ export default function GameLayout() {
 
           {showFullscreenControl ? (
             <div
-              className={`fixed right-4 top-1/2 z-50 hidden -translate-y-1/2 transition-all duration-300 md:block ${
-                showControls ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
+              className={`fixed right-4 top-1/2 z-[120] hidden -translate-y-1/2 transition-all duration-300 md:block ${
+                controlsAreVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
               }`}
             >
               <button
@@ -221,16 +246,16 @@ export default function GameLayout() {
       )}
 
       {/* Main Content */}
-      <main className="min-h-[100dvh] bg-[#04111f] pb-20 md:pb-0">
+      <main className={`min-h-[100dvh] pb-20 md:pb-0 ${isPizzaMasterRoute ? "bg-[#fff7df]" : "bg-[#04111f]"}`}>
         <Outlet context={{ requestGameExit }} />
       </main>
 
-      {pendingExit ? (
+      {isExitDialogOpen ? (
         <div className="fixed inset-0 z-[100] grid place-items-center p-4" role="dialog" aria-modal="true" aria-labelledby="game-exit-title">
           <button
             type="button"
             className="absolute inset-0 bg-slate-950/75 backdrop-blur-sm"
-            onClick={() => setPendingExit(null)}
+            onClick={cancelExit}
             aria-label="Dialogni yopish"
           />
           <div className="relative w-full max-w-md overflow-hidden rounded-lg border border-white/15 bg-[#101a2b] p-6 text-white shadow-[0_28px_80px_rgba(0,0,0,0.52)] sm:p-7">
@@ -248,7 +273,7 @@ export default function GameLayout() {
             <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
-                onClick={() => setPendingExit(null)}
+                onClick={cancelExit}
                 className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-4 py-3 text-sm font-bold text-white/85 transition hover:bg-white/[0.12]"
               >
                 <FaGamepad /> Davom etaman

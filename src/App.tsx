@@ -1,95 +1,72 @@
-import { useEffect, useRef, useState } from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { lazy, Suspense } from "react";
+import { Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Home from "./pages/home/Home";
 import AuthLayout from "./layout/AuthLayout";
 import MainLayout from "./layout/MainLayout";
 import AdminLayout from "./layout/AdminLayout";
 import useContextPro from "./hooks/useContextPro";
-import LoginForm from "./pages/login/Login";
-import Register from "./pages/login/Register";
-import Games from "./pages/games/Games";
-import QuizBattlePage from "./components/games/quiz_battle/QuizBattlePage";
-import TreasureHuntPage from "./components/games/treasure_hunt/TreasureHuntPage";
-import MemoryRushPage from "./components/games/memory_rush/MemoryRushPage";
 import SiteLoader from "./components/main/SiteLoader";
-import ClassicArcadePage from "./components/games/classic_arcade/ClassicArcadePage";
-import WordBattlePage from "./components/games/word_battle/WordBattlePage";
 import GameLayout from "./layout/GameLayout";
-import FlagBattlePage from "./components/games/flag_battle/FlagBattlePage";
-import WheelOfFortunePage from "./components/games/wheel_of_fortune/WheelOfFortunePage";
-import WordSearchPuzzlePage from "./components/games/word_search_puzzle/WordSearchPuzzlePage";
-import Profile from "./components/profile/Profile";
-import OceanWordFishingPage from "./components/games/ocean_word_fishing/OceanWordFishingPage";
-import MathRacePage from "./components/games/math_race/MathRacePage";
-import BaamboozlePage from "./components/games/baamboozle/BaamboozlePage";
-import FindDifferentColorPage from "./components/games/find_color/FindDifferentColorPage";
-import NotFoundPage from "./components/NotFoundPage";
-import BingoPage from "./components/games/bingo/BingoPage";
-import WordChainPage from "./components/games/word_chain/WordChainPage";
-import MemoryChainArenaPage from "./components/games/memory_chain_arena/MemoryChainArenaPage";
-import JumanjiPage from "./components/games/jumanji/JumanjiPage";
-import MiniPuzzlePage from "./components/games/mini_puzzle/MiniPuzzlePage";
-import ReverseThinkingPage from "./components/games/reverse_thinking/ReverseThinkingPage";
-import HangmanPage from "./components/games/hangman/HangmanPage";
-import MillionairePage from "./components/games/millionaire/MillionairePage";
-// import PictionaryPage from "./components/games/pictionary/PictionaryPage";
-import TruthDetectorPage from "./components/games/truth_detector/TruthDetectorPage";
 import GamePlayView from "./components/games/shared/GamePlayView";
-import VrGameBriefingPage from "./components/games/shared/VrGameBriefingPage";
 import { gamePlayRoutes } from "./components/games/shared/gamePlayRoutes";
-import MathChickGamePage from "./components/games/math_chick_game/MathChickGamePage";
-import TeacherQuestionPanel from "./pages/teacher/TeacherQuestionPanel";
 import TeacherLayout from "./layout/TeacherLayout";
-import IQGamePage from "./components/games/iq_game/IQGamePage";
-import FavoritesPage from "./pages/favorites/FavoritesPage";
-import HelloAdmin from "./pages/admin/HelloAdmin";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminUsers from "./pages/admin/users/AdminUsers";
-import AdminFeedbacks from "./pages/admin/feedbacks/AdminFeedbacks";
-import WorldExplorer from "./components/games/world_explorer";
-import TugOfWarPage from "./components/games/tug_of_war/TugOfWarPage";
-import SolarSystemGame from "./components/games/vr-solar-system";
-import FrogPondLandingPage from "./components/games/frog-pond/FrogPondLandingPage";
 import ScrollToTop from "./components/ScrollToTop";
 import Seo from "./components/seo/Seo";
+
+const Home = lazy(() => import("./pages/home/Home"));
+const LoginForm = lazy(() => import("./pages/login/Login"));
+const Register = lazy(() => import("./pages/login/Register"));
+const Games = lazy(() => import("./pages/games/Games"));
+const Profile = lazy(() => import("./components/profile/Profile"));
+const FavoritesPage = lazy(() => import("./pages/favorites/FavoritesPage"));
+const TeacherQuestionPanel = lazy(() => import("./pages/teacher/TeacherQuestionPanel"));
+const HelloAdmin = lazy(() => import("./pages/admin/HelloAdmin"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminUsers = lazy(() => import("./pages/admin/users/AdminUsers"));
+const AdminFeedbacks = lazy(() => import("./pages/admin/feedbacks/AdminFeedbacks"));
+const NotFoundPage = lazy(() => import("./components/NotFoundPage"));
+const QuizBattlePage = lazy(() => import("./components/games/quiz_battle/QuizBattlePage"));
+const TreasureHuntPage = lazy(() => import("./components/games/treasure_hunt/TreasureHuntPage"));
+const MemoryRushPage = lazy(() => import("./components/games/memory_rush/MemoryRushPage"));
+const ClassicArcadePage = lazy(() => import("./components/games/classic_arcade/ClassicArcadePage"));
+const WordBattlePage = lazy(() => import("./components/games/word_battle/WordBattlePage"));
+const FlagBattlePage = lazy(() => import("./components/games/flag_battle/FlagBattlePage"));
+const WheelOfFortunePage = lazy(() => import("./components/games/wheel_of_fortune/WheelOfFortunePage"));
+const WordSearchPuzzlePage = lazy(() => import("./components/games/word_search_puzzle/WordSearchPuzzlePage"));
+const OceanWordFishingPage = lazy(() => import("./components/games/ocean_word_fishing/OceanWordFishingPage"));
+const MathRacePage = lazy(() => import("./components/games/math_race/MathRacePage"));
+const TugOfWarPage = lazy(() => import("./components/games/tug_of_war/TugOfWarPage"));
+const BaamboozlePage = lazy(() => import("./components/games/baamboozle/BaamboozlePage"));
+const FindDifferentColorPage = lazy(() => import("./components/games/find_color/FindDifferentColorPage"));
+const BingoPage = lazy(() => import("./components/games/bingo/BingoPage"));
+const WordChainPage = lazy(() => import("./components/games/word_chain/WordChainPage"));
+const MemoryChainArenaPage = lazy(() => import("./components/games/memory_chain_arena/MemoryChainArenaPage"));
+const JumanjiPage = lazy(() => import("./components/games/jumanji/JumanjiPage"));
+const MiniPuzzlePage = lazy(() => import("./components/games/mini_puzzle/MiniPuzzlePage"));
+const ReverseThinkingPage = lazy(() => import("./components/games/reverse_thinking/ReverseThinkingPage"));
+const HangmanPage = lazy(() => import("./components/games/hangman/HangmanPage"));
+const MillionairePage = lazy(() => import("./components/games/millionaire/MillionairePage"));
+const TruthDetectorPage = lazy(() => import("./components/games/truth_detector/TruthDetectorPage"));
+const MathChickGamePage = lazy(() => import("./components/games/math_chick_game/MathChickGamePage"));
+const IQGamePage = lazy(() => import("./components/games/iq_game/IQGamePage"));
+const FrogPondLandingPage = lazy(() => import("./components/games/frog-pond/FrogPondLandingPage"));
+const PizzaMasterPage = lazy(() => import("./components/games/pizza_master/PizzaMasterPage"));
+const VrGameBriefingPage = lazy(() => import("./components/games/shared/VrGameBriefingPage"));
+const WorldExplorer = lazy(() => import("./components/games/world_explorer"));
+const SolarSystemGame = lazy(() => import("./components/games/vr-solar-system"));
 
 function App() {
   const {
     state: { isLoading },
   } = useContextPro();
-  const location = useLocation();
-  const previousPathRef = useRef(location.pathname);
-  const [isGamesRouteLoading, setIsGamesRouteLoading] = useState(false);
 
-  useEffect(() => {
-    const isEnteringGamesPage =
-      location.pathname === "/games" && previousPathRef.current !== "/games";
-
-    previousPathRef.current = location.pathname;
-
-    if (!isEnteringGamesPage) {
-      setIsGamesRouteLoading(false);
-      return;
-    }
-
-    setIsGamesRouteLoading(true);
-
-    const timer = window.setTimeout(() => {
-      setIsGamesRouteLoading(false);
-    }, 1600);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [location.pathname]);
-
-  if (isLoading || isGamesRouteLoading) return <SiteLoader />;
+  if (isLoading) return <SiteLoader />;
 
   return (
     <>
     <Seo />
     <ScrollToTop />
+    <Suspense fallback={<SiteLoader />}>
     <Routes>
       <Route path="/" element={<Home />} />
 
@@ -161,11 +138,11 @@ function App() {
         <Route path="/games/reverse-thinking" element={<ReverseThinkingPage />} />
         <Route path="/games/hangman" element={<HangmanPage />} />
         <Route path="/games/millionaire" element={<MillionairePage />} />
-        {/* <Route path="/games/pictionary" element={<PictionaryPage />} /> */}
         <Route path="/games/truth-detector" element={<TruthDetectorPage />} />
         <Route path="/games/math-chick" element={<MathChickGamePage />} />
         <Route path="/games/iq-game" element={<IQGamePage />} />
         <Route path="/games/frog-pond" element={<FrogPondLandingPage />} />
+        <Route path="/games/pizza-master" element={<PizzaMasterPage />} />
         <Route
           path="/games/world-explorer"
           element={<VrGameBriefingPage gameId="world-explorer" playPath="/games/world-explorer/play" />}
@@ -217,6 +194,7 @@ function App() {
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
+    </Suspense>
     </>
   );
 }

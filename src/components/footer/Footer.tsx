@@ -69,7 +69,7 @@ function Footer({ isDark = false }: { isDark?: boolean }) {
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
-          <div className="space-y-6 lg:col-span-5" data-aos="fade-right" data-aos-delay="80">
+          <div className="space-y-6 lg:col-span-5">
             <div className="space-y-3">
               <div
                 className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 shadow-sm backdrop-blur-sm ${
@@ -114,7 +114,7 @@ function Footer({ isDark = false }: { isDark?: boolean }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 lg:col-span-7" data-aos="fade-left" data-aos-delay="140">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 lg:col-span-7" >
             <div className="space-y-4">
               <h3 className={`flex items-center gap-2 text-sm font-bold uppercase tracking-wider ${isDark ? "text-[#f1f1f1]" : "text-[#203572]"}`}>
                 <span className="h-px w-6 bg-gradient-to-r from-[#59b9e6] to-transparent" />
@@ -162,7 +162,7 @@ function Footer({ isDark = false }: { isDark?: boolean }) {
           </div>
         </div>
 
-        <div data-aos="fade-up" data-aos-delay="200" className={`mt-12 border-t pt-6 ${isDark ? "border-[#2b3146]" : "border-[#d8eef7]"}`}>
+        <div  className={`mt-12 border-t pt-6 ${isDark ? "border-[#2b3146]" : "border-[#d8eef7]"}`}>
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
             <p className={`order-2 text-[10px] sm:order-1 ${isDark ? "text-[#a1a1aa]" : "text-[#7b86ae]"}`}>
               © {new Date().getFullYear()} Bilim. Barcha huquqlar himoyalangan.

@@ -99,4 +99,8 @@ export function saveGameSessionConfig(config: GameSessionConfig) {
   }
 
   sessionCache.set(config.gameId, config);
+
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("game-session-updated", { detail: config }));
+  }
 }

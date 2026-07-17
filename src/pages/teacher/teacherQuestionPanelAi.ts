@@ -14,7 +14,8 @@ export type SupportedTeacherGameKey =
   | "truth_detector"
   | "treasure_hunt"
   | "reverse_thinking"
-  | "frog-pond";
+  | "frog-pond"
+  | "pizza_master";
 
 function difficultyInstruction(difficulty: GameDifficulty) {
   if (difficulty === "easy") return "Kontent oson bo'lsin, tez tushuniladigan va boshlang'ich darajaga mos bo'lsin.";
@@ -37,9 +38,11 @@ function toStringArray(value: unknown, expected = 4): string[] | null {
   return items;
 }
 
-function buildPrompt(gameKey: SupportedTeacherGameKey, topic: string, count: number, difficulty: GameDifficulty, gradeRange: GradeRange) {
+function buildPrompt(gameKey: SupportedTeacherGameKey, topic: string, subject: string, count: number, difficulty: GameDifficulty, gradeRange: GradeRange) {
   const safeTopic = topic.trim() || "umumiy bilim";
+  const safeSubject = subject.trim() || "Matematika";
   const shared = [
+    `Fan: ${safeSubject}.`,
     `Mavzu: ${safeTopic}.`,
     `Sinf oralig'i: ${getGradeRangeLabel(gradeRange)}.`,
     `- ${getGradeRangeInstruction(gradeRange)}`,
@@ -57,6 +60,15 @@ function buildPrompt(gameKey: SupportedTeacherGameKey, topic: string, count: num
       return [
         `Quiz Battle uchun ${count} ta test savol yarating.`,
         'JSON: [{"question":"...","options":["...","...","...","..."],"answerIndex":0}]',
+        "- Har bir savolda question, options, answerIndex bo'lsin.",
+        "- options aniq 4 ta bo'lsin.",
+        "- answerIndex 0 dan 3 gacha bo'lsin.",
+        ...shared,
+      ].join("\n");
+    case "pizza_master":
+      return [
+        `Pizza Master uchun ${count} ta 4 variantli test savol yarating.`,
+        'JSON: [{"question":"9 x 7 = ?","options":["54","63","72","81"],"answerIndex":1}]',
         "- Har bir savolda question, options, answerIndex bo'lsin.",
         "- options aniq 4 ta bo'lsin.",
         "- answerIndex 0 dan 3 gacha bo'lsin.",
@@ -133,7 +145,7 @@ function buildPrompt(gameKey: SupportedTeacherGameKey, topic: string, count: num
         `Jumanji uchun ${count} ta test savol yarating.`,
         'JSON: [{"subject":"Matematika","question":"...","options":["...","...","...","..."],"correctAnswer":"...","difficulty":"easy","timeLimit":30}]',
         "- Har bir elementda subject, question, options, correctAnswer, difficulty, timeLimit bo'lsin.",
-        "- subject quyidagilardan biri bo'lsin: Matematika, Ingliz tili, Ona tili, Tarix, Geografiya, Biologiya, Fizika, Kimyo, Aralash fanlar.",
+        "- subject tanlangan fan bilan aynan bir xil bo'lsin.",
         "- correctAnswer options ichidagi aynan bir qiymat bo'lsin.",
         "- timeLimit 20 dan 60 gacha bo'lsin.",
         ...shared,
@@ -191,6 +203,13 @@ function validateItems(gameKey: SupportedTeacherGameKey, payload: unknown, expec
 
       switch (gameKey) {
         case "quiz_battle": {
+          const question = String(body.question ?? "").trim();
+          const options = toStringArray(body.options);
+          const answerIndex = Number(body.answerIndex);
+          if (!question || !options || !Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex > 3) return null;
+          return { question, options, answerIndex };
+        }
+        case "pizza_master": {
           const question = String(body.question ?? "").trim();
           const options = toStringArray(body.options);
           const answerIndex = Number(body.answerIndex);
@@ -341,12 +360,14 @@ function validateItems(gameKey: SupportedTeacherGameKey, payload: unknown, expec
 export async function generateTeacherPanelQuestions({
   gameKey,
   topic,
+  subject,
   count,
   difficulty,
   gradeRange,
 }: {
   gameKey: SupportedTeacherGameKey;
   topic?: string;
+  subject?: string;
   count: number;
   difficulty?: GameDifficulty;
   gradeRange?: GradeRange;
@@ -354,7 +375,7 @@ export async function generateTeacherPanelQuestions({
   const safeCount = Math.max(1, Math.min(20, Math.floor(count)));
   const safeDifficulty = difficulty ?? "medium";
   const safeGradeRange = gradeRange ?? "none";
-  const prompt = buildPrompt(gameKey, topic ?? "", safeCount, safeDifficulty, safeGradeRange);
+  const prompt = buildPrompt(gameKey, topic ?? "", subject ?? "", safeCount, safeDifficulty, safeGradeRange);
   const parsed = await generateGeminiJson(prompt);
   return validateItems(gameKey, parsed, safeCount);
 }

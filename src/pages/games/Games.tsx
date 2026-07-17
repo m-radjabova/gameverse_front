@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaArrowRight,
@@ -45,6 +45,7 @@ function Games() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const mouseFrameRef = useRef<number | null>(null);
   const itemsPerPage = 9;
   const showAmbientEffects = typeof window !== "undefined" && window.innerWidth >= 768;
 
@@ -66,14 +67,23 @@ function Games() {
       return;
     }
 
-    const handleMouseMove = (e : MouseEvent) => {
-      setMousePosition({
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100,
+    const handleMouseMove = (event: MouseEvent) => {
+      if (mouseFrameRef.current !== null) return;
+      mouseFrameRef.current = window.requestAnimationFrame(() => {
+        setMousePosition({
+          x: (event.clientX / window.innerWidth) * 100,
+          y: (event.clientY / window.innerHeight) * 100,
+        });
+        mouseFrameRef.current = null;
       });
     };
     window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (mouseFrameRef.current !== null) {
+        window.cancelAnimationFrame(mouseFrameRef.current);
+      }
+    };
   }, [showAmbientEffects]);
 
   const categories = useMemo(
@@ -140,6 +150,24 @@ function Games() {
   const particlePalette = isDarkMode
     ? ["#59b9e6", "#ffd15d", "#f8fafc"]
     : ["#59b9e6", "#ffd15d", "#ffffff"];
+  const ambientParticles = useMemo(
+    () => Array.from({ length: showAmbientEffects ? 48 : 18 }, (_, index) => {
+      const color = particlePalette[index % particlePalette.length];
+      return {
+        id: index,
+        width: `${Math.random() * 4 + 1}px`,
+        height: `${Math.random() * 4 + 1}px`,
+        top: `${Math.random() * 100}%`,
+        left: `${Math.random() * 100}%`,
+        background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
+        boxShadow: `0 0 ${Math.random() * 20 + 10}px ${color}`,
+        animationDelay: `${Math.random() * 5}s`,
+        animationDuration: `${10 + Math.random() * 20}s`,
+        opacity: isDarkMode ? 0.16 + Math.random() * 0.2 : 0.12 + Math.random() * 0.14,
+      };
+    }),
+    [isDarkMode, showAmbientEffects],
+  );
 
   return (
     <div
@@ -156,24 +184,20 @@ function Games() {
 
       {/* Animatsion zarralar tizimi */}
       <div className="fixed inset-0 overflow-hidden">
-        {[...Array(showAmbientEffects ? 100 : 28)].map((_, i) => (
+        {ambientParticles.map((particle) => (
           <div
-            key={i}
+            key={particle.id}
             className="absolute rounded-full animate-float-particle"
             style={{
-              width: `${Math.random() * 4 + 1}px`,
-              height: `${Math.random() * 4 + 1}px`,
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              background: `radial-gradient(circle, ${
-                particlePalette[i % particlePalette.length]
-              } 0%, transparent 70%)`,
-              boxShadow: `0 0 ${Math.random() * 20 + 10}px ${
-                particlePalette[i % particlePalette.length]
-              }`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${10 + Math.random() * 20}s`,
-              opacity: isDarkMode ? 0.16 + Math.random() * 0.24 : 0.12 + Math.random() * 0.18,
+              width: particle.width,
+              height: particle.height,
+              top: particle.top,
+              left: particle.left,
+              background: particle.background,
+              boxShadow: particle.boxShadow,
+              animationDelay: particle.animationDelay,
+              animationDuration: particle.animationDuration,
+              opacity: particle.opacity,
             }}
           />
         ))}

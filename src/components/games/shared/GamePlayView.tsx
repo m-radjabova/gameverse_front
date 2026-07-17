@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { FaArrowLeft, FaClock, FaGamepad, FaUsers } from "react-icons/fa6";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { gameCards } from "../../../pages/games/data";
 import { getGameSessionConfig } from "../../../hooks/gameSession";
@@ -18,16 +19,26 @@ export default function GamePlayView({ colorClassName, children }: GamePlayViewP
   const location = useLocation();
   const navigate = useNavigate();
   const { requestGameExit } = useOutletContext<GameLayoutContext>();
+  const [, setSessionVersion] = useState(0);
+
+  useEffect(() => {
+    const updateSession = () => setSessionVersion((version) => version + 1);
+    window.addEventListener("game-session-updated", updateSession);
+    return () => window.removeEventListener("game-session-updated", updateSession);
+  }, []);
   const isPlantVrRoute =
     location.pathname === "/games/plant-vr" || location.pathname === "/games/plant-vr/play";
   const isVirtualZooRoute =
     location.pathname === "/games/virtual-zoo-vr" || location.pathname === "/games/virtual-zoo-vr/play";
   const isWorldExplorerRoute =
     location.pathname === "/games/world-explorer" || location.pathname === "/games/world-explorer/play";
+  const isPizzaMasterRoute =
+    location.pathname === "/games/pizza-master" || location.pathname === "/games/pizza-master/play";
   const isFullBleedGameRoute =
     isPlantVrRoute ||
     isVirtualZooRoute ||
     isWorldExplorerRoute ||
+    isPizzaMasterRoute ||
     location.pathname === "/games/vr-solar-system/play" ||
     location.pathname === "/games/quyosh-tizimi-vr/play";
   const game = gameCards.find(
