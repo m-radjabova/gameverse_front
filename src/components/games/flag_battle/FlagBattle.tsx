@@ -5,10 +5,11 @@ import Confetti from "react-confetti-boom";
 import correctSfx from "../../../assets/sounds/correct.m4a";
 import wrongSfx from "../../../assets/sounds/wrong.mp3";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
-import { getGameSessionConfig, type ParticipantType } from "../../../hooks/gameSession";
+import { getGameSessionConfig, saveGameSessionConfig, type ParticipantType } from "../../../hooks/gameSession";
 import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
+import useContextPro from "../../../hooks/useContextPro";
 import { FLAG_QUESTIONS, type FlagQuestion } from "./data";
 import CountryBallCanvas from "./CountryBallCanvas";
 
@@ -43,12 +44,21 @@ const getDefaultNames = (count: number, type: ParticipantType, saved: string[]) 
   Array.from({ length: count }, (_, index) => saved[index]?.trim() || `${type === "team" ? "JAMOA" : "O'YINCHI"} ${index + 1}`);
 
 export default function FlagBattle() {
+  const {
+    state: { user },
+  } = useContextPro();
   const sessionConfig = useMemo(() => getGameSessionConfig("flag-battle"), []);
-  const participantCount = Math.min(2, Math.max(1, sessionConfig?.participantCount ?? 2));
+  const initialParticipantCount = Math.min(2, Math.max(1, sessionConfig?.participantCount ?? 2));
+  const [participantCount, setParticipantCount] = useState(initialParticipantCount);
   const participantType = sessionConfig?.participantType ?? "player";
   const participantLabel = sessionConfig?.participantLabel ?? (participantType === "team" ? "jamoa" : "o'yinchi");
+  const registeredName = user?.username?.trim() || "";
   const [phase, setPhase] = useState<Phase>("setup");
-  const [participantNames, setParticipantNames] = useState<string[]>(() => getDefaultNames(participantCount, participantType, sessionConfig?.participantLabels ?? []));
+  const [participantNames, setParticipantNames] = useState<string[]>(() =>
+    participantCount === 1 && registeredName
+      ? [registeredName]
+      : getDefaultNames(participantCount, participantType, sessionConfig?.participantLabels ?? []),
+  );
   const [nameError, setNameError] = useState("");
   const [continentFilter, setContinentFilter] = useState<ContinentFilter>("ALL");
   const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>("ALL");
@@ -67,6 +77,12 @@ export default function FlagBattle() {
   const [roundAnswers, setRoundAnswers] = useState<RoundAnswers>(() => createAnswers(participantCount));
   const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
   useFinishApplause(phase === "finish");
+
+  useEffect(() => {
+    if (participantCount === 1 && registeredName && participantNames[0] !== registeredName) {
+      setParticipantNames([registeredName]);
+    }
+  }, [participantCount, participantNames[0], registeredName]);
 
   const correctAudioRef = useRef<HTMLAudioElement | null>(null);
   const wrongAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -184,6 +200,32 @@ export default function FlagBattle() {
     setParticipantNames((current) => current.map((item, itemIndex) => (itemIndex === index ? value : item)));
   };
 
+  const handleParticipantCountChange = (count: 1 | 2) => {
+    const nextNames = Array.from({ length: count }, (_, index) =>
+      participantNames[index]?.trim()
+      || sessionConfig?.participantLabels[index]?.trim()
+      || (index === 0 && registeredName ? registeredName : `O'YINCHI ${index + 1}`),
+    );
+
+    setParticipantCount(count);
+    setParticipantNames(nextNames);
+    setScores(createScores(count));
+    setStreaks(createScores(count));
+    setBestStreaks(createScores(count));
+    setRoundAnswers(createAnswers(count));
+    setNameError("");
+
+    saveGameSessionConfig({
+      gameId: "flag-battle",
+      participantCount: count,
+      participantType: "player",
+      participantLabel: "o'yinchi",
+      participantLabels: nextNames,
+      questionDifficulty: sessionConfig?.questionDifficulty ?? "easy",
+      selectedAt: new Date().toISOString(),
+    });
+  };
+
   const handleAnswer = (index: number, answer: string) => {
     if (phase !== "play" || locked || paused || !currentQuestion || roundAnswers.answers[index] !== null) return;
     const elapsed = (Date.now() - roundStartTimeRef.current) / 1000;
@@ -279,7 +321,7 @@ export default function FlagBattle() {
     },
   }));
   useGameResultSubmission(
-    phase === "finish",
+    phase === "finish" && participantCount === 1,
     "flag-battle",
     leaderboardEntries,
   );
@@ -300,6 +342,23 @@ export default function FlagBattle() {
           <div className="mb-6 flex items-center gap-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500"><FaFlag className="text-3xl text-white" /></div>
             <div><h2 className="text-3xl font-black">FLAG BATTLE</h2><p className="text-blue-200/80">{participantSummary} uchun battle kartalari tayyorlanadi</p></div>
+          </div>
+
+          <div className="mb-6 rounded-2xl border border-blue-500/30 bg-blue-950/30 p-4">
+            <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-blue-300">O'yin rejimi</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {([1, 2] as const).map((count) => (
+                <button
+                  key={count}
+                  type="button"
+                  onClick={() => handleParticipantCountChange(count)}
+                  className={`flex items-center justify-between rounded-xl border px-5 py-4 text-left transition-all ${participantCount === count ? "border-cyan-300 bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg" : "border-blue-500/25 bg-white/5 text-blue-100 hover:border-blue-400/60 hover:bg-white/10"}`}
+                >
+                  <span><b className="block text-lg">{count} kishilik</b><small className={participantCount === count ? "text-white/80" : "text-blue-200/60"}>{count === 1 ? "Yakka tartibda o'ynash" : "Ikki o'yinchi bellashuvi"}</small></span>
+                  <FaUsers className="text-xl" />
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">

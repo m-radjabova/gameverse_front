@@ -7,6 +7,7 @@ import HowItWorksSection from "../../components/main/HowItWorksSection";
 import Footer from "../../components/footer/Footer";
 import SiteLoader from "../../components/main/SiteLoader";
 import CommentsSection from "../../components/main/CommentsSection";
+import HomeFloatingActions from "../../components/main/HomeFloatingActions";
 
 function Home() {
   const [isLoading, setIsLoading] = useState(true);
@@ -115,6 +116,7 @@ function Home() {
       <div id="contact">
         <Footer isDark={isDarkMode} />
       </div>
+      <HomeFloatingActions />
     </div>
   );
 }

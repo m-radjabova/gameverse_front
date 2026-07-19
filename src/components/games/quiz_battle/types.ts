@@ -5,6 +5,7 @@ export type Question = {
   options: string[];
   answerIndex: number;
   category: string;
+  difficulty?: "easy" | "medium" | "hard";
 };
 
 export type Phase = "question-setup" | "team-setup" | "play" | "finish";

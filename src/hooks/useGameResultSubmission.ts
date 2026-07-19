@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useSubmitGameResultMutation } from "./useGameLeaderboard";
+import useContextPro from "./useContextPro";
 
 type Entry = {
   participant_name: string;
@@ -13,11 +14,13 @@ export function useGameResultSubmission(
   gameKey: string,
   entries: Entry[],
 ) {
+  const { state: { user, isLoading: isUserLoading } } = useContextPro();
   const submittedRef = useRef<string | null>(null);
   const submitResultMutation = useSubmitGameResultMutation(gameKey);
+  const canSubmit = enabled && !isUserLoading && Boolean(user?.id);
 
   useEffect(() => {
-    if (!enabled || entries.length === 0) {
+    if (!canSubmit || entries.length === 0) {
       submittedRef.current = null;
       return;
     }
@@ -36,5 +39,5 @@ export function useGameResultSubmission(
 
     submittedRef.current = fingerprint;
     void Promise.all(entries.map((entry) => submitResultMutation.mutateAsync(entry)));
-  }, [enabled, entries, submitResultMutation]);
+  }, [canSubmit, entries, submitResultMutation]);
 }

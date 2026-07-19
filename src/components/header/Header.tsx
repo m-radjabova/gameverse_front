@@ -181,7 +181,7 @@ function Header({
             className="group flex cursor-pointer items-center gap-2 sm:gap-2.5"
           >
             <div
-              className={`relative flex h-[58px] w-[58px] items-center justify-center rounded-[22px] border shadow-[0_8px_20px_rgba(89,185,230,0.15)] transition-transform duration-300 group-hover:scale-105 sm:h-16 sm:w-16 ${
+              className={`relative flex h-[52px] w-[52px] items-center justify-center rounded-[20px] border shadow-[0_8px_20px_rgba(89,185,230,0.15)] transition-transform duration-300 group-hover:scale-105 sm:h-16 sm:w-16 ${
                 isDark
                   ? "border-white/12 bg-white/[0.055]"
                   : "border-white/60 bg-white/36"
@@ -190,15 +190,15 @@ function Header({
               <img
                 src={bunnyLogo}
                 alt="Gameverse bunny logo"
-                className="h-11 w-11 object-contain sm:h-12 sm:w-12"
+                className="h-10 w-10 object-contain sm:h-12 sm:w-12"
               />
             </div>
 
             <div className="leading-[0.92]">
-              <h1 className={`text-[1.75rem] font-black tracking-[-0.04em] sm:text-[2.15rem] ${isDark ? "text-[#f1f1f1]" : "text-[#203572]"}`}>
+              <h1 className={`text-[1.4rem] font-black tracking-[-0.04em] sm:text-[2.15rem] ${isDark ? "text-[#f1f1f1]" : "text-[#203572]"}`}>
                 GAMEVERSE
               </h1>
-              <p className={`mt-1 text-[10px] font-bold uppercase tracking-[0.31em] sm:text-[11px] ${isDark ? "text-[#a1a1aa]" : "text-[#59b9e6]"}`}>
+              <p className={`mt-1 hidden text-[10px] font-bold uppercase tracking-[0.31em] sm:block sm:text-[11px] ${isDark ? "text-[#a1a1aa]" : "text-[#59b9e6]"}`}>
                 {/* Learn • Play • Grow */}
                 O‘rgan • O‘yna • Rivojlan
               </p>
@@ -235,7 +235,7 @@ function Header({
             <button
               type="button"
               onClick={() => navigate("/favorites")}
-              className={`relative hidden h-11 w-11 items-center justify-center rounded-full border transition-all hover:-translate-y-0.5 sm:flex ${
+              className={`relative hidden h-11 w-11 items-center justify-center rounded-full border transition-all hover:-translate-y-0.5 md:flex ${
                 isDark
                   ? "border-white/12 bg-white/[0.07] text-[#7fd3ef] hover:bg-white/14"
                   : "border-white/60 bg-white/38 text-[#329dcc] hover:bg-white/65"
@@ -252,7 +252,7 @@ function Header({
 
             {onThemeToggle && (
               <div
-                className={`hidden items-center gap-1 rounded-full border p-1 shadow-[0_8px_20px_rgba(89,185,230,0.08)] sm:flex ${
+                className={`hidden items-center gap-1 rounded-full border p-1 shadow-[0_8px_20px_rgba(89,185,230,0.08)] md:flex ${
                   isDark ? "border-white/12 bg-white/[0.07]" : "border-white/60 bg-white/38"
                 }`}
                 role="group"
@@ -293,7 +293,7 @@ function Header({
               <button
                 type="button"
                 onClick={() => setIsUserPanelOpen(true)}
-                className={`hidden cursor-pointer items-center gap-3 rounded-[22px] border px-3 py-2 text-left shadow-[0_10px_25px_rgba(166,100,102,0.08)] transition-all hover:-translate-y-0.5 sm:flex ${
+                className={`hidden cursor-pointer items-center gap-3 rounded-[22px] border px-3 py-2 text-left shadow-[0_10px_25px_rgba(166,100,102,0.08)] transition-all hover:-translate-y-0.5 md:flex ${
                   isDark
                     ? "border-white/12 bg-white/[0.07] hover:bg-white/12"
                     : "border-white/60 bg-white/32 hover:bg-white/58"
@@ -332,7 +332,7 @@ function Header({
             ) : (
               <button
                 onClick={() => navigate("/login")}
-                className="hidden cursor-pointer rounded-full bg-[#ffd15d] px-6 py-3 text-sm font-bold tracking-wide text-[#203572] shadow-[0_12px_24px_rgba(255,209,93,0.32)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#ffc949] sm:inline-flex"
+                className="hidden cursor-pointer rounded-full bg-[#ffd15d] px-6 py-3 text-sm font-bold tracking-wide text-[#203572] shadow-[0_12px_24px_rgba(255,209,93,0.32)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#ffc949] md:inline-flex"
               >
                 <span className="flex items-center gap-2">
                   <FaUser className="text-sm" />

@@ -26,7 +26,7 @@ import {
   FaInfoCircle,
   FaExclamationTriangle,
 } from "react-icons/fa";
-import { GiRaceCar, GiCheckeredFlag } from "react-icons/gi";
+import { GiRaceCar } from "react-icons/gi";
 import Confetti from "react-confetti-boom";
 import { fetchGameQuestionsByTeacher, saveGameQuestions } from "../../../hooks/useGameQuestions";
 import useContextPro from "../../../hooks/useContextPro";
@@ -50,6 +50,8 @@ import { BASE_MOVE_AMOUNT, DEFAULT_QUESTIONS, MATH_RACE_GAME_KEY, MATH_RACE_RESU
 import type { Difficulty, MathQuestion, Phase, Player, PlayerId, PlayerStats, QuestionDraft } from "./types";
 import { clamp, createDefaultStats, nitroBonusFromStreak, shuffleArray, wrongPenalty } from "./utils";
 import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
+import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
+import { filterGameQuestionsByDifficulty } from "../../../utils/gameQuestionDifficulty";
 
 const AI_QUESTION_COUNT_OPTIONS = [2, 4, 6, 8, 10, 15, 20] as const;
 const AI_DIFFICULTY_OPTIONS = [
@@ -71,7 +73,7 @@ export default function MathRace() {
     { id: 1, name: "Ko'k", position: 0 },
   ]);
 
-  const [questions, setQuestions] = useState<MathQuestion[]>(DEFAULT_QUESTIONS);
+  const [questions, setQuestions] = useState<MathQuestion[]>(() => filterGameQuestionsByDifficulty(DEFAULT_QUESTIONS, getGameQuestionDifficulty("math-race")));
   const [activeQuestions, setActiveQuestions] = useState<MathQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
@@ -126,7 +128,7 @@ export default function MathRace() {
     let alive = true;
     (async () => {
       if (!user?.id) {
-        setQuestions(DEFAULT_QUESTIONS);
+        setQuestions(filterGameQuestionsByDifficulty(DEFAULT_QUESTIONS, getGameQuestionDifficulty("math-race")));
         setRemoteLoaded(true);
         return;
       }
@@ -134,9 +136,9 @@ export default function MathRace() {
       const remoteQuestions = await fetchGameQuestionsByTeacher<MathQuestion>(MATH_RACE_GAME_KEY, user.id);
       if (!alive) return;
       if (remoteQuestions && remoteQuestions.length > 0) {
-        setQuestions(remoteQuestions);
+        setQuestions(filterGameQuestionsByDifficulty(remoteQuestions, getGameQuestionDifficulty("math-race")));
       } else {
-        setQuestions(DEFAULT_QUESTIONS);
+        setQuestions(filterGameQuestionsByDifficulty(DEFAULT_QUESTIONS, getGameQuestionDifficulty("math-race")));
       }
       setRemoteLoaded(true);
     })();
@@ -198,20 +200,18 @@ export default function MathRace() {
     a.play().catch(() => {});
   };
 
-  // Car position calculation - padding from edges
-  const CAR_WIDTH = 200;
-  const TRACK_PADDING_LEFT = 60;
-  const TRACK_PADDING_RIGHT = 80;
-
   const getCarX = (posPercent: number) => {
-    if (trackWidth === 0) return TRACK_PADDING_LEFT;
-    const available = trackWidth - TRACK_PADDING_LEFT - TRACK_PADDING_RIGHT - CAR_WIDTH;
-    return TRACK_PADDING_LEFT + (available * posPercent) / 100;
+    if (trackWidth === 0) return 0;
+    const carWidth = trackWidth < 640 ? 92 : trackWidth < 1024 ? 132 : 176;
+    const startX = trackWidth * 0.145;
+    const finishX = trackWidth * 0.91;
+    const available = Math.max(0, finishX - startX - carWidth);
+    return startX + (available * posPercent) / 100;
   };
 
   const currentQuestion = activeQuestions[currentQuestionIndex];
   const progress = activeQuestions.length > 0 ? ((currentQuestionIndex + 1) / activeQuestions.length) * 100 : 0;
-  useGameResultSubmission(phase === "finish", MATH_RACE_RESULT_KEY, players.map((player) => ({
+  useGameResultSubmission(phase === "finish" && players.length === 1, MATH_RACE_RESULT_KEY, players.map((player) => ({
     participant_name: player.name,
     participant_mode: `${players.length} o'yinchi`,
     score: Math.round(player.position),
@@ -603,7 +603,7 @@ export default function MathRace() {
           </div>
 
           {/* Add Question Section */}
-          <div className="mb-6 overflow-hidden rounded-2xl border border-yellow-500/20 bg-gradient-to-br from-slate-800/60 to-slate-900/60 shadow-xl">
+          <div className="hidden mb-6 overflow-hidden rounded-2xl border border-yellow-500/20 bg-gradient-to-br from-slate-800/60 to-slate-900/60 shadow-xl">
             {/* Section tabs */}
             <div className="flex border-b border-yellow-500/10">
               <div className="flex items-center gap-2 border-b-2 border-yellow-400 px-5 py-3">
@@ -712,7 +712,9 @@ export default function MathRace() {
                   <FaGavel className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-yellow-400/70" />
                   <input
                     value={draftQuestion.answer}
-                    onChange={(e) => setDraftQuestion({ ...draftQuestion, answer: e.target.value })}
+                    min={0}
+                    onKeyDown={(e) => { if (e.key === "-") e.preventDefault(); }}
+                    onChange={(e) => setDraftQuestion({ ...draftQuestion, answer: e.target.value === "" ? "" : String(Math.max(0, Number(e.target.value) || 0)) })}
                     className="w-full rounded-xl border border-slate-600 bg-slate-900/70 py-3 pl-10 pr-4 text-white outline-none transition-all focus:border-yellow-400/60 focus:ring-2 focus:ring-yellow-400/20 placeholder:text-slate-500"
                     placeholder="To'g'ri javob (son)" type="number"
                   />
@@ -732,7 +734,9 @@ export default function MathRace() {
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-yellow-400">+</span>
                   <input
                     value={draftQuestion.points}
-                    onChange={(e) => setDraftQuestion({ ...draftQuestion, points: parseInt(e.target.value) || 0 })}
+                    min={0}
+                    onKeyDown={(e) => { if (e.key === "-") e.preventDefault(); }}
+                    onChange={(e) => setDraftQuestion({ ...draftQuestion, points: Math.max(0, parseInt(e.target.value) || 0) })}
                     className="w-full rounded-xl border border-slate-600 bg-slate-900/70 py-3 pl-8 pr-4 text-white outline-none transition-all focus:border-yellow-400/60 focus:ring-2 focus:ring-yellow-400/20"
                     placeholder="Ball" type="number"
                   />
@@ -820,21 +824,26 @@ export default function MathRace() {
       {/* ===== PLAY PHASE ===== */}
       {phase === "play" && (
         <div
-          className={`flex min-h-[70dvh] flex-col overflow-hidden lg:h-screen ${screenShake ? "animate-shake" : ""}`}
+          className={`flex min-h-dvh flex-col overflow-x-hidden bg-[radial-gradient(circle_at_50%_0%,rgba(245,158,11,.12),transparent_28%),linear-gradient(180deg,#050814,#0a1022)] ${screenShake ? "animate-shake" : ""}`}
         >
           {/* ── TOP BAR ── */}
-          <div className="relative z-30 flex shrink-0 items-center gap-3 bg-gradient-to-r from-slate-950/95 via-slate-900/95 to-indigo-950/95 px-4 py-3 shadow-lg shadow-black/50 backdrop-blur-md border-b border-slate-800">
+          <div className="sticky top-0 z-40 flex shrink-0 items-center gap-2 border-b border-white/10 bg-[#070a17]/95 px-3 py-2 shadow-xl shadow-black/30 backdrop-blur-xl sm:gap-3 sm:px-5 sm:py-3">
+            <div className="hidden items-center gap-2 sm:flex">
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 text-xl text-white shadow-lg shadow-orange-500/20"><GiRaceCar /></span>
+              <div><b className="block text-sm font-black tracking-wide text-white">MATH RACE</b><small className="block text-[9px] font-bold uppercase tracking-[.14em] text-slate-500">Birinchi javob — birinchi yurish</small></div>
+            </div>
             <div className="flex items-center gap-2">
               {/* Question counter */}
-              <div className="rounded-xl border border-slate-700 bg-gradient-to-b from-slate-800 to-slate-900 px-3 py-1.5 text-center shadow-inner">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Savol</p>
+              <div className="rounded-xl border border-white/10 bg-white/[.05] px-2.5 py-1 text-center shadow-inner sm:px-3 sm:py-1.5">
+                <p className="text-[8px] font-bold uppercase tracking-widest text-slate-500 sm:text-[10px]">Savol</p>
                 <p className="text-base font-black text-white leading-tight">{currentQuestionIndex + 1}/{activeQuestions.length}</p>
               </div>
             </div>
 
             {/* Progress bar */}
-            <div className="flex-1">
-              <div className="h-3 rounded-full bg-slate-800 overflow-hidden shadow-inner">
+            <div className="min-w-12 flex-1">
+              <div className="mb-1 hidden items-center justify-between text-[9px] font-bold text-slate-500 md:flex"><span>{players[0].name}: {Math.round(players[0].position)}%</span><span>{players[1].name}: {Math.round(players[1].position)}%</span></div>
+              <div className="h-2 overflow-hidden rounded-full bg-slate-800 shadow-inner sm:h-2.5">
                 <div className="h-full rounded-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 transition-all duration-500 ease-out relative"
                   style={{ width: `${progress}%` }}>
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
@@ -843,7 +852,7 @@ export default function MathRace() {
             </div>
 
             {/* Timer */}
-            <div className="relative flex h-14 w-14 items-center justify-center shrink-0">
+            <div className="relative flex h-12 w-12 items-center justify-center shrink-0 sm:h-14 sm:w-14">
               <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 40 40">
                 <circle cx="20" cy="20" r="17" fill="none" stroke="#1e293b" strokeWidth="4" />
                 <circle cx="20" cy="20" r="17" fill="none" stroke={timerColor} strokeWidth="4"
@@ -859,7 +868,7 @@ export default function MathRace() {
               </div>
             </div>
 
-            <button onClick={resetGame}
+            <button onClick={resetGame} aria-label="Poygani qayta boshlash" title="Qayta boshlash"
               className="group shrink-0 rounded-xl border border-slate-700 bg-gradient-to-b from-slate-800 to-slate-900 p-2.5 text-slate-400 shadow-lg transition-all hover:border-slate-600 hover:bg-slate-700 hover:text-white active:scale-95">
               <FaRedo size={14} className="group-hover:rotate-180 transition-transform duration-500" />
             </button>
@@ -868,57 +877,16 @@ export default function MathRace() {
           {/* ── TRACK AREA ── */}
           <div
             ref={trackRef}
-            className="relative shrink-0 overflow-hidden"
+            className="relative h-[190px] shrink-0 overflow-hidden border-b border-white/10 sm:h-[250px] lg:h-[300px]"
             style={{
-              height: typeof window !== "undefined" && window.innerWidth < 640 ? "300px" : "420px",
               backgroundImage: `url(${trackImg})`,
               backgroundSize: "100% 100%",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
             }}
           >
-            {/* Dark overlay for contrast */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/40" />
-
-            {/* Track lane markings */}
-            <div className="absolute inset-0 z-10">
-              {/* Lane dividers */}
-              <div className="absolute left-0 right-0" style={{ top: "25%" }}>
-                <div className="h-[2px] mx-4" style={{ background: "repeating-linear-gradient(90deg, rgba(255,255,255,0.15) 0px, rgba(255,255,255,0.15) 20px, transparent 20px, transparent 40px)" }} />
-              </div>
-              <div className="absolute left-0 right-0" style={{ top: "50%" }}>
-                <div className="h-[2px] mx-4" style={{ background: "repeating-linear-gradient(90deg, rgba(255,255,255,0.2) 0px, rgba(255,255,255,0.2) 20px, transparent 20px, transparent 40px)" }} />
-              </div>
-              <div className="absolute left-0 right-0" style={{ top: "75%" }}>
-                <div className="h-[2px] mx-4" style={{ background: "repeating-linear-gradient(90deg, rgba(255,255,255,0.15) 0px, rgba(255,255,255,0.15) 20px, transparent 20px, transparent 40px)" }} />
-              </div>
-            </div>
-
-            {/* START line */}
-            <div className="absolute top-0 bottom-0 z-20 flex items-center" style={{ left: `${TRACK_PADDING_LEFT - 2}px` }}>
-              <div className="h-full w-1 bg-gradient-to-b from-emerald-400 via-emerald-500 to-emerald-400 shadow-lg shadow-emerald-500/50" />
-              <div className="absolute -left-1 top-2 rounded-r-full bg-gradient-to-r from-emerald-600 to-emerald-500 px-3 py-1 text-[10px] font-black text-white shadow-lg">
-                START
-              </div>
-            </div>
-
-            {/* FINISH line */}
-            <div className="absolute top-0 bottom-0 z-20 flex items-center" style={{ left: `${trackWidth - TRACK_PADDING_RIGHT}px` }}>
-              <div className="h-full w-1.5 bg-gradient-to-b from-yellow-400 via-yellow-500 to-yellow-400 shadow-lg shadow-yellow-500/50" />
-              <div className="absolute -right-1 top-2 rounded-l-full bg-gradient-to-l from-yellow-600 to-yellow-500 px-3 py-1 text-[10px] font-black text-white shadow-lg flex items-center gap-1">
-                <GiCheckeredFlag /> FINISH
-              </div>
-            </div>
-
-            {/* Distance markers */}
-            {[25, 50, 75].map((pct) => (
-              <div key={pct} className="absolute z-10 bottom-2" style={{ left: `${TRACK_PADDING_LEFT + ((trackWidth - TRACK_PADDING_LEFT - TRACK_PADDING_RIGHT) * pct) / 100}px` }}>
-                <div className="flex flex-col items-center">
-                  <div className="h-3 w-[1px] bg-white/20" />
-                  <span className="text-[8px] font-bold text-white/30">{pct}%</span>
-                </div>
-              </div>
-            ))}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/30" />
+            <div className="absolute left-1/2 top-2 z-20 -translate-x-1/2 rounded-full border border-white/15 bg-black/55 px-3 py-1 text-[8px] font-black uppercase tracking-[.18em] text-white/75 backdrop-blur-md sm:text-[9px]">100% ga birinchi yetib boring</div>
 
             {/* ── PLAYER 0 CAR (top lane) ── */}
             {trackWidth > 0 && (() => {
@@ -946,15 +914,15 @@ export default function MathRace() {
                     </div>
                   )}
                   <img src={carBlack} alt={player.name} draggable={false}
-                    className="h-24 w-auto select-none drop-shadow-2xl transition-transform duration-300 hover:scale-105"
+                    className="h-12 w-auto select-none drop-shadow-2xl transition-transform duration-300 sm:h-16 lg:h-20"
                     style={{ transform: "rotate(0deg)", filter: "brightness(1.15)" }}
                   />
                   {/* Label below car */}
-                  <div className="mt-1 flex items-center justify-center gap-1.5">
-                    <span className="rounded-full bg-black/80 px-2.5 py-0.5 text-[12px] font-bold text-white border border-slate-600/50 shadow-lg backdrop-blur-sm">
+                  <div className="mt-0.5 flex items-center justify-center gap-1 sm:mt-1 sm:gap-1.5">
+                    <span className="max-w-20 truncate rounded-full border border-slate-500/50 bg-black/80 px-1.5 py-0.5 text-[8px] font-bold text-white shadow-lg backdrop-blur-sm sm:max-w-none sm:px-2.5 sm:text-[11px]">
                       {player.name}
                     </span>
-                    <span className="rounded-full bg-emerald-500/20 border border-emerald-500/40 px-2.5 py-0.5 text-[12px] font-black text-emerald-300 shadow-lg backdrop-blur-sm">
+                    <span className="rounded-full border border-emerald-500/40 bg-emerald-500/20 px-1.5 py-0.5 text-[8px] font-black text-emerald-300 shadow-lg backdrop-blur-sm sm:px-2.5 sm:text-[11px]">
                       {Math.round(player.position)}%
                     </span>
                   </div>
@@ -988,14 +956,14 @@ export default function MathRace() {
                     </div>
                   )}
                   <img src={carBlue} alt={player.name} draggable={false}
-                    className="h-24 w-auto select-none drop-shadow-2xl transition-transform duration-300 hover:scale-105"
+                    className="h-12 w-auto select-none drop-shadow-2xl transition-transform duration-300 sm:h-16 lg:h-20"
                     style={{ transform: "rotate(0deg)", filter: "brightness(1.15)" }}
                   />
-                  <div className="mt-1 flex items-center justify-center gap-1.5">
-                    <span className="rounded-full bg-black/80 px-2.5 py-0.5 text-[12px] font-bold text-white border border-blue-500/50 shadow-lg backdrop-blur-sm">
+                  <div className="mt-0.5 flex items-center justify-center gap-1 sm:mt-1 sm:gap-1.5">
+                    <span className="max-w-20 truncate rounded-full border border-blue-500/50 bg-black/80 px-1.5 py-0.5 text-[8px] font-bold text-white shadow-lg backdrop-blur-sm sm:max-w-none sm:px-2.5 sm:text-[11px]">
                       {player.name}
                     </span>
-                    <span className="rounded-full bg-blue-500/20 border border-blue-500/40 px-2.5 py-0.5 text-[12px] font-black text-blue-300 shadow-lg backdrop-blur-sm">
+                    <span className="rounded-full border border-blue-500/40 bg-blue-500/20 px-1.5 py-0.5 text-[8px] font-black text-blue-300 shadow-lg backdrop-blur-sm sm:px-2.5 sm:text-[11px]">
                       {Math.round(player.position)}%
                     </span>
                   </div>
@@ -1006,14 +974,14 @@ export default function MathRace() {
 
           {/* ── QUESTION DISPLAY ── */}
           {currentQuestion && (
-            <div className="shrink-0 bg-gradient-to-r from-slate-900/95 via-slate-800/95 to-slate-900/95 px-4 py-3 border-y border-slate-800 backdrop-blur-sm text-center">
-              <div className="inline-flex items-center gap-3 rounded-2xl border border-slate-700 bg-gradient-to-b from-slate-800/80 to-slate-900/80 px-6 py-3 shadow-xl">
-                <span className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold ${getDifficultyColor(currentQuestion.difficulty)}`}>
+            <div className="relative shrink-0 border-y border-white/10 bg-[#0b1020]/95 px-2 py-2 text-center backdrop-blur-sm sm:px-4 sm:py-3">
+              <div className="mx-auto flex max-w-3xl items-center justify-center gap-2 rounded-2xl border border-amber-300/20 bg-gradient-to-b from-white/[.08] to-white/[.03] px-3 py-2 shadow-xl shadow-black/20 sm:gap-4 sm:px-6 sm:py-3">
+                <span className={`hidden items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold sm:flex ${getDifficultyColor(currentQuestion.difficulty)}`}>
                   {getDifficultyIcon(currentQuestion.difficulty)}
                   {currentQuestion.difficulty === "easy" ? "OSON" : currentQuestion.difficulty === "medium" ? "O'RTACHA" : "QIYIN"}
                 </span>
-                <span className="text-2xl font-black text-white md:text-3xl">{currentQuestion.question}</span>
-                <span className="rounded-full border border-yellow-500/30 bg-gradient-to-b from-yellow-500/10 to-yellow-600/10 px-3 py-1 text-sm font-bold text-yellow-300 shadow-inner">
+                <div className="min-w-0 flex-1"><small className="block text-[8px] font-black uppercase tracking-[.18em] text-amber-300/65 sm:text-[9px]">Kim birinchi to‘g‘ri javob beradi?</small><span className="block break-words text-xl font-black leading-tight text-white sm:text-2xl md:text-3xl">{currentQuestion.question}</span></div>
+                <span className="shrink-0 rounded-full border border-yellow-500/30 bg-gradient-to-b from-yellow-500/10 to-yellow-600/10 px-2 py-1 text-xs font-bold text-yellow-300 shadow-inner sm:px-3 sm:text-sm">
                   +{currentQuestion.points}
                 </span>
               </div>
@@ -1022,7 +990,7 @@ export default function MathRace() {
 
           {/* ── ANSWER RESULT BANNER ── */}
           {answerResult && (
-            <div className={`shrink-0 py-2 text-center text-sm font-bold transition-all duration-300 ${
+            <div className={`shrink-0 px-3 py-2 text-center text-xs font-bold transition-all duration-300 sm:text-sm ${
               answerResult.correct 
                 ? "bg-gradient-to-r from-emerald-500/20 via-emerald-500/10 to-emerald-500/20 text-emerald-300 border-b border-emerald-500/20" 
                 : "bg-gradient-to-r from-rose-500/20 via-rose-500/10 to-rose-500/20 text-rose-300 border-b border-rose-500/20"
@@ -1035,130 +1003,21 @@ export default function MathRace() {
           )}
 
           {/* ── PLAYER PANELS ── */}
-          <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
-            {/* Player 0 Panel */}
-            <div className="flex flex-1 flex-col border-b-2 border-slate-800 bg-gradient-to-br from-slate-900/90 to-slate-950/90 p-4 lg:border-b-0 lg:border-r-2">
-              {/* Player header */}
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="relative">
-                    <div className="h-3 w-3 rounded-full bg-slate-500 ring-2 ring-slate-400 ring-offset-2 ring-offset-slate-900" />
-                  </div>
-                  <span className="font-black text-white">{players[0].name}</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs">
-                  <span className="rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 text-emerald-300 font-bold flex items-center gap-1">
-                    <FaCheckCircle className="text-[10px]" />{stats[0].correct}
-                  </span>
-                  <span className="rounded-full bg-rose-500/15 border border-rose-500/30 px-2.5 py-0.5 text-rose-300 font-bold flex items-center gap-1">
-                    <FaTimesCircle className="text-[10px]" />{stats[0].wrong}
-                  </span>
-                </div>
-              </div>
-
-              {/* Combo + Power-ups */}
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-xs">
-                  <span className="rounded-full bg-purple-500/15 border border-purple-500/30 px-2.5 py-0.5 text-purple-300 font-bold flex items-center gap-1">
-                    🔥{stats[0].streak} combo
-                  </span>
-                  {stats[0].shieldArmed && (
-                    <span className="rounded-full bg-cyan-500/15 border border-cyan-500/30 px-2.5 py-0.5 text-cyan-300 font-bold animate-pulse flex items-center gap-1">
-                      <FaShieldAlt className="text-[10px]" /> ARMED
-                    </span>
-                  )}
-                </div>
-                <div className="flex gap-1.5">
-                  <button onClick={() => activate5050(0)} disabled={locked || stats[0].used5050}
-                    title="50/50" className="group relative h-9 w-9 rounded-xl border border-purple-500/30 bg-gradient-to-b from-purple-600/20 to-purple-800/20 text-purple-300 hover:from-purple-600/40 hover:to-purple-800/40 disabled:opacity-40 transition-all text-xs font-bold active:scale-90">
-                    <span className="group-hover:scale-110 transition-transform inline-block">½</span>
-                  </button>
-                  <button onClick={() => activatePlusTime(0)} disabled={locked || stats[0].usedTime}
-                    title="+3 sekund" className="group relative h-9 w-9 rounded-xl border border-amber-500/30 bg-gradient-to-b from-amber-600/20 to-amber-800/20 text-amber-300 hover:from-amber-600/40 hover:to-amber-800/40 disabled:opacity-40 transition-all active:scale-90">
-                    <FaClock size={12} className="mx-auto group-hover:scale-110 transition-transform" />
-                  </button>
-                  <button onClick={() => activateShield(0)} disabled={locked || stats[0].shieldCharges <= 0 || stats[0].shieldArmed}
-                    title="Shield" className="group relative h-9 w-9 rounded-xl border border-cyan-500/30 bg-gradient-to-b from-cyan-600/20 to-cyan-800/20 text-cyan-300 hover:from-cyan-600/40 hover:to-cyan-800/40 disabled:opacity-40 transition-all active:scale-90">
-                    <FaShieldAlt size={12} className="mx-auto group-hover:scale-110 transition-transform" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Answer buttons */}
-              <div className="grid flex-1 grid-cols-2 gap-2.5">
-                {optionsFor(0).map((option, idx) => (
-                  <button key={`p0-${idx}`}
-                    onClick={() => !locked && handleAnswer(0, option)}
-                    disabled={locked}
-                    className="group relative overflow-hidden rounded-xl border-2 border-purple-600/30 bg-gradient-to-b from-purple-600/50 to-purple-800/60 px-2 py-4 text-lg font-black text-white shadow-lg transition-all hover:from-purple-500/60 hover:to-purple-700/70 hover:border-purple-400/50 hover:shadow-purple-500/20 disabled:opacity-50 disabled:scale-100 active:scale-95 sm:text-xl">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                    <span className="relative">{option}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Player 1 Panel */}
-            <div className="flex flex-1 flex-col bg-gradient-to-br from-slate-900/90 to-slate-950/90 p-4">
-              {/* Player header */}
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="relative">
-                    <div className="h-3 w-3 rounded-full bg-blue-500 ring-2 ring-blue-300 ring-offset-2 ring-offset-slate-900" />
-                  </div>
-                  <span className="font-black text-white">{players[1].name}</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs">
-                  <span className="rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 text-emerald-300 font-bold flex items-center gap-1">
-                    <FaCheckCircle className="text-[10px]" />{stats[1].correct}
-                  </span>
-                  <span className="rounded-full bg-rose-500/15 border border-rose-500/30 px-2.5 py-0.5 text-rose-300 font-bold flex items-center gap-1">
-                    <FaTimesCircle className="text-[10px]" />{stats[1].wrong}
-                  </span>
-                </div>
-              </div>
-
-              {/* Combo + Power-ups */}
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-xs">
-                  <span className="rounded-full bg-blue-500/15 border border-blue-500/30 px-2.5 py-0.5 text-blue-300 font-bold flex items-center gap-1">
-                    🔥{stats[1].streak} combo
-                  </span>
-                  {stats[1].shieldArmed && (
-                    <span className="rounded-full bg-cyan-500/15 border border-cyan-500/30 px-2.5 py-0.5 text-cyan-300 font-bold animate-pulse flex items-center gap-1">
-                      <FaShieldAlt className="text-[10px]" /> ARMED
-                    </span>
-                  )}
-                </div>
-                <div className="flex gap-1.5">
-                  <button onClick={() => activate5050(1)} disabled={locked || stats[1].used5050}
-                    title="50/50" className="group relative h-9 w-9 rounded-xl border border-blue-500/30 bg-gradient-to-b from-blue-600/20 to-blue-800/20 text-blue-300 hover:from-blue-600/40 hover:to-blue-800/40 disabled:opacity-40 transition-all text-xs font-bold active:scale-90">
-                    <span className="group-hover:scale-110 transition-transform inline-block">½</span>
-                  </button>
-                  <button onClick={() => activatePlusTime(1)} disabled={locked || stats[1].usedTime}
-                    title="+3 sekund" className="group relative h-9 w-9 rounded-xl border border-amber-500/30 bg-gradient-to-b from-amber-600/20 to-amber-800/20 text-amber-300 hover:from-amber-600/40 hover:to-amber-800/40 disabled:opacity-40 transition-all active:scale-90">
-                    <FaClock size={12} className="mx-auto group-hover:scale-110 transition-transform" />
-                  </button>
-                  <button onClick={() => activateShield(1)} disabled={locked || stats[1].shieldCharges <= 0 || stats[1].shieldArmed}
-                    title="Shield" className="group relative h-9 w-9 rounded-xl border border-cyan-500/30 bg-gradient-to-b from-cyan-600/20 to-cyan-800/20 text-cyan-300 hover:from-cyan-600/40 hover:to-cyan-800/40 disabled:opacity-40 transition-all active:scale-90">
-                    <FaShieldAlt size={12} className="mx-auto group-hover:scale-110 transition-transform" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Answer buttons */}
-              <div className="grid flex-1 grid-cols-2 gap-2.5">
-                {optionsFor(1).map((option, idx) => (
-                  <button key={`p1-${idx}`}
-                    onClick={() => !locked && handleAnswer(1, option)}
-                    disabled={locked}
-                    className="group relative overflow-hidden rounded-xl border-2 border-blue-600/30 bg-gradient-to-b from-blue-600/50 to-blue-800/60 px-2 py-4 text-lg font-black text-white shadow-lg transition-all hover:from-blue-500/60 hover:to-blue-700/70 hover:border-blue-400/50 hover:shadow-blue-500/20 disabled:opacity-50 disabled:scale-100 active:scale-95 sm:text-xl">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                    <span className="relative">{option}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+          <div className="grid flex-1 grid-cols-2 divide-x divide-white/10">
+            {([0, 1] as PlayerId[]).map((playerId) => (
+              <RacePlayerPanel
+                key={playerId}
+                player={players[playerId]}
+                stats={stats[playerId]}
+                options={optionsFor(playerId)}
+                locked={locked}
+                tone={playerId === 0 ? "violet" : "blue"}
+                onAnswer={(option) => handleAnswer(playerId, option)}
+                on5050={() => activate5050(playerId)}
+                onTime={() => activatePlusTime(playerId)}
+                onShield={() => activateShield(playerId)}
+              />
+            ))}
           </div>
         </div>
       )}
@@ -1307,5 +1166,91 @@ export default function MathRace() {
         .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #475569; }
       `}</style>
     </div>
+  );
+}
+
+type RacePlayerPanelProps = {
+  player: Player;
+  stats: PlayerStats;
+  options: number[];
+  locked: boolean;
+  tone: "violet" | "blue";
+  onAnswer: (option: number) => void;
+  on5050: () => void;
+  onTime: () => void;
+  onShield: () => void;
+};
+
+function RacePlayerPanel({
+  player,
+  stats,
+  options,
+  locked,
+  tone,
+  onAnswer,
+  on5050,
+  onTime,
+  onShield,
+}: RacePlayerPanelProps) {
+  const isViolet = tone === "violet";
+  const panelTone = isViolet
+    ? "from-violet-950/55 via-slate-950/95 to-slate-950/95"
+    : "from-blue-950/55 via-slate-950/95 to-slate-950/95";
+  const numberTone = isViolet
+    ? "border-violet-400/40 bg-violet-500/20 text-violet-200"
+    : "border-blue-400/40 bg-blue-500/20 text-blue-200";
+  const optionTone = isViolet
+    ? "border-violet-400/25 from-violet-600/35 to-violet-950/65 hover:border-violet-300/70 hover:from-violet-500/55 hover:shadow-violet-500/20"
+    : "border-blue-400/25 from-blue-600/35 to-blue-950/65 hover:border-blue-300/70 hover:from-blue-500/55 hover:shadow-blue-500/20";
+
+  return (
+    <section className={`relative flex min-w-0 flex-col bg-gradient-to-br ${panelTone} p-2 sm:p-4 lg:p-5`}>
+      <div className={`pointer-events-none absolute inset-x-[12%] top-0 h-px bg-gradient-to-r from-transparent ${isViolet ? "via-violet-400" : "via-blue-400"} to-transparent`} />
+
+      <header className="mb-2 flex min-w-0 items-center gap-2 sm:mb-3 sm:gap-3">
+        <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl border text-sm font-black sm:h-11 sm:w-11 sm:text-lg ${numberTone}`}>
+          {player.id + 1}
+        </span>
+        <div className="min-w-0 flex-1">
+          <small className="block text-[7px] font-black uppercase tracking-[.14em] text-slate-500 sm:text-[9px]">O‘yinchi</small>
+          <b className="block truncate text-xs font-black text-white sm:text-base">{player.name}</b>
+        </div>
+        <div className="text-right">
+          <b className={`block text-sm font-black sm:text-xl ${isViolet ? "text-violet-300" : "text-blue-300"}`}>{Math.round(player.position)}%</b>
+          <small className="hidden text-[8px] font-bold uppercase tracking-wider text-slate-500 sm:block">masofa</small>
+        </div>
+      </header>
+
+      <div className="mb-2 flex min-w-0 items-center justify-between gap-1 sm:mb-3 sm:gap-2">
+        <div className="flex min-w-0 items-center gap-1 text-[8px] font-bold sm:gap-1.5 sm:text-[10px]">
+          <span className="flex items-center gap-1 rounded-full border border-orange-400/25 bg-orange-500/10 px-1.5 py-1 text-orange-200 sm:px-2.5">🔥 {stats.streak}<i className="hidden not-italic sm:inline"> combo</i></span>
+          <span className="hidden items-center gap-1 rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2 py-1 text-emerald-300 min-[440px]:flex"><FaCheckCircle /> {stats.correct}</span>
+          {stats.shieldArmed && <span className="animate-pulse rounded-full border border-cyan-400/30 bg-cyan-500/15 px-1.5 py-1 text-cyan-200"><FaShieldAlt /></span>}
+        </div>
+        <span className="shrink-0 text-[7px] font-black uppercase tracking-[.1em] text-slate-500 sm:text-[9px]">Sehr kuchi</span>
+      </div>
+
+      <div className="mb-2 grid grid-cols-3 gap-1 sm:mb-3 sm:gap-2">
+        <button type="button" onClick={on5050} disabled={locked || stats.used5050} className="flex min-h-9 items-center justify-center gap-1 rounded-lg border border-violet-400/25 bg-violet-500/10 px-1 text-[8px] font-black text-violet-200 transition hover:bg-violet-500/25 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30 sm:min-h-10 sm:text-[10px]" aria-label="Ikki noto‘g‘ri variantni olib tashlash"><b>½</b><span>50/50</span></button>
+        <button type="button" onClick={onTime} disabled={locked || stats.usedTime} className="flex min-h-9 items-center justify-center gap-1 rounded-lg border border-amber-400/25 bg-amber-500/10 px-1 text-[8px] font-black text-amber-200 transition hover:bg-amber-500/25 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30 sm:min-h-10 sm:text-[10px]" aria-label="Taymerga uch soniya qo‘shish"><FaClock /><span>+3s</span></button>
+        <button type="button" onClick={onShield} disabled={locked || stats.shieldCharges <= 0 || stats.shieldArmed} className="flex min-h-9 items-center justify-center gap-1 rounded-lg border border-cyan-400/25 bg-cyan-500/10 px-1 text-[8px] font-black text-cyan-200 transition hover:bg-cyan-500/25 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30 sm:min-h-10 sm:text-[10px]" aria-label="Xato javob jarimasidan himoyalanish"><FaShieldAlt /><span>Shield</span></button>
+      </div>
+
+      <p className="mb-1.5 text-center text-[7px] font-black uppercase tracking-[.13em] text-slate-500 sm:mb-2 sm:text-[9px]">Javobingizni tanlang</p>
+      <div className={`grid flex-1 gap-1.5 sm:gap-2.5 ${options.length <= 2 ? "grid-cols-1" : "grid-cols-2"}`}>
+        {options.map((option, index) => (
+          <button
+            key={`${player.id}-${option}`}
+            type="button"
+            onClick={() => onAnswer(option)}
+            disabled={locked}
+            className={`group flex min-h-14 min-w-0 items-center overflow-hidden rounded-xl border bg-gradient-to-br px-1.5 text-left text-white shadow-lg transition duration-150 active:scale-[.97] disabled:cursor-wait disabled:opacity-45 sm:min-h-16 sm:px-3 ${optionTone}`}
+          >
+            <span className={`mr-1.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg border text-[10px] font-black sm:mr-3 sm:h-9 sm:w-9 sm:text-sm ${numberTone}`}>{String.fromCharCode(65 + index)}</span>
+            <b className="min-w-0 flex-1 truncate text-sm font-black sm:text-xl lg:text-2xl">{option}</b>
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }

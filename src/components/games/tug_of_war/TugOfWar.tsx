@@ -24,6 +24,7 @@ import tugOfWarArenaImage from "../../../assets/tug_of_war.png";
 import tugOfWarBgImage from "./tug_of_war_bg.png";
 import tugOfWarMusic from "./tug_of_war_music.m4a";
 import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
+import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
 import { generateTugOfWarProblems } from "./ai";
 import useContextPro from "../../../hooks/useContextPro";
 import useGameQuestions from "../../../hooks/useGameQuestions";
@@ -56,7 +57,7 @@ type TeacherDraft = {
   level: Difficulty;
 };
 
-const TUG_OF_WAR_GAME_KEY = "tug-of-war";
+const TUG_OF_WAR_GAME_KEY = "tug_of_war";
 const TUG_OF_WAR_RESULT_KEY = "tug-of-war-results";
 const ROUND_DURATION = 180;
 const WIN_THRESHOLD = 12;
@@ -75,7 +76,7 @@ function randomInt(min: number, max: number) {
 }
 
 function buildProblem(index: number): Problem {
-  const difficulty = index < 4 ? "easy" : index < 8 ? "medium" : "hard";
+  const difficulty = getGameQuestionDifficulty("tug-of-war");
   const id = `generated-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 8)}`;
 
   if (difficulty === "easy") {
@@ -798,7 +799,7 @@ function TugOfWar() {
                     ))}
                   </div>
 
-                  <div className="rounded-[28px] border border-cyan-400/20 bg-cyan-500/8 p-5">
+                  <div className="hidden rounded-[28px] border border-cyan-400/20 bg-cyan-500/8 p-5">
                     <div className="mb-4 flex items-center gap-2 text-cyan-200">
                       <FaRobot />
                       <p className="text-sm font-black uppercase tracking-[0.18em]">AI Savol Generator</p>
@@ -865,7 +866,7 @@ function TugOfWar() {
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="hidden space-y-4">
                   <div className="rounded-[28px] border border-white/10 bg-white/5 p-5">
                     <div className="mb-4 flex items-center gap-2 text-slate-100">
                       <FaPlus />
@@ -881,7 +882,9 @@ function TugOfWar() {
                       />
                       <input
                         value={teacherDraft.answer}
-                        onChange={(event) => setTeacherDraft((prev) => ({ ...prev, answer: event.target.value }))}
+                        min={0}
+                        onKeyDown={(event) => { if (event.key === "-") event.preventDefault(); }}
+                        onChange={(event) => setTeacherDraft((prev) => ({ ...prev, answer: event.target.value === "" ? "" : String(Math.max(0, Number(event.target.value) || 0)) }))}
                         className="rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500"
                         placeholder="To'g'ri javob"
                         type="number"

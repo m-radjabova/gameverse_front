@@ -1,17 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import Confetti from "react-confetti-boom";
 import { 
-  FaCheckCircle, FaPlay, FaPlus, FaRedo, FaTrash, FaUsers, 
+  FaCheckCircle, FaPlay, FaPlus, FaRedo, FaTrash, FaUsers,
   FaBolt, FaSyncAlt,
   FaQuestion, FaCheck, FaTimes, FaDice,
-  FaEye
+  FaArrowRight, FaEye, FaStar
 } from "react-icons/fa";
 import { GiCardJoker, GiJigsawPiece} from "react-icons/gi";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
-import { SAMPLE_16_LINES } from "./data";
+import { getDefaultBingoLines } from "./data";
 import type { BingoCell, BonusType, CellInputRow, CellType, Difficulty, Student } from "./types";
+import useContextPro from "../../../hooks/useContextPro";
+import { fetchGameQuestionsByTeacher } from "../../../hooks/useGameQuestions";
+import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
 import {
   LINES_4x4,
   basePointsByDifficulty,
@@ -24,9 +27,13 @@ import {
 } from "./utils";
 
 function Bingo() {
+  const { state: { user } } = useContextPro();
   const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
+  const selectedDifficulty = getGameQuestionDifficulty("bingo");
   const [phase, setPhase] = useState<"teacher" | "game">("teacher");
-  const [inputRows, setInputRows] = useState<CellInputRow[]>(() => createEmptyRows());
+  const [inputRows, setInputRows] = useState<CellInputRow[]>(() => parseTextToRows(getDefaultBingoLines(selectedDifficulty)));
+  const [questionsLoading, setQuestionsLoading] = useState(Boolean(user?.id));
+  const [usesTeacherQuestions, setUsesTeacherQuestions] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [newStudentName, setNewStudentName] = useState("");
@@ -63,6 +70,33 @@ function Bingo() {
   }, [turboActive, turboEndsAt, toast]);
 
   useEffect(() => {
+    let cancelled = false;
+    const defaults = parseTextToRows(getDefaultBingoLines(selectedDifficulty));
+    setInputRows(defaults);
+    setUsesTeacherQuestions(false);
+
+    if (!user?.id) {
+      setQuestionsLoading(false);
+      return () => { cancelled = true; };
+    }
+
+    setQuestionsLoading(true);
+    void fetchGameQuestionsByTeacher<CellInputRow>("bingo", user.id).then((items) => {
+      if (cancelled) return;
+      const allTeacherRows = (items ?? []).filter((row) => row && typeof row === "object" && row.prompt?.trim());
+      const difficultyRows = allTeacherRows.filter((row) => !row.difficulty || row.difficulty === selectedDifficulty);
+      const source = difficultyRows.length > 0 ? difficultyRows : allTeacherRows;
+      if (source.length > 0) {
+        setInputRows(Array.from({ length: 16 }, (_, index) => ({ ...source[index % source.length] })));
+        setUsesTeacherQuestions(true);
+      }
+      setQuestionsLoading(false);
+    });
+
+    return () => { cancelled = true; };
+  }, [selectedDifficulty, user?.id]);
+
+  useEffect(() => {
     if (!toast) return;
     const timer = window.setTimeout(() => setToast(null), 2400);
     return () => window.clearTimeout(timer);
@@ -96,7 +130,6 @@ function Bingo() {
   const updateInputRow = (index: number, patch: Partial<CellInputRow>) => {
     setInputRows((prev) => prev.map((row, i) => i === index ? { ...row, ...patch } : row));
   };
-  
   const addStudent = () => {
     const name = newStudentName.trim();
     if (!name) return showToastMessage("O'quvchi ismini kiriting.");
@@ -118,7 +151,7 @@ function Bingo() {
     setValidationErrors(errors);
     if (!errors.length) showToastMessage("✅ Barcha 16 katak to'g'ri formatda.");
   };
-  
+
   const resetTeacherForm = () => {
     setInputRows(createEmptyRows()); setValidationErrors([]); setCells([]); setPhase("teacher");
     setSelectedCellId(null); setSelectedStudentId(""); setSelectedJokerStudentId("");
@@ -134,7 +167,7 @@ function Bingo() {
     if (result.cells.length !== 16) errors.push(`Jami 16 ta katak bo'lishi shart. Hozir: ${result.cells.length} ta valid qator.`);
     setValidationErrors(errors);
     if (errors.length) return showToastMessage("❌ Avval xatolarni tuzating.");
-    setCells(withBonusesAndDifficulty(result.cells));
+    setCells(withBonusesAndDifficulty(result.cells, selectedDifficulty));
     setPhase("game");
     setSelectedCellId(null); setSelectedStudentId(""); setSelectedJokerStudentId("");
     setJokerConfirmCellId(null); setJokerCredits(0); setJokerActive(false);
@@ -344,7 +377,39 @@ function Bingo() {
         )}
 
         {phase === "teacher" ? (
-          /* ========== O'QITUVCHI PANELI ========== */
+          <>
+          <section className="mx-auto grid min-h-[calc(100dvh-7rem)] w-full max-w-5xl place-items-center py-8">
+            <div className="w-full overflow-hidden rounded-[2rem] border border-white/15 bg-slate-950/60 p-5 shadow-2xl backdrop-blur-xl sm:p-8">
+              <div className="flex flex-col gap-5 border-b border-white/10 pb-6 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <span className="inline-flex items-center gap-2 rounded-full bg-indigo-500/15 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-indigo-200"><GiJigsawPiece /> Bingo tayyor</span>
+                  <h1 className="mt-3 text-3xl font-black text-white sm:text-4xl">O'yinchilarni kiriting</h1>
+                  <p className="mt-2 text-sm text-white/50">Savollar avtomatik yuklandi. O'quvchi kiritmasdan ham jamoaviy tarzda o'ynash mumkin.</p>
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  <span className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-white/65"><FaStar className="mr-1.5 inline text-amber-300" />{selectedDifficulty === "easy" ? "Oson" : selectedDifficulty === "medium" ? "O'rta" : "Qiyin"}</span>
+                  <span className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-white/65">{usesTeacherQuestions ? "Teacher savollari" : "Tayyor savollar"}</span>
+                </div>
+              </div>
+
+              <div className="mt-6 rounded-2xl border border-pink-400/20 bg-pink-500/10 p-4 sm:p-5">
+                <div className="mb-4 flex items-center gap-2 text-lg font-black text-white"><FaUsers className="text-pink-300" /> O'quvchilar</div>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <input type="text" value={newStudentName} onChange={(event) => setNewStudentName(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") addStudent(); }} placeholder="O'quvchi ismi" className="min-w-0 flex-1 rounded-xl border border-white/15 bg-slate-950/60 px-4 py-3 text-white outline-none placeholder:text-white/30 focus:border-pink-400" />
+                  <button type="button" onClick={addStudent} className="inline-flex items-center justify-center gap-2 rounded-xl bg-pink-500 px-5 py-3 font-black text-white transition hover:bg-pink-400"><FaPlus /> Qo'shish</button>
+                </div>
+                <div className="mt-4 flex min-h-10 flex-wrap gap-2">
+                  {students.length === 0 && <span className="py-2 text-sm text-white/35">Hozircha o'quvchi qo'shilmagan</span>}
+                  {students.map((student) => <div key={student.id} className="inline-flex items-center gap-2 rounded-full border border-pink-300/20 bg-pink-500/15 px-3 py-2 text-sm font-bold text-white"><span>{student.name}</span><button type="button" onClick={() => removeStudent(student.id)} className="text-pink-200/60 hover:text-white" aria-label={`${student.name}ni olib tashlash`}><FaTimes /></button></div>)}
+                </div>
+              </div>
+
+              {!!validationErrors.length && <p className="mt-4 rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm font-bold text-red-200">Savollar yuklanishida xato: {validationErrors[0]}</p>}
+              <button type="button" onClick={handleStartGame} disabled={questionsLoading || !canStart} className="mt-6 flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 px-6 py-4 text-lg font-black text-white shadow-xl transition hover:scale-[1.01] disabled:cursor-wait disabled:opacity-50"><FaPlay /> {questionsLoading ? "Savollar yuklanmoqda..." : "Bingoni boshlash"} <FaArrowRight /></button>
+            </div>
+          </section>
+          {/* Eski savol muharriri faqat teacher panelga ko'chirildi. */}
+          <div className="hidden">
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 xl:gap-6">
             {/* Left Panel - Input */}
             <div className="rounded-2xl border-2 border-indigo-500/30 bg-gradient-to-br from-indigo-800/50 to-purple-800/50 p-4 shadow-2xl backdrop-blur-xl sm:p-6">
@@ -459,7 +524,7 @@ function Bingo() {
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                <button onClick={() => { setInputRows(parseTextToRows(SAMPLE_16_LINES)); setValidationErrors([]); }} className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-sm border border-white/20 shadow-lg flex items-center gap-2">
+                <button onClick={() => { setInputRows(parseTextToRows(getDefaultBingoLines(selectedDifficulty))); setValidationErrors([]); }} className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-sm border border-white/20 shadow-lg flex items-center gap-2">
                   <FaDice /> Namuna
                 </button>
                 <button onClick={validateInput} className="px-4 py-2 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold text-sm border border-white/20 shadow-lg flex items-center gap-2">
@@ -544,6 +609,8 @@ function Bingo() {
               </div>
             </div>
           </div>
+          </div>
+          </>
         ) : (
           /* ========== O'YIN JARAYONI ========== */
           <>
@@ -785,4 +852,3 @@ function Bingo() {
 }
 
 export default Bingo;
-

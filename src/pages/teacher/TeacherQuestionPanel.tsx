@@ -47,13 +47,13 @@ type GameRegistryItem = {
 type EditorMode = "manual" | "ai";
 
 const GAME_TEMPLATES: Record<string, unknown> = {
-  quiz_battle: { question: "", options: ["", "", "", ""], answerIndex: 0 },
-  classic_arcade: { prompt: "", options: ["", "", "", ""], correctIndex: 0, reason: "" },
-  wheel_of_fortune: { question: "", options: ["", "", "", ""], answerIndex: 0, category: "", points: 100 },
+  quiz_battle: { question: "", options: ["", "", "", ""], answerIndex: 0, difficulty: "easy" },
+  classic_arcade: { prompt: "", options: ["", "", "", ""], correctIndex: 0, reason: "", difficulty: "easy" },
+  wheel_of_fortune: { question: "", options: ["", "", "", ""], answerIndex: 0, category: "", points: 100, difficulty: "easy" },
   math_race: { question: "", answer: 0, difficulty: "easy", points: 10 },
   math_chick: { question: "", answer: 0, options: ["", "", "", ""], difficulty: "easy" },
   tug_of_war: { prompt: "", answer: 0, level: "easy" },
-  baamboozle: { question: "", answer: "" },
+  baamboozle: { question: "", answer: "", difficulty: "easy" },
   jumanji: { subject: "Matematika", question: "", options: ["", "", "", ""], correctAnswer: "", difficulty: "easy", timeLimit: 30 },
   millionaire: { text: "", options: { A: "", B: "", C: "", D: "" }, correct: "A", difficulty: "easy", category: "" },
   truth_detector: {
@@ -65,10 +65,12 @@ const GAME_TEMPLATES: Record<string, unknown> = {
       { id: "c-1", text: "", truth: true },
     ],
   },
-  treasure_hunt: { title: "", story: "", question: "", options: ["", "", "", ""], answerIndex: 0, hint: "", reward: 120 },
+  treasure_hunt: { title: "", story: "", question: "", options: ["", "", "", ""], answerIndex: 0, hint: "", reward: 120, difficulty: "easy" },
   reverse_thinking: { level: 1, question: "", options: ["", "", "", ""], correctAnswer: "", explanation: "" },
   frog_pond: { subject: "Matematika", question: "", options: ["", "", "", ""], answerIndex: 0, stage: 1 },
-  pizza_master: { subject: "Matematika", question: "", options: ["", "", "", ""], answerIndex: 0 },
+  pizza_master: { subject: "Matematika", question: "", options: ["", "", "", ""], answerIndex: 0, difficulty: "easy" },
+  mystery_egg: { subject: "Matematika", question: "", options: ["", "", "", ""], answerIndex: 0, level: 1 },
+  bingo: { emoji: "❓", title: "Savol", type: "quiz", prompt: "", optionA: "", optionB: "", optionC: "", correct: "A", difficulty: "easy" },
 };
 
 const GAME_EMOJIS: Record<string, string> = {
@@ -86,6 +88,8 @@ const GAME_EMOJIS: Record<string, string> = {
   reverse_thinking: "🔄",
   frog_pond: "🐸",
   pizza_master: "🍕",
+  mystery_egg: "🥚",
+  bingo: "🎯",
 };
 
 
@@ -104,6 +108,8 @@ const GAME_ACCENTS: Record<string, string> = {
   reverse_thinking: "from-[var(--panel-accent)] to-[var(--panel-accent-strong)]",
   frog_pond: "from-emerald-400 to-sky-400",
   pizza_master: "from-orange-500 to-red-500",
+  mystery_egg: "from-violet-500 to-lime-400",
+  bingo: "from-indigo-500 to-fuchsia-500",
 };
 
 
@@ -122,6 +128,8 @@ const GAME_BGS: Record<string, string> = {
   reverse_thinking: "bg-[image:var(--panel-accent-gradient-soft)]",
   frog_pond: "bg-gradient-to-br from-emerald-400/10 to-sky-400/10",
   pizza_master: "bg-gradient-to-br from-orange-400/10 to-red-400/10",
+  mystery_egg: "bg-gradient-to-br from-violet-400/10 to-lime-400/10",
+  bingo: "bg-gradient-to-br from-indigo-400/10 to-fuchsia-400/10",
 };
 
 function cardIdToGameKey(id: string): string {
@@ -202,14 +210,21 @@ const SUBJECT_OPTIONS = [
   "Kimyo",
   "Adabiyot",
   "Informatika",
-  "Iqtisodiyot",
-  "Huquq asoslari",
-  "Musiqa",
-  "Jismoniy tarbiya",
   "Aralash fanlar",
 ];
 
 const AI_COUNT_OPTIONS = [1, 3, 5, 10, 15, 20] as const;
+const MYSTERY_EGG_LEVEL_OPTIONS = [
+  { value: 1, label: "1 — Forest Egg (Oson)", detail: "Sehrli o'rmon" },
+  { value: 2, label: "2 — Ocean Egg (O'rta)", detail: "Moviy qa'r" },
+  { value: 3, label: "3 — Volcano Egg (O'rta)", detail: "Olovli cho'qqi" },
+  { value: 4, label: "4 — Ice Egg (Qiyin)", detail: "Muz saroyi" },
+  { value: 5, label: "5 — Thunder Egg (Qiyin)", detail: "Chaqmoq vodiysi" },
+  { value: 6, label: "6 — Sakura Egg (Qiyin)", detail: "Gullar bog'i" },
+  { value: 7, label: "7 — Galaxy Egg (Ekspert)", detail: "Sirli koinot" },
+  { value: 8, label: "8 — Royal Egg (Ekspert)", detail: "Qirollik siri" },
+  { value: 9, label: "9 — Rainbow Egg (Ekspert)", detail: "Afsonaviy final" },
+] as const;
 
 function getAiPanelContent(gameKey: string) {
   if (gameKey === "baamboozle") {
@@ -257,7 +272,7 @@ function validateDraftItem(gameKey: string, draftValue: unknown) {
     return "";
   }
 
-  if (gameKey === "tug-of-war") {
+  if (gameKey === "tug_of_war") {
     const prompt = String(value.prompt ?? "").trim();
     const answer = Number(value.answer);
     const level = String(value.level ?? "").trim().toLowerCase();
@@ -276,7 +291,7 @@ function validateDraftItem(gameKey: string, draftValue: unknown) {
     return "";
   }
 
-  if (gameKey === "frog-pond") {
+  if (gameKey === "frog_pond") {
     const question = String(value.question ?? "").trim();
     const rawOptions = Array.isArray(value.options) ? value.options : [];
     const options = rawOptions.map((item) => String(item ?? "").trim()).filter(Boolean);
@@ -300,6 +315,19 @@ function validateDraftItem(gameKey: string, draftValue: unknown) {
     if (options.length !== 4) return "Pizza Master uchun aniq 4 ta variant kiriting.";
     if (new Set(options.map((item) => item.toLowerCase())).size !== 4) return "Pizza Master variantlari takrorlanmasin.";
     if (!Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex > 3) return "Pizza Master uchun to'g'ri variantni tanlang.";
+    return "";
+  }
+
+  if (gameKey === "mystery_egg") {
+    const question = String(value.question ?? "").trim();
+    const options = Array.isArray(value.options) ? value.options.map((item) => String(item ?? "").trim()).filter(Boolean) : [];
+    const answerIndex = Number(value.answerIndex);
+    const level = Number(value.level);
+    if (!question) return "Mystery Egg uchun savol matnini kiriting.";
+    if (options.length !== 4) return "Mystery Egg uchun aniq 4 ta variant kiriting.";
+    if (new Set(options.map((item) => item.toLowerCase())).size !== 4) return "Mystery Egg variantlari takrorlanmasin.";
+    if (!Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex > 3) return "Mystery Egg uchun to'g'ri variantni tanlang.";
+    if (!Number.isInteger(level) || level < 1 || level > 9) return "Mystery Egg leveli 1 dan 9 gacha bo'lsin.";
     return "";
   }
 
@@ -394,7 +422,7 @@ function normalizeDraftForGame(gameKey: string, draftValue: unknown) {
     };
   }
 
-  if (gameKey === "tug-of-war") {
+  if (gameKey === "tug_of_war") {
     return {
       ...value,
       answer: Number(value.answer),
@@ -402,7 +430,7 @@ function normalizeDraftForGame(gameKey: string, draftValue: unknown) {
     };
   }
 
-  if (gameKey === "frog-pond") {
+  if (gameKey === "frog_pond") {
     const options = Array.isArray(value.options) ? value.options.map((item) => String(item ?? "").trim()) : [];
     const answerIndex = Number(value.answerIndex);
     return {
@@ -413,6 +441,19 @@ function normalizeDraftForGame(gameKey: string, draftValue: unknown) {
       answerIndex,
       answer: options[answerIndex] ?? "",
       stage: Math.max(1, Math.min(3, Math.round(Number(value.stage) || 1))),
+    };
+  }
+
+  if (gameKey === "mystery_egg") {
+    const options = Array.isArray(value.options) ? value.options.map((item) => String(item ?? "").trim()) : [];
+    const answerIndex = Number(value.answerIndex);
+    return {
+      ...value,
+      subject: String(value.subject ?? "Matematika").trim() || "Matematika",
+      question: String(value.question ?? "").trim(),
+      options,
+      answerIndex,
+      level: Math.max(1, Math.min(9, Math.round(Number(value.level) || 1))),
     };
   }
 
@@ -608,9 +649,22 @@ function SpecializedEditor({
         {"difficulty" in value && (
           <FormField label="difficulty" value={value.difficulty} path={["difficulty"]} onChange={onChange} icon={<FaStar />} />
         )}
-        {"level" in value && (
+        {"level" in value && (gameKey === "mystery_egg" ? (
+          <div className="space-y-2">
+            <SelectField
+              label="Tuxum dunyosi"
+              value={Number(value.level) || 1}
+              options={MYSTERY_EGG_LEVEL_OPTIONS.map((level) => ({ value: level.value, label: level.label }))}
+              onChange={(next) => onChange(["level"], Number(next))}
+              icon={<FaCrown />}
+            />
+            <p className="px-1 text-[10px] leading-4 text-[var(--panel-muted)]">
+              Savol faqat tanlangan tuxum dunyosida ishlatiladi. Yuqori dunyolarda savollar qiyinroq bo'lishi kerak.
+            </p>
+          </div>
+        ) : (
           <FormField label="level" value={value.level} path={["level"]} onChange={onChange} icon={<FaCrown />} />
-        )}
+        ))}
         {"stage" in value && (
           <FormField label="stage" value={value.stage} path={["stage"]} onChange={onChange} icon={<FaLayerGroup />} />
         )}
@@ -859,8 +913,12 @@ function FormField({
           </span>
           <input
             type="number"
+            min={0}
             value={Number.isFinite(value) ? value : 0}
-            onChange={(event) => onChange(path, Number(event.target.value))}
+            onKeyDown={(event) => {
+              if (event.key === "-") event.preventDefault();
+            }}
+            onChange={(event) => onChange(path, Math.max(0, Number(event.target.value) || 0))}
             className="w-full rounded-xl border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] px-4 py-3 text-sm text-[var(--panel-text)] placeholder:text-[var(--panel-muted)] outline-none transition-all duration-200 focus:border-[var(--panel-accent)] focus:shadow-[0_0_0_3px_var(--panel-focus-ring)]"
           />
         </label>
@@ -993,6 +1051,7 @@ export default function TeacherQuestionPanel() {
   const [aiGradeRange, setAiGradeRange] = useState<GradeRange>("none");
   const [aiCount, setAiCount] = useState<(typeof AI_COUNT_OPTIONS)[number]>(5);
   const [aiDifficulty, setAiDifficulty] = useState<GameDifficulty>("mixed");
+  const [aiMysteryLevel, setAiMysteryLevel] = useState(1);
   const {
     questionsByGame,
     getQuestions,
@@ -1005,7 +1064,10 @@ export default function TeacherQuestionPanel() {
   } = useGameQuestions<unknown>({ teacherId: user?.id });
 
   const activeGame = GAME_REGISTRY.find((game) => game.gameKey === activeGameKey) ?? null;
-  const activeItems = activeGame ? getQuestions(activeGame.gameKey) : [];
+  const activeItems = useMemo(
+    () => activeGameKey ? getQuestions(activeGameKey) : [],
+    [activeGameKey, getQuestions],
+  );
   const aiPanelContent = useMemo(() => getAiPanelContent(activeGame?.gameKey ?? ""), [activeGame?.gameKey]);
   const loading = activeGame ? Boolean(loadingByGame[activeGame.gameKey]) : false;
   const saving = activeGame ? Boolean(savingByGame[activeGame.gameKey]) : anySaving;
@@ -1099,19 +1161,32 @@ export default function TeacherQuestionPanel() {
       setEditorError("");
       const generated = await generateTeacherPanelQuestions({
         gameKey: activeGame.gameKey as SupportedTeacherGameKey,
-        topic: aiTopic,
+        topic: activeGame.gameKey === "mystery_egg" ? `Level ${aiMysteryLevel}. ${aiTopic}` : aiTopic,
         subject: aiSubject,
         count: aiCount,
         difficulty: aiDifficulty,
         gradeRange: aiGradeRange,
       });
 
-      const nextItems = [...generated.map((item) => withIdFallback(item)), ...activeItems];
+      const difficultyCycle = ["easy", "medium", "hard"] as const;
+      const difficultyAdjusted = generated.map((item, index) => {
+        if (!item || typeof item !== "object") return item;
+        const template = activeGame.template as Record<string, unknown>;
+        if (!("difficulty" in template)) return item;
+        return {
+          ...(item as Record<string, unknown>),
+          difficulty: aiDifficulty === "mixed" ? difficultyCycle[index % difficultyCycle.length] : aiDifficulty,
+        };
+      });
+      const levelAdjusted = activeGame.gameKey === "mystery_egg"
+        ? difficultyAdjusted.map((item) => item && typeof item === "object" ? { ...(item as Record<string, unknown>), level: aiMysteryLevel } : item)
+        : difficultyAdjusted;
+      const nextItems = [...levelAdjusted.map((item) => withIdFallback(item)), ...activeItems];
       const ok = await persistGameItems(activeGame.gameKey, nextItems);
       if (!ok) return;
 
       setSelectedIndex(0);
-      setDraftValue(withIdFallback(generated[0] ?? activeGame.template));
+      setDraftValue(withIdFallback(levelAdjusted[0] ?? activeGame.template));
       setEditorMode("manual");
     } catch (error) {
       setEditorError(error instanceof Error ? error.message : "AI savol yaratishda xato bo'ldi.");
@@ -1125,7 +1200,7 @@ export default function TeacherQuestionPanel() {
     setSelectedIndex(null);
     setSearch("");
     setEditorMode("manual");
-    void loadQuestions(gameKey, { teacherScoped: true });
+    void loadQuestions(gameKey, { teacherScoped: true, filterBySessionDifficulty: false });
   }
 
   return (
@@ -1526,6 +1601,16 @@ export default function TeacherQuestionPanel() {
                         {SUBJECT_OPTIONS.map((subject) => <option key={subject} value={subject}>{subject}</option>)}
                       </select>
                     </label>
+
+                    {activeGame.gameKey === "mystery_egg" && (
+                      <label className="block space-y-2">
+                        <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--panel-text-soft)]">Tuxum dunyosi</span>
+                        <select value={aiMysteryLevel} onChange={(event) => setAiMysteryLevel(Number(event.target.value))} className="w-full rounded-xl border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] px-4 py-3 text-sm font-bold text-[var(--panel-text)] outline-none focus:border-[var(--panel-accent)]">
+                          {MYSTERY_EGG_LEVEL_OPTIONS.map((level) => <option key={level.value} value={level.value}>{level.label} · {level.detail}</option>)}
+                        </select>
+                        <p className="text-[9px] leading-4 text-[var(--panel-muted)]">AI yaratgan barcha savollar tanlangan tuxum dunyosiga biriktiriladi.</p>
+                      </label>
+                    )}
 
                     <label className="block space-y-2">
                       <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--panel-text-soft)]">{aiPanelContent.topicLabel}</span>

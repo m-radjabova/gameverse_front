@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { gameCards } from "../../../pages/games/data";
 import { getGameSessionConfig } from "../../../hooks/gameSession";
+import { DIRECT_PLAY_GAME_PATHS } from "./directPlayGames";
 import { ReactBitsPageEnter } from "./ReactBitsMotion";
 
 type GamePlayViewProps = {
@@ -34,17 +35,21 @@ export default function GamePlayView({ colorClassName, children }: GamePlayViewP
     location.pathname === "/games/world-explorer" || location.pathname === "/games/world-explorer/play";
   const isPizzaMasterRoute =
     location.pathname === "/games/pizza-master" || location.pathname === "/games/pizza-master/play";
+  const isMysteryEggRoute =
+    location.pathname === "/games/mystery-egg" || location.pathname === "/games/mystery-egg/play";
   const isFullBleedGameRoute =
     isPlantVrRoute ||
     isVirtualZooRoute ||
     isWorldExplorerRoute ||
     isPizzaMasterRoute ||
+    isMysteryEggRoute ||
     location.pathname === "/games/vr-solar-system/play" ||
     location.pathname === "/games/quyosh-tizimi-vr/play";
   const game = gameCards.find(
     (item) => `${item.path}/play` === location.pathname || item.path === location.pathname
   );
   const session = game ? getGameSessionConfig(game.id) : null;
+  const usesInternalParticipantSetup = Boolean(game && DIRECT_PLAY_GAME_PATHS.has(game.path));
 
   if (isFullBleedGameRoute) return <>{children}</>;
 
@@ -81,7 +86,7 @@ export default function GamePlayView({ colorClassName, children }: GamePlayViewP
             <div className="order-3 flex w-full items-center gap-2 sm:order-none sm:w-auto sm:gap-3">
               <span className="inline-flex min-w-0 items-center gap-2 border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-bold text-white/70">
                 <FaUsers className="shrink-0 text-white/45" />
-                <span className="truncate">{session ? `${session.participantCount} ${session.participantLabel}` : game.players}</span>
+                <span className="truncate">{session && !usesInternalParticipantSetup ? `${session.participantCount} ${session.participantLabel}` : game.players}</span>
               </span>
               <span className="inline-flex shrink-0 items-center gap-2 border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-bold text-white/70">
                 <FaClock className="text-white/45" />

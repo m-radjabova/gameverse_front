@@ -26,6 +26,8 @@ import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { useGameParticipantMode } from "../../../hooks/useGameParticipantMode";
 import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
 import { QUESTION_BANK } from "./data";
+import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
+import { filterGameQuestionsByDifficulty } from "../../../utils/gameQuestionDifficulty";
 
 type OptionKey = "A" | "B" | "C" | "D";
 type Difficulty = "easy" | "medium" | "hard" | "expert";
@@ -150,9 +152,9 @@ function Millionaire() {
   const [phase, setPhase] = useState<"setup" | "play" | "end">("setup");
   useFinishApplause(phase === "end");
   const [names, setNames] = useState<string[]>(() =>
-    buildInitialNames(participantCount, session?.participantLabels ?? [primaryName]),
+    buildInitialNames(participantCount, isSinglePlayer ? [primaryName] : session?.participantLabels ?? [primaryName]),
   );
-  const [questionBank, setQuestionBank] = useState<Question[]>(QUESTION_BANK);
+  const [questionBank, setQuestionBank] = useState<Question[]>(() => filterGameQuestionsByDifficulty(QUESTION_BANK, getGameQuestionDifficulty("millionaire")));
   const [remoteLoaded, setRemoteLoaded] = useState(false);
   const [players, setPlayers] = useState<PlayerState[]>([]);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
@@ -213,7 +215,7 @@ function Millionaire() {
     let alive = true;
     (async () => {
       if (!user?.id) {
-        setQuestionBank(QUESTION_BANK);
+        setQuestionBank(filterGameQuestionsByDifficulty(QUESTION_BANK, getGameQuestionDifficulty("millionaire")));
         setRemoteLoaded(true);
         return;
       }
@@ -221,9 +223,9 @@ function Millionaire() {
       const remoteQuestions = await fetchGameQuestionsByTeacher<Question>(MILLIONAIRE_GAME_KEY, user.id);
       if (!alive) return;
       if (remoteQuestions && remoteQuestions.length > 0) {
-        setQuestionBank(remoteQuestions);
+        setQuestionBank(filterGameQuestionsByDifficulty(remoteQuestions, getGameQuestionDifficulty("millionaire")));
       } else {
-        setQuestionBank(QUESTION_BANK);
+        setQuestionBank(filterGameQuestionsByDifficulty(QUESTION_BANK, getGameQuestionDifficulty("millionaire")));
       }
       setRemoteLoaded(true);
     })();
@@ -258,11 +260,11 @@ function Millionaire() {
 
   useEffect(() => {
     if (phase !== "setup") return;
-    setNames(buildInitialNames(requiredPlayers, session?.participantLabels ?? [primaryName]));
+    setNames(buildInitialNames(requiredPlayers, isSinglePlayer ? [primaryName] : session?.participantLabels ?? [primaryName]));
   }, [requiredPlayers, session, primaryName, phase]);
 
   useGameResultSubmission(
-    phase === "end" && players.length > 0,
+    phase === "end" && isSinglePlayer && players.length > 0,
     "millionaire",
     players.map((player) => ({
       participant_name: player.name,
@@ -681,7 +683,7 @@ function Millionaire() {
     setSelectedAnswer(null);
     setReveal(false);
     setMessage("");
-    setNames(buildInitialNames(requiredPlayers, session?.participantLabels ?? [primaryName]));
+    setNames(buildInitialNames(requiredPlayers, isSinglePlayer ? [primaryName] : session?.participantLabels ?? [primaryName]));
     setShowConfetti(false);
     setWinners([]);
     setDisabledOptions([]);
@@ -849,9 +851,54 @@ function Millionaire() {
               <p className="text-2xl text-blue-300">bo'lishni xohlaydi?</p>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-8">
+            <div className="mx-auto mb-10 w-full max-w-3xl rounded-3xl border-2 border-yellow-500/50 bg-gradient-to-b from-[#1a2639] to-[#0f1a2f] p-6 shadow-2xl sm:p-8">
+              <div className="mb-6 flex items-center gap-4">
+                <div className="rounded-2xl bg-gradient-to-r from-yellow-500 to-amber-500 p-4 shadow-lg">
+                  <GiMoneyStack className="text-3xl text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-yellow-400 sm:text-3xl">O'yin tayyor</h2>
+                  <p className="text-sm text-blue-200 sm:text-base">Savollar teacher panelidan boshqariladi.</p>
+                </div>
+              </div>
+
+              <div className="mb-6 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl border border-blue-400/40 bg-blue-900/20 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wider text-blue-300">Savol manbasi</p>
+                  <p className="mt-1 font-semibold text-white">{user?.id ? "Teacher savollari yoki default baza" : "Tayyor savollar bazasi"}</p>
+                </div>
+                <div className="rounded-2xl border border-blue-400/40 bg-blue-900/20 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wider text-blue-300">Savollar soni</p>
+                  <p className="mt-1 font-semibold text-white">{questionBank.length} ta savol · {getGameQuestionDifficulty("millionaire")}</p>
+                </div>
+              </div>
+
+              <p className="mb-6 rounded-2xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-sm leading-relaxed text-yellow-100">
+                Ro'yxatdan o'tmasdan ham tayyor savollar bilan o'ynashingiz mumkin. Teacher savollari mavjud bo'lsa, ular tayyor savollar o'rniga ishlatiladi.
+              </p>
+
+              <button
+                onClick={start}
+                className="group relative w-full overflow-hidden rounded-2xl border-2 border-yellow-300 bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 py-5 text-xl font-black text-white shadow-xl transition hover:scale-[1.01] hover:from-yellow-400 hover:to-orange-400"
+              >
+                <span className="absolute inset-0 -translate-x-full bg-white/20 transition-transform duration-500 group-hover:translate-x-full" />
+                <span className="relative flex items-center justify-center gap-3">
+                  <GiMoneyStack className="text-2xl" />
+                  O'YINNI BOSHLASH
+                </span>
+              </button>
+
+              {message && (
+                <div className="mt-4 rounded-xl border border-red-400/70 bg-red-500/15 p-3 text-center font-semibold text-red-200">
+                  {message}
+                </div>
+              )}
+            </div>
+
+            {/* Legacy in-game editor is intentionally hidden. Questions are managed in the teacher panel. */}
+            <div className="hidden">
               {/* Left Column - Player Setup */}
-              <div className="bg-gradient-to-b from-[#1a2639] to-[#0f1a2f] rounded-3xl p-8 shadow-2xl border-2 border-yellow-500/50 hover:border-yellow-500 transition-colors">
+              <div className="hidden bg-gradient-to-b from-[#1a2639] to-[#0f1a2f] rounded-3xl p-8 shadow-2xl border-2 border-yellow-500/50 hover:border-yellow-500 transition-colors">
                 <div className="flex items-center gap-3 mb-8">
                   <div className="p-3 bg-gradient-to-r from-yellow-500 to-amber-500 rounded-xl">
                     <FaUsers className="text-2xl text-white" />
@@ -1025,7 +1072,8 @@ function Millionaire() {
               <div className="mt-8">
                 <GameLeaderboardPanel
                   gameKey="millionaire"
-                  title="Millionaire Solo Leaderboard"
+                  title="Kim millioner bo'lishni xohlaydi? reytingi"
+                  singlePlayerOnly
                 />
               </div>
             ) : null}

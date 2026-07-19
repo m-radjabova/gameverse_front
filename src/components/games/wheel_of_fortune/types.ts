@@ -16,4 +16,5 @@ export type Question = {
   category: string;
   points: number;
   timeLimit: number;
+  difficulty?: "easy" | "medium" | "hard";
 };

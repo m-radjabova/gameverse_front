@@ -5,7 +5,9 @@ import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { getGameSessionConfig } from "../../../hooks/gameSession";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
+import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
 import useContextPro from "../../../hooks/useContextPro";
+import GameLeaderboardPanel from "../shared/GameLeaderboardPanel";
 import { IQ_QUESTIONS, type IQQuestion as Question, type QuestionType, type Difficulty } from "./questions";
 
 type Phase = "intro" | "game" | "result";
@@ -150,6 +152,17 @@ function IQGame() {
   const winners = activePlayers.filter((_, index) => scores[index] === topScore);
   const progress = Math.round(((currentIndex + 1) / Math.max(questions.length, 1)) * 100);
 
+  useGameResultSubmission(
+    phase === "result" && playerMode === 1 && questions.length > 0,
+    "iq-game",
+    activePlayers.map((player, index) => ({
+      participant_name: player,
+      participant_mode: playerMode === 1 ? "solo" : "duo",
+      score: scores[index] ?? 0,
+      metadata: { iq: iqScores[index] ?? 70, accuracy: questions.length ? Math.round(((scores[index] ?? 0) / questions.length) * 100) : 0 },
+    })),
+  );
+
   useEffect(() => {
     if (phase !== "game" || !showExplanation) return;
     const timeout = window.setTimeout(() => {
@@ -223,7 +236,7 @@ function IQGame() {
     const mode = session?.participantCount === 2 ? 2 : 1;
     const labels = session?.participantLabels?.length
       ? [
-          session.participantLabels[0] || registeredName,
+          mode === 1 ? registeredName : session.participantLabels[0] || registeredName,
           session.participantLabels[1] || "O'YINCHI 2",
         ]
       : [registeredName, "O'YINCHI 2"];
@@ -505,6 +518,12 @@ function IQGame() {
           ); 
         })}
       </div>
+
+      {playerMode === 1 ? (
+        <div className="mt-8">
+          <GameLeaderboardPanel gameKey="iq-game" title="IQ Challenge reytingi" singlePlayerOnly />
+        </div>
+      ) : null}
       
       <div className="mt-8 flex flex-col gap-4 sm:flex-row">
         <button 

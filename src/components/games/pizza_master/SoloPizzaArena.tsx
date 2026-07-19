@@ -31,19 +31,19 @@ export default function SoloPizzaArena({ player, question, timeLeft, roundSecond
   const isChefChallenge = question.difficulty === "chef";
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 p-2 sm:p-4 gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-3 p-2 sm:gap-4 sm:p-4">
       {/* Top HUD */}
-      <div className="pm-hud flex items-center justify-between gap-3 rounded-[28px] px-5 py-4 backdrop-blur">
+      <div className="pm-hud flex flex-col items-stretch justify-between gap-3 rounded-[24px] px-3 py-3 backdrop-blur sm:flex-row sm:items-center sm:rounded-[28px] sm:px-5 sm:py-4">
         <div className="flex items-center gap-3">
           <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-orange-400 via-red-500 to-fuchsia-500 text-xl text-white shadow-[0_8px_0_rgba(127,29,29,0.55),0_0_28px_rgba(249,115,22,0.45)]">
             <FaPizzaSlice />
           </div>
           <div>
             <p className="text-lg font-black text-white">PIZZA <span className="text-orange-400">MASTER</span></p>
-            <p className="text-xs font-bold text-orange-400/70">{isChefChallenge ? "CHEF CHALLENGE" : "SOLO MODE"}</p>
+            <p className="text-xs font-bold text-orange-400/70">{isChefChallenge ? "CHEF CHALLENGE" : "ISSIQ PIZZERIA · SOLO"}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="grid grid-cols-2 gap-2 min-[480px]:grid-cols-4 sm:flex sm:items-center">
           <HudMetric icon={<img src={xpStarImage} alt="" className="h-5 w-5 object-contain" />} label="XP" value={`${player.xp} / ${xpTarget}`} tone="text-yellow-400" progress={xpPercent} />
           <HudMetric icon={<img src={coinImage} alt="" className="h-5 w-5 object-contain" />} label="Coins" value={`${player.coins}`} tone="text-orange-400" />
           <HudMetric icon={<FaFire />} label="Combo" value={`x${player.combo}`} tone="text-red-400" />
@@ -55,11 +55,11 @@ export default function SoloPizzaArena({ player, question, timeLeft, roundSecond
       </div>
 
       {/* Main Game Area */}
-      <div className="flex-1 grid gap-4 lg:grid-cols-[220px_1fr_1fr] min-h-0">
+      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[220px_1fr_1fr]">
         {/* Left Sidebar - Ingredients */}
-        <aside className="pm-card overflow-auto rounded-[28px] p-4 backdrop-blur">
-          <h2 className="text-center text-lg font-black text-white/80 uppercase tracking-wider mb-4">Ingredientlar</h2>
-          <div className="space-y-2">
+        <aside className="pm-card order-3 overflow-auto rounded-[28px] p-4 backdrop-blur lg:order-1">
+          <div className="mb-4 text-center"><p className="text-[9px] font-black uppercase tracking-[.18em] text-orange-400/70">Mise en place</p><h2 className="text-lg font-black uppercase tracking-wider text-white/90">Ingredient stansiyasi</h2></div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-1">
             {PIZZA_INGREDIENTS.map((ingredient, index) => {
               const unlocked = index < player.ingredients;
               return (
@@ -94,10 +94,11 @@ export default function SoloPizzaArena({ player, question, timeLeft, roundSecond
         </aside>
 
         {/* Center - Pizza Display */}
-        <section className="pm-stage relative flex flex-col items-center justify-center overflow-hidden rounded-[30px] p-6">
+        <section className="pm-stage order-1 relative flex min-h-[330px] flex-col items-center justify-center overflow-hidden rounded-[30px] p-4 lg:order-2 lg:p-6">
           <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-red-500 via-orange-500 to-yellow-400" />
           <div className="absolute top-0 left-0 right-0 bottom-0 bg-[radial-gradient(circle_at_50%_50%,rgba(251,146,60,0.05),transparent_70%)]" />
-          <p className="pm-chip absolute left-5 top-5 rounded-full px-3 py-1 text-xs font-black uppercase tracking-wider text-orange-200 backdrop-blur">
+          <div className="absolute inset-x-[8%] bottom-3 h-7 rounded-[50%] bg-black/35 blur-md" />
+          <p className="pm-chip absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-black uppercase tracking-wider text-orange-100 backdrop-blur sm:left-5 sm:top-5">
             {currentIngredient ? `${currentIngredient.name} ${ingredientStep}/${CORRECT_ANSWERS_PER_INGREDIENT}` : "Pizza Complete"}
           </p>
           <div className="relative z-10 w-full max-w-[400px]">
@@ -120,19 +121,19 @@ export default function SoloPizzaArena({ player, question, timeLeft, roundSecond
         </section>
 
         {/* Right - Question Panel */}
-        <section className="pm-card relative flex flex-col rounded-[30px] p-6 backdrop-blur">
-          <div className={`absolute -top-4 left-1/2 -translate-x-1/2 rounded-xl px-8 py-2 text-lg font-black text-white shadow-lg ${
+        <section className="pm-card order-2 relative flex min-h-[340px] flex-col rounded-[30px] p-4 pt-7 backdrop-blur lg:order-3 lg:p-6">
+          <div className={`absolute -top-3 left-1/2 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-xl px-6 py-2 text-sm font-black text-white shadow-lg sm:px-8 sm:text-lg ${
             isChefChallenge ? "bg-gradient-to-r from-fuchsia-500 to-red-500 shadow-fuchsia-500/30" : "bg-gradient-to-r from-orange-500 to-red-500 shadow-orange-500/30"
           }`}>
-            {isChefChallenge ? "Chef Challenge" : "Savol"}
+            <FaPizzaSlice /> {isChefChallenge ? "Chef Challenge" : "Yangi buyurtma"}
           </div>
-          <p className="mt-6 text-center text-xs font-black uppercase tracking-wider text-orange-400">
+          <p className="mt-3 text-center text-xs font-black uppercase tracking-wider text-orange-400 lg:mt-6">
             {player.name} javob beradi
           </p>
-          <h2 className="my-6 text-center text-3xl font-black text-white sm:text-4xl">
+          <h2 className="my-4 break-words text-center text-3xl font-black leading-tight text-white sm:text-4xl lg:my-6">
             {question.prompt}
           </h2>
-          <div className="grid gap-3 sm:grid-cols-2 flex-1">
+          <div className="grid flex-1 grid-cols-2 gap-2 sm:gap-3">
             {question.options.map((option, index) => (
               <motion.button
                 whileHover={{ y: -3, scale: 1.02 }}
@@ -140,7 +141,7 @@ export default function SoloPizzaArena({ player, question, timeLeft, roundSecond
                 key={option}
                 disabled={disabled}
                 onClick={() => onAnswer(index)}
-                className={`pm-answer min-h-16 rounded-2xl border-2 bg-gradient-to-br text-2xl font-black transition-all duration-200 ${
+                className={`pm-answer min-h-16 rounded-2xl border-2 bg-gradient-to-br px-2 text-xl font-black transition-all duration-200 sm:text-2xl ${
                   disabled ? "opacity-40 cursor-not-allowed" : "hover:shadow-lg"
                 } ${answerTones[index]}`}
               >
@@ -165,13 +166,13 @@ export default function SoloPizzaArena({ player, question, timeLeft, roundSecond
 
       {/* Bottom Progress + Chef */}
       <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
-        <section className="pm-card rounded-[26px] p-4 backdrop-blur">
+        <section className="pm-card overflow-x-auto rounded-[26px] p-4 backdrop-blur">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-black text-white/80 uppercase tracking-wider">Pizza Progress</h2>
+            <h2 className="text-lg font-black text-white/80 uppercase tracking-wider">Buyurtma progressi</h2>
             <span className="text-2xl font-black text-orange-400">{Math.round((player.correctAnswers / PIZZA_MAX_CORRECT_ANSWERS) * 100)}%</span>
           </div>
           <div
-            className="relative grid gap-2"
+            className="relative grid min-w-[620px] gap-2"
             style={{ gridTemplateColumns: `repeat(${PIZZA_INGREDIENTS.length}, minmax(0, 1fr))` }}
           >
             {PIZZA_INGREDIENTS.map((ingredient, index) => (

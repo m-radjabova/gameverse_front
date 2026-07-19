@@ -37,6 +37,8 @@ import { fetchGameQuestionsByTeacher, saveGameQuestions } from "../../../hooks/u
 import useContextPro from "../../../hooks/useContextPro";
 import { generateBaamboozleQuestions } from "./ai";
 import { DEFAULT_QUESTION_BANK } from "./data";
+import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
+import { filterGameQuestionsByDifficulty } from "../../../utils/gameQuestionDifficulty";
 import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
 
 export type QuestionBankItem = {
@@ -95,7 +97,9 @@ const getGridCols = (boardSize: 16 | 24) => (boardSize === 16 ? 4 : 6);
 const getSpecialCount = (boardSize: 16 | 24) => (boardSize === 16 ? 4 : 6);
 
 const buildTiles = (questionBank: QuestionBankItem[], boardSize: 16 | 24): Tile[] => {
-  const source = questionBank.length > 0 ? questionBank : DEFAULT_QUESTION_BANK;
+  const source = questionBank.length > 0
+    ? questionBank
+    : filterGameQuestionsByDifficulty(DEFAULT_QUESTION_BANK, getGameQuestionDifficulty("baamboozle"));
   const cols = getGridCols(boardSize);
   const indexes = Array.from({ length: boardSize }, (_, i) => i);
   const specialIndexes = new Set(shuffle(indexes).slice(0, getSpecialCount(boardSize)));
@@ -289,7 +293,11 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
     state: { user, isLoading: isUserLoading },
   } = useContextPro();
   const skipInitialRemoteSaveRef = useRef(true);
-  const initialQuestionsRef = useRef<QuestionBankItem[]>(initialQuestions ?? []);
+  const initialQuestionsRef = useRef<QuestionBankItem[]>(
+    initialQuestions?.length
+      ? initialQuestions
+      : filterGameQuestionsByDifficulty(DEFAULT_QUESTION_BANK, getGameQuestionDifficulty("baamboozle")),
+  );
   const [phase, setPhase] = useState<Phase>("setup");
   const [boardSize, setBoardSize] = useState<16 | 24>(16);
   const [teamCount, setTeamCount] = useState<2 | 3>(2);
@@ -367,7 +375,7 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
       const remoteQuestions = await fetchGameQuestionsByTeacher<QuestionBankItem>(BAAMBOOZLE_GAME_KEY, user.id);
       if (!alive) return;
       if (remoteQuestions && remoteQuestions.length > 0) {
-        setQuestionBank(remoteQuestions);
+        setQuestionBank(filterGameQuestionsByDifficulty(remoteQuestions, getGameQuestionDifficulty("baamboozle")));
       } else if (initialQuestionsRef.current.length > 0) {
         setQuestionBank(initialQuestionsRef.current);
       } else {
@@ -672,9 +680,9 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
             </div>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-6">
             {/* ── LEFT COLUMN: Settings + Teams ── */}
-            <div className="space-y-6">
+            <div className="mx-auto w-full max-w-4xl space-y-6">
               {/* Game Settings */}
               <div className="rounded-2xl border border-yellow-500/20 bg-gradient-to-br from-yellow-950/40 to-amber-950/40 p-6 shadow-xl">
                 <div className="flex items-center gap-2 mb-5">
@@ -759,10 +767,29 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
                   ))}
                 </div>
               </div>
+
+              <div className="rounded-2xl border border-emerald-400/25 bg-emerald-950/25 p-4 shadow-xl sm:p-5">
+                <div className="mb-4 flex items-center justify-between gap-4 px-1">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-300/70">Hammasi tayyor</p>
+                    <p className="mt-1 text-sm text-white/60">{questionBank.length} ta savol bilan o'yinni boshlang</p>
+                  </div>
+                  <span className="rounded-xl border border-emerald-300/15 bg-emerald-400/10 px-3 py-2 text-xs font-bold text-emerald-200">{teamCount} jamoa · {boardSize} katak</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={openGame}
+                  className="game-btn flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 py-4 text-lg font-black text-white shadow-xl shadow-green-500/25 transition-all hover:from-green-400 hover:via-emerald-400 hover:to-teal-400"
+                >
+                  <FaRocket className="text-xl" />
+                  O'YINNI BOSHLASH
+                  <FaArrowRight className="text-xl" />
+                </button>
+              </div>
             </div>
 
             {/* ── RIGHT COLUMN: Questions ── */}
-            <div className="rounded-2xl border border-yellow-500/20 bg-gradient-to-br from-yellow-950/40 to-amber-950/40 p-6 shadow-xl">
+            <div className="hidden rounded-2xl border border-yellow-500/20 bg-gradient-to-br from-yellow-950/40 to-amber-950/40 p-6 shadow-xl">
               <div className="flex items-center gap-2 mb-5">
                 <div className="p-2 rounded-lg bg-yellow-500/20">
                   <FaQuestionCircle className="text-yellow-400" />
@@ -950,7 +977,7 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
 
   // ─── PLAY PHASE ──────────────────────────────────────────────────────────
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-yellow-500/30 bg-gradient-to-br from-slate-900 via-amber-950/80 to-slate-900 p-4 shadow-2xl md:p-6 lg:p-8">
+    <div className="relative h-[calc(100dvh-5.5rem)] min-h-[560px] overflow-hidden rounded-3xl border border-yellow-500/30 bg-gradient-to-br from-slate-900 via-amber-950/80 to-slate-900 p-3 shadow-2xl md:p-4">
       <ParticleStyles />
       <FloatingParticles />
 
@@ -973,17 +1000,17 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
 
       <div className="relative z-10">
         {/* ── Header ── */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
           <div className="flex items-center gap-3">
             <div className="relative">
               <div className="absolute -inset-1 pulse-ring rounded-full bg-yellow-500/20" />
-              <div className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 shadow-lg shadow-yellow-500/30"
+                <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 shadow-lg shadow-yellow-500/30"
                 style={{ animation: "dice-rotate 4s ease-in-out infinite" }}>
                 <FaDice className="text-xl text-white" />
               </div>
             </div>
             <div>
-              <h2 className="text-2xl font-black text-transparent bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text">
+                <h2 className="text-xl font-black text-transparent bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text">
                 Baamboozle
               </h2>
               <p className="text-xs text-yellow-300/60 flex items-center gap-1">
@@ -1010,12 +1037,12 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
         </div>
 
         {/* ── Status Bar ── */}
-        <div className="mb-5 p-4 rounded-xl bg-gradient-to-r from-yellow-950/40 to-amber-950/40 border border-yellow-500/20 text-center">
-          <p className="text-sm font-semibold text-yellow-300" key={statusText}>{statusText}</p>
+        <div className="mb-2 rounded-xl bg-gradient-to-r from-yellow-950/40 to-amber-950/40 px-3 py-2 text-center border border-yellow-500/20">
+          <p className="text-xs font-semibold text-yellow-300" key={statusText}>{statusText}</p>
         </div>
 
         {/* ── Teams ── */}
-        <div className={`grid gap-4 mb-6 ${teams.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
+        <div className={`grid gap-2 mb-2 ${teams.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
           {teams.map((team, idx) => {
             const active = idx === currentTeamIndex && !gameFinished;
             const leader = leaders.some((l) => l.id === team.id);
@@ -1024,7 +1051,7 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
               <div
                 key={team.id}
                 className={`
-                  relative overflow-hidden rounded-2xl border-2 p-5 transition-all duration-300
+                  relative overflow-hidden rounded-xl border-2 p-2.5 transition-all duration-300
                   ${active
                     ? `bg-gradient-to-br ${team.color} border-yellow-400 shadow-2xl ${TEAM_COLORS[idx].glow}`
                     : 'border-yellow-500/20 bg-yellow-950/30'}
@@ -1037,20 +1064,20 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
                 )}
 
                 <div className="relative">
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-3xl">{team.avatar}</span>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xl">{team.avatar}</span>
                     <div>
-                      <p className="text-lg font-bold text-white">{team.name}</p>
-                      <p className="text-xs text-yellow-300/60">
+                      <p className="text-sm font-bold text-white">{team.name}</p>
+                      <p className="text-[10px] text-yellow-300/60">
                         {idx === 0 ? "1-JAMOA" : idx === 1 ? "2-JAMOA" : "3-JAMOA"}
                         {active && " · Hozirgi navbat"}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-yellow-300/60">Ball</span>
+                    <span className="text-xs text-yellow-300/60">Ball</span>
                     <div className="relative">
-                      <span className="text-3xl font-bold text-white">
+                      <span className="text-xl font-bold text-white">
                         <AnimatedScore value={team.score} />
                       </span>
                       {scoreAnim && (
@@ -1078,8 +1105,11 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
         </div>
 
         {/* ── Game Board ── */}
-        <div className="rounded-2xl border border-yellow-500/20 bg-gradient-to-br from-yellow-950/30 to-amber-950/30 p-3 md:p-5 shadow-xl">
-          <div className={`grid gap-2.5 md:gap-3 ${boardSize === 16 ? "grid-cols-4" : "grid-cols-4 md:grid-cols-6"}`}>
+        <div
+          className="mx-auto w-full max-w-6xl rounded-2xl border border-yellow-500/20 bg-gradient-to-br from-yellow-950/30 to-amber-950/30 p-2 shadow-xl"
+          style={{ aspectRatio: boardSize === 16 ? "16 / 9" : "3 / 1" }}
+        >
+          <div className={`grid h-full gap-1.5 sm:gap-2 ${boardSize === 16 ? "grid-cols-4" : "grid-cols-6"}`}>
             {tiles.map((tile, index) => {
               const isLastOpened = tile.id === lastOpenedTileId;
               return (
@@ -1088,7 +1118,7 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
                   disabled={tile.opened || Boolean(selectedTile) || gameFinished}
                   onClick={() => openTile(tile)}
                   className={`
-                    tile-btn relative aspect-square rounded-xl border-2 p-2 text-center
+                    tile-btn relative min-h-0 rounded-lg border p-1 text-center
                     ${getTileGradient(tile, index)}
                     ${!tile.opened && !selectedTile ? 'cursor-pointer' : 'cursor-default'}
                     ${isLastOpened ? 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-slate-900' : ''}
@@ -1098,15 +1128,15 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
                   <div className="relative flex h-full flex-col items-center justify-center">
                     {tile.opened ? (
                       <div className="flex flex-col items-center gap-1">
-                        <span className="text-2xl md:text-3xl font-black opacity-50">{tile.number}</span>
-                        <span className="text-lg opacity-40">{getTileIcon(tile.type)}</span>
+                        <span className="text-xl sm:text-2xl font-black opacity-50">{tile.number}</span>
+                        <span className="text-sm sm:text-lg opacity-40">{getTileIcon(tile.type)}</span>
                       </div>
                     ) : (
                       <>
-                        <span className="text-3xl md:text-4xl font-black drop-shadow-lg">
+                        <span className="text-2xl sm:text-3xl font-black drop-shadow-lg">
                           {tile.number}
                         </span>
-                        <span className="text-[10px] md:text-xs font-bold text-white/60 mt-0.5">
+                        <span className="text-[9px] sm:text-[10px] font-bold text-white/60 mt-0.5">
                           {tile.points} ball
                         </span>
                       </>

@@ -1,4 +1,5 @@
 export type ParticipantType = "player" | "team";
+export type GameQuestionDifficulty = "easy" | "medium" | "hard";
 
 export type GameSessionConfig = {
   gameId: string;
@@ -6,6 +7,7 @@ export type GameSessionConfig = {
   participantType: ParticipantType;
   participantLabel: string;
   participantLabels: string[];
+  questionDifficulty: GameQuestionDifficulty;
   selectedAt: string;
 };
 
@@ -17,6 +19,7 @@ type ParsedPlayersInfo = {
 };
 
 const STORAGE_KEY_PREFIX = "game-session:";
+const DIFFICULTY_STORAGE_KEY_PREFIX = "game-question-difficulty:";
 const sessionCache = new Map<string, GameSessionConfig>();
 
 const PARTICIPANT_LABELS: Record<ParticipantType, string> = {
@@ -65,6 +68,17 @@ export function buildParticipantOptions(playersLabel: string) {
   });
 }
 
+export function supportsSinglePlayerMode(playersLabel: string): boolean {
+  const parsed = parsePlayersInfo(playersLabel);
+  return Boolean(parsed && parsed.participantType === "player" && parsed.min === 1);
+}
+
+const LEADERBOARD_DISABLED_GAME_IDS = new Set(["jumanji", "treasure-hunt"]);
+
+export function supportsGameLeaderboard(gameId: string, playersLabel: string): boolean {
+  return !LEADERBOARD_DISABLED_GAME_IDS.has(gameId) && supportsSinglePlayerMode(playersLabel);
+}
+
 export function getGameSessionConfig(gameId: string): GameSessionConfig | null {
   const cached = sessionCache.get(gameId);
   if (cached) {
@@ -103,4 +117,17 @@ export function saveGameSessionConfig(config: GameSessionConfig) {
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent("game-session-updated", { detail: config }));
   }
+}
+
+export function getGameQuestionDifficulty(gameId: string): GameQuestionDifficulty {
+  if (typeof window !== "undefined") {
+    const stored = window.localStorage.getItem(`${DIFFICULTY_STORAGE_KEY_PREFIX}${gameId}`);
+    if (stored === "easy" || stored === "medium" || stored === "hard") return stored;
+  }
+  return getGameSessionConfig(gameId)?.questionDifficulty ?? "easy";
+}
+
+export function saveGameQuestionDifficulty(gameId: string, difficulty: GameQuestionDifficulty) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(`${DIFFICULTY_STORAGE_KEY_PREFIX}${gameId}`, difficulty);
 }

@@ -1,1764 +1,653 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Confetti from "react-confetti-boom";
 import {
-  FaDice,
-  FaUsers,
-  FaRedo,
-  FaTimesCircle,
-  FaClock,
+  FaBookOpen,
   FaCrown,
-  FaVolumeUp,
-  FaVolumeMute,
+  FaDice,
+  FaFlagCheckered,
+  FaShieldHalved,
   FaStar,
-  FaRobot,
-} from "react-icons/fa";
-import { GiJungle } from "react-icons/gi";
-import diceSound from "../../../assets/sounds/roll_dice.mp3";
+  FaTrophy,
+  FaVolumeHigh,
+  FaVolumeXmark,
+} from "react-icons/fa6";
+import applauseSound from "../../../assets/sounds/applause.mp3";
 import correctSound from "../../../assets/sounds/correct.m4a";
-import wrongSound from "../../../assets/sounds/wrong.mp3";
-import winSound from "../../../assets/sounds/applause.mp3";
 import jumanjiSound from "../../../assets/sounds/jumanji_sound.m4a";
-import { fetchGameQuestionsByTeacher, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import diceSound from "../../../assets/sounds/roll_dice.mp3";
+import wrongSound from "../../../assets/sounds/wrong.mp3";
+import redStatue from "./statues/red-statue.png";
+import blueStatue from "./statues/blue-statue.png";
+import greenStatue from "./statues/green-statue.png";
+import yellowStatue from "./statues/yellow-statue.png";
+import { fetchGameQuestionsByTeacher } from "../../../hooks/useGameQuestions";
 import useContextPro from "../../../hooks/useContextPro";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
-import { generateJumanjiQuestions } from "./ai";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
-import type { Phase, Question, ScoreAnnouncement, Team, Tile } from "./types";
-import {
-  DICE_ROLL_STEPS,
-  DICE_ROLL_TICK_MS,
-  MOVE_FINISH_BUFFER_MS,
-  MOVE_STEP_DURATION_MS,
-  SUBJECTS,
-  TEAM_AVATARS,
-  TEAM_COLORS,
-  TEAM_MEDALLIONS,
-  TEAM_TITLES,
-  createTiles,
-} from "./constants/gameData";
-import {
-  BOARD_STACK_OFFSETS,
-  BOARD_TOKEN_NUDGE_X,
-  BOARD_TOKEN_NUDGE_Y,
-  BOARD_TOKEN_SIZE,
-  JUMANJI_MAP_IMAGE,
-  createRoadPoints,
-} from "./constants/board";
 import { DEFAULT_QUESTIONS } from "./constants/questions";
+import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
+import { filterGameQuestionsByDifficulty } from "../../../utils/gameQuestionDifficulty";
 import RealisticDice from "./components/RealisticDice";
-import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
+import type { Question } from "./types";
+import "./jumanji.css";
 
-const JUMANJI_GAME_KEY = "jumanji";
-const AI_QUESTION_COUNT_OPTIONS = [4, 8, 12, 16, 20, 24] as const;
-const AI_DIFFICULTY_OPTIONS = [
-  { value: "easy", label: "Oson" },
-  { value: "medium", label: "O'rtacha" },
-  { value: "hard", label: "Qiyin" },
-  { value: "mixed", label: "Aralash" },
-] as const;
-const AI_SUBJECT_OPTIONS = ["Aralash fanlar", ...SUBJECTS] as const;
+type PlayerColor = "red" | "blue" | "green" | "yellow";
+type Stage = "question" | "answer" | "roll" | "moving" | "effect";
+type TileType =
+  | "start"
+  | "question"
+  | "bonus"
+  | "minus"
+  | "forward"
+  | "backward"
+  | "skip"
+  | "shield"
+  | "swap"
+  | "double"
+  | "mystery"
+  | "finish";
+
+type Player = {
+  id: number;
+  name: string;
+  color: PlayerColor;
+  position: number;
+  score: number;
+  skipTurns: number;
+  shield: boolean;
+  doubleDice: boolean;
+  correct: number;
+  bonuses: number;
+  lucky: number;
+};
+
+type Tile = { id: number; type: TileType; label?: string };
+type BoardPoint = { x: number; y: number };
+
+const COLORS: Record<PlayerColor, { main: string; dark: string; light: string; label: string }> = {
+  red: { main: "#ef493f", dark: "#731d18", light: "#ff9b82", label: "QIZIL" },
+  blue: { main: "#258bd2", dark: "#0a436d", light: "#79d4ff", label: "KO'K" },
+  green: { main: "#65ad25", dark: "#2c5b12", light: "#b7ed5c", label: "YASHIL" },
+  yellow: { main: "#f4bd24", dark: "#805d08", light: "#ffe273", label: "SARIQ" },
+};
+
+const STATUES: Record<PlayerColor, string> = {
+  red: redStatue,
+  blue: blueStatue,
+  green: greenStatue,
+  yellow: yellowStatue,
+};
+
+const DEFAULT_PLAYERS: Player[] = [
+  { id: 1, name: "Ali", color: "red", position: 0, score: 0, skipTurns: 0, shield: false, doubleDice: false, correct: 0, bonuses: 0, lucky: 0 },
+  { id: 2, name: "Kamol", color: "blue", position: 0, score: 0, skipTurns: 0, shield: false, doubleDice: false, correct: 0, bonuses: 0, lucky: 0 },
+  { id: 3, name: "Mirfayz", color: "green", position: 0, score: 0, skipTurns: 0, shield: false, doubleDice: false, correct: 0, bonuses: 0, lucky: 0 },
+  { id: 4, name: "Malika", color: "yellow", position: 0, score: 0, skipTurns: 0, shield: false, doubleDice: false, correct: 0, bonuses: 0, lucky: 0 },
+];
+
+const TILE_TYPES: TileType[] = [
+  "start", "question", "bonus", "question", "minus", "question",
+  "forward", "question", "mystery", "question", "shield", "question",
+  "backward", "question", "bonus", "question", "swap", "question",
+  "minus", "question", "double", "question", "mystery", "question",
+  "skip", "question", "bonus", "question", "minus", "question",
+  "forward", "shield", "swap", "question", "mystery", "finish",
+];
+
+const BOARD_TILES: Tile[] = TILE_TYPES.map((type, id) => ({ id, type }));
+
+const TILE_META: Record<TileType, { symbol: string; short: string; className: string; title: string }> = {
+  start: { symbol: "⚑", short: "START", className: "start", title: "Boshlanish" },
+  question: { symbol: "★", short: "", className: "question", title: "Oddiy katak" },
+  bonus: { symbol: "+200", short: "", className: "bonus", title: "+200 ball" },
+  minus: { symbol: "☠", short: "-100", className: "minus", title: "Xavfli katak" },
+  forward: { symbol: "»", short: "+3", className: "forward", title: "+3 katak" },
+  backward: { symbol: "«", short: "-2", className: "backward", title: "-2 katak" },
+  skip: { symbol: "⌛", short: "", className: "skip", title: "1 navbat dam" },
+  shield: { symbol: "◆", short: "", className: "shield", title: "Himoya" },
+  swap: { symbol: "↔", short: "", className: "swap", title: "Joy almashish" },
+  double: { symbol: "×2", short: "", className: "double", title: "Keyingi zar ×2" },
+  mystery: { symbol: "?", short: "", className: "mystery", title: "Sirli katak" },
+  finish: { symbol: "♛", short: "FINISH", className: "finish", title: "Jumanji ibodatxonasi" },
+};
+
+function createBoardPoints(): BoardPoint[] {
+  // 36 ta katak 5 ta keng qatorga taqsimlanadi. Birinchi qatorda 8 ta,
+  // qolganlarida 7 tadan katak bor; shu sabab START chapda, FINISH o'ngda.
+  const rowCounts = [8, 7, 7, 7, 7];
+  const rowY = [605, 470, 335, 200, 65];
+  const left = 76;
+  const right = 884;
+
+  return rowCounts.flatMap((count, rowIndex) => {
+    const points = Array.from({ length: count }, (_, columnIndex) => ({
+      x: left + (right - left) * (columnIndex / (count - 1)),
+      y: rowY[rowIndex] + Math.sin(columnIndex * 1.4 + rowIndex) * 5,
+    }));
+    return rowIndex % 2 === 0 ? points : points.reverse();
+  });
+}
+
+const BOARD_POINTS = createBoardPoints();
+
+const Pawn = memo(function Pawn({ color, size = 46 }: { color: PlayerColor; size?: number }) {
+  return (
+    <span
+      className={`jumanji-pawn statue-${color}`}
+      style={{ width: size, height: size * 1.72 }}
+      aria-hidden="true"
+    >
+      <img src={STATUES[color]} alt="" draggable={false} decoding="async" />
+    </span>
+  );
+});
+
+const JungleBackdrop = memo(function JungleBackdrop() {
+  return (
+    <svg className="jumanji-jungle-svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="jungleSky" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#041c18"/><stop offset="1" stopColor="#071108"/></linearGradient>
+        <radialGradient id="moonGlow"><stop stopColor="#86c98b" stopOpacity=".25"/><stop offset="1" stopColor="#133522" stopOpacity="0"/></radialGradient>
+        <linearGradient id="mist" x1="0" y1="0" x2="1" y2="0"><stop stopColor="#96d8ad" stopOpacity="0"/><stop offset=".5" stopColor="#96d8ad" stopOpacity=".14"/><stop offset="1" stopColor="#96d8ad" stopOpacity="0"/></linearGradient>
+      </defs>
+      <rect width="1600" height="1000" fill="url(#jungleSky)" />
+      <circle cx="790" cy="180" r="330" fill="url(#moonGlow)" />
+      <g opacity=".13" fill="#b7f3c5"><path d="m690 0 170 0 280 800H510Z"/><path d="m1120 0 90 0 170 670H930Z"/></g>
+      <path d="M0 340q280-70 510 6t480-5 610 12" fill="none" stroke="url(#mist)" strokeWidth="95" opacity=".65"/>
+      <g fill="#0c3522" opacity=".95">
+        {Array.from({ length: 18 }, (_, i) => <path key={i} d={`M${i * 95 - 30} 0q55 80 10 190q-40-85-92-108q75 5 112-82Z`} />)}
+      </g>
+      <g fill="none" stroke="#17603a" strokeWidth="10" opacity=".45">
+        <path d="M0 230q190 80 360-90t340 30 330-40 570 80"/><path d="M100 0q30 210 190 330t-50 390"/><path d="M1450 0q-50 210-210 300t40 410"/>
+      </g>
+      <g fill="#0a2a19"><path d="M0 720q170-160 340 0t330-20 350 20 580-70v350H0Z"/></g>
+      <g fill="#1d5130" opacity=".8">
+        {Array.from({ length: 22 }, (_, i) => <ellipse key={i} cx={(i * 197) % 1600} cy={720 + (i % 4) * 72} rx="95" ry="24" transform={`rotate(${i % 2 ? -25 : 25} ${(i * 197) % 1600} ${720 + (i % 4) * 72})`} />)}
+      </g>
+      <g fill="#b6ee91" opacity=".55">
+        {Array.from({ length: 16 }, (_, i) => <circle key={i} cx={(i * 313 + 80) % 1600} cy={120 + ((i * 137) % 690)} r={i % 3 === 0 ? 2.8 : 1.5} className="jumanji-firefly" style={{ animationDelay: `${(i % 7) * -.7}s` }}/>) }
+      </g>
+      <g opacity=".65"><path d="M1245 236h118l-16 238h-85Z" fill="#123b29"/><path d="m1231 236 73-88 73 88Z" fill="#183f2b"/><path d="M1284 336h39v138h-39Z" fill="#030d09"/><path d="M1238 245h132M1250 285h108" stroke="#467557" strokeWidth="6"/></g>
+      <path d="M117 0q85 178 18 345t58 320" fill="none" stroke="#4c311a" strokeWidth="28" opacity=".75"/><path d="M1480 0q-104 190-29 350t-66 330" fill="none" stroke="#4c311a" strokeWidth="31" opacity=".75"/>
+      <path d="M720 270h160l34 72-20 92H706l-20-92Z" fill="#143b28" stroke="#32704b" strokeWidth="6" opacity=".7" />
+      <path d="M745 420v-90h110v90M775 420v-45h50v45" fill="none" stroke="#56a36c" strokeWidth="8" opacity=".5" />
+    </svg>
+  );
+});
+
+const BoardScenery = memo(function BoardScenery() {
+  return (
+    <svg className="board-scenery" viewBox="0 0 960 680" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="waterfall" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#b8f8e3" stopOpacity=".8"/><stop offset=".2" stopColor="#3ba69a"/><stop offset="1" stopColor="#073c42" stopOpacity=".25"/></linearGradient>
+        <linearGradient id="rock" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#547154"/><stop offset=".45" stopColor="#263d2d"/><stop offset="1" stopColor="#101b15"/></linearGradient>
+      </defs>
+      <g>
+        <path d="M448 218q50-31 100 0l-8 105q-44 25-86 0Z" fill="#10291e"/>
+        <path d="M475 217q22-12 44 0l-4 115q-18 14-36 0Z" fill="url(#waterfall)" opacity=".86"/>
+        <ellipse cx="497" cy="332" rx="65" ry="20" fill="#0a4b4b" stroke="#378e7b" strokeOpacity=".5" strokeWidth="3"/>
+        <path d="M418 220 452 176l31 45m30 0 31-53 38 57" fill="url(#rock)" stroke="#18261c" strokeWidth="4"/>
+      </g>
+      <g transform="translate(466 375) rotate(-5)">
+        <path d="M-120 10Q0-25 120 10" fill="none" stroke="#3b2614" strokeWidth="16"/>
+        <path d="M-120 1Q0-34 120 1M-120 22Q0-13 120 22" fill="none" stroke="#b18448" strokeWidth="4"/>
+        {[-92,-60,-28,4,36,68,100].map((x) => <path key={x} d={`M${x-11} 0  ${x+12} -5 ${x+16} 18 ${x-7} 23Z`} fill="#78502b" stroke="#2b1a0e" strokeWidth="2"/>)}
+      </g>
+      <g transform="translate(765 82)">
+        <path d="m-67 35 67-67 67 67-12 17H-55Z" fill="#55482d" stroke="#1d1b12" strokeWidth="5"/>
+        <path d="M-51 45h102v74H-51Z" fill="#3d3b27" stroke="#191b13" strokeWidth="5"/>
+        <path d="M-18 119V62h36v57" fill="#06100b" stroke="#776739" strokeWidth="5"/>
+        <circle cx="0" cy="18" r="13" fill="#142b1d" stroke="#9a8a4d" strokeWidth="4"/><circle cx="0" cy="18" r="4" fill="#c2db72" className="temple-eye"/>
+        <path d="M-72 122h144M-59 132h118" stroke="#75643b" strokeWidth="9"/>
+        <path d="M-51 48q-20-28-47-12M51 48q20-28 47-12" fill="none" stroke="#27613a" strokeWidth="6"/>
+      </g>
+      <g fill="url(#rock)" stroke="#142219" strokeWidth="3" opacity=".95">
+        <path d="M55 185 88 139l45 10 23 55-36 31-54-12Z"/><path d="m790 508 42-45 62 13 17 54-48 35-61-11Z"/><path d="m218 317 23-34 39 8 13 40-31 22-40-8Z"/>
+      </g>
+      <g fill="none" stroke="#32734a" strokeWidth="5" opacity=".7"><path d="M0 98q105-15 188 61t135 3"/><path d="M960 420q-94-42-174 18t-132 10"/></g>
+    </svg>
+  );
+});
+
+const JumanjiLogo = memo(function JumanjiLogo() {
+  return (
+    <div className="jumanji-logo-wrap">
+      <svg viewBox="0 0 360 112" className="jumanji-logo" role="img" aria-label="Jumanji">
+        <defs>
+          <linearGradient id="logoGold" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#fff09a"/><stop offset=".38" stopColor="#e7a92c"/><stop offset="1" stopColor="#8c3e09"/></linearGradient>
+        </defs>
+        <path d="M12 18q168-30 336 0l-14 79q-154 15-308 0Z" fill="#382311" stroke="#76521f" strokeWidth="5" />
+        <text x="180" y="73" textAnchor="middle" fill="url(#logoGold)" stroke="#5a2305" strokeWidth="2.2" fontSize="57" fontWeight="900" fontFamily="Georgia,serif">JUMANJI</text>
+        <text x="180" y="94" textAnchor="middle" fill="#f8d666" fontSize="10" fontWeight="800" letterSpacing="2">SAVOL • ZAR • SARGUZASHT</text>
+      </svg>
+    </div>
+  );
+});
 
 function Jumanji() {
-  const {
-    state: { user, isLoading: isUserLoading },
-  } = useContextPro();
-  const skipInitialRemoteSaveRef = useRef(true);
-  const [phase, setPhase] = useState<Phase>("setup");
-  useFinishApplause(phase === "finish");
-  // Audio refs
-  const diceAudioRef = useRef<HTMLAudioElement | null>(null);
-  const correctAudioRef = useRef<HTMLAudioElement | null>(null);
-  const wrongAudioRef = useRef<HTMLAudioElement | null>(null);
-  const winAudioRef = useRef<HTMLAudioElement | null>(null);
-  const bgAudioRef = useRef<HTMLAudioElement | null>(null);
-
-  // Game state
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [newTeamName, setNewTeamName] = useState("");
-  const [teamError, setTeamError] = useState("");
-
-  // Questions state
-  const [questions, setQuestions] = useState<Question[]>(DEFAULT_QUESTIONS);
-  const [newQuestion, setNewQuestion] = useState<Partial<Question>>({
-    subject: "Matematika",
-    question: "",
-    options: ["", "", "", ""],
-    correctAnswer: "",
-    difficulty: "easy",
-    timeLimit: 30,
-  });
-  const [questionError, setQuestionError] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [aiTopic, setAiTopic] = useState("");
-  const [aiSubject, setAiSubject] = useState<string>("Aralash fanlar");
-  const [aiGradeRange, setAiGradeRange] = useState<GradeRange>("none");
-  const [aiQuestionCount, setAiQuestionCount] = useState<number>(8);
-  const [aiDifficulty, setAiDifficulty] = useState<"easy" | "medium" | "hard" | "mixed">("medium");
-  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
-  const [remoteLoaded, setRemoteLoaded] = useState(false);
-
-  // Gameplay state
-  const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
-  const [diceValue, setDiceValue] = useState(1);
-  const [isRolling, setIsRolling] = useState(false);
-  const [isMoving, setIsMoving] = useState(false);
-  const [visualPositions, setVisualPositions] = useState<
-    Record<number, number>
-  >({});
-  const [currentTile, setCurrentTile] = useState<Tile | null>(null);
-  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
-  const [timeLeft, setTimeLeft] = useState(30);
+  const { state: { user, isLoading: isUserLoading } } = useContextPro();
+  const [phase, setPhase] = useState<"setup" | "game" | "finish">("setup");
+  const [players, setPlayers] = useState<Player[]>(DEFAULT_PLAYERS);
+  const [questions, setQuestions] = useState<Question[]>(() => filterGameQuestionsByDifficulty(DEFAULT_QUESTIONS, getGameQuestionDifficulty("jumanji")));
+  const [currentPlayer, setCurrentPlayer] = useState(0);
+  const [stage, setStage] = useState<Stage>("question");
+  const [questionIndex, setQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [showResult, setShowResult] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
-  const [isMuted, setIsMuted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [gameHistory, setGameHistory] = useState<string[]>([]);
-  const [gameTime, setGameTime] = useState(0);
-  const [isTimerActive, setIsTimerActive] = useState(false);
-  const [winner, setWinner] = useState<Team | null>(null);
-  const [scoreAnnouncement, setScoreAnnouncement] =
-    useState<ScoreAnnouncement | null>(null);
-  const { countdownValue, countdownVisible, runStartCountdown } =
-    useGameStartCountdown();
-  const hasGeminiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY?.trim());
-  const tiles = useMemo(() => createTiles(questions.length), [questions.length]);
-  const roadPoints = useMemo(() => createRoadPoints(tiles.length), [tiles.length]);
-  const specialTileIndexes = useMemo(
-    () =>
-      new Set(
-        tiles
-          .map((tile, idx) =>
-            tile.type === "bonus" || tile.type === "trap" || tile.type === "challenge"
-              ? idx
-              : null,
-          )
-          .filter((idx): idx is number => idx !== null),
-      ),
-    [tiles],
-  );
+  const [answerCorrect, setAnswerCorrect] = useState<boolean | null>(null);
+  const [diceValue, setDiceValue] = useState(1);
+  const [rolling, setRolling] = useState(false);
+  const [bonusStep, setBonusStep] = useState(0);
+  const [event, setEvent] = useState<{ title: string; detail: string; tone: "good" | "bad" | "mystery" } | null>(null);
+  const [swapPicker, setSwapPicker] = useState(false);
+  const [history, setHistory] = useState<string[]>([]);
+  const [muted, setMuted] = useState(false);
+  const [showRules, setShowRules] = useState(false);
+  const [gameSeconds, setGameSeconds] = useState(0);
+  const [winnerId, setWinnerId] = useState<number | null>(null);
+  const [visualPositions, setVisualPositions] = useState<Record<number, number>>({});
+  const timeoutRefs = useRef<number[]>([]);
+  const audio = useRef<Record<string, HTMLAudioElement | null>>({});
+  const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
+  useFinishApplause(phase === "finish");
+
+  const question = questions[questionIndex % questions.length] ?? DEFAULT_QUESTIONS[0];
+  const activePlayer = players[currentPlayer];
+  const winner = players.find((player) => player.id === winnerId) ?? null;
+
+  const later = useCallback((fn: () => void, delay: number) => {
+    const id = window.setTimeout(() => {
+      timeoutRefs.current = timeoutRefs.current.filter((item) => item !== id);
+      fn();
+    }, delay);
+    timeoutRefs.current.push(id);
+  }, []);
+
+  useEffect(() => () => timeoutRefs.current.forEach(window.clearTimeout), []);
+
+  useEffect(() => {
+    audio.current = {
+      bg: new Audio(jumanjiSound), dice: new Audio(diceSound),
+      correct: new Audio(correctSound), wrong: new Audio(wrongSound), win: new Audio(applauseSound),
+    };
+    if (audio.current.bg) { audio.current.bg.loop = true; audio.current.bg.volume = .38; }
+    return () => Object.values(audio.current).forEach((item) => item?.pause());
+  }, []);
+
+  const play = useCallback((name: string) => {
+    if (muted) return;
+    const sound = audio.current[name];
+    if (sound) { sound.currentTime = 0; void sound.play().catch(() => undefined); }
+  }, [muted]);
+
+  useEffect(() => {
+    const bg = audio.current.bg;
+    if (!bg) return;
+    bg.muted = muted;
+    if (phase === "game") void bg.play().catch(() => undefined);
+    else { bg.pause(); bg.currentTime = 0; }
+  }, [muted, phase]);
 
   useEffect(() => {
     if (isUserLoading) return;
-
     let alive = true;
-    (async () => {
-      if (!user?.id) {
-        setQuestions(DEFAULT_QUESTIONS);
-        setRemoteLoaded(true);
-        return;
-      }
-
-      const remoteQuestions = await fetchGameQuestionsByTeacher<Question>(JUMANJI_GAME_KEY, user.id);
-      if (!alive) return;
-      if (remoteQuestions && remoteQuestions.length > 0) {
-        setQuestions(remoteQuestions);
-      } else {
-        setQuestions(DEFAULT_QUESTIONS);
-      }
-      setRemoteLoaded(true);
+    void (async () => {
+      if (!user?.id) return;
+      const remote = await fetchGameQuestionsByTeacher<Question>("jumanji", user.id);
+      if (alive && remote?.length) setQuestions(filterGameQuestionsByDifficulty(remote, getGameQuestionDifficulty("jumanji")));
     })();
-
-    return () => {
-      alive = false;
-    };
+    return () => { alive = false; };
   }, [isUserLoading, user?.id]);
 
   useEffect(() => {
-    if (!remoteLoaded) return;
-    if (skipInitialRemoteSaveRef.current) {
-      skipInitialRemoteSaveRef.current = false;
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      if (!user?.id) return;
-      void saveGameQuestions<Question>(JUMANJI_GAME_KEY, questions, user.id);
-    }, 500);
-
-    return () => window.clearTimeout(timer);
-  }, [questions, remoteLoaded, user?.id]);
-
-  useEffect(() => {
-    diceAudioRef.current = new Audio(diceSound);
-    correctAudioRef.current = new Audio(correctSound);
-    wrongAudioRef.current = new Audio(wrongSound);
-    winAudioRef.current = new Audio(winSound);
-    bgAudioRef.current = new Audio(jumanjiSound);
-    bgAudioRef.current.loop = true;
-    bgAudioRef.current.volume = 0.45;
-
-    return () => {
-      [diceAudioRef, correctAudioRef, wrongAudioRef, winAudioRef, bgAudioRef].forEach(
-        (ref) => {
-          if (ref.current) {
-            ref.current.pause();
-            ref.current = null;
-          }
-        },
-      );
-    };
-  }, []);
-
-  useEffect(() => {
-    const bg = bgAudioRef.current;
-    if (!bg) return;
-
-    bg.muted = isMuted;
-    const shouldPlay = phase === "game" || phase === "question";
-
-    if (shouldPlay) {
-      bg.play().catch(() => {});
-      return;
-    }
-
-    bg.pause();
-    bg.currentTime = 0;
-  }, [phase, isMuted]);
-
-  // Game timer
-  useEffect(() => {
-    if (!isTimerActive || phase !== "game") return;
-
-    const timer = setTimeout(() => {
-      setGameTime((prev) => prev + 1);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [gameTime, isTimerActive, phase]);
-
-  // Toast messages
-  const showToastMessage = (message: string) => {
-    setToast(message);
-    setTimeout(() => setToast(null), 2000);
-  };
-
-  const announceScoreChange = (
-    team: Team,
-    points: number,
-    title: string,
-    detail: string,
-  ) => {
-    setScoreAnnouncement({
-      teamId: team.id,
-      teamName: team.name,
-      points,
-      title,
-      detail,
-    });
-  };
-
-  // Play sound
-  const playSound = useCallback((type: "dice" | "correct" | "wrong" | "win") => {
-    if (isMuted) return;
-
-    const audioMap = {
-      dice: diceAudioRef.current,
-      correct: correctAudioRef.current,
-      wrong: wrongAudioRef.current,
-      win: winAudioRef.current,
-    };
-
-    const audio = audioMap[type];
-    if (audio) {
-      audio.currentTime = 0;
-      audio.play().catch(() => {});
-    }
-  }, [isMuted]);
-
-  // Add team
-  const addTeam = () => {
-    const name = newTeamName.trim();
-    if (!name) {
-      setTeamError("Jamoa nomini kiriting!");
-      return;
-    }
-    if (teams.length >= 4) {
-      setTeamError("4 ta jamoa yetarli!");
-      return;
-    }
-    if (teams.some((t) => t.name.toLowerCase() === name.toLowerCase())) {
-      setTeamError("Bu jamoa allaqachon qo'shilgan!");
-      return;
-    }
-
-    const newTeam: Team = {
-      id: Date.now() + Math.random(),
-      name,
-      color: TEAM_COLORS[teams.length].primary,
-      avatar: TEAM_AVATARS[teams.length],
-      position: 0,
-      score: 0,
-      isActive: teams.length === 0,
-    };
-
-    setTeams([...teams, newTeam]);
-    setNewTeamName("");
-    setTeamError("");
-    showToastMessage(`✅ ${name} qo'shildi`);
-  };
-
-  // Remove team
-  const removeTeam = (id: number) => {
-    const team = teams.find((t) => t.id === id);
-    setTeams(teams.filter((t) => t.id !== id));
-    showToastMessage(`🗑️ ${team?.name} o'chirildi`);
-  };
-
-  // Add question
-  const addQuestion = () => {
-    if (!user?.id) {
-      setQuestionError("Iltimos, avval ro'yxatdan o'ting. Keyin savol qo'shishingiz mumkin.");
-      return;
-    }
-
-    if (!newQuestion.question) {
-      setQuestionError("Savol matnini kiriting!");
-      return;
-    }
-    if (newQuestion.options?.some((opt) => !opt)) {
-      setQuestionError("Barcha variantlarni to'ldiring!");
-      return;
-    }
-    if (!newQuestion.correctAnswer) {
-      setQuestionError("To'g'ri javobni tanlang!");
-      return;
-    }
-
-    const question: Question = {
-      id: editingId || Date.now().toString(),
-      subject: newQuestion.subject || "Matematika",
-      question: newQuestion.question,
-      options: newQuestion.options as string[],
-      correctAnswer: newQuestion.correctAnswer,
-      difficulty: newQuestion.difficulty || "easy",
-      timeLimit: newQuestion.timeLimit || 30,
-    };
-
-    if (editingId) {
-      setQuestions((prev) =>
-        prev.map((q) => (q.id === editingId ? question : q)),
-      );
-      showToastMessage("✅ Savol yangilandi");
-    } else {
-      setQuestions((prev) => [...prev, question]);
-      showToastMessage("✅ Savol qo'shildi");
-    }
-
-    setNewQuestion({
-      subject: "Matematika",
-      question: "",
-      options: ["", "", "", ""],
-      correctAnswer: "",
-      difficulty: "easy",
-      timeLimit: 30,
-    });
-    setEditingId(null);
-    setQuestionError("");
-  };
-
-  // Remove question
-  const removeQuestion = (id: string) => {
-    setQuestions((prev) => prev.filter((q) => q.id !== id));
-    showToastMessage("🗑️ Savol o'chirildi");
-  };
-
-  const generateAiQuestionBank = async () => {
-    if (isGeneratingAi) return;
-    if (!user?.id) {
-      setQuestionError("Iltimos, avval ro'yxatdan o'ting. Keyin AI bilan savol qo'shishingiz mumkin.");
-      return;
-    }
-
-    setQuestionError("");
-    setIsGeneratingAi(true);
-
-    try {
-      const generated = await generateJumanjiQuestions({
-        subject: aiSubject,
-        topic: aiTopic,
-        count: aiQuestionCount,
-        difficulty: aiDifficulty,
-        gradeRange: aiGradeRange,
-      });
-      const generatedQuestions = generated.map((item, index) => ({
-          ...item,
-          id: `ai-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 8)}`,
-        }));
-      setQuestions((prev) => [...prev, ...generatedQuestions]);
-      setEditingId(null);
-      setNewQuestion({
-        subject: aiSubject === "Aralash fanlar" ? "Matematika" : aiSubject,
-        question: "",
-        options: ["", "", "", ""],
-        correctAnswer: "",
-        difficulty: "easy",
-        timeLimit: 30,
-      });
-      showToastMessage(`${generated.length} ta AI savol yuklandi`);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "AI savollar yaratib bo'lmadi.";
-      setQuestionError(message);
-    } finally {
-      setIsGeneratingAi(false);
-    }
-  };
-
-  // Start game
-  const startGameNow = () => {
-    setTeams((prev) =>
-      prev.map((t, idx) => ({
-        ...t,
-        position: 0,
-        score: 0,
-        isActive: idx === 0,
-      })),
-    );
-    setVisualPositions(Object.fromEntries(teams.map((t) => [t.id, 0])));
-    setCurrentTeamIndex(0);
-    setGameTime(0);
-    setIsTimerActive(true);
-    setPhase("game");
-    showToastMessage("🎮 O'yin boshlandi! 1-jamoa kubik tashlasin");
-  };
-
-  const startGame = () => {
-    if (teams.length !== 4) {
-      showToastMessage("Aynan 4 ta jamoa bo'lishi kerak!");
-      return;
-    }
-    if (questions.length < 4) {
-      showToastMessage("Kamida 4 ta savol bo'lishi kerak!");
-      return;
-    }
-    runStartCountdown(startGameNow);
-  };
-
-  // Roll dice
-  const rollDice = () => {
-    if (isRolling) return;
-    if (isMoving) return;
     if (phase !== "game") return;
-    if (scoreAnnouncement) return;
+    const timer = window.setInterval(() => setGameSeconds((value) => value + 1), 1000);
+    return () => window.clearInterval(timer);
+  }, [phase]);
 
-    setIsRolling(true);
-    playSound("dice");
-
-    let rollCount = 0;
-    const interval = setInterval(() => {
-      const randomValue = Math.floor(Math.random() * 6) + 1;
-      setDiceValue(randomValue);
-      rollCount++;
-
-      if (rollCount >= DICE_ROLL_STEPS) {
-        clearInterval(interval);
-        setIsRolling(false);
-
-        const finalValue = Math.floor(Math.random() * 6) + 1;
-        setDiceValue(finalValue);
-        moveTeam(finalValue);
-      }
-    }, DICE_ROLL_TICK_MS);
-  };
-
-  // Move team
-  const moveTeam = (steps: number) => {
-    const currentTeam = teams[currentTeamIndex];
-    const newPosition = Math.min(
-      currentTeam.position + steps,
-      tiles.length - 1,
-    );
-    const totalSteps = newPosition - currentTeam.position;
-    const stepDuration = MOVE_STEP_DURATION_MS;
-
-    setIsMoving(true);
-    for (let step = 1; step <= totalSteps; step++) {
-      setTimeout(() => {
-        setVisualPositions((prev) => ({
-          ...prev,
-          [currentTeam.id]: currentTeam.position + step,
-        }));
-      }, step * stepDuration);
-    }
-
-    setTimeout(
-      () => {
-        setTeams((prev) =>
-          prev.map((t) =>
-            t.id === currentTeam.id ? { ...t, position: newPosition } : t,
-          ),
-        );
-        setIsMoving(false);
-
-        setGameHistory((prev) => [
-          ...prev,
-          `${currentTeam.name} ${steps} tashladi, ${newPosition + 1}-katakka yetib keldi`,
-        ]);
-
-        if (newPosition >= tiles.length - 1) {
-          finishGame({ ...currentTeam, position: newPosition });
-          return;
-        }
-
-        const tile = tiles[newPosition];
-        setCurrentTile(tile);
-        handleTileAction(tile);
-      },
-      Math.max(1, totalSteps) * stepDuration + MOVE_FINISH_BUFFER_MS,
-    );
-  };
-
-  // Finish game
-  const finishGame = useCallback((winningTeam?: Team) => {
-    setIsTimerActive(false);
-    playSound("win");
-    setShowConfetti(true);
-
-    if (winningTeam) {
-      setWinner(winningTeam);
-    } else {
-      // Find winner by score
-      const sorted = [...teams].sort((a, b) => b.score - a.score);
-      setWinner(sorted[0]);
-    }
-
-    setPhase("finish");
-  }, [playSound, teams]);
-
-  const moveTeamByDelta = useCallback((
-    currentTeam: Team,
-    delta: number,
-    historyEntry: string,
-    onComplete: () => void,
-  ) => {
-    const currentPosition = currentTeam.position;
-    const targetPosition = Math.min(
-      tiles.length - 1,
-      Math.max(0, currentPosition + delta),
-    );
-    const totalSteps = Math.abs(targetPosition - currentPosition);
-    const direction = targetPosition >= currentPosition ? 1 : -1;
-    const stepDuration = MOVE_STEP_DURATION_MS;
-
-    setIsMoving(true);
-    for (let step = 1; step <= totalSteps; step++) {
-      setTimeout(() => {
-        setVisualPositions((prev) => ({
-          ...prev,
-          [currentTeam.id]: currentPosition + step * direction,
-        }));
-      }, step * stepDuration);
-    }
-
-    setTimeout(
-      () => {
-        setTeams((prev) =>
-          prev.map((t) =>
-            t.id === currentTeam.id ? { ...t, position: targetPosition } : t,
-          ),
-        );
-        setIsMoving(false);
-        setGameHistory((prev) => [...prev, historyEntry]);
-
-        if (targetPosition >= tiles.length - 1) {
-          finishGame({ ...currentTeam, position: targetPosition });
-          return;
-        }
-
-        onComplete();
-      },
-      Math.max(1, totalSteps) * stepDuration + MOVE_FINISH_BUFFER_MS,
-    );
-  }, [finishGame, tiles.length]);
-
-  // Handle tile action
-  const handleTileAction = (tile: Tile) => {
-    if (tile.type === "question") {
-      const randomQuestion =
-        questions[Math.floor(Math.random() * questions.length)];
-      setCurrentQuestion(randomQuestion);
-      setTimeLeft(randomQuestion.timeLimit);
-      setPhase("question");
-    } else if (tile.type === "bonus") {
-      handleBonus();
-    } else if (tile.type === "trap") {
-      handleTrap();
-    } else if (tile.type === "challenge") {
-      handleChallenge();
-    } else if (tile.type === "boss") {
-      handleBoss();
-    }
-  };
-
-  // Handle bonus
-  const handleBonus = () => {
-    const currentTeam = teams[currentTeamIndex];
-    const bonusSteps = Math.random() < 0.5 ? 2 : 5;
-
-    announceScoreChange(
-      currentTeam,
-      bonusSteps,
-      "BONUS QADAM",
-      `Maxsus katak: +${bonusSteps} qadam oldinga`,
-    );
-    showToastMessage(`${currentTeam.name} bonus oldi: +${bonusSteps} qadam`);
-
-    setTimeout(() => {
-      moveTeamByDelta(
-        currentTeam,
-        bonusSteps,
-        `${currentTeam.name} bonus oldi va +${bonusSteps} qadam oldinga yurdi`,
-        advanceTurn,
-      );
-    }, 1200);
-  };
-
-  // Handle trap
-  const handleTrap = () => {
-    const currentTeam = teams[currentTeamIndex];
-    const penalty = 5;
-
-    setTeams((prev) =>
-      prev.map((t) =>
-        t.id === currentTeam.id
-          ? { ...t, score: Math.max(0, t.score - penalty) }
-          : t,
-      ),
-    );
-
-    setGameHistory((prev) => [
-      ...prev,
-      `🐍 ${currentTeam.name} tuzoqqa tushdi: -${penalty} ball`,
-    ]);
-    announceScoreChange(
-      currentTeam,
-      -penalty,
-      "TRAP JARIMA",
-      "Tuzoq katagi: ball kamaydi",
-    );
-    showToastMessage(`🐍 ${currentTeam.name} -${penalty} ball`);
-
-    setTimeout(() => {
-      advanceTurn();
-    }, 2000);
-  };
-
-  // Handle challenge
-  const handleChallenge = () => {
-    const randomQuestion =
-      questions[Math.floor(Math.random() * questions.length)];
-    setCurrentQuestion({ ...randomQuestion });
-    setTimeLeft(randomQuestion.timeLimit);
-    setPhase("question");
-  };
-
-  // Handle boss
-  const handleBoss = () => {
-    const randomQuestion =
-      questions[Math.floor(Math.random() * questions.length)];
-    setCurrentQuestion({ ...randomQuestion });
-    setTimeLeft(randomQuestion.timeLimit);
-    setPhase("question");
-  };
-
-  // Handle answer
-  const handleAnswer = (answer: string) => {
-    if (!currentQuestion) return;
-    if (showResult) return;
-
-    setSelectedAnswer(answer);
-    setShowResult(true);
-
-    const correct = answer === currentQuestion.correctAnswer;
-    setIsCorrect(correct);
-    playSound(correct ? "correct" : "wrong");
-
-    const currentTeam = teams[currentTeamIndex];
-    const timeBonus = Math.floor(timeLeft / 10) * 5;
-    const points = correct ? 10 + timeBonus : -5;
-
-    setTeams((prev) =>
-      prev.map((t) =>
-        t.id === currentTeam.id
-          ? { ...t, score: Math.max(0, t.score + points) }
-          : t,
-      ),
-    );
-
-    setGameHistory((prev) => [
-      ...prev,
-      correct
-        ? `✅ ${currentTeam.name} to'g'ri javob berdi: +${10 + timeBonus} ball`
-        : `❌ ${currentTeam.name} xato javob berdi: -5 ball`,
-    ]);
-    announceScoreChange(
-      currentTeam,
-      points,
-      correct ? "TO'G'RI JAVOB" : "XATO JAVOB",
-      correct
-        ? `Asosiy +10 va vaqt bonusi +${timeBonus}`
-        : "Noto'g'ri javob uchun jarima",
-    );
-
-    setTimeout(() => {
-      advanceTurn();
-    }, 2000);
-  };
-
-  const resetQuestionState = useCallback(() => {
-    setPhase("game");
-    setCurrentTile(null);
-    setCurrentQuestion(null);
-    setSelectedAnswer(null);
-    setShowResult(false);
-    setScoreAnnouncement(null);
-    setTimeLeft(30);
+  const addHistory = useCallback((message: string) => {
+    setHistory((items) => [...items.slice(-7), message]);
   }, []);
 
-  const advanceTurn = useCallback(() => {
-    const nextIndex = (currentTeamIndex + 1) % teams.length;
-    setCurrentTeamIndex(nextIndex);
-    setTeams((prev) =>
-      prev.map((t, i) => ({ ...t, isActive: i === nextIndex })),
-    );
-    resetQuestionState();
-  }, [currentTeamIndex, resetQuestionState, teams.length]);
+  const updatePlayer = useCallback((id: number, update: Partial<Player> | ((player: Player) => Partial<Player>)) => {
+    setPlayers((items) => items.map((player) => player.id === id
+      ? { ...player, ...(typeof update === "function" ? update(player) : update) }
+      : player));
+  }, []);
 
-  // Question timer
-  useEffect(() => {
-    if (phase !== "question" || !currentQuestion || showResult) return;
+  const prepareQuestion = useCallback((nextPlayerIndex: number) => {
+    setCurrentPlayer(nextPlayerIndex);
+    setQuestionIndex((index) => (index + 1) % questions.length);
+    setSelectedAnswer(null);
+    setAnswerCorrect(null);
+    setBonusStep(0);
+    setEvent(null);
+    setStage("question");
+  }, [questions.length]);
 
-    if (timeLeft <= 0) {
-      const currentTeam = teams[currentTeamIndex];
-      const backSteps = 3;
+  const advanceTurn = useCallback((fromIndex = currentPlayer) => {
+    let next = (fromIndex + 1) % players.length;
+    let guard = 0;
+    while (players[next]?.skipTurns > 0 && guard < players.length) {
+      const skipped = players[next];
+      updatePlayer(skipped.id, { skipTurns: Math.max(0, skipped.skipTurns - 1) });
+      addHistory(`⏳ ${skipped.name} bir navbatni o'tkazib yubordi`);
+      next = (next + 1) % players.length;
+      guard += 1;
+    }
+    prepareQuestion(next);
+  }, [addHistory, currentPlayer, players, prepareQuestion, updatePlayer]);
 
-      playSound("wrong");
-      setShowResult(true);
-      setIsCorrect(false);
+  const finish = useCallback((player: Player) => {
+    setWinnerId(player.id);
+    setPhase("finish");
+    play("win");
+  }, [play]);
 
-      setTimeout(() => {
-        resetQuestionState();
-        moveTeamByDelta(
-          currentTeam,
-          -backSteps,
-          `${currentTeam.name} vaqtida javob bermadi: -${backSteps} qadam`,
-          advanceTurn,
-        );
-      }, 1200);
+  const animateMove = useCallback((player: Player, target: number, done: () => void) => {
+    const start = visualPositions[player.id] ?? player.position;
+    const safeTarget = Math.max(0, Math.min(35, target));
+    const direction = safeTarget >= start ? 1 : -1;
+    const total = Math.abs(safeTarget - start);
+    // Har bir katak alohida ko'rinishi uchun yurish tezligi bir xil va sokin.
+    const stepDuration = 430;
+    setStage("moving");
+    if (!total) { done(); return; }
+    for (let i = 1; i <= total; i += 1) {
+      later(() => setVisualPositions((positions) => ({ ...positions, [player.id]: start + i * direction })), i * stepDuration);
+    }
+    later(() => {
+      updatePlayer(player.id, { position: safeTarget });
+      done();
+    }, total * stepDuration + 260);
+  }, [later, updatePlayer, visualPositions]);
+
+  const completeEffect = useCallback((delay = 1500) => later(() => advanceTurn(), delay), [advanceTurn, later]);
+
+  const applyNegative = useCallback((player: Player, action: () => void) => {
+    if (player.shield) {
+      updatePlayer(player.id, { shield: false });
+      setEvent({ title: "HIMOYA ISHLADI!", detail: "Xavfli katak ta'siri bekor qilindi", tone: "good" });
+      addHistory(`🛡️ ${player.name} himoya bilan xavfdan qutuldi`);
+      completeEffect();
       return;
     }
+    action();
+  }, [addHistory, completeEffect, updatePlayer]);
 
-    const timer = setTimeout(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
+  const applyTile = useCallback((player: Player, tile: Tile) => {
+    setStage("effect");
+    const moveAndFinish = (delta: number, message: string) => {
+      const target = Math.max(0, Math.min(35, player.position + delta));
+      setEvent({ title: delta > 0 ? "YO'L OCHILDI!" : "JUNGLE TUZOG'I!", detail: message, tone: delta > 0 ? "good" : "bad" });
+      addHistory(`${delta > 0 ? "🚀" : "🐍"} ${player.name} ${message}`);
+      animateMove(player, target, () => target === 35 ? finish({ ...player, position: 35 }) : completeEffect(1000));
+    };
 
-    return () => clearTimeout(timer);
-  }, [
-    advanceTurn,
-    currentQuestion,
-    currentTeamIndex,
-    moveTeamByDelta,
-    phase,
-    playSound,
-    resetQuestionState,
-    showResult,
-    teams,
-    timeLeft,
-  ]);
+    switch (tile.type) {
+      case "question":
+      case "start":
+        setEvent({ title: "XAVFSIZ KATAK", detail: "Yo'lingizni davom ettiring", tone: "good" });
+        addHistory(`★ ${player.name} xavfsiz katakka tushdi`);
+        completeEffect(900);
+        break;
+      case "bonus":
+        updatePlayer(player.id, (current) => ({ score: current.score + 200, bonuses: current.bonuses + 1 }));
+        setEvent({ title: "+200 BALL", detail: "Jungle xazinasi topildi!", tone: "good" });
+        addHistory(`⭐ ${player.name} +200 ball oldi`);
+        completeEffect();
+        break;
+      case "minus": {
+        applyNegative(player, () => {
+          const penalty = Math.floor(Math.random() * 3);
+          if (penalty === 0) {
+            updatePlayer(player.id, (current) => ({ score: Math.max(0, current.score - 100) }));
+            setEvent({ title: "JUMANJI SIZNI SINAYAPTI!", detail: "-100 ball", tone: "bad" });
+            addHistory(`☠ ${player.name} -100 ball yo'qotdi`); completeEffect();
+          } else if (penalty === 1) moveAndFinish(-2, "2 katak orqaga yurdi");
+          else {
+            updatePlayer(player.id, { skipTurns: player.skipTurns + 1 });
+            setEvent({ title: "VAQT TUZOG'I!", detail: "1 navbatni o'tkazib yuborasiz", tone: "bad" });
+            addHistory(`⏳ ${player.name} keyingi navbatni o'tkazadi`); completeEffect();
+          }
+        });
+        break;
+      }
+      case "forward": moveAndFinish(3, "3 katak oldinga yurdi"); break;
+      case "backward": applyNegative(player, () => moveAndFinish(-2, "2 katak orqaga yurdi")); break;
+      case "skip":
+        applyNegative(player, () => {
+          updatePlayer(player.id, { skipTurns: player.skipTurns + 1 });
+          setEvent({ title: "DAM OLING", detail: "Keyingi navbat o'tkazib yuboriladi", tone: "bad" });
+          addHistory(`⌛ ${player.name} 1 navbat dam oladi`); completeEffect();
+        });
+        break;
+      case "shield":
+        updatePlayer(player.id, { shield: true });
+        setEvent({ title: "HIMOYA QALQONI", detail: "Keyingi minus ta'sir qilmaydi", tone: "good" });
+        addHistory(`🛡️ ${player.name} himoya oldi`); completeEffect();
+        break;
+      case "double":
+        updatePlayer(player.id, { doubleDice: true });
+        setEvent({ title: "IKKI BARAVAR KUCH", detail: "Keyingi zar natijasi ×2", tone: "good" });
+        addHistory(`🎲 ${player.name} keyingi zarni ×2 qiladi`); completeEffect();
+        break;
+      case "swap":
+        setEvent({ title: "JOY ALMASHISH", detail: "Istalgan raqibni tanlang", tone: "mystery" });
+        setSwapPicker(true);
+        break;
+      case "mystery": {
+        const mystery = Math.floor(Math.random() * 6);
+        updatePlayer(player.id, (current) => ({ lucky: current.lucky + 1 }));
+        if (mystery === 0) {
+          updatePlayer(player.id, (current) => ({ score: current.score + 300 }));
+          setEvent({ title: "SIRLI XAZINA", detail: "+300 ball", tone: "mystery" }); addHistory(`❓ ${player.name} +300 ball topdi`); completeEffect();
+        } else if (mystery === 1) applyNegative(player, () => {
+          updatePlayer(player.id, (current) => ({ score: Math.max(0, current.score - 200) }));
+          setEvent({ title: "QADIMIY LA'NAT", detail: "-200 ball", tone: "bad" }); addHistory(`❓ ${player.name} -200 ball yo'qotdi`); completeEffect();
+        });
+        else if (mystery === 2) moveAndFinish(3, "sirli kuch bilan 3 katak oldinga yurdi");
+        else if (mystery === 3) applyNegative(player, () => moveAndFinish(-2, "sirli kuch bilan 2 katak orqaga yurdi"));
+        else if (mystery === 4) {
+          setEvent({ title: "YANA BIR IMKON!", detail: "Yana zar tashlaysiz", tone: "mystery" });
+          addHistory(`❓ ${player.name} yana zar tashlaydi`); later(() => { setEvent(null); setStage("roll"); }, 1400);
+        } else {
+          setEvent({ title: "SIRLI ALMASHUV", detail: "Raqib bilan joy almashing", tone: "mystery" }); setSwapPicker(true);
+        }
+        break;
+      }
+      case "finish": finish({ ...player, position: 35 }); break;
+    }
+  }, [addHistory, animateMove, applyNegative, completeEffect, finish, later, updatePlayer]);
 
-  // Reset game
-  const resetGame = useCallback(() => {
-    setPhase("setup");
-    setTeams([]);
-    setCurrentTeamIndex(0);
-    setDiceValue(1);
-    setIsMoving(false);
-    setVisualPositions({});
-    setCurrentTile(null);
-    setCurrentQuestion(null);
-    setTimeLeft(30);
-    setSelectedAnswer(null);
-    setShowResult(false);
-    setShowConfetti(false);
-    setGameHistory([]);
-    setGameTime(0);
-    setIsTimerActive(false);
-    setWinner(null);
-    setScoreAnnouncement(null);
-  }, []);
-
-  // Toggle mute
-  const toggleMute = useCallback(() => {
-    setIsMuted(!isMuted);
-  }, [isMuted]);
-
-  const getDisplayPosition = (team: Team) => {
-    const rawPosition = visualPositions[team.id] ?? team.position;
-    return rawPosition;
+  const handleAnswer = (answer: string) => {
+    if (stage !== "question") return;
+    const correct = answer === question.correctAnswer;
+    setSelectedAnswer(answer); setAnswerCorrect(correct); setStage("answer"); play(correct ? "correct" : "wrong");
+    if (correct) {
+      updatePlayer(activePlayer.id, (player) => ({ score: player.score + 100, correct: player.correct + 1 }));
+      setBonusStep(1); addHistory(`✅ ${activePlayer.name} to'g'ri javob berdi: +100 ball`);
+      later(() => setStage("roll"), 1250);
+    } else {
+      addHistory(`❌ ${activePlayer.name} noto'g'ri javob berdi`);
+      later(() => advanceTurn(), 1500);
+    }
   };
 
-  const getTeamsOnTile = (tileIndex: number) =>
-    teams.filter((team) => getDisplayPosition(team) === tileIndex);
-
-  const furthestDisplayPosition = teams.reduce(
-    (maxPos, team) => Math.max(maxPos, getDisplayPosition(team)),
-    0,
-  );
-
-
-  const recentScoreEvents = gameHistory
-    .filter((item) => /[+-]\d+\s*ball/i.test(item))
-    .slice(-5)
-    .reverse();
-
-  const floatingJungleItems = useMemo(
-    () =>
-      Array.from({ length: 20 }, (_, i) => ({
-        id: i,
-        top: `${Math.random() * 100}%`,
-        left: `${Math.random() * 100}%`,
-        animationDelay: `${Math.random() * 5}s`,
-        animationDuration: `${15 + Math.random() * 20}s`,
-        transform: `rotate(${Math.random() * 360}deg)`,
-        symbol: ["🌿", "🌴", "🍃", "🌱", "🌵", "🌳"][i % 6],
-      })),
-    [],
-  );
-
-  // Medallion token renderer
-  const renderPawn = (team: Team, size = 34) => {
-    const teamIndex = teams.findIndex((t) => t.id === team.id);
-    const medal = TEAM_MEDALLIONS[Math.max(0, teamIndex)] || TEAM_MEDALLIONS[0];
-
-    return (
-      <div
-        className="relative rounded-full border-2 border-amber-500/50 bg-transparent shadow-xl hover:scale-110 transition-all duration-300"
-        style={{ width: size, height: size }}
-      >
-        <img
-          src={medal}
-          alt={`${team.name} token`}
-          className="h-full w-full object-contain rounded-full"
-          draggable={false}
-        />
-      </div>
-    );
+  const rollDice = () => {
+    if (stage !== "roll" || rolling) return;
+    setRolling(true); play("dice");
+    let ticks = 0;
+    const interval = window.setInterval(() => {
+      setDiceValue(Math.floor(Math.random() * 6) + 1); ticks += 1;
+      if (ticks < 10) return;
+      window.clearInterval(interval);
+      const rolled = Math.floor(Math.random() * 6) + 1;
+      const multiplier = activePlayer.doubleDice ? 2 : 1;
+      const steps = rolled * multiplier + bonusStep;
+      setDiceValue(rolled); setRolling(false);
+      if (activePlayer.doubleDice) updatePlayer(activePlayer.id, { doubleDice: false });
+      addHistory(`🎲 ${activePlayer.name} ${rolled}${multiplier === 2 ? " ×2" : ""}${bonusStep ? " +1 bonus" : ""} = ${steps} qadam yurdi`);
+      const target = Math.min(35, activePlayer.position + steps);
+      animateMove(activePlayer, target, () => {
+        const moved = { ...activePlayer, position: target };
+        if (target === 35) finish(moved); else applyTile(moved, BOARD_TILES[target]);
+      });
+    }, 95);
   };
 
+  const chooseSwap = (opponent: Player) => {
+    const player = players[currentPlayer];
+    const ownPosition = player.position;
+    const opponentPosition = opponent.position;
+    updatePlayer(player.id, { position: opponentPosition });
+    updatePlayer(opponent.id, { position: ownPosition });
+    setVisualPositions((positions) => ({ ...positions, [player.id]: opponentPosition, [opponent.id]: ownPosition }));
+    setSwapPicker(false);
+    setEvent({ title: "JOY ALMASHILDI!", detail: `${player.name} ↔ ${opponent.name}`, tone: "good" });
+    addHistory(`↔ ${player.name} va ${opponent.name} joy almashdi`);
+    if (opponentPosition === 35) finish({ ...player, position: 35 }); else completeEffect(1200);
+  };
+
+  const startNow = () => {
+    const fresh = players.map((player) => ({ ...player, position: 0, score: 0, skipTurns: 0, shield: false, doubleDice: false, correct: 0, bonuses: 0, lucky: 0 }));
+    setPlayers(fresh); setVisualPositions(Object.fromEntries(fresh.map((player) => [player.id, 0])));
+    setCurrentPlayer(0); setQuestionIndex(0); setSelectedAnswer(null); setAnswerCorrect(null);
+    setDiceValue(1); setBonusStep(0); setHistory(["🌿 Jumanji uyg'ondi. Sarguzasht boshlandi!"]);
+    setGameSeconds(0); setWinnerId(null); setPhase("game"); setStage("question");
+  };
+
+  const resetGame = () => { setPhase("setup"); setWinnerId(null); setHistory([]); setEvent(null); setSwapPicker(false); };
+  const sortedPlayers = useMemo(() => [...players].sort((a, b) => b.position - a.position || b.score - a.score), [players]);
+  const stageGuide = stage === "question"
+    ? { step: "1/3", title: "SAVOLGA JAVOB BERING", detail: "To'g'ri javobdan keyin zar ochiladi" }
+    : stage === "answer"
+      ? { step: "2/3", title: answerCorrect ? "TO'G'RI JAVOB" : "JAVOB TEKSHIRILDI", detail: answerCorrect ? "Zar tayyorlanmoqda..." : "Navbat keyingi o'yinchiga o'tadi" }
+      : stage === "roll"
+        ? { step: "2/3", title: "ZARNI TASHLANG", detail: bonusStep ? "+1 bonus qadam qo'shiladi" : "Yo'lga chiqishga tayyor" }
+        : stage === "moving"
+          ? { step: "3/3", title: "HAYKALCHA HARAKATDA", detail: "Katak effekti hozir ishlaydi" }
+          : { step: "3/3", title: "JUMANJI HODISASI", detail: "Effekt yakunlanmoqda" };
 
   return (
-    <div
-      className="relative min-h-[72dvh] overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-950/90 via-amber-900/90 to-amber-950/90 p-3 shadow-2xl sm:p-4 md:p-6"
-    >
-      {/* Animated Background */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -left-40 h-[600px] w-[600px] animate-pulse-slow rounded-full bg-amber-600/20 blur-3xl" />
-        <div className="absolute -bottom-40 -right-40 h-[600px] w-[600px] animate-pulse-slower rounded-full bg-yellow-600/20 blur-3xl" />
+    <main className="jumanji-game-shell">
+      <JungleBackdrop />
+      {phase === "setup" && <button className="jumanji-sound" onClick={() => setMuted((value) => !value)} aria-label={muted ? "Ovozni yoqish" : "Ovozni o'chirish"}>
+        {muted ? <FaVolumeXmark /> : <FaVolumeHigh />}
+      </button>}
 
-        {/* Jungle Pattern */}
-        <div
-          className="pointer-events-none absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: `radial-gradient(circle at 20px 20px, #f59e0b 2px, transparent 2px)`,
-            backgroundSize: "60px 60px",
-          }}
-        />
-
-        {/* Floating Jungle Elements */}
-        <div className="pointer-events-none absolute inset-0">
-          {floatingJungleItems.map((item) => (
-            <div
-              key={item.id}
-              className="absolute text-4xl opacity-10 animate-float"
-              style={{
-                top: item.top,
-                left: item.left,
-                animationDelay: item.animationDelay,
-                animationDuration: item.animationDuration,
-                transform: item.transform,
-              }}
-            >
-              {item.symbol}
+      {phase === "setup" && (
+        <section className="jumanji-setup">
+          <JumanjiLogo />
+          <div className="setup-scroll">
+            <div className="setup-heading"><span>4</span><div><h1>O'YINCHILAR TAYYOR</h1><p>Har bir haykalchaga o'yinchi nomini kiriting</p></div></div>
+            <div className="setup-players">
+              {players.map((player, index) => (
+                <label key={player.id} className={`setup-player ${player.color}`}>
+                  <Pawn color={player.color} size={54} />
+                  <span>{COLORS[player.color].label} HAYKALCHA</span>
+                  <input value={player.name} maxLength={14} onChange={(e) => setPlayers((items) => items.map((item, i) => i === index ? { ...item, name: e.target.value } : item))} />
+                </label>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Toast Notification */}
-      {toast && (
-        <div className="fixed left-1/2 top-18 z-50 w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 sm:top-24">
-          <div className="rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-amber-600 to-yellow-600 px-4 py-3 text-center text-white shadow-2xl sm:rounded-full sm:px-6">
-            {toast}
+            <div className="setup-rule-flow">
+              <div><b>1</b><span>SAVOL</span><small>To'g'ri javob bering</small></div><i>›</i>
+              <div><b>2</b><span>ZAR</span><small>Zarni tashlang</small></div><i>›</i>
+              <div><b>3</b><span>YO'L</span><small>Katak bo'ylab yuring</small></div><i>›</i>
+              <div><b>4</b><span>HODISA</span><small>Effektni bajaring</small></div>
+            </div>
+            <div className="setup-footer"><span><FaBookOpen /> {questions.length} ta savol tayyor</span><span><FaFlagCheckered /> 36 katak</span><button disabled={players.some((p) => !p.name.trim())} onClick={() => runStartCountdown(startNow)}><FaDice /> O'YINNI BOSHLASH</button></div>
           </div>
+        </section>
+      )}
+
+      {phase === "game" && (
+        <div className="jumanji-game-layout">
+          <header className="jumanji-topbar">
+            <JumanjiLogo />
+            <div className="turn-plaque"><small>NAVBAT</small><Pawn color={activePlayer.color} size={34}/><div><b>{activePlayer.name}</b><span style={{ color: COLORS[activePlayer.color].light }}>{COLORS[activePlayer.color].label}</span></div></div>
+            <div className="dice-plaque"><small>ZAR</small><strong>{diceValue}</strong></div>
+            <button onClick={() => setShowRules(true)}><FaBookOpen/><span>QOIDALAR</span></button>
+            <button onClick={() => setMuted((value) => !value)}>{muted ? <FaVolumeXmark/> : <FaVolumeHigh/>}<span>OVOZ</span></button>
+          </header>
+
+          <aside className="players-rail">
+            {players.map((player, index) => (
+              <article key={player.id} className={`player-card ${player.color} ${index === currentPlayer ? "active" : ""}`}>
+                <div className="rank">{index + 1}</div><Pawn color={player.color} size={48}/>
+                <div className="player-copy"><strong>{player.name}</strong><span>{COLORS[player.color].label}</span><div><b>★ {player.score}</b><em>⌖ {player.position + 1}/36</em></div></div>
+                <div className="player-powers">{player.shield && <FaShieldHalved title="Himoya"/>}{player.doubleDice && <b title="Keyingi zar ×2">×2</b>}{player.skipTurns > 0 && <span title="Navbat o'tkaziladi">⌛</span>}</div>
+              </article>
+            ))}
+          </aside>
+
+          <section className="board-panel">
+            <div className="board-world">
+              <BoardScenery />
+              <svg viewBox="0 0 960 680" preserveAspectRatio="none" className="board-road" aria-label="36 katakli Jumanji yo'lagi">
+                <defs>
+                  <linearGradient id="stoneRoad" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#c89c5c"/><stop offset=".32" stopColor="#927047"/><stop offset=".68" stopColor="#6a492b"/><stop offset="1" stopColor="#332216"/></linearGradient>
+                </defs>
+                <polyline points={BOARD_POINTS.map((p) => `${p.x},${p.y}`).join(" ")} fill="none" stroke="#160e09" strokeOpacity=".72" strokeWidth="86" strokeLinecap="round" strokeLinejoin="round"/>
+                <polyline points={BOARD_POINTS.map((p) => `${p.x},${p.y}`).join(" ")} fill="none" stroke="url(#stoneRoad)" strokeWidth="68" strokeLinecap="round" strokeLinejoin="round"/>
+                <polyline points={BOARD_POINTS.map((p) => `${p.x},${p.y}`).join(" ")} fill="none" stroke="#e1bd7e" strokeOpacity=".38" strokeWidth="3" strokeDasharray="11 9"/>
+                <polyline points={BOARD_POINTS.slice(0, activePlayer.position + 1).map((p) => `${p.x},${p.y}`).join(" ")} fill="none" stroke={COLORS[activePlayer.color].light} strokeOpacity=".48" strokeWidth="5" strokeLinecap="round" className="road-progress"/>
+                {BOARD_POINTS.map((point, index) => index % 3 === 1 ? <path key={`crack-${index}`} d={`M${point.x-18} ${point.y-9}l9 7-6 8m15-13 8 6`} fill="none" stroke="#382517" strokeOpacity=".62" strokeWidth="2"/> : null)}
+              </svg>
+              {BOARD_TILES.map((tile, index) => {
+                const point = BOARD_POINTS[index]; const meta = TILE_META[tile.type];
+                return <div key={tile.id} className={`board-tile ${meta.className}`} title={`${index + 1}. ${meta.title}`} style={{ left: `${point.x / 9.6}%`, top: `${point.y / 6.8}%` }}><span>{meta.symbol}</span>{meta.short && <small>{meta.short}</small>}<i>{index + 1}</i></div>;
+              })}
+              {players.map((player) => {
+                const pos = visualPositions[player.id] ?? player.position; const point = BOARD_POINTS[pos];
+                const same = players.filter((p) => (visualPositions[p.id] ?? p.position) === pos); const stack = same.findIndex((p) => p.id === player.id);
+                return <div key={player.id} className="board-pawn" style={{ left: `${point.x / 9.6}%`, top: `${point.y / 6.8}%`, transform: `translate(calc(-50% + ${(stack - (same.length - 1) / 2) * 22}px), -78%)`, zIndex: 20 + stack }}><Pawn color={player.color} size={42}/></div>;
+              })}
+              <div className="board-label start-label">START</div><div className="board-label finish-label">FINISH</div>
+            </div>
+          </section>
+
+          <aside className="question-rail">
+            <div className="question-scroll">
+            <div className={`action-guide ${stage}`} aria-live="polite"><b>{stageGuide.step}</b><div><strong>{stageGuide.title}</strong><span>{stageGuide.detail}</span></div></div>
+            <div className="question-panel">
+              <h2>SAVOL</h2>
+              <div className="question-subject">{question.subject} · {activePlayer.name} navbati</div>
+              <h3>{question.question}</h3>
+              <div className="answers">
+                {question.options.map((option, index) => {
+                  const status = answerCorrect !== null && option === question.correctAnswer ? "correct" : answerCorrect === false && option === selectedAnswer ? "wrong" : "";
+                  return <button key={option} disabled={stage !== "question"} className={status} onClick={() => handleAnswer(option)}><b>{String.fromCharCode(65 + index)}</b><span>{option}</span></button>;
+                })}
+              </div>
+              {stage === "question" && <p className="question-hint">To'g'ri javob → +100 ball, zar va +1 bonus qadam</p>}
+              {stage === "answer" && <div className={`answer-result ${answerCorrect ? "good" : "bad"}`}>{answerCorrect ? "✓ To'g'ri! +100 ball va +1 qadam" : `✕ Noto'g'ri. Javob: ${question.correctAnswer}`}</div>}
+              {stage === "roll" && <button className="roll-button" onClick={rollDice} disabled={rolling}><span className={rolling ? "rolling" : ""}><RealisticDice value={diceValue}/></span><b>{rolling ? "ZAR AYLANMOQDA..." : "ZARNI TASHLASH"}</b><small>{activePlayer.doubleDice ? "Keyingi zar ×2" : bonusStep ? "+1 bonus qadam tayyor" : "Yana bir imkon"}</small></button>}
+              {stage === "moving" && <div className="moving-message"><FaDice/> HAYKALCHA YO'LDA...</div>}
+            </div>
+            <div className="last-result"><h3>OXIRGI NATIJA</h3><p>{history.at(-1) ?? "O'yin boshlandi"}</p></div>
+            </div>
+          </aside>
+
+          <section className="legend-panel"><h3>MAXSUS KATAKLAR</h3><div>{(["bonus","minus","forward","backward","skip","swap","shield","mystery","double"] as TileType[]).map((type) => <span key={type}><i className={TILE_META[type].className}>{TILE_META[type].symbol}</i>{TILE_META[type].title}</span>)}</div></section>
+          <section className="history-panel"><h3>O'YIN JARAYONI</h3><div>{history.slice().reverse().map((item, index) => <p key={`${item}-${index}`}>{item}</p>)}</div></section>
         </div>
       )}
 
-      {/* Mute Button */}
-      <button
-        onClick={toggleMute}
-        className="fixed right-3 top-3 z-50 rounded-xl border-2 border-amber-500/30 bg-amber-900/70 p-2.5 text-amber-400 transition-all hover:bg-amber-800/50 sm:right-6 sm:top-6 sm:p-3"
-      >
-        {isMuted ? <FaVolumeMute size={20} /> : <FaVolumeUp size={20} />}
-      </button>
+      {event && phase === "game" && <div className="event-overlay"><div className={`event-card ${event.tone}`}><span>{event.tone === "good" ? "★" : event.tone === "bad" ? "☠" : "?"}</span><h2>{event.title}</h2><p>{event.detail}</p>{swapPicker && <div className="swap-options">{players.filter((p) => p.id !== activePlayer.id).map((player) => <button key={player.id} onClick={() => chooseSwap(player)}><Pawn color={player.color} size={28}/>{player.name}<small>{player.position + 1}-katak</small></button>)}</div>}</div></div>}
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 py-6">
-        {phase === "setup" && (
-          /* ========== O'QITUVCHI PANELI ========== */
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Teams Panel */}
-            <div className="relative group transform-gpu overflow-hidden rounded-2xl border border-amber-500/20 bg-gradient-to-br from-amber-900/40 to-yellow-900/40 p-6 backdrop-blur-xl">
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-amber-500/10 to-yellow-500/10" />
+      {showRules && <div className="rules-overlay" onClick={() => setShowRules(false)}><div onClick={(e) => e.stopPropagation()}><button onClick={() => setShowRules(false)}>×</button><h2>JUMANJI QOIDALARI</h2><ol><li>Navbat boshida savolga javob bering.</li><li>To'g'ri javob uchun +100 ball, zar tashlash va +1 bonus qadam olasiz.</li><li>Noto'g'ri javobda yurmaydi va navbat almashadi.</li><li>Tushgan maxsus katak effekti avtomatik ishlaydi.</li><li>36-katakka birinchi yetgan o'yinchi g'olib!</li></ol></div></div>}
 
-              <div className="flex items-center gap-3 mb-4 pb-2 border-b border-amber-500/30">
-                <div className="relative">
-                  <div className="absolute -inset-1 rounded-full bg-amber-500/30" />
-                  <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-yellow-500">
-                    <FaUsers className="text-white text-sm" />
-                  </div>
-                </div>
-                <h2 className="text-xl font-black text-white">JAMOALAR</h2>
-              </div>
+      {phase === "finish" && winner && (
+        <div className="victory-overlay">
+          <Confetti mode="boom" particleCount={400} effectCount={1} colors={["#f7c948", "#ef493f", "#65ad25", "#258bd2"]}/>
+          <div className="victory-card"><FaCrown/><p>JUMANJI YAKUNLANDI!</p><h1>{winner.name} — G'OLIB!</h1><Pawn color={winner.color} size={82}/><div className="winner-stats"><span><b>{winner.score}</b>Ball</span><span><b>{winner.correct}</b>To'g'ri javob</span><span><b>{winner.bonuses}</b>Bonuslar</span></div><h3><FaTrophy/> JUNGLE MASTER</h3><div className="results-list">{sortedPlayers.map((player, index) => <div key={player.id}><b>{index + 1}</b><Pawn color={player.color} size={26}/><span>{player.name}</span><em>{player.score} ball · {player.position + 1}/36</em></div>)}</div><button onClick={resetGame}>QAYTA O'YNASH</button></div>
+        </div>
+      )}
 
-              <div className="mb-4">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newTeamName}
-                    onChange={(e) => setNewTeamName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        addTeam();
-                      }
-                    }}
-                    placeholder="Jamoa nomi..."
-                    className="flex-1 px-4 py-2 rounded-xl border border-amber-500/30 bg-amber-950/30 text-white placeholder-amber-300/50 focus:border-amber-400 focus:outline-none"
-                  />
-                  <button
-                    onClick={addTeam}
-                    className="px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-xl font-bold hover:scale-105 transition-all"
-                  >
-                    Qo'shish
-                  </button>
-                </div>
-                {teamError && (
-                  <p className="mt-2 text-sm text-red-400">{teamError}</p>
-                )}
-              </div>
-
-              <div className="space-y-3">
-                {teams.map((team, idx) => (
-                  <div
-                    key={team.id}
-                    className="group relative overflow-hidden rounded-xl border border-amber-500/30 bg-amber-950/30 p-3 transition-all hover:bg-amber-900/40"
-                  >
-                    <div
-                      className={`pointer-events-none absolute inset-0 bg-gradient-to-r ${TEAM_COLORS[idx % TEAM_COLORS.length].primary} opacity-0 group-hover:opacity-10 transition-opacity`}
-                    />
-                    <div className="relative flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {renderPawn(team, 44)}
-                        <div>
-                          <p className="text-sm font-bold text-white">
-                            {team.name}
-                          </p>
-                          <p className="text-xs text-amber-300/70">
-                            {TEAM_TITLES[idx]}
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => removeTeam(team.id)}
-                        className="text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <FaTimesCircle size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Questions Panel */}
-            <div className="relative group transform-gpu overflow-hidden rounded-2xl border border-amber-500/20 bg-gradient-to-br from-amber-900/40 to-yellow-900/40 p-6 backdrop-blur-xl">
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-amber-500/10 to-yellow-500/10" />
-
-              <div className="flex items-center gap-3 mb-4 pb-2 border-b border-amber-500/30">
-                <div className="relative">
-                  <div className="absolute -inset-1 rounded-full bg-amber-500/30" />
-                  <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-yellow-500">
-                    <FaStar className="text-white text-sm" />
-                  </div>
-                </div>
-                <h2 className="text-xl font-black text-white">SAVOLLAR</h2>
-              </div>
-
-              <div className="space-y-3 mb-4">
-                <div className="rounded-xl border border-cyan-500/30 bg-cyan-950/20 p-4">
-                  <div className="mb-3 flex items-center gap-2 text-cyan-300">
-                    <FaRobot />
-                    <p className="text-sm font-bold">AI SAVOL GENERATSIYASI</p>
-                  </div>
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <textarea
-                      value={aiTopic}
-                      onChange={(e) => setAiTopic(e.target.value)}
-                      placeholder="Mavzu: kasrlar, Amir Temur, hujayra tuzilishi..."
-                      className="min-h-[92px] w-full px-4 py-2 rounded-xl border border-cyan-500/30 bg-slate-950/70 text-white placeholder-cyan-300/50 md:col-span-2"
-                    />
-                    <select
-                      value={aiSubject}
-                      onChange={(e) => setAiSubject(e.target.value)}
-                      className="w-full px-4 py-2 rounded-xl border border-cyan-500/30 bg-slate-950/70 text-white"
-                    >
-                      {AI_SUBJECT_OPTIONS.map((subject) => (
-                        <option key={subject} value={subject}>
-                          {subject}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      value={aiGradeRange}
-                      onChange={(e) => setAiGradeRange(e.target.value as GradeRange)}
-                      className="w-full px-4 py-2 rounded-xl border border-cyan-500/30 bg-slate-950/70 text-white"
-                    >
-                      {GRADE_RANGE_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      value={aiQuestionCount}
-                      onChange={(e) => setAiQuestionCount(Number(e.target.value))}
-                      className="w-full px-4 py-2 rounded-xl border border-cyan-500/30 bg-slate-950/70 text-white"
-                    >
-                      {AI_QUESTION_COUNT_OPTIONS.map((count) => (
-                        <option key={count} value={count}>
-                          {count} ta savol
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      value={aiDifficulty}
-                      onChange={(e) => setAiDifficulty(e.target.value as "easy" | "medium" | "hard" | "mixed")}
-                      className="w-full px-4 py-2 rounded-xl border border-cyan-500/30 bg-slate-950/70 text-white"
-                    >
-                      {AI_DIFFICULTY_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      onClick={() => void generateAiQuestionBank()}
-                      disabled={!hasGeminiKey || isGeneratingAi}
-                      className="w-full rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-2 font-bold text-white transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {isGeneratingAi ? `${aiQuestionCount} ta yaratilmoqda...` : `AI bilan ${aiQuestionCount} ta yaratish`}
-                    </button>
-                  </div>
-                  <p className="mt-3 text-xs text-cyan-100/75">
-                    Avval mavzu kiriting, keyin fan va kerak bo'lsa sinf oralig'ini tanlang. "Aralash fanlar" tanlansa bir nechta fanlardan savollar keladi.
-                  </p>
-                </div>
-
-                <select
-                  value={newQuestion.subject}
-                  onChange={(e) =>
-                    setNewQuestion({ ...newQuestion, subject: e.target.value })
-                  }
-                  className="w-full px-4 py-2 rounded-xl border border-amber-500/30 bg-amber-950/30 text-white"
-                >
-                  {SUBJECTS.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-
-                <input
-                  type="text"
-                  value={newQuestion.question}
-                  onChange={(e) =>
-                    setNewQuestion({ ...newQuestion, question: e.target.value })
-                  }
-                  placeholder="Savol matni"
-                  className="w-full px-4 py-2 rounded-xl border border-amber-500/30 bg-amber-950/30 text-white"
-                />
-
-                <div className="grid grid-cols-2 gap-2">
-                  {[0, 1, 2, 3].map((idx) => (
-                    <input
-                      key={idx}
-                      type="text"
-                      value={newQuestion.options?.[idx] || ""}
-                      onChange={(e) => {
-                        const options = [
-                          ...(newQuestion.options || ["", "", "", ""]),
-                        ];
-                        options[idx] = e.target.value;
-                        setNewQuestion({ ...newQuestion, options });
-                      }}
-                      placeholder={`Variant ${idx + 1}`}
-                      className="px-3 py-2 rounded-xl border border-amber-500/30 bg-amber-950/30 text-white text-sm"
-                    />
-                  ))}
-                </div>
-
-                <select
-                  value={newQuestion.correctAnswer}
-                  onChange={(e) =>
-                    setNewQuestion({
-                      ...newQuestion,
-                      correctAnswer: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-2 rounded-xl border border-amber-500/30 bg-amber-950/30 text-white"
-                >
-                  <option value="">To'g'ri javob</option>
-                  {newQuestion.options?.map(
-                    (opt, idx) =>
-                      opt && (
-                        <option key={idx} value={opt}>
-                          {opt}
-                        </option>
-                      ),
-                  )}
-                </select>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <select
-                    value={newQuestion.difficulty}
-                    onChange={(e) =>
-                      setNewQuestion({
-                        ...newQuestion,
-                        difficulty: e.target.value as Question["difficulty"],
-                      })
-                    }
-                    className="px-3 py-2 rounded-xl border border-amber-500/30 bg-amber-950/30 text-white"
-                  >
-                    <option value="easy">Oson</option>
-                    <option value="medium">O'rtacha</option>
-                    <option value="hard">Qiyin</option>
-                  </select>
-                  <input
-                    type="number"
-                    value={newQuestion.timeLimit}
-                    onChange={(e) =>
-                      setNewQuestion({
-                        ...newQuestion,
-                        timeLimit: parseInt(e.target.value),
-                      })
-                    }
-                    placeholder="Vaqt (s)"
-                    className="px-3 py-2 rounded-xl border border-amber-500/30 bg-amber-950/30 text-white"
-                  />
-                </div>
-
-                {questionError && (
-                  <p className="text-sm text-red-400">{questionError}</p>
-                )}
-
-                <button
-                  onClick={addQuestion}
-                  className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-xl font-bold hover:scale-[1.02] transition-all"
-                >
-                  {editingId ? "SAQLASH" : "QO'SHISH"}
-                </button>
-              </div>
-
-              <div className="space-y-2 max-h-60 overflow-y-auto">
-                {questions.map((q) => (
-                  <div
-                    key={q.id}
-                    className="group relative overflow-hidden rounded-xl border border-amber-500/30 bg-amber-950/30 p-3"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-sm font-bold text-white">
-                          {q.question}
-                        </p>
-                        <p className="text-xs text-amber-300/70 mt-1">
-                          {q.subject} · {q.difficulty} · {q.timeLimit}s
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => removeQuestion(q.id)}
-                        className="text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <FaTimesCircle />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Start Button */}
-            {teams.length === 4 && questions.length >= 4 && (
-              <div className="lg:col-span-2 text-center">
-                <button
-                  onClick={startGame}
-                  className="px-12 py-4 cursor-pointer bg-gradient-to-r from-amber-600 to-yellow-600 text-white rounded-xl font-bold text-2xl hover:scale-105 transition-all shadow-2xl border-2 border-amber-400/50"
-                  style={{ fontFamily: "'Cinzel', serif" }}
-                >
-                  <GiJungle className="inline mr-2" />
-                  ENTER THE JUNGLE
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {(phase === "game" || phase === "question") && (
-          /* ========== O'YIN JARAYONI ========== */
-          <div className="space-y-6 sm:space-y-8">
-            {/* Teams Stats */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
-              {teams.map((team, idx) => (
-                <div
-                  key={team.id}
-                  className={`relative group transform-gpu overflow-hidden rounded-xl border-2 p-3 transition-all sm:p-4 lg:p-5 ${
-                    team.isActive
-                      ? `border-amber-400/50 bg-gradient-to-br ${TEAM_COLORS[idx].primary} scale-105 shadow-2xl`
-                      : "border-amber-500/30 bg-amber-950/30"
-                  }`}
-                >
-                  <div
-                    className={`pointer-events-none absolute inset-0 bg-gradient-to-r ${TEAM_COLORS[idx].primary} opacity-0 group-hover:opacity-10 transition-opacity`}
-                  />
-
-                  {team.isActive && (
-                    <div className="absolute -top-3 -right-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-full animate-bounce">
-                      ACTIVE
-                    </div>
-                  )}
-
-                  <div className="relative mb-2 flex items-center gap-2 sm:mb-3 sm:gap-4">
-                    {renderPawn(team, 32)}
-                    <div>
-                      <h3 className="text-lg font-bold text-white sm:text-xl">
-                        {team.name}
-                      </h3>
-                      <p
-                        className={`text-xs sm:text-sm ${team.isActive ? "text-white/80" : "text-amber-300/70"}`}
-                      >
-                        {TEAM_TITLES[idx]}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="relative mb-2 flex items-center justify-between sm:mb-3">
-                    <span className="text-sm text-amber-300 sm:text-base">SCORE</span>
-                    <span className="text-2xl font-bold text-white sm:text-3xl">
-                      {team.score}
-                    </span>
-                  </div>
-
-                  <div className="relative h-2 rounded-full bg-amber-950/50 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 transition-all"
-                      style={{
-                        width: `${(getDisplayPosition(team) / (tiles.length - 1)) * 100}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Jungle Map Board */}
-            <div className="relative group transform-gpu overflow-hidden rounded-2xl border-2 border-amber-500/30 bg-gradient-to-br from-amber-900/40 to-yellow-900/40 p-3 backdrop-blur-xl sm:p-4">
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-amber-500/10 to-yellow-500/10" />
-
-              <div className="relative w-full overflow-hidden rounded-xl">
-                <div className="relative aspect-[4/5] min-h-[540px] w-full sm:aspect-[3/2] sm:min-h-0">
-                  <img
-                    src={JUMANJI_MAP_IMAGE}
-                    alt="Jumanji map"
-                    className="absolute inset-0 h-full w-full object-cover opacity-90"
-                    draggable={false}
-                  />
-
-                  <svg
-                    viewBox="0 0 100 100"
-                    className="pointer-events-none absolute inset-0 z-10 h-full w-full"
-                  >
-                    <defs>
-                      <linearGradient id="roadBase" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#3f2b1b" />
-                        <stop offset="50%" stopColor="#5c4028" />
-                        <stop offset="100%" stopColor="#2d1d10" />
-                      </linearGradient>
-                      <linearGradient id="roadGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#e3be7a" />
-                        <stop offset="100%" stopColor="#bb8a49" />
-                      </linearGradient>
-                      <radialGradient id="tileFill" cx="35%" cy="30%" r="75%">
-                        <stop offset="0%" stopColor="#fff6d8" />
-                        <stop offset="55%" stopColor="#d5ae67" />
-                        <stop offset="100%" stopColor="#71502c" />
-                      </radialGradient>
-                      <radialGradient id="bossAura" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stopColor="#fde68a" stopOpacity="0.65" />
-                        <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
-                      </radialGradient>
-                    </defs>
-
-                    {roadPoints.map((point, idx) => {
-                      const next = roadPoints[idx + 1];
-                      if (!next) return null;
-
-                      return (
-                        <g key={`road-${idx}`}>
-                          <line
-                            x1={point.x}
-                            y1={point.y}
-                            x2={next.x}
-                            y2={next.y}
-                            stroke="url(#roadBase)"
-                            strokeWidth="3.5"
-                            strokeLinecap="round"
-                            opacity="0.9"
-                          />
-                          <line
-                            x1={point.x}
-                            y1={point.y}
-                            x2={next.x}
-                            y2={next.y}
-                            stroke="url(#roadGlow)"
-                            strokeWidth="1.15"
-                            strokeLinecap="round"
-                            strokeDasharray="1.1 1"
-                            opacity="0.85"
-                          />
-                        </g>
-                      );
-                    })}
-
-                    {roadPoints.map((point, idx) => {
-                      const next = roadPoints[idx + 1];
-                      if (!next) return null;
-                      if (idx >= furthestDisplayPosition) return null;
-
-                      return (
-                        <line
-                          key={`progress-road-${idx}`}
-                          x1={point.x}
-                          y1={point.y}
-                          x2={next.x}
-                          y2={next.y}
-                          stroke="#fcd34d"
-                          strokeWidth="1.55"
-                          strokeLinecap="round"
-                          opacity="0.95"
-                        />
-                      );
-                    })}
-
-                    {roadPoints.map((point, idx) => {
-                      const isBoss = idx === roadPoints.length - 1;
-                      const isSpecial = specialTileIndexes.has(idx);
-
-                      return (
-                        <g key={`tile-${idx}`}>
-                          <circle
-                            cx={point.x}
-                            cy={point.y}
-                            r={isBoss ? 3.05 : isSpecial ? 2.15 : 1.75}
-                            fill="url(#tileFill)"
-                            stroke="#8b5e34"
-                            strokeWidth={isBoss ? 0.3 : 0.15}
-                            opacity={isBoss ? 1 : 0.96}
-                          />
-                          <circle
-                            cx={point.x - 0.18}
-                            cy={point.y - 0.2}
-                            r={0.28}
-                            fill="#ffffff"
-                            opacity="0.38"
-                          />
-                          <text
-                            x={point.x}
-                            y={point.y - 1.45}
-                            textAnchor="middle"
-                            fontSize="1.05"
-                            fill="#fde68a"
-                            fontWeight="bold"
-                            opacity="0.85"
-                          >
-                            {idx + 1}
-                          </text>
-                          {isBoss && (
-                            <circle
-                              cx={point.x}
-                              cy={point.y}
-                              r={5.2}
-                              fill="url(#bossAura)"
-                            />
-                          )}
-                        </g>
-                      );
-                    })}
-
-                    {teams.map((team) => {
-                      const idx = getDisplayPosition(team);
-                      const point = roadPoints[idx];
-                      if (!point) return null;
-                      const sameTileTeams = getTeamsOnTile(idx);
-                      const teamIndex = teams.findIndex((t) => t.id === team.id);
-                      const stackIdx = sameTileTeams.findIndex(
-                        (t) => t.id === team.id,
-                      );
-                      const [ox, oy] = BOARD_STACK_OFFSETS[stackIdx] ?? [0, 0];
-                      const medal =
-                        TEAM_MEDALLIONS[Math.max(0, teamIndex)] ||
-                        TEAM_MEDALLIONS[0];
-
-                      return (
-                        <g
-                          key={team.id}
-                          className="token-move"
-                          transform={`translate(${point.x + ox + BOARD_TOKEN_NUDGE_X} ${point.y + oy + BOARD_TOKEN_NUDGE_Y})`}
-                        >
-                          <image
-                            href={medal}
-                            x={-BOARD_TOKEN_SIZE / 2}
-                            y={-BOARD_TOKEN_SIZE / 2}
-                            width={BOARD_TOKEN_SIZE}
-                            height={BOARD_TOKEN_SIZE}
-                          />
-                        </g>
-                      );
-                    })}
-                  </svg>
-
-                  {phase === "question" && currentQuestion && (
-                    <div className="absolute inset-0 z-20 flex items-start justify-center overflow-y-auto bg-black/50 p-3 backdrop-blur-[2px] sm:items-center sm:p-4">
-                      <div className="relative my-3 w-full max-w-4xl overflow-hidden rounded-3xl border-2 border-amber-500/30 bg-gradient-to-br from-amber-900/90 to-yellow-900/90 p-4 shadow-2xl sm:my-0 sm:p-6">
-                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-amber-500/10 to-yellow-500/10" />
-
-                        <div className="relative mb-4 grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
-                          {teams.map((team) => (
-                            <div
-                              key={`question-score-${team.id}`}
-                              className={`rounded-xl border p-2.5 sm:p-3 ${
-                                team.isActive
-                                  ? "border-amber-400/60 bg-amber-500/20"
-                                  : "border-amber-500/30 bg-amber-950/30"
-                              }`}
-                            >
-                              <p className="truncate text-xs text-amber-200/80">
-                                {team.name}
-                              </p>
-                              <p className="text-lg font-black text-white sm:text-xl">
-                                {team.score}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="relative mb-5 flex flex-col gap-3 border-b border-amber-500/30 pb-4 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
-                          <div className="flex items-center gap-3 sm:gap-4">
-                            <div className="relative">
-                              <div className="absolute -inset-1 rounded-full bg-amber-500/30" />
-                              <div className="relative flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-xl sm:h-12 sm:w-12 sm:text-2xl">
-                                {currentTile?.icon}
-                              </div>
-                            </div>
-                            <div>
-                              <p className="text-xs text-amber-300/70 sm:text-sm">
-                                {currentQuestion.subject}
-                              </p>
-                              <h3 className="text-lg font-bold text-white sm:text-xl">
-                                {currentTile?.type === "boss"
-                                  ? "BOSS CHALLENGE"
-                                  : "THE QUESTION"}
-                              </h3>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 self-start rounded-xl border border-amber-500/30 bg-black/15 px-3 py-2 sm:self-auto sm:gap-3">
-                            <FaClock className="text-lg text-amber-400 sm:text-xl" />
-                            <span className="text-xl font-bold text-white sm:text-2xl">
-                              {timeLeft}s
-                            </span>
-                          </div>
-                        </div>
-
-                        <h4 className="relative mb-5 text-center text-2xl font-bold leading-tight text-white sm:text-3xl">
-                          "{currentQuestion.question}"
-                        </h4>
-
-                        <div className="relative mb-5 grid grid-cols-1 gap-3 md:grid-cols-2">
-                          {currentQuestion.options.map((option, idx) => (
-                            <button
-                              key={idx}
-                              onClick={() => handleAnswer(option)}
-                              disabled={showResult}
-                              className={`
-                                rounded-xl border-2 p-4 text-left text-base font-bold transition-all hover:scale-[1.02] sm:text-lg
-                                ${
-                                  showResult &&
-                                  option === currentQuestion.correctAnswer
-                                    ? "border-emerald-500 bg-emerald-500/20 text-emerald-300"
-                                    : showResult && selectedAnswer === option
-                                      ? "border-red-500 bg-red-500/20 text-red-300"
-                                      : "border-amber-500/30 bg-amber-950/30 text-white hover:border-amber-400"
-                                }
-                              `}
-                            >
-                              {option}
-                            </button>
-                          ))}
-                        </div>
-
-                        <div className="relative grid gap-4 md:grid-cols-2">
-                          {showResult && (
-                            <div
-                              className={`rounded-xl border-2 p-4 text-center font-bold ${
-                                isCorrect
-                                  ? "border-emerald-500 bg-emerald-500/20 text-emerald-300"
-                                  : "border-red-500 bg-red-500/20 text-red-300"
-                              }`}
-                            >
-                              <p>{isCorrect ? "CORRECT ANSWER!" : "WRONG ANSWER!"}</p>
-                              {scoreAnnouncement && (
-                                <p className="mt-2 text-2xl font-black">
-                                  {scoreAnnouncement.points >= 0 ? "+" : ""}
-                                  {scoreAnnouncement.points} ball
-                                </p>
-                              )}
-                            </div>
-                          )}
-
-                          <div className="rounded-xl border border-amber-500/30 bg-amber-950/30 p-4">
-                            <p className="mb-2 text-sm font-bold text-amber-300">
-                              OXIRGI BALL O'ZGARISHLARI
-                            </p>
-                            <div className="space-y-1">
-                              {gameHistory.slice(-4).map((item, idx) => (
-                                <p
-                                  key={`question-log-${idx}`}
-                                  className="text-xs text-amber-100/80"
-                                >
-                                  - {item}
-                                </p>
-                              ))}
-                              {gameHistory.length === 0 && (
-                                <p className="text-xs text-amber-200/60">
-                                  Hozircha o'zgarish yo'q.
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {phase === "game" && scoreAnnouncement && (
-                    <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/45 p-4 backdrop-blur-[2px]">
-                      <div className="relative w-full max-w-3xl overflow-hidden rounded-3xl border-2 border-amber-500/30 bg-gradient-to-br from-amber-900/85 to-yellow-900/85 p-6 shadow-2xl">
-                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-amber-500/10 to-yellow-500/10" />
-
-                        <div className="relative mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-                          {teams.map((team) => (
-                            <div
-                              key={`score-popup-${team.id}`}
-                              className={`rounded-xl border p-3 ${
-                                team.id === scoreAnnouncement.teamId
-                                  ? "border-amber-400/70 bg-amber-500/20"
-                                  : "border-amber-500/30 bg-amber-950/30"
-                              }`}
-                            >
-                              <p className="truncate text-xs text-amber-200/80">{team.name}</p>
-                              <p className="text-xl font-black text-white">{team.score}</p>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="relative rounded-2xl border border-amber-400/40 bg-black/20 p-6 text-center">
-                          <p className="text-sm font-bold tracking-widest text-amber-200/80">
-                            {scoreAnnouncement.title}
-                          </p>
-                          <p
-                            className={`mt-2 text-5xl font-black ${
-                              scoreAnnouncement.points >= 0
-                                ? "text-emerald-300"
-                                : "text-red-300"
-                            }`}
-                          >
-                            {scoreAnnouncement.teamName} {scoreAnnouncement.points >= 0 ? "+" : ""}
-                            {scoreAnnouncement.points}
-                          </p>
-                          <p className="mt-2 text-sm text-amber-100/85">
-                            {scoreAnnouncement.detail}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Dice and Controls */}
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
-              <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:text-left">
-                {/* Realistic Dice */}
-                <div
-                  className={`
-                    relative cursor-pointer
-                    transform transition-all duration-300 hover:scale-110
-                    ${isRolling ? "animate-spin" : ""}
-                  `}
-                  onClick={rollDice}
-                >
-                  <RealisticDice value={diceValue} />
-                </div>
-
-                {/* Dice Info */}
-                <div className="text-amber-300">
-                  <p className="text-sm font-bold">ROLL THE DICE</p>
-                  <p className="text-xs opacity-70">
-                    {isMoving
-                      ? "FIGURE IS MOVING..."
-                      : "TEAMS MOVE IN ORDER"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Action Button */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <button
-                  onClick={rollDice}
-                  disabled={isRolling || isMoving}
-                  className="rounded-xl border-2 border-amber-400/50 bg-gradient-to-r from-amber-600 to-yellow-600 px-6 py-3.5 text-base font-bold text-white transition-all hover:scale-105 disabled:opacity-50 sm:px-8 sm:py-4 sm:text-xl"
-                >
-                  <FaDice className="mr-2 inline" />
-                  ROLL DICE
-                </button>
-
-                {/* Finish Game */}
-                <button
-                  onClick={() => finishGame()}
-                  className="rounded-xl border-2 border-red-400/50 bg-gradient-to-r from-red-600 to-rose-600 px-6 py-3.5 text-base font-bold text-white transition-all hover:scale-105 sm:text-lg"
-                >
-                  END GAME
-                </button>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-amber-500/30 bg-amber-950/35 p-4">
-              <div className="mb-2 flex items-center justify-between">
-                <p className="text-sm font-bold text-amber-300">
-                  SO'NGGI +/- BALLAR
-                </p>
-                <span className="text-xs text-amber-200/70">
-                  oxirgi {recentScoreEvents.length} ta
-                </span>
-              </div>
-              <div className="space-y-1">
-                {recentScoreEvents.length > 0 ? (
-                  recentScoreEvents.map((item, idx) => (
-                    <p key={`score-event-${idx}`} className="text-sm text-white/90">
-                      - {item}
-                    </p>
-                  ))
-                ) : (
-                  <p className="text-sm text-amber-200/70">
-                    Hozircha +/- ball o'zgarishi yo'q.
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {phase === "finish" && winner && (
-          /* ========== YAKUNIY NATIJALAR ========== */
-          <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 sm:items-center">
-            {showConfetti && (
-              <Confetti
-                mode="boom"
-                particleCount={500}
-                effectCount={1}
-                x={0.5}
-                y={0.3}
-                colors={["#f59e0b", "#ef4444", "#22c55e", "#3b82f6"]}
-              />
-            )}
-
-            <div className="relative group flex w-full max-w-5xl flex-col justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-amber-900/85 via-yellow-900/80 to-amber-900/85 p-5 text-center shadow-2xl sm:p-10">
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10" />
-
-              {/* Trophy */}
-              <div className="relative mb-8">
-                <div className="pointer-events-none absolute inset-0  rounded-full bg-yellow-500/30" />
-                <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-r from-yellow-500 to-amber-500 mx-auto">
-                  <FaCrown className="text-5xl text-white" />
-                </div>
-              </div>
-
-              <h2 className="relative text-4xl font-black text-transparent bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text mb-2">
-                {winner.name} WINS!
-              </h2>
-              <p className="relative text-xl text-amber-300 mb-8">
-                {winner.score} POINTS
-              </p>
-
-              {/* Results */}
-              <div className="relative mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {teams
-                  .sort((a, b) => b.score - a.score)
-                  .map((team) => (
-                    <div
-                      key={team.id}
-                      className="rounded-xl border border-amber-500/30 bg-amber-950/30 p-4"
-                    >
-                      <div className="flex items-center gap-3 mb-2">
-                        {renderPawn(team, 28)}
-                        <span className="font-bold text-white">
-                          {team.name}
-                        </span>
-                      </div>
-                      <p className="text-2xl font-bold text-amber-400">
-                        {team.score}
-                      </p>
-                      <p className="text-xs text-amber-300/70">points</p>
-                    </div>
-                  ))}
-              </div>
-
-              {/* Buttons */}
-              <div className="relative flex flex-wrap justify-center gap-4">
-                <button
-                  onClick={resetGame}
-                  className="px-6 py-3 bg-gradient-to-r from-amber-600 to-yellow-600 text-white rounded-xl font-bold hover:scale-105 transition-all"
-                >
-                  <FaRedo className="inline mr-2" />
-                  PLAY AGAIN
-                </button>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="px-6 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl font-bold hover:scale-105 transition-all"
-                >
-                  <FaTimesCircle className="inline mr-2" />
-                  CLOSE
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-        <GameStartCountdownOverlay
-          visible={countdownVisible}
-          value={countdownValue}
-        />
-      </div>
-    </div>
+      <div className="game-clock"><FaStar/> {String(Math.floor(gameSeconds / 60)).padStart(2,"0")}:{String(gameSeconds % 60).padStart(2,"0")}</div>
+      <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue}/>
+    </main>
   );
 }
 

@@ -23,6 +23,8 @@ import { useGameParticipantMode } from "../../../hooks/useGameParticipantMode";
 import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { MORE_QUESTIONS } from "./data";
+import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
+import { filterGameQuestionsByDifficulty } from "../../../utils/gameQuestionDifficulty";
 
 import { REVERSE_THINKING_GAME_KEY, TEAM_AVATARS, TEAM_COLORS } from "./constants";
 import type { Phase, Question, Team } from "./types";
@@ -72,7 +74,7 @@ function ReverseThinking() {
   const [teamError, setTeamError] = useState("");
   
   // Questions state
-  const [questions, setQuestions] = useState<Question[]>(MORE_QUESTIONS);
+  const [questions, setQuestions] = useState<Question[]>(() => filterGameQuestionsByDifficulty(MORE_QUESTIONS, getGameQuestionDifficulty("reverse-thinking")));
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -131,7 +133,7 @@ function ReverseThinking() {
     let alive = true;
     (async () => {
       if (!user?.id) {
-        setQuestions(MORE_QUESTIONS);
+        setQuestions(filterGameQuestionsByDifficulty(MORE_QUESTIONS, getGameQuestionDifficulty("reverse-thinking")));
         setRemoteLoaded(true);
         return;
       }
@@ -139,9 +141,9 @@ function ReverseThinking() {
       const remoteQuestions = await fetchGameQuestionsByTeacher<Question>(REVERSE_THINKING_GAME_KEY, user.id);
       if (!alive) return;
       if (remoteQuestions && remoteQuestions.length > 0) {
-        setQuestions(remoteQuestions);
+        setQuestions(filterGameQuestionsByDifficulty(remoteQuestions, getGameQuestionDifficulty("reverse-thinking")));
       } else {
-        setQuestions(MORE_QUESTIONS);
+        setQuestions(filterGameQuestionsByDifficulty(MORE_QUESTIONS, getGameQuestionDifficulty("reverse-thinking")));
       }
       setRemoteLoaded(true);
     })();
@@ -699,7 +701,7 @@ function ReverseThinking() {
             </div>
 
             {/* Questions Panel */}
-            <div className="relative group transform-gpu overflow-hidden rounded-2xl border border-green-500/20 bg-gradient-to-br from-green-900/40 to-emerald-900/40 p-4 backdrop-blur-xl sm:p-6">
+            <div className="hidden relative group transform-gpu overflow-hidden rounded-2xl border border-green-500/20 bg-gradient-to-br from-green-900/40 to-emerald-900/40 p-4 backdrop-blur-xl sm:p-6">
               <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-green-500/10 to-emerald-500/10" />
               
               <div className="flex items-center gap-3 mb-4 pb-2 border-b border-green-500/30">

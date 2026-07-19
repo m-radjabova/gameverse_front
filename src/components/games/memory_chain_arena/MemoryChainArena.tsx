@@ -143,7 +143,7 @@ function MemoryChainArena({
     fallbackPrimaryName: leftTeamName,
     fallbackSecondaryName: rightTeamName,
     singleModeLabel: "1 o'yinchi",
-    multiModeLabel: "2 jamoa",
+    multiModeLabel: "2 o'yinchi",
   });
   const config = DIFFICULTY_CONFIG[initialDifficulty];
   const totalRounds = config.rounds;
@@ -173,7 +173,7 @@ function MemoryChainArena({
   const progressPercent = Math.round((progressRounds / totalRounds) * 100);
   const roundLabel = `${round}/${totalRounds}`;
   useGameResultSubmission(
-    phase === "finished",
+    phase === "finished" && isSinglePlayer,
     "memory-chain",
     isSinglePlayer
       ? [
@@ -673,7 +673,8 @@ function MemoryChainArena({
       {isSinglePlayer ? (
         <GameLeaderboardPanel
           gameKey="memory-chain"
-          title="Memory Chain Solo Leaderboard"
+          title="Xotira zanjiri arenasi reytingi"
+          singlePlayerOnly
         />
       ) : null}
 
@@ -744,4 +745,3 @@ function MemoryChainArena({
 }
 
 export default MemoryChainArena;
-

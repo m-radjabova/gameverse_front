@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "../apiClient/apiClient";
 import { getAccessToken } from "../utils/auth";
+import { getGameQuestionDifficulty } from "./gameSession";
+import { filterGameQuestionsByDifficulty } from "../utils/gameQuestionDifficulty";
 
 type QuestionPayload<T> = {
   game_key?: string;
@@ -17,7 +19,10 @@ type UseGameQuestionsOptions = {
 type LoadQuestionsOptions = {
   force?: boolean;
   teacherScoped?: boolean;
+  filterBySessionDifficulty?: boolean;
 };
+
+const gameIdFromKey = (gameKey: string) => gameKey.replaceAll("_", "-");
 
 const toPath = (gameKey: string) => `/game-questions/${encodeURIComponent(gameKey)}`;
 
@@ -154,7 +159,7 @@ export default function useGameQuestions<T>({
   const loadQuestions = useCallback(
     async (
       gameKey: string,
-      { force = false, teacherScoped = Boolean(teacherId) }: LoadQuestionsOptions = {},
+      { force = false, teacherScoped = Boolean(teacherId), filterBySessionDifficulty = true }: LoadQuestionsOptions = {},
     ) => {
       const scopedTeacherId = teacherScoped && teacherId ? teacherId : undefined;
 
@@ -172,11 +177,16 @@ export default function useGameQuestions<T>({
         setQuestionsByGame((prev) => ({ ...prev, [gameKey]: cachedQuestions }));
         setLoadedByGame((prev) => ({ ...prev, [gameKey]: true }));
         setLoadingByGame((prev) => ({ ...prev, [gameKey]: false }));
-        return cachedQuestions;
+        return filterBySessionDifficulty
+          ? filterGameQuestionsByDifficulty(cachedQuestions, getGameQuestionDifficulty(gameIdFromKey(gameKey)))
+          : cachedQuestions;
       }
 
       if (!force && loadedByGame[gameKey]) {
-        return questionsByGame[gameKey] ?? [];
+        const stored = questionsByGame[gameKey] ?? [];
+        return filterBySessionDifficulty
+          ? filterGameQuestionsByDifficulty(stored, getGameQuestionDifficulty(gameIdFromKey(gameKey)))
+          : stored;
       }
 
       setLoadingByGame((prev) => ({ ...prev, [gameKey]: true }));
@@ -193,7 +203,9 @@ export default function useGameQuestions<T>({
       setQuestionsByGame((prev) => ({ ...prev, [gameKey]: nextItems }));
       setLoadedByGame((prev) => ({ ...prev, [gameKey]: true }));
       setLoadingByGame((prev) => ({ ...prev, [gameKey]: false }));
-      return nextItems;
+      return filterBySessionDifficulty
+        ? filterGameQuestionsByDifficulty(nextItems, getGameQuestionDifficulty(gameIdFromKey(gameKey)))
+        : nextItems;
     },
     [loadedByGame, queryClient, questionsByGame, teacherId],
   );

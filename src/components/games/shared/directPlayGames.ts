@@ -5,6 +5,11 @@ export const DIRECT_PLAY_GAME_PATHS = new Set([
   "/games/find-color",
   "/games/bingo",
   "/games/jumanji",
+  "/games/frog-pond",
+  "/games/memory-rush",
+  "/games/word-battle",
+  "/games/word-search",
+  "/games/flag-battle",
   "/games/hangman",
   "/games/math-race",
   "/games/tug-of-war",
@@ -14,4 +19,5 @@ export const DIRECT_PLAY_GAME_PATHS = new Set([
   "/games/mini-puzzle",
   "/games/plant-vr",
   "/games/virtual-zoo-vr",
+  "/games/iq-game",
 ]);

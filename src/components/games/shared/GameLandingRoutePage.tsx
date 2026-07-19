@@ -114,6 +114,16 @@ const themes: Record<string, GameLandingTheme> = {
     mutedText: "text-orange-50/80",
     glow: "via-yellow-300",
   },
+  mystery: {
+    accent: "from-violet-500 via-fuchsia-500 to-lime-400",
+    accentSoft: "from-violet-100 via-fuchsia-100 to-lime-100",
+    page: "bg-[radial-gradient(circle_at_25%_20%,#27104d_0%,#09091f_48%,#06162a_100%)]",
+    panel: "bg-[linear-gradient(145deg,rgba(172,119,255,0.15),rgba(142,243,63,0.04))]",
+    border: "border-violet-200/20",
+    text: "text-lime-200",
+    mutedText: "text-violet-50/75",
+    glow: "via-lime-300",
+  },
 };
 
 const fallbackTheme = themes.blue;
@@ -142,6 +152,7 @@ const themeKeyByGameId: Record<string, keyof typeof themes> = {
   "math-chick": "purple",
   "iq-game": "blue",
   "pizza-master": "pizza",
+  "mystery-egg": "mystery",
 };
 
 const playAccentByGameId: Record<string, string> = {
@@ -168,11 +179,12 @@ const playAccentByGameId: Record<string, string> = {
   "math-chick": "from-[#3b82f6] via-[#7c3aed] to-[#ec4899]",
   "iq-game": "from-sky-500 via-cyan-500 to-violet-500",
   "pizza-master": "from-red-500 via-orange-500 to-yellow-400",
+  "mystery-egg": "from-violet-600 via-fuchsia-500 to-lime-400",
 };
 
 function splitTitle(title: string): [string, string] {
   const words = title.trim().split(/\s+/);
-  if (words.length < 2) return [title, "o'yini"];
+  if (words.length < 2) return [title, "sarguzashti"];
   const splitIndex = Math.ceil(words.length / 2);
   return [words.slice(0, splitIndex).join(" "), words.slice(splitIndex).join(" ")];
 }
@@ -195,61 +207,61 @@ function createConfig(game: GameCard): GameLandingPageConfig {
     gameKey: game.id,
     // Pizza Master o'zining Solo/Battle tanlovini gameplay ichida ko'rsatadi.
     // Umumiy ishtirokchi oynasi uni ikkinchi marta so'ramasligi kerak.
-    modeSelectionEnabled: game.id !== "pizza-master",
+    modeSelectionEnabled: game.id !== "pizza-master" && game.id !== "mystery-egg",
     theme,
     metrics: [
-      { icon: FaUsers, label: "O'yinchilar", value: game.players },
-      { icon: FaClock, label: "Davomiylik", value: game.time },
-      { icon: game.categoryIcon, label: "Yo'nalish", value: game.category },
-      { icon: FaTrophy, label: "Mukofot", value: game.points },
+      { icon: FaUsers, label: "Ishtirokchilar", value: game.players },
+      { icon: FaClock, label: "O'rtacha vaqt", value: game.time },
+      { icon: game.categoryIcon, label: "Kategoriya", value: game.category },
+      { icon: FaTrophy, label: "Maksimal ball", value: game.points },
     ],
     features: [
       {
         icon: game.mainIcon,
-        title: `${game.category} sinovi`,
-        description: "Qiziqarli topshiriqlar orqali ko'nikmalaringizni amalda sinab ko'ring.",
-        stat: "Faol o'yin",
+        title: `${game.category} bo'yicha sinov`,
+        description: "O'zingizni sinab ko'ring, yangi bilimlarni mustahkamlang va har bir bosqichdan zavq oling.",
+        stat: "Boshlashga tayyor",
       },
       {
         icon: game.icon,
-        title: "Tezkor jarayon",
-        description: "Har bir raund diqqat, tezlik va aniq qaror qabul qilishni talab qiladi.",
+        title: "Tez va qiziqarli",
+        description: "Har bir raundda tez fikrlang, to'g'ri javob bering va vaqtni yutishga harakat qiling.",
         stat: game.time,
       },
       {
         icon: FaBolt,
-        title: "Natija va ball",
-        description: "Harakatlaringiz yakuniy natijaga ta'sir qiladi va rekord sari olib boradi.",
+        title: "Ball va rekordlar",
+        description: "Har bir to'g'ri javob sizni yuqori ball va yangi rekord sari bir qadam yaqinlashtiradi.",
         stat: game.points,
       },
     ],
     levels: [
       {
         icon: game.levelIcon,
-        title: "Boshlang'ich",
-        detail: "Qoidalarni tushunib, o'yin ritmiga kiring.",
-        meta: "Yengil start",
+        title: "Boshlang'ich bosqich",
+        detail: "O'yin qoidalarini o'rganing va bemalol boshlang.",
+        meta: "Yangi boshlovchi",
         progress: 34,
       },
       {
         icon: game.icon,
-        title: "Raqobat",
-        detail: "Tezlik va aniqlikni birgalikda sinang.",
+        title: "Raqobat bosqichi",
+        detail: "Tezlik va aniqligingizni sinovdan o'tkazing hamda yuqori natija uchun bellashing.",
         meta: game.level,
         progress: 67,
       },
       {
         icon: FaCrown,
-        title: "Ustoz",
-        detail: "Eng yuqori natija uchun barcha imkoniyatdan foydalaning.",
-        meta: "Rekord rejimi",
+        title: "Ustoz bosqichi",
+        detail: "Mahoratingizni namoyish eting va eng yuqori natijani qo'lga kiriting.",
+        meta: "Chempion",
         progress: 100,
       },
     ],
     highlights: [
-      { icon: game.mainIcon, label: "Yo'nalish", value: game.category },
-      { icon: FaLayerGroup, label: "Daraja", value: game.level },
-      { icon: FaStar, label: "Mukofot", value: game.points },
+      { icon: game.mainIcon, label: "Kategoriya", value: game.category },
+      { icon: FaLayerGroup, label: "Qiyinlik", value: game.level },
+      { icon: FaStar, label: "Yutuq", value: game.points },
     ],
   };
 }

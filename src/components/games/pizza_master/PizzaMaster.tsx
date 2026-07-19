@@ -11,12 +11,13 @@ import { writeLastPlayedGame } from "../../../utils/gameHistory";
 import useContextPro from "../../../hooks/useContextPro";
 import useGameQuestions from "../../../hooks/useGameQuestions";
 import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
-import { saveGameSessionConfig } from "../../../hooks/gameSession";
+import { getGameQuestionDifficulty, saveGameSessionConfig } from "../../../hooks/gameSession";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import pizzaGameSound from "../../../assets/sounds/pizza-game.m4a";
 import wrongSound from "../../../assets/sounds/wrong.mp3";
+import { filterGameQuestionsByDifficulty } from "../../../utils/gameQuestionDifficulty";
 
 const QUESTION_SECONDS = 15;
 const CHEF_CHALLENGE_SECONDS = 10;
@@ -32,6 +33,7 @@ type TeacherPizzaQuestion = {
   variants?: string[];
   answerIndex?: number;
   subject?: string;
+  difficulty?: "easy" | "medium" | "hard";
 };
 
 function normalizeTeacherQuestions(items: TeacherPizzaQuestion[]): PizzaQuestion[] {
@@ -41,7 +43,8 @@ function normalizeTeacherQuestions(items: TeacherPizzaQuestion[]): PizzaQuestion
       const options = (item.options ?? item.variants ?? []).map((option) => String(option).trim()).filter(Boolean).slice(0, 4);
       const answer = Number(item.answerIndex);
       if (!prompt || options.length !== 4 || !Number.isInteger(answer) || answer < 0 || answer > 3) return null;
-      return { id: index + 1, prompt, options, answer };
+      const normalized: PizzaQuestion = { id: index + 1, prompt, options, answer, difficulty: item.difficulty };
+      return normalized;
     })
     .filter((item): item is PizzaQuestion => Boolean(item));
 }
@@ -184,12 +187,13 @@ export default function PizzaMaster() {
         if (!active) return;
         const normalized = normalizeTeacherQuestions(remoteQuestions ?? []);
         // Teacher savollari mavjud bo'lsa, demo ro'yxatni to'liq almashtiramiz.
-        setQuestions(normalized.length > 0 ? normalized : PIZZA_QUESTIONS);
+        const source = normalized.length > 0 ? normalized : PIZZA_QUESTIONS;
+        setQuestions(filterGameQuestionsByDifficulty(source, getGameQuestionDifficulty("pizza-master")));
         setQuestionsReady(true);
       })
       .catch(() => {
         if (!active) return;
-        setQuestions(PIZZA_QUESTIONS);
+        setQuestions(filterGameQuestionsByDifficulty(PIZZA_QUESTIONS, getGameQuestionDifficulty("pizza-master")));
         setQuestionsReady(true);
       });
 
@@ -200,7 +204,7 @@ export default function PizzaMaster() {
   }, [isTeacherOrAdmin, user?.id]);
 
   useGameResultSubmission(
-    Boolean(winner),
+    Boolean(winner) && mode !== "battle",
     PIZZA_MASTER_RESULT_KEY,
     winner
       ? (mode === "battle"
@@ -418,6 +422,7 @@ export default function PizzaMaster() {
       participantType: "player",
       participantLabel: "o'yinchi",
       participantLabels: participantCount === 2 ? [names?.[0] || "Player 1", names?.[1] || "Player 2"] : [names?.[0] || user?.username?.trim() || "Siz"],
+      questionDifficulty: getGameQuestionDifficulty("pizza-master"),
       selectedAt: new Date().toISOString(),
     });
     setMode(selectedMode);
@@ -451,6 +456,12 @@ export default function PizzaMaster() {
 
   return (
     <div className="pm-screen fixed inset-0 z-50 flex flex-col overflow-hidden">
+      <div className="pm-kitchen-atmosphere" aria-hidden="true">
+        <span className="pm-kitchen-lamp lamp-left"><i /></span>
+        <span className="pm-kitchen-lamp lamp-right"><i /></span>
+        <div className="pm-kitchen-shelf"><span>🍅</span><span>🌿</span><span>🫒</span><span>🧀</span></div>
+        <div className="pm-oven-glow" />
+      </div>
       {/* Animated background particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-[120px] animate-pulse" />
@@ -496,37 +507,50 @@ export default function PizzaMaster() {
           }
           .pm-screen {
             background:
-              linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px),
-              radial-gradient(circle at 20% 15%, rgba(249, 115, 22, 0.22), transparent 30%),
-              radial-gradient(circle at 80% 10%, rgba(59, 130, 246, 0.18), transparent 32%),
-              linear-gradient(180deg, #160f2f 0%, #231447 45%, #160c25 100%);
-            background-size: 42px 42px, 42px 42px, auto, auto, auto;
+              linear-gradient(rgba(255,245,220,0.055) 2px, transparent 2px),
+              linear-gradient(90deg, rgba(255,245,220,0.055) 2px, transparent 2px),
+              radial-gradient(circle at 50% 48%, rgba(255,125,36,0.2), transparent 32%),
+              linear-gradient(180deg, #25130f 0%, #3a1e16 58%, #1b0d0a 100%);
+            background-size: 62px 62px, 62px 62px, auto, auto;
           }
+          .pm-screen:before {
+            content: ""; position: absolute; z-index: 0; left: 0; right: 0; bottom: 0; height: 29%; pointer-events: none;
+            border-top: 10px solid #170a07;
+            background: repeating-linear-gradient(88deg,#5a2d18 0 46px,#6d381f 46px 49px,#42200f 49px 92px,#774324 92px 96px);
+            box-shadow: inset 0 8px 22px #0008,0 -10px 35px #0008;
+          }
+          .pm-screen:after {
+            content: ""; position: absolute; z-index: 0; left: 0; right: 0; top: 58px; height: 16px; pointer-events: none;
+            background: repeating-linear-gradient(90deg,#8f221b 0 28px,#f4e3bd 28px 56px); box-shadow:0 5px 15px #0007;
+          }
+          .pm-kitchen-atmosphere{position:absolute;z-index:1;inset:0;overflow:hidden;pointer-events:none}
+          .pm-kitchen-lamp{position:absolute;top:-4px;width:2px;height:78px;background:#140805;box-shadow:0 0 5px #000}.pm-kitchen-lamp:after{content:"";position:absolute;left:50%;bottom:-22px;width:76px;height:38px;transform:translateX(-50%);border-radius:45px 45px 8px 8px;background:linear-gradient(180deg,#24100b,#7d361b);border:2px solid #c87935;box-shadow:0 13px 30px #ff8a2855}.pm-kitchen-lamp i{position:absolute;left:50%;bottom:-38px;width:34px;height:22px;transform:translateX(-50%);border-radius:50%;background:#ffd18a;filter:blur(9px);opacity:.55}.pm-kitchen-lamp.lamp-left{left:9%}.pm-kitchen-lamp.lamp-right{right:9%}
+          .pm-kitchen-shelf{position:absolute;left:5%;top:115px;display:flex;gap:14px;align-items:flex-end;padding:7px 18px 9px;border-bottom:8px solid #4b210f;background:#1a0b0788;border-radius:8px;box-shadow:0 12px 20px #0008;font-size:24px}.pm-kitchen-shelf span{filter:drop-shadow(0 4px 3px #0008)}
+          .pm-oven-glow{position:absolute;right:8%;top:22%;width:240px;height:170px;border:10px solid #160a07;border-radius:90px 90px 18px 18px;background:radial-gradient(ellipse at 50% 90%,#ffbf4e99,#d5441838 42%,#090301 70%);box-shadow:inset 0 0 35px #000,0 0 65px #ff6a2530;opacity:.5}
           .pm-hud {
-            border: 3px solid rgba(255,255,255,0.14);
-            background: linear-gradient(180deg, rgba(42, 32, 86, 0.92), rgba(23, 19, 55, 0.92));
-            box-shadow: 0 14px 0 rgba(0,0,0,0.25), 0 22px 50px rgba(0,0,0,0.32), inset 0 2px 0 rgba(255,255,255,0.14);
+            border: 2px solid rgba(245,184,92,0.3);
+            background: linear-gradient(180deg, rgba(65,31,20,0.96), rgba(30,14,11,0.97));
+            box-shadow: 0 10px 0 rgba(18,7,4,0.7), 0 22px 50px rgba(0,0,0,0.38), inset 0 2px 0 rgba(255,224,171,0.11);
           }
           .pm-card {
-            border: 3px solid rgba(255,255,255,0.12);
-            background: linear-gradient(180deg, rgba(44, 35, 88, 0.9), rgba(24, 18, 50, 0.92));
-            box-shadow: 0 12px 0 rgba(0,0,0,0.22), 0 26px 48px rgba(0,0,0,0.28), inset 0 2px 0 rgba(255,255,255,0.12);
+            border: 2px solid rgba(239,178,91,0.24);
+            background: linear-gradient(160deg, rgba(62,30,20,0.95), rgba(25,13,11,0.97));
+            box-shadow: 0 10px 0 rgba(15,6,4,0.62), 0 24px 45px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,224,171,0.12);
           }
           .pm-stage {
-            border: 3px solid rgba(255, 190, 75, 0.22);
+            border: 3px solid rgba(255, 196, 103, 0.3);
             background:
-              radial-gradient(circle at 50% 45%, rgba(251, 191, 36, 0.16), transparent 48%),
-              linear-gradient(180deg, rgba(55, 41, 90, 0.9), rgba(25, 19, 55, 0.9));
-            box-shadow: 0 12px 0 rgba(0,0,0,0.22), 0 0 45px rgba(251, 146, 60, 0.12), inset 0 2px 0 rgba(255,255,255,0.12);
+              radial-gradient(circle at 50% 44%, rgba(255, 187, 77, 0.18), transparent 46%),
+              repeating-linear-gradient(92deg,rgba(103,50,25,.96) 0 58px,rgba(78,34,18,.96) 58px 62px,rgba(116,59,30,.96) 62px 120px);
+            box-shadow: 0 12px 0 rgba(24,9,4,0.72), 0 0 45px rgba(251, 146, 60, 0.16), inset 0 2px 0 rgba(255,224,171,0.16);
           }
           .pm-chip {
-            border: 2px solid rgba(255,255,255,0.16);
-            background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05));
+            border: 1px solid rgba(255,201,123,0.2);
+            background: linear-gradient(180deg, rgba(255,210,142,0.12), rgba(68,28,16,0.14));
             box-shadow: 0 5px 0 rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.18);
           }
           .pm-answer {
-            border-width: 3px !important;
+            border-width: 2px !important;
             box-shadow: 0 7px 0 rgba(0,0,0,0.28), 0 15px 26px rgba(0,0,0,0.24), inset 0 2px 0 rgba(255,255,255,0.12);
           }
           .pm-answer:not(:disabled):hover {
@@ -534,15 +558,16 @@ export default function PizzaMaster() {
             filter: saturate(1.2);
           }
           .pm-menu-card {
-            border: 3px solid rgba(255,255,255,0.14);
-            background: linear-gradient(180deg, rgba(46, 35, 90, 0.95), rgba(18, 16, 46, 0.96));
+            border: 2px solid rgba(255,193,105,0.24);
+            background: linear-gradient(180deg, rgba(65,31,20,0.97), rgba(25,12,9,0.98));
             box-shadow: 0 14px 0 rgba(0,0,0,0.28), 0 34px 70px rgba(0,0,0,0.35), inset 0 2px 0 rgba(255,255,255,0.14);
           }
           .pm-reward {
-            border: 4px solid rgba(251, 191, 36, 0.34);
-            background: linear-gradient(180deg, rgba(48, 34, 84, 0.98), rgba(20, 15, 44, 0.98));
+            border: 3px solid rgba(251, 191, 36, 0.4);
+            background: linear-gradient(180deg, rgba(70,35,20,0.98), rgba(24,11,8,0.99));
             box-shadow: 0 18px 0 rgba(0,0,0,0.3), 0 0 90px rgba(251, 146, 60, 0.28), inset 0 2px 0 rgba(255,255,255,0.16);
           }
+          @media(max-width:700px){.pm-kitchen-lamp{display:none}.pm-kitchen-shelf{top:78px;left:3%;font-size:17px;opacity:.55}.pm-oven-glow{right:-70px;top:20%;transform:scale(.7)}.pm-screen:after{top:48px;height:10px}}
         `}</style>
         {mode === "solo" && <SoloPizzaArena player={players[0]} question={question} timeLeft={timeLeft} roundSeconds={roundSeconds} onAnswer={answer} disabled={!gameStarted || locked || Boolean(winner)} />}
         {mode === "battle" && <BattleArena players={players} answered={battleAnswered} question={question} timeLeft={timeLeft} roundSeconds={roundSeconds} frozenPlayers={frozenPlayers} shuffledPlayers={shuffledPlayers} onUseSkill={useBattleSkill} onAnswer={answerBattle} disabled={!gameStarted || locked || Boolean(winner)} />}

@@ -7,15 +7,17 @@ export type SupportedTeacherGameKey =
   | "wheel_of_fortune"
   | "math_race"
   | "math_chick"
-  | "tug-of-war"
+  | "tug_of_war"
   | "baamboozle"
   | "jumanji"
   | "millionaire"
   | "truth_detector"
   | "treasure_hunt"
   | "reverse_thinking"
-  | "frog-pond"
-  | "pizza_master";
+  | "frog_pond"
+  | "pizza_master"
+  | "mystery_egg"
+  | "bingo";
 
 function difficultyInstruction(difficulty: GameDifficulty) {
   if (difficulty === "easy") return "Kontent oson bo'lsin, tez tushuniladigan va boshlang'ich darajaga mos bo'lsin.";
@@ -56,6 +58,14 @@ function buildPrompt(gameKey: SupportedTeacherGameKey, topic: string, subject: s
   ];
 
   switch (gameKey) {
+    case "bingo":
+      return [
+        `Bingo uchun ${count} ta 3 variantli test savol yarating.`,
+        'JSON: [{"emoji":"❓","title":"Mavzu","type":"quiz","prompt":"...","optionA":"...","optionB":"...","optionC":"...","correct":"A"}]',
+        "- Har bir elementda emoji, title, type, prompt, optionA, optionB, optionC va correct bo'lsin.",
+        "- type doim quiz, correct esa A, B yoki C bo'lsin.",
+        ...shared,
+      ].join("\n");
     case "quiz_battle":
       return [
         `Quiz Battle uchun ${count} ta test savol yarating.`,
@@ -72,6 +82,15 @@ function buildPrompt(gameKey: SupportedTeacherGameKey, topic: string, subject: s
         "- Har bir savolda question, options, answerIndex bo'lsin.",
         "- options aniq 4 ta bo'lsin.",
         "- answerIndex 0 dan 3 gacha bo'lsin.",
+        ...shared,
+      ].join("\n");
+    case "mystery_egg":
+      return [
+        `Mystery Egg uchun ${count} ta 4 variantli test savol yarating.`,
+        'JSON: [{"subject":"Matematika","question":"9 x 7 = ?","options":["54","63","72","81"],"answerIndex":1,"level":1}]',
+        "- Har bir savolda subject, question, options, answerIndex va level bo'lsin.",
+        "- options aniq 4 ta, answerIndex 0 dan 3 gacha bo'lsin.",
+        "- level 1 dan 9 gacha bo'lsin; easy=1-3, medium=4-6, hard=7-9 darajalarga moslansin.",
         ...shared,
       ].join("\n");
     case "classic_arcade":
@@ -113,7 +132,7 @@ function buildPrompt(gameKey: SupportedTeacherGameKey, topic: string, subject: s
         "- difficulty faqat easy, medium yoki hard bo'lsin.",
         ...shared,
       ].join("\n");
-    case "tug-of-war":
+    case "tug_of_war":
       return [
         `Tug Of War uchun ${count} ta matematik savol yarating.`,
         'JSON: [{"prompt":"12 + 8 = ?","answer":20,"level":"easy"}]',
@@ -130,7 +149,7 @@ function buildPrompt(gameKey: SupportedTeacherGameKey, topic: string, subject: s
         "- Javoblar qisqa va aniq bo'lsin.",
         ...shared,
       ].join("\n");
-    case "frog-pond":
+    case "frog_pond":
       return [
         `Frog Pond uchun ${count} ta 4 variantli test savol yarating.`,
         'JSON: [{"subject":"Matematika","question":"...","options":["...","...","...","..."],"answerIndex":0,"stage":1}]',
@@ -202,6 +221,17 @@ function validateItems(gameKey: SupportedTeacherGameKey, payload: unknown, expec
       const body = item as Record<string, unknown>;
 
       switch (gameKey) {
+        case "bingo": {
+          const emoji = String(body.emoji ?? "❓").trim() || "❓";
+          const title = String(body.title ?? "Savol").trim() || "Savol";
+          const prompt = String(body.prompt ?? "").trim();
+          const optionA = String(body.optionA ?? "").trim();
+          const optionB = String(body.optionB ?? "").trim();
+          const optionC = String(body.optionC ?? "").trim();
+          const correct = String(body.correct ?? "").trim().toUpperCase();
+          if (!prompt || !optionA || !optionB || !optionC || !["A", "B", "C"].includes(correct)) return null;
+          return { emoji, title, type: "quiz", prompt, optionA, optionB, optionC, correct };
+        }
         case "quiz_battle": {
           const question = String(body.question ?? "").trim();
           const options = toStringArray(body.options);
@@ -215,6 +245,16 @@ function validateItems(gameKey: SupportedTeacherGameKey, payload: unknown, expec
           const answerIndex = Number(body.answerIndex);
           if (!question || !options || !Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex > 3) return null;
           return { question, options, answerIndex };
+        }
+        case "mystery_egg": {
+          const subject = String(body.subject ?? "").trim() || "Aralash fanlar";
+          const question = String(body.question ?? "").trim();
+          const options = toStringArray(body.options);
+          const answerIndex = Number(body.answerIndex);
+          const levelRaw = Number(body.level);
+          const level = Number.isFinite(levelRaw) ? Math.max(1, Math.min(9, Math.round(levelRaw))) : 1;
+          if (!question || !options || !Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex > 3) return null;
+          return { subject, question, options, answerIndex, level };
         }
         case "classic_arcade": {
           const prompt = String(body.prompt ?? "").trim();
@@ -255,7 +295,7 @@ function validateItems(gameKey: SupportedTeacherGameKey, payload: unknown, expec
           if (new Set(options).size !== 4) return null;
           return { question, answer, options, difficulty };
         }
-        case "tug-of-war": {
+        case "tug_of_war": {
           const prompt = String(body.prompt ?? "").trim();
           const answer = Number(body.answer);
           const level = normalizeDifficulty(body.level);
@@ -268,7 +308,7 @@ function validateItems(gameKey: SupportedTeacherGameKey, payload: unknown, expec
           if (!question || !answer) return null;
           return { question, answer };
         }
-        case "frog-pond": {
+        case "frog_pond": {
           const subject = String(body.subject ?? "").trim() || "AI savol";
           const question = String(body.question ?? "").trim();
           const options = toStringArray(body.options);

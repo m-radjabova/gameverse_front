@@ -4,7 +4,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AuthLayout from "./layout/AuthLayout";
 import MainLayout from "./layout/MainLayout";
 import AdminLayout from "./layout/AdminLayout";
-import useContextPro from "./hooks/useContextPro";
 import SiteLoader from "./components/main/SiteLoader";
 import GameLayout from "./layout/GameLayout";
 import GamePlayView from "./components/games/shared/GamePlayView";
@@ -51,17 +50,14 @@ const MathChickGamePage = lazy(() => import("./components/games/math_chick_game/
 const IQGamePage = lazy(() => import("./components/games/iq_game/IQGamePage"));
 const FrogPondLandingPage = lazy(() => import("./components/games/frog-pond/FrogPondLandingPage"));
 const PizzaMasterPage = lazy(() => import("./components/games/pizza_master/PizzaMasterPage"));
+const MysteryEggPage = lazy(() => import("./components/games/mystery_egg/MysteryEggPage"));
 const VrGameBriefingPage = lazy(() => import("./components/games/shared/VrGameBriefingPage"));
+const GameQuestionSetupPage = lazy(() => import("./components/games/shared/GameQuestionSetupPage"));
+const GameModeSetupPage = lazy(() => import("./components/games/shared/GameModeSetupPage"));
 const WorldExplorer = lazy(() => import("./components/games/world_explorer"));
 const SolarSystemGame = lazy(() => import("./components/games/vr-solar-system"));
 
 function App() {
-  const {
-    state: { isLoading },
-  } = useContextPro();
-
-  if (isLoading) return <SiteLoader />;
-
   return (
     <>
     <Seo />
@@ -114,6 +110,8 @@ function App() {
         element={<GameLayout />}
       >
         <Route path="/games" element={<Games />} />
+        <Route path="/games/:gameId/setup" element={<GameQuestionSetupPage />} />
+        <Route path="/games/:gameId/mode-setup" element={<GameModeSetupPage />} />
         <Route path="/games/quiz-battle" element={<QuizBattlePage />} />
         <Route path="/games/treasure-hunt" element={<TreasureHuntPage />} />
         <Route path="/games/memory-rush" element={<MemoryRushPage />} />
@@ -143,6 +141,7 @@ function App() {
         <Route path="/games/iq-game" element={<IQGamePage />} />
         <Route path="/games/frog-pond" element={<FrogPondLandingPage />} />
         <Route path="/games/pizza-master" element={<PizzaMasterPage />} />
+        <Route path="/games/mystery-egg" element={<MysteryEggPage />} />
         <Route
           path="/games/world-explorer"
           element={<VrGameBriefingPage gameId="world-explorer" playPath="/games/world-explorer/play" />}

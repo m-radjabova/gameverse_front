@@ -11,6 +11,7 @@ import mathChickGameSound from "../../../assets/sounds/math_chick_game.m4a";
 import wrongSound from "../../../assets/sounds/wrong.mp3";
 import finishSound from "../../../assets/sounds/applause.mp3";
 import { getAccessToken } from "../../../utils/auth";
+import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
 import { GRADE_RANGE_OPTIONS, getGradeRangeInstruction, getGradeRangeLabel, type GradeRange } from "../../../utils/aiGeneration";
 
 type Difficulty = "easy" | "medium" | "hard" | "mixed";
@@ -498,9 +499,10 @@ export default function MathChickGame() {
   const finishAudioRef = useRef<HTMLAudioElement | null>(null);
   const loadedTeacherIdRef = useRef<string | null>(null);
 
-  const initialRound = useMemo(() => createRound("easy"), []);
+  const initialDifficulty = getGameQuestionDifficulty("math-chick");
+  const initialRound = useMemo(() => createRound(initialDifficulty), [initialDifficulty]);
 
-  const [difficulty, setDifficulty] = useState<Difficulty>("easy");
+  const [difficulty, setDifficulty] = useState<Difficulty>(initialDifficulty);
   const [phase, setPhase] = useState<Phase>("setup");
   useFinishApplause(phase === "finish");
   const [winner, setWinner] = useState<PlayerId | null>(null);
@@ -622,7 +624,10 @@ export default function MathChickGame() {
       if (winnerRef.current) {
         return;
       }
-      const next = takeNextRound(mode, customProblemsRef.current);
+      const sourceProblems = customProblemsRef.current.length > 0
+        ? customProblemsRef.current
+        : savedProblems;
+      const next = takeNextRound(mode, sourceProblems);
       customProblemsRef.current = next.remaining;
       setCustomProblems(next.remaining);
       setCurrentProblem(next.round.problem);
@@ -633,7 +638,7 @@ export default function MathChickGame() {
       setLockedBy(null);
       problemRevealStartRef.current = 0;
     }, ROUND_DELAY);
-  }, []);
+  }, [savedProblems]);
 
   const restartGame = useCallback((mode: Difficulty, seededProblems?: Problem[]) => {
     if (roundTimerRef.current) {
@@ -877,27 +882,63 @@ export default function MathChickGame() {
       ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
 
       const bgGrad = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
-      bgGrad.addColorStop(0, "#09111f");
-      bgGrad.addColorStop(0.45, "#152642");
-      bgGrad.addColorStop(1, "#0b1324");
+      bgGrad.addColorStop(0, "#38bdf8");
+      bgGrad.addColorStop(0.42, "#bae6fd");
+      bgGrad.addColorStop(0.43, "#a3e635");
+      bgGrad.addColorStop(1, "#3f8f2f");
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
+      const sunGlow = ctx.createRadialGradient(1130, 54, 4, 1130, 54, 66);
+      sunGlow.addColorStop(0, "rgba(255,255,255,1)");
+      sunGlow.addColorStop(0.25, "rgba(253,224,71,0.95)");
+      sunGlow.addColorStop(1, "rgba(253,224,71,0)");
+      ctx.fillStyle = sunGlow;
+      ctx.beginPath();
+      ctx.arc(1130, 54, 66, 0, Math.PI * 2);
+      ctx.fill();
+
+      const drawCloud = (x: number, y: number, scale: number) => {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(scale, scale);
+        ctx.fillStyle = "rgba(255,255,255,0.82)";
+        [[0, 10, 34, 16], [26, 0, 25, 23], [53, 9, 34, 17]].forEach(([cx, cy, rx, ry]) => {
+          ctx.beginPath();
+          ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        ctx.restore();
+      };
+      drawCloud(120 + Math.sin(t * 0.22) * 20, 54, 0.9);
+      drawCloud(690 + Math.sin(t * 0.18 + 2) * 24, 72, 0.7);
+
+      ctx.fillStyle = "rgba(22,101,52,0.5)";
+      ctx.beginPath();
+      ctx.moveTo(0, 142);
+      ctx.quadraticCurveTo(180, 72, 370, 142);
+      ctx.quadraticCurveTo(560, 78, 760, 142);
+      ctx.quadraticCurveTo(980, 65, CANVAS_W, 142);
+      ctx.lineTo(CANVAS_W, 205);
+      ctx.lineTo(0, 205);
+      ctx.closePath();
+      ctx.fill();
+
       for (let i = 0; i < 10; i += 1) {
         const starX = (i * CANVAS_W) / 10 + Math.sin(t * 0.4 + i) * 18;
-        const starY = 26 + Math.cos(t * 0.3 + i) * 18;
+        const starY = 116 + Math.cos(t * 0.3 + i) * 12;
         const starOpacity = 0.25 + Math.sin(t * 1.2 + i) * 0.18;
-        ctx.fillStyle = `rgba(255,255,255,${starOpacity})`;
+        ctx.fillStyle = `rgba(254,240,138,${starOpacity + 0.3})`;
         ctx.beginPath();
-        ctx.arc(starX, starY, 1.6, 0, Math.PI * 2);
+        ctx.arc(starX, starY, 3.2, 0, Math.PI * 2);
         ctx.fill();
       }
 
       const neonSweep = 920 + Math.sin(t * 1.05) * 90;
       const lightGrad = ctx.createLinearGradient(neonSweep - 220, 0, neonSweep + 220, 0);
-      lightGrad.addColorStop(0, "rgba(34,211,238,0)");
-      lightGrad.addColorStop(0.5, "rgba(34,211,238,0.9)");
-      lightGrad.addColorStop(1, "rgba(34,211,238,0)");
+      lightGrad.addColorStop(0, "rgba(255,255,255,0)");
+      lightGrad.addColorStop(0.5, "rgba(255,255,255,0.75)");
+      lightGrad.addColorStop(1, "rgba(255,255,255,0)");
       ctx.fillStyle = lightGrad;
       ctx.fillRect(770, 0, 320, 10);
 
@@ -910,11 +951,11 @@ export default function MathChickGame() {
         const laneTop = y - 48;
         const laneBottom = y + 42;
 
-        drawRoundedRect(ctx, 58, laneTop - 8, CANVAS_W - 136, 92, 28, "rgba(255,255,255,0.04)");
+        drawRoundedRect(ctx, 58, laneTop - 8, CANVAS_W - 136, 92, 28, "rgba(255,255,255,0.55)");
 
         const laneGrad = ctx.createLinearGradient(0, laneTop, 0, laneBottom + 30);
-        laneGrad.addColorStop(0, "rgba(38,47,79,0.95)");
-        laneGrad.addColorStop(1, "rgba(22,28,51,0.98)");
+        laneGrad.addColorStop(0, "rgba(254,243,199,0.98)");
+        laneGrad.addColorStop(1, "rgba(251,191,36,0.92)");
         ctx.fillStyle = laneGrad;
         ctx.beginPath();
         ctx.roundRect(72, laneTop + 14, CANVAS_W - 160, 52, 24);
@@ -923,7 +964,7 @@ export default function MathChickGame() {
         ctx.fillStyle = glow;
         ctx.fillRect(72, laneTop + 14, CANVAS_W - 160, 52);
 
-        ctx.strokeStyle = "rgba(255,255,255,0.12)";
+        ctx.strokeStyle = "rgba(120,53,15,0.22)";
         ctx.lineWidth = 2;
         ctx.setLineDash([14, 16]);
         ctx.beginPath();
@@ -934,20 +975,20 @@ export default function MathChickGame() {
 
         for (let step = 1; step <= TOTAL_STEPS; step += 1) {
           const markerX = CHICK_START_X + step * CHICK_STEP;
-          ctx.strokeStyle = `rgba(255,255,255,${step <= playerProgressRef.current[player] ? 0.2 : 0.08})`;
+          ctx.strokeStyle = `rgba(120,53,15,${step <= playerProgressRef.current[player] ? 0.28 : 0.12})`;
           ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.moveTo(markerX, laneTop + 6);
           ctx.lineTo(markerX, laneBottom + 24);
           ctx.stroke();
 
-          ctx.fillStyle = step <= playerProgressRef.current[player] ? accent : "rgba(255,255,255,0.18)";
+          ctx.fillStyle = step <= playerProgressRef.current[player] ? accent : "rgba(120,53,15,0.25)";
           ctx.beginPath();
           ctx.arc(markerX, laneTop - 8, 6.5, 0, Math.PI * 2);
           ctx.fill();
         }
 
-        drawRoundedRect(ctx, 84, laneTop - 22, 118, 30, 14, "rgba(7,12,24,0.62)");
+        drawRoundedRect(ctx, 84, laneTop - 22, 118, 30, 14, player === "A" ? "rgba(180,83,9,0.92)" : "rgba(2,132,199,0.92)");
         ctx.fillStyle = "#ffffff";
         ctx.font = "bold 18px Arial";
         ctx.textAlign = "center";
@@ -971,8 +1012,8 @@ export default function MathChickGame() {
         }
       });
 
-      drawRoundedRect(ctx, QUESTION_PANEL_X, QUESTION_PANEL_Y, QUESTION_PANEL_W, QUESTION_PANEL_H, 24, "rgba(19,27,48,0.82)");
-      ctx.strokeStyle = "rgba(255,255,255,0.12)";
+      drawRoundedRect(ctx, QUESTION_PANEL_X, QUESTION_PANEL_Y, QUESTION_PANEL_W, QUESTION_PANEL_H, 24, "rgba(88,28,135,0.94)");
+      ctx.strokeStyle = "rgba(253,224,71,0.75)";
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.roundRect(QUESTION_PANEL_X, QUESTION_PANEL_Y, QUESTION_PANEL_W, QUESTION_PANEL_H, 24);
@@ -986,11 +1027,11 @@ export default function MathChickGame() {
       ctx.save();
       ctx.translate(QUESTION_PANEL_X + QUESTION_PANEL_W / 2, QUESTION_PANEL_Y + QUESTION_PANEL_H / 2);
       ctx.scale(questionScale, questionScale);
-      ctx.fillStyle = "#dbeafe";
+      ctx.fillStyle = "#fde68a";
       ctx.font = "bold 16px Arial";
       ctx.textAlign = "center";
       ctx.textBaseline = "alphabetic";
-      ctx.fillText("SHARED QUESTION", 0, -12);
+      ctx.fillText("🐣 BIRINCHI TO'G'RI JAVOB YUTADI", 0, -12);
       ctx.fillStyle = "#ffffff";
       ctx.font = "bold 30px Arial";
       ctx.fillText(currentProblem.question, 0, 22);
@@ -1009,11 +1050,11 @@ export default function MathChickGame() {
       ctx.textBaseline = "middle";
       ctx.fillText(difficulty.toUpperCase(), 1118, 47);
 
-      drawRoundedRect(ctx, 72, 20, 220, 62, 20, "rgba(19,27,48,0.78)");
+      drawRoundedRect(ctx, 72, 20, 220, 62, 20, "rgba(22,101,52,0.9)");
       ctx.fillStyle = "#f8fafc";
       ctx.font = "bold 18px Arial";
       ctx.textAlign = "left";
-      ctx.fillText(roundLocked ? "FIRST CLICK LOCKED" : "FIRST CLICK WINS", 96, 46);
+      ctx.fillText(roundLocked ? "JAVOB QABUL QILINDI" : "TEZKOR POYGA", 96, 46);
       ctx.fillStyle = roundLocked
         ? lockedByRef.current === "A"
           ? "#fbbf24"
@@ -1022,8 +1063,8 @@ export default function MathChickGame() {
       ctx.font = "bold 16px Arial";
       ctx.fillText(
         roundLocked && lockedByRef.current
-          ? `Round taken by Player ${lockedByRef.current}`
-          : "Both players race this same problem",
+          ? `Birinchi javob: ${lockedByRef.current}`
+          : "Bir misol — ikki chaqqon jo'ja",
         96,
         68,
       );
@@ -1148,14 +1189,14 @@ export default function MathChickGame() {
 
     return (
       <div
-        className={`rounded-3xl border ${cardBorder} bg-slate-900/70 p-5 shadow-xl shadow-black/30 backdrop-blur-sm`}
+        className={`rounded-2xl border ${cardBorder} bg-slate-900/70 p-3 shadow-xl shadow-black/30 backdrop-blur-sm`}
       >
         <div className="flex items-center justify-between gap-4">
           <div>
             <div className={`text-xs font-black uppercase tracking-[0.35em] ${title}`}>
               {displayName}
             </div>
-            <div className="mt-2 text-sm text-slate-400">
+            <div className="mt-1 text-xs text-slate-400">
               {isWinner
                 ? "Champion"
                 : isLocked
@@ -1170,20 +1211,20 @@ export default function MathChickGame() {
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-4">
-          <div className="rounded-2xl bg-white/[0.04] p-4">
-            <div className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500">Score</div>
-            <div className={`mt-2 text-3xl font-black text-transparent bg-gradient-to-r ${value} bg-clip-text`}>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <div className="rounded-xl bg-white/[0.06] px-3 py-2">
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Ball</div>
+            <div className={`text-xl font-black text-transparent bg-gradient-to-r ${value} bg-clip-text`}>
               {score}
             </div>
           </div>
-          <div className="rounded-2xl bg-white/[0.04] p-4">
-            <div className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500">Progress</div>
-            <div className="mt-2 text-3xl font-black text-white">{progress}</div>
+          <div className="rounded-xl bg-white/[0.06] px-3 py-2">
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Qadam</div>
+            <div className="text-xl font-black text-white">{progress}</div>
           </div>
         </div>
 
-        <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-800">
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-800">
           <div
             className={`h-full rounded-full bg-gradient-to-r ${isWarm ? "from-amber-400 to-orange-500" : "from-cyan-400 to-blue-500"} transition-all duration-500`}
             style={{ width: `${(progress / TOTAL_STEPS) * 100}%` }}
@@ -1205,13 +1246,13 @@ export default function MathChickGame() {
     const displayName = getTeamDisplayName(teamNames[player], player === "A" ? "Team A" : "Team B");
 
     return (
-      <div className={`rounded-3xl border bg-gradient-to-br p-5 ${accentPanel}`}>
-        <div className="mb-4 flex items-center justify-between gap-3">
+      <div className={`rounded-2xl border bg-gradient-to-br p-3 ${accentPanel}`}>
+        <div className="mb-2 flex items-center justify-between gap-3">
           <div>
             <div className={`text-xs font-black uppercase tracking-[0.35em] ${isWarm ? "text-amber-200" : "text-cyan-200"}`}>
               {displayName}
             </div>
-            <div className="mt-2 text-sm text-slate-400">
+            <div className="mt-1 text-xs text-slate-400">
               {winner
                 ? "Match finished"
                 : roundLocked
@@ -1230,7 +1271,7 @@ export default function MathChickGame() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-4 gap-2">
           {options.map((option, index) => {
             const isSelected = selectedAnswers[player] === option;
             const isCorrect = option === currentProblem.answer;
@@ -1259,7 +1300,7 @@ export default function MathChickGame() {
                 type="button"
                 disabled={phase !== "game" || !!winner || roundLocked}
                 onClick={() => handleAnswer(player, option)}
-                className={`rounded-2xl border px-4 py-5 text-2xl font-black transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 ${classes}`}
+                className={`rounded-xl border px-3 py-3 text-xl font-black transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 ${classes}`}
               >
                 {option}
               </button>
@@ -1271,7 +1312,7 @@ export default function MathChickGame() {
   };
 
   return (
-    <div className="min-h-screen w-full overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.14),_transparent_30%),radial-gradient(circle_at_bottom_left,_rgba(245,158,11,0.12),_transparent_28%),linear-gradient(135deg,_#020617,_#0f172a_48%,_#020617)] p-6 text-white">
+    <div className={`w-full overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(253,224,71,0.24),_transparent_32%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.28),_transparent_34%),linear-gradient(145deg,_#064e3b,_#075985_48%,_#4c1d95)] p-3 text-white sm:p-4 ${phase === "setup" ? "min-h-screen" : "lg:h-[calc(100dvh-140px)] lg:min-h-0"}`}>
       {showConfetti && (
         <div className="pointer-events-none fixed inset-0 z-50">
           <Confetti
@@ -1286,30 +1327,41 @@ export default function MathChickGame() {
       )}
 
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute left-[-80px] top-24 h-80 w-80 rounded-full bg-amber-500/10 blur-3xl" />
-        <div className="absolute bottom-0 right-[-40px] h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl" />
-        <div className="absolute left-1/2 top-1/3 h-72 w-72 -translate-x-1/2 rounded-full bg-violet-500/8 blur-3xl" />
+        <div className="absolute left-[-80px] top-24 h-80 w-80 rounded-full bg-amber-300/20 blur-3xl" />
+        <div className="absolute bottom-0 right-[-40px] h-96 w-96 rounded-full bg-cyan-300/20 blur-3xl" />
+        <div className="absolute left-[7%] top-[18%] text-6xl opacity-25">🌻</div>
+        <div className="absolute right-[8%] top-[12%] text-7xl opacity-20">☀️</div>
+        <div className="absolute bottom-[8%] left-[4%] text-6xl opacity-20">🥚</div>
+        <div className="absolute bottom-[10%] right-[5%] text-7xl opacity-20">🌈</div>
       </div>
 
       <div className="relative z-10 mx-auto max-w-[1360px]">
-        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <h1 className="bg-gradient-to-r from-amber-300 via-white to-cyan-300 bg-clip-text text-4xl font-black tracking-[0.08em] text-transparent md:text-5xl">
-              Math Chick Game
-            </h1>
+        {phase === "setup" && <div className="mb-6 flex flex-col gap-4 rounded-3xl border border-white/20 bg-white/10 p-4 shadow-xl backdrop-blur-md lg:flex-row lg:items-center lg:justify-between sm:p-5">
+          <div className="flex items-center gap-4">
+            <div className="grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-yellow-300 to-orange-500 p-2 shadow-lg shadow-orange-500/30">
+              <img src={cuteChickenSprite} alt="Math Chick" className="h-full w-full object-contain" />
+            </div>
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.25em] text-yellow-200">Matematik ferma poygasi</p>
+              <h1 className="bg-gradient-to-r from-yellow-200 via-white to-cyan-200 bg-clip-text text-3xl font-black text-transparent md:text-5xl">
+                Math Chick 🐣
+              </h1>
+              <p className="mt-1 text-sm text-white/70">Hisoblang, tez javob bering va jo'jangizni marraga olib boring!</p>
+            </div>
           </div>
-        </div>
+          <div className="flex flex-wrap gap-2 text-xs font-bold"><span className="rounded-full bg-yellow-400/20 px-3 py-2 text-yellow-100">⚡ Tezkorlik</span><span className="rounded-full bg-emerald-400/20 px-3 py-2 text-emerald-100">🏁 8 qadam</span><span className="rounded-full bg-fuchsia-400/20 px-3 py-2 text-fuchsia-100">🎉 Mukofotlar</span></div>
+        </div>}
 
         {phase === "setup" && (
           <>
-            <div className="mb-6 rounded-[32px] border border-white/10 bg-slate-900/70 p-6 shadow-2xl shadow-black/30 backdrop-blur-md">
+            <div className="mb-6 rounded-[32px] border border-yellow-300/25 bg-[linear-gradient(135deg,rgba(120,53,15,0.72),rgba(6,78,59,0.76))] p-6 shadow-2xl shadow-black/30 backdrop-blur-md">
               <div className="mb-5 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                   <div className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">
-                    Teacher Panel
+                    Poygaga tayyorgarlik
                   </div>
                   <div className="mt-2 text-xl font-black text-white">
-                    Jamoa nomlari, AI va custom savollar
+                    Jo'jalaringizga nom bering
                   </div>
                 </div>
                 <div className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-bold text-cyan-100">
@@ -1342,7 +1394,7 @@ export default function MathChickGame() {
                   </label>
                 </div>
 
-                <div className="grid gap-4">
+                <div className="hidden grid gap-4">
                   <div className="rounded-3xl border border-cyan-400/15 bg-cyan-500/5 p-4">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                       <div>
@@ -1460,11 +1512,13 @@ export default function MathChickGame() {
                       <div className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">To'g'ri javob</div>
                       <input
                         type="number"
+                        min={0}
                         value={teacherDraft.answer}
+                        onKeyDown={(event) => { if (event.key === "-") event.preventDefault(); }}
                         onChange={(event) =>
                           setTeacherDraft((prev) => ({
                             ...prev,
-                            answer: event.target.value,
+                            answer: event.target.value === "" ? "" : String(Math.max(0, Number(event.target.value) || 0)),
                           }))
                         }
                         className="mt-3 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-white/30"
@@ -1558,14 +1612,14 @@ export default function MathChickGame() {
               </div>
             </div>
 
-            <div className="mb-6 rounded-[32px] border border-white/10 bg-slate-900/70 p-6 shadow-2xl shadow-black/30 backdrop-blur-md">
+            <div className="mb-6 rounded-[32px] border border-yellow-300/25 bg-[linear-gradient(135deg,rgba(88,28,135,0.78),rgba(3,105,161,0.76))] p-6 shadow-2xl shadow-black/30 backdrop-blur-md">
               <div className="mb-5 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                   <div className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">
-                    O'yinni Boshlash
+                    Poygani boshlash
                   </div>
                   <div className="mt-2 text-xl font-black text-white">
-                    Darajani tanlang va musobaqani boshlang
+                    Darajani tanlang va jo'jalarni uchiring
                   </div>
                 </div>
                 <div className="rounded-full border border-amber-400/20 bg-amber-400/10 px-4 py-2 text-sm font-bold text-amber-100">
@@ -1575,17 +1629,17 @@ export default function MathChickGame() {
 
               <div className="mb-6 flex flex-wrap items-center gap-3">
                 <span className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">
-                  Difficulty
+                  Qiyinlik
                 </span>
-                {categoryButton("easy", "Easy", "Easy")}
-                {categoryButton("medium", "Medium", "Med")}
-                {categoryButton("hard", "Hard", "Hard")}
-                {categoryButton("mixed", "Mixed", "Mix")}
+                {categoryButton("easy", "🌱 Oson", "Easy")}
+                {categoryButton("medium", "⭐ O'rta", "Med")}
+                {categoryButton("hard", "🔥 Qiyin", "Hard")}
+                {categoryButton("mixed", "🎲 Aralash", "Mix")}
               </div>
 
               <div className="mb-6 rounded-3xl border border-white/10 bg-white/[0.04] p-5 text-center">
                 <div className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">
-                  Keyingi Savol
+                  Birinchi misol
                 </div>
                 <div className="mt-3 bg-gradient-to-r from-amber-200 via-white to-cyan-200 bg-clip-text text-4xl font-black text-transparent">
                   {customProblems.length > 0 ? customProblems[0].question : currentProblem.question}
@@ -1598,7 +1652,7 @@ export default function MathChickGame() {
                   onClick={handleStartGame}
                   className="rounded-2xl bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 px-12 py-4 text-xl font-black text-white shadow-2xl shadow-orange-500/40 transition-all hover:scale-[1.03] hover:shadow-orange-500/60"
                 >
-                  O'YINNI BOSHLASH
+                  🏁 POYGANI BOSHLASH
                 </button>
               </div>
             </div>
@@ -1606,44 +1660,37 @@ export default function MathChickGame() {
         )}
 
         {phase !== "setup" && (
-          <>
-            <div className="mb-6 grid gap-4 md:grid-cols-2">
+          <div className="flex h-full min-h-0 flex-col">
+            <div className="mb-2 grid shrink-0 gap-3 md:grid-cols-2">
               {playerCard("A")}
               {playerCard("B")}
             </div>
 
-            <div className="mb-4 flex justify-end">
-              <button
-                type="button"
-                onClick={handleBackToSetup}
-                className="rounded-2xl border border-white/10 bg-slate-900/70 px-5 py-3 text-sm font-black uppercase tracking-[0.25em] text-slate-100 transition hover:scale-[1.02] hover:bg-slate-800"
-              >
-                Teacher Panelga Qaytish
-              </button>
-            </div>
-
-            <div className="relative rounded-[32px] border border-white/10 bg-slate-900/50 p-4 shadow-2xl shadow-black/30 backdrop-blur-md">
-              <div className="mb-4 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+            <div className="relative flex min-h-0 flex-1 flex-col rounded-[28px] border border-yellow-300/25 bg-white/10 p-3 shadow-2xl shadow-black/30 backdrop-blur-md">
+              <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2">
                 <div>
                   <div className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">
-                    Game Arena
+                    🐥 Jo'jalar poygasi
                   </div>
                 </div>
-                <div className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-bold text-cyan-100">
-                  {phase === "finish" ? "Match finished" : roundLocked ? "Round locked" : "Round live"}
+                <div className="flex items-center gap-2">
+                  <div className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1.5 text-xs font-bold text-cyan-100">
+                    {phase === "finish" ? "Poyga tugadi" : roundLocked ? "Javob tekshirilmoqda" : "Poyga davom etmoqda"}
+                  </div>
+                  <button type="button" onClick={handleBackToSetup} className="rounded-xl border border-white/10 bg-slate-900/75 px-3 py-1.5 text-xs font-black text-white transition hover:bg-slate-800">⚙️ Sozlamalar</button>
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-[28px] border border-white/10 bg-[#0f172acc] shadow-2xl shadow-black/40">
+              <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[#0f172acc] shadow-2xl shadow-black/40">
                 <canvas
                   ref={canvasRef}
                   width={CANVAS_W}
                   height={CANVAS_H}
-                  className="h-auto w-full bg-transparent"
+                  className="h-auto max-h-full w-full bg-transparent object-contain"
                 />
               </div>
 
-              <div className="mt-6 grid gap-5 lg:grid-cols-2">
+              <div className="mt-2 grid shrink-0 gap-3 lg:grid-cols-2">
                 {answerPanel("A")}
                 {answerPanel("B")}
               </div>
@@ -1652,15 +1699,15 @@ export default function MathChickGame() {
                 <div className="absolute inset-0 z-20 flex items-center justify-center rounded-[32px] bg-slate-950/72 p-4 backdrop-blur-md">
                   <div className="w-full max-w-3xl rounded-3xl border border-emerald-300/30 bg-gradient-to-r from-emerald-500/15 via-slate-900/90 to-cyan-500/15 p-6 text-center shadow-xl shadow-emerald-500/10 md:p-8">
                     <div className="text-xs font-black uppercase tracking-[0.35em] text-emerald-200">
-                      Match Complete
+                      🏆 Poyga yakunlandi
                     </div>
                     <div className="mt-3 text-4xl font-black text-white md:text-5xl">
                       {winner
-                        ? `\uD83C\uDFC6 ${getTeamDisplayName(teamNames[winner], winner === "A" ? "Team A" : "Team B")} Wins!`
+                        ? `\uD83C\uDFC6 ${getTeamDisplayName(teamNames[winner], winner === "A" ? "Team A" : "Team B")} g'olib!`
                         : ""}
                     </div>
                     <div className="mt-2 text-slate-300">
-                      Qayta start qilib yangi poyga boshlashingiz yoki teacher panelga qaytishingiz mumkin.
+                      Yangi poyga boshlang yoki jamoa sozlamalariga qayting.
                     </div>
                     <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
                       <button
@@ -1668,21 +1715,21 @@ export default function MathChickGame() {
                         onClick={handleStartGame}
                         className="rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-cyan-500 px-6 py-3 text-sm font-black uppercase tracking-[0.25em] text-white shadow-lg shadow-cyan-500/20 transition duration-200 hover:scale-[1.03] active:scale-[0.98]"
                       >
-                        Restart Match
+                        🔄 Yana poyga
                       </button>
                       <button
                         type="button"
                         onClick={handleBackToSetup}
                         className="rounded-2xl border border-white/10 bg-slate-900/70 px-6 py-3 text-sm font-black uppercase tracking-[0.25em] text-slate-100 transition hover:scale-[1.02] hover:bg-slate-800"
                       >
-                        Teacher Panel
+                        ⚙️ Sozlamalar
                       </button>
                     </div>
                   </div>
                 </div>
               )}
             </div>
-          </>
+          </div>
         )}
       </div>
 

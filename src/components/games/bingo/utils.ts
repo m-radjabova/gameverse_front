@@ -158,8 +158,8 @@ export function rowsToText(rows: CellInputRow[]): string {
     .join("\n");
 }
 
-export function withBonusesAndDifficulty(parsed: ParseResult["cells"]): BingoCell[] {
-  const difficulties = randomDifficulties();
+export function withBonusesAndDifficulty(parsed: ParseResult["cells"], fixedDifficulty?: Difficulty): BingoCell[] {
+  const difficulties = fixedDifficulty ? Array<Difficulty>(parsed.length).fill(fixedDifficulty) : randomDifficulties();
   const base: BingoCell[] = parsed.map((cell, index) => ({
     ...cell,
     id: `cell-${index + 1}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,

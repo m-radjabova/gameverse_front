@@ -24,7 +24,9 @@ import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import useContextPro from "../../../hooks/useContextPro";
 import useGameQuestions from "../../../hooks/useGameQuestions";
 
-import { BASE_POINTS, createEmptyDraft, QUIZ_BATTLE_GAME_KEY, QUIZ_BATTLE_RESULT_KEY, SECONDS_PER_QUESTION, STREAK_BONUS } from "./constants";
+import { BASE_POINTS, createEmptyDraft, DEFAULT_QUESTIONS, QUIZ_BATTLE_GAME_KEY, QUIZ_BATTLE_RESULT_KEY, SECONDS_PER_QUESTION, STREAK_BONUS } from "./constants";
+import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
+import { filterGameQuestionsByDifficulty } from "../../../utils/gameQuestionDifficulty";
 import type { Phase, Question, QuestionDraft, TeamId } from "./types";
 
 function getDefaultTeamNames(isSinglePlayer: boolean, singlePlayerName: string): [string, string] {
@@ -40,12 +42,13 @@ function QuizBattle() {
   const { loadQuestions } = useGameQuestions<Question>({ teacherId: user?.id });
   const isSinglePlayer = session?.participantCount === 1;
   const singlePlayerName =
-    session?.participantLabels[0]?.trim() &&
+    user?.username?.trim() ||
+    (session?.participantLabels[0]?.trim() &&
     !/^O'YINCHI\s+\d+$/i.test(session.participantLabels[0])
       ? session.participantLabels[0]
-      : user?.username?.trim() || "O'YINCHI 1";
+      : "O'YINCHI 1");
   const finishViewRef = useRef<HTMLDivElement | null>(null);
-  const [phase, setPhase] = useState<Phase>("question-setup");
+  const [phase, setPhase] = useState<Phase>("team-setup");
   useFinishApplause(phase === "finish");
   const [teamNames, setTeamNames] = useState<[string, string]>([
     isSinglePlayer ? singlePlayerName : "⚔️ YULDUZLAR",
@@ -53,7 +56,7 @@ function QuizBattle() {
   ]);
   const [nameError, setNameError] = useState("");
 
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<Question[]>(() => filterGameQuestionsByDifficulty(DEFAULT_QUESTIONS, getGameQuestionDifficulty("quiz-battle")));
   const [draft, setDraft] = useState<QuestionDraft>(createEmptyDraft());
   const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
   const [questionError, setQuestionError] = useState("");
@@ -79,7 +82,7 @@ function QuizBattle() {
     return scores[0] > scores[1] ? 0 : 1;
   }, [isSinglePlayer, scores]);
   useGameResultSubmission(
-    phase === "finish",
+    phase === "finish" && isSinglePlayer,
     QUIZ_BATTLE_RESULT_KEY,
     isSinglePlayer
       ? [
@@ -158,6 +161,8 @@ function QuizBattle() {
       if (!alive) return;
       if (remoteQuestions && remoteQuestions.length > 0) {
         setQuestions(remoteQuestions);
+      } else {
+        setQuestions(filterGameQuestionsByDifficulty(DEFAULT_QUESTIONS, getGameQuestionDifficulty("quiz-battle")));
       }
     })();
     return () => {
@@ -167,11 +172,6 @@ function QuizBattle() {
 
   useEffect(() => {
     if (phase !== "play") return;
-    if (questions.length < 2) {
-      setPhase("question-setup");
-      setQuestionError("Savollar topilmadi. Kamida 2 ta savol bo'lishi kerak.");
-      return;
-    }
     if (!questions[current]) {
       setCurrent(0);
     }
@@ -285,7 +285,7 @@ function QuizBattle() {
 
   const startGame = () => {
     if (questions.length < 2) {
-      setPhase("question-setup");
+      setPhase("team-setup");
       setQuestionError("Kamida 2 ta savol qo'shing.");
       return;
     }
@@ -382,7 +382,7 @@ function QuizBattle() {
     setSelected(null);
     setAnsweringTeam(null);
     setDoublePoints(false);
-    setPhase("question-setup");
+    setPhase("team-setup");
     setToast("🏠 Bosh sahifaga qaytdingiz");
   };
 
@@ -640,7 +640,7 @@ function QuizBattle() {
           
           <div className="relative mt-6 flex justify-center gap-4">
             <button
-              onClick={() => setPhase("question-setup")}
+              onClick={() => setPhase("team-setup")}
               className="group relative overflow-hidden rounded-xl bg-yellow-500/20 px-6 py-3 font-bold text-white border border-yellow-500/30 transition-all hover:bg-yellow-500/30"
             >
               <span className="relative flex items-center gap-2">

@@ -56,6 +56,8 @@ function FeedbackAvatar({
     <img
       src={src}
       alt={username || "Teacher"}
+      loading="lazy"
+      decoding="async"
       onError={() => setImageFailed(true)}
       className="h-10 w-10 shrink-0 rounded-[14px] object-cover ring-2 ring-white/10 shadow-lg"
     />

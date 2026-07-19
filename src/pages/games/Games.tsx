@@ -2,8 +2,6 @@ import { useMemo, useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaArrowRight,
-  FaChevronLeft,
-  FaChevronRight,
   FaHeart,
   FaLock,
   FaRegHeart,
@@ -13,7 +11,6 @@ import {
   FaHome,
   FaGamepad,
   FaTrophy,
-  FaFire,
   FaBolt
 } from "react-icons/fa";
 import {
@@ -33,6 +30,7 @@ import {
 } from "../../utils/gameFavorites";
 import useHomeTheme from "../../hooks/useHomeTheme";
 import { readLastPlayedGame } from "../../utils/gameHistory";
+import { supportsGameLeaderboard } from "../../hooks/gameSession";
 
 type Game = typeof gameCards[number];
 
@@ -44,9 +42,7 @@ function Games() {
   const [lastPlayedGameId, setLastPlayedGameId] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const mouseFrameRef = useRef<number | null>(null);
-  const itemsPerPage = 9;
   const showAmbientEffects = typeof window !== "undefined" && window.innerWidth >= 768;
 
   useEffect(() => {
@@ -98,22 +94,6 @@ function Games() {
         : gameCards.filter((game) => game.category === activeCategory),
     [activeCategory],
   );
-  const totalPages = Math.max(1, Math.ceil(filteredGames.length / itemsPerPage));
-  const paginatedGames = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredGames.slice(start, start + itemsPerPage);
-  }, [currentPage, filteredGames]);
-  const totalGames = gameCards.length;
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeCategory]);
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
 
   // Har bir karta uchun gradient va iconBg ni saqlab qolamiz
   const getCardGradient = (game: Game) => {
@@ -147,11 +127,12 @@ function Games() {
        radial-gradient(circle at 18% 82%, rgba(89, 185, 230, 0.12) 0%, transparent 36%),
        linear-gradient(135deg, #fffef9 0%, #f8fcff 48%, #fff8ef 100%)`;
 
-  const particlePalette = isDarkMode
-    ? ["#59b9e6", "#ffd15d", "#f8fafc"]
-    : ["#59b9e6", "#ffd15d", "#ffffff"];
   const ambientParticles = useMemo(
-    () => Array.from({ length: showAmbientEffects ? 48 : 18 }, (_, index) => {
+    () => {
+      const particlePalette = isDarkMode
+        ? ["#59b9e6", "#ffd15d", "#f8fafc"]
+        : ["#59b9e6", "#ffd15d", "#ffffff"];
+      return Array.from({ length: showAmbientEffects ? 48 : 18 }, (_, index) => {
       const color = particlePalette[index % particlePalette.length];
       return {
         id: index,
@@ -165,7 +146,8 @@ function Games() {
         animationDuration: `${10 + Math.random() * 20}s`,
         opacity: isDarkMode ? 0.16 + Math.random() * 0.2 : 0.12 + Math.random() * 0.14,
       };
-    }),
+      });
+    },
     [isDarkMode, showAmbientEffects],
   );
 
@@ -313,105 +295,14 @@ function Games() {
             );
           })}
         </div>
-
-        {/* Statistik ma'lumotlar */}
-        <div className="mb-10 flex justify-center sm:mb-12">
-          <div className="relative group w-full max-w-6xl">
-            <div className="absolute inset-0 rounded-[28px] bg-gradient-to-r from-purple-500/30 to-pink-500/30 blur-2xl opacity-30 group-hover:opacity-50 transition-opacity" />
-            <div className="relative overflow-hidden rounded-[28px] border border-white/15 bg-[var(--games-surface)] px-4 py-5 shadow-[0_18px_50px_var(--games-shadow)] backdrop-blur-xl sm:px-6 lg:px-8">
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-10 xl:gap-16">
-                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-4 lg:flex-1 lg:justify-start lg:gap-6">
-                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                  <div className="relative">
-                    <div className="absolute inset-0 rounded-full bg-yellow-400 blur-md " />
-                    <FaGamepad className="relative text-xl text-yellow-400" />
-                  </div>
-                  <span className="text-sm font-semibold text-[var(--games-text)]">
-                    <span className="text-yellow-400">{totalGames}</span> ta o'yin
-                  </span>
-                </div>
-                
-                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                  <div className="relative">
-                    <div className="absolute inset-0 rounded-full bg-green-400 blur-md" />
-                    <FaUsers className="relative text-xl text-green-400" />
-                  </div>
-                  <span className="text-sm font-semibold text-[var(--games-text)]">
-                    <span className="text-green-400">5k+</span> foydalanuvchi
-                  </span>
-                </div>
-                
-                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                  <div className="relative">
-                    <div className="absolute inset-0 rounded-full bg-blue-400 blur-md " />
-                    <FaFire className="relative text-xl text-blue-400" />
-                  </div>
-                  <span className="text-sm font-semibold text-[var(--games-text)]">
-                    <span className="text-blue-400">24/7</span> jonli
-                  </span>
-                </div>
-              </div>
-
-                {totalPages > 1 && (
-                  <div className="flex flex-wrap items-center justify-center gap-3 lg:ml-auto lg:shrink-0 lg:justify-end">
-
-                    <button
-                      type="button"
-                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                      disabled={currentPage === 1}
-                      className="group inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-[var(--games-surface-soft)] text-[var(--games-text)] transition hover:-translate-x-0.5 hover:border-[var(--games-border-strong)] hover:bg-[var(--games-surface)] disabled:cursor-not-allowed disabled:opacity-35"
-                      aria-label="Oldingi sahifa"
-                    >
-                      <FaChevronLeft className="text-sm transition-transform group-hover:-translate-x-0.5" />
-                    </button>
-
-                    <div className="flex flex-wrap items-center justify-center gap-2">
-                      {Array.from({ length: totalPages }, (_, index) => {
-                        const page = index + 1;
-                        const active = page === currentPage;
-                        return (
-                          <button
-                            key={page}
-                            type="button"
-                            onClick={() => setCurrentPage(page)}
-                            className={`relative h-10 min-w-10 cursor-pointer overflow-hidden rounded-full border px-3 text-xs font-black transition-all duration-300 sm:h-11 sm:min-w-11 sm:px-4 sm:text-sm ${
-                              active
-                                ? "border-pink-300/40 bg-gradient-to-r from-purple-500/95 via-fuchsia-500/95 to-pink-500/95 text-white shadow-[0_14px_28px_rgba(217,70,239,0.28)]"
-                                : "border-white/15 bg-[var(--games-surface-soft)] text-[var(--games-text-soft)] hover:-translate-y-0.5 hover:border-[var(--games-border-strong)] hover:bg-[var(--games-surface)] hover:text-[var(--games-text)]"
-                            }`}
-                          >
-                            {active && (
-                              <span className="absolute inset-0 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.22),transparent)]" />
-                            )}
-                            <span className="relative">{page}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                      disabled={currentPage === totalPages}
-                      className="group inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-[var(--games-surface-soft)] text-[var(--games-text)] transition hover:translate-x-0.5 hover:border-[var(--games-border-strong)] hover:bg-[var(--games-surface)] disabled:cursor-not-allowed disabled:opacity-35"
-                      aria-label="Keyingi sahifa"
-                    >
-                      <FaChevronRight className="text-sm transition-transform group-hover:translate-x-0.5" />
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* O'yin kartochkalari */}
         <div className="relative z-10 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:gap-7">
-          {paginatedGames.map((game, index) => {
-            const delay = index * 0.1;
+          {filteredGames.map((game, index) => {
+            const delay = Math.min(index, 8) * 0.06;
             const cardGradient = getCardGradient(game);
             const isLiked = likedGames.includes(game.id);
             const isLastPlayed = lastPlayedGameId === game.id;
+            const hasLeaderboard = supportsGameLeaderboard(game.id, game.players);
 
             return (
               <div
@@ -421,39 +312,36 @@ function Games() {
                 }`}
                 style={{ transitionDelay: `${delay}s` }}
               >
+                <div className={`pointer-events-none absolute -inset-px rounded-[1.8rem] bg-gradient-to-br ${cardGradient} opacity-0 blur-md transition-opacity duration-500 group-hover:opacity-35`} />
                 <article
-                  className={`relative flex h-full w-full flex-col overflow-hidden rounded-lg border transition-[border-color,box-shadow] duration-500 ${
+                  className={`relative flex h-full w-full flex-col overflow-hidden rounded-[1.75rem] border transition-[border-color,box-shadow] duration-500 ${
                     game.available
-                      ? `border-[var(--games-border)] bg-[var(--games-card-shell)] shadow-[0_14px_34px_var(--games-card-shadow)] group-hover:border-[var(--games-border-strong)] group-hover:shadow-[0_22px_48px_var(--games-card-shadow-hover)] ${game.borderGlow || ''}`
+                      ? `border-[var(--games-border)] bg-[var(--games-card-shell)] shadow-[0_18px_44px_var(--games-card-shadow)] group-hover:border-[var(--games-border-strong)] group-hover:shadow-[0_28px_65px_var(--games-card-shadow-hover)] ${game.borderGlow || ''}`
                       : 'border-[var(--games-border)] bg-[var(--games-surface)] opacity-70'
                   }`}
                 >
-                  <div className="relative aspect-[16/10] w-full overflow-hidden border-b border-[var(--games-border)]">
+                  <div className={`relative aspect-[16/10] w-full overflow-hidden ${game.bgPattern}`}>
+                    <div className="absolute inset-0 bg-black/10" />
                     <img
                       src={game.image}
                       alt={game.title}
-                      className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.045]"
+                      loading="lazy"
+                      decoding="async"
+                      className="relative h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.055]"
                     />
-                    <div className={`absolute inset-0 bg-gradient-to-t ${isDarkMode ? "from-slate-950/90 via-slate-950/10" : "from-slate-950/65 via-transparent"} to-transparent`} />
+                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.08)_18%,rgba(2,6,23,0.22)_55%,rgba(2,6,23,0.92)_100%)]" />
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent opacity-60" />
 
-
-                    <div className="absolute left-4 top-4 flex items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 rounded-md border border-white/20 bg-slate-950/65 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white backdrop-blur-md">
-                        <game.badgeIcon className="text-xs text-emerald-300" />
+                    <div className="absolute left-4 top-4 flex max-w-[72%] flex-wrap items-center gap-2">
+                      <span className={`inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r ${cardGradient} px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-white shadow-lg`}>
+                        <game.badgeIcon className="text-[10px]" />
                         {game.badge}
                       </span>
                       {isLastPlayed ? (
-                        <span className="rounded-md bg-cyan-400 px-2 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-slate-950">
+                        <span className="rounded-full border border-cyan-200/30 bg-cyan-300/90 px-2.5 py-1.5 text-[8px] font-black uppercase tracking-[0.12em] text-slate-950 shadow-lg backdrop-blur-md">
                           Davom etish
                         </span>
                       ) : null}
-                    </div>
-
-                    <div className="absolute right-4 top-4">
-                      <span className="inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-slate-950/60 px-2.5 py-1.5 text-[10px] font-bold text-white backdrop-blur-md">
-                        <game.levelIcon className="text-yellow-300" />
-                        {game.level}
-                      </span>
                     </div>
 
                     <button
@@ -462,38 +350,49 @@ function Games() {
                         event.stopPropagation();
                         handleLikeToggle(game.id);
                       }}
-                      className={`absolute right-4 bottom-4 z-10 inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border backdrop-blur-md transition-colors ${
+                      className={`absolute right-4 top-4 z-10 inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border shadow-lg backdrop-blur-xl transition-all hover:scale-105 active:scale-95 ${
                         isLiked
                           ? "border-rose-200/60 bg-white text-[#ff5f87]"
-                          : "border-white/20 bg-slate-950/45 text-white hover:bg-slate-950/75"
+                          : "border-white/20 bg-slate-950/55 text-white hover:bg-slate-950/80"
                       }`}
                       aria-label={isLiked ? "Sevimlilardan olib tashlash" : "Sevimliga qo'shish"}
                     >
-                      {isLiked ? <FaHeart className="text-[12px]" /> : <FaRegHeart className="text-[12px]" />}
+                      {isLiked ? <FaHeart className="text-[13px]" /> : <FaRegHeart className="text-[13px]" />}
                     </button>
 
-                    <div className={`absolute bottom-4 left-4 flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br ${game.iconBg} text-white shadow-lg ring-1 ring-white/25`}>
-                      <game.icon className="text-xl" />
+                    {!game.available && <div className="absolute inset-0 z-[2] grid place-items-center bg-slate-950/60 backdrop-blur-[2px]"><span className="grid h-16 w-16 place-items-center rounded-full border border-white/20 bg-slate-950/70 text-2xl text-white shadow-2xl"><FaLock/></span></div>}
+
+                    <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4">
+                      <div className="min-w-0">
+                        <span className="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.15em] text-white/60"><game.categoryIcon className={game.iconColor}/>{game.category}</span>
+                        <p className="mt-1 truncate text-sm font-black text-white">{game.level}</p>
+                      </div>
+                      <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${game.iconBg} text-white shadow-xl ring-1 ring-white/25 transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105`}>
+                        <game.icon className="text-xl" />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-1 flex-col bg-[var(--games-card-surface)] p-5 sm:p-6">
-                    <div className="mb-3 flex items-start justify-between gap-3">
-                      <h3 className="text-xl font-black leading-tight tracking-normal text-[var(--games-card-text)] sm:text-2xl">
+                  <div className="relative flex flex-1 flex-col bg-[var(--games-card-surface)] p-5 sm:p-6">
+                    <div className={`absolute inset-x-8 top-0 h-px bg-gradient-to-r ${cardGradient} opacity-45`} />
+                    <div className="mb-2.5 flex items-start justify-between gap-3">
+                      <h3 className="text-xl font-black leading-tight tracking-[-0.025em] text-[var(--games-card-text)] sm:text-[1.55rem]">
                         {game.title}
                       </h3>
-                      {game.available && <FaBolt className="mt-1 shrink-0 text-sm text-yellow-400" />}
+                      <div className="flex shrink-0 flex-wrap justify-end gap-1.5">
+                        {hasLeaderboard ? <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/25 bg-amber-400/10 px-2 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-amber-500"><FaTrophy/> Leaderboard</span> : null}
+                        {game.available && <span className="inline-flex items-center gap-1 rounded-full border border-yellow-400/20 bg-yellow-400/10 px-2 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-yellow-500"><FaBolt/> Live</span>}
+                      </div>
                     </div>
 
                     <p className="line-clamp-2 min-h-[44px] text-sm leading-6 text-[var(--games-card-text-soft)]">
                       {game.description}
                     </p>
 
-                    <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 border-y border-[var(--games-border)] py-4 text-xs font-semibold text-[var(--games-card-text-soft)]">
-                      <span className="flex items-center gap-2"><FaUsers className="text-[var(--games-card-text)]" />{game.players}</span>
-                      <span className="flex items-center gap-2"><IoMdTimer className="text-[var(--games-card-text)]" />{game.time}</span>
-                      <span className="flex items-center gap-2"><FaTrophy className="text-yellow-400" />{game.points}</span>
-                      <span className="flex items-center gap-2 truncate"><game.categoryIcon className={game.iconColor} />{game.category}</span>
+                    <div className="mt-5 grid grid-cols-3 overflow-hidden rounded-2xl border border-[var(--games-border)] bg-[var(--games-surface-soft)] text-[var(--games-card-text-soft)]">
+                      <span className="flex min-w-0 flex-col items-center gap-1.5 px-2 py-3 text-center text-[10px] font-bold"><FaUsers className="text-sm text-[var(--games-card-text)]"/><b className="max-w-full truncate">{game.players}</b></span>
+                      <span className="flex min-w-0 flex-col items-center gap-1.5 border-x border-[var(--games-border)] px-2 py-3 text-center text-[10px] font-bold"><IoMdTimer className="text-base text-[var(--games-card-text)]"/><b className="max-w-full truncate">{game.time}</b></span>
+                      <span className="flex min-w-0 flex-col items-center gap-1.5 px-2 py-3 text-center text-[10px] font-bold"><FaStar className="text-sm text-yellow-400"/><b className="max-w-full truncate">{game.points}</b></span>
                     </div>
 
                     <div className="mt-auto pt-5">
@@ -503,9 +402,9 @@ function Games() {
                           handleGamePlay(game);
                         }}
                         disabled={!game.available}
-                        className={`group/btn flex w-full items-center justify-between rounded-lg border px-4 py-3 text-sm font-bold transition-all ${
+                        className={`group/btn flex w-full items-center justify-between rounded-2xl border px-4 py-3.5 text-sm font-black transition-all ${
                           game.available
-                            ? `cursor-pointer border-transparent bg-gradient-to-r ${cardGradient} text-white shadow-[0_12px_24px_var(--games-button-shadow)] hover:brightness-110 active:scale-[0.99]`
+                            ? `cursor-pointer border-white/10 bg-gradient-to-r ${cardGradient} text-white shadow-[0_14px_30px_var(--games-button-shadow)] hover:brightness-110 active:scale-[0.985]`
                             : 'cursor-not-allowed border-[var(--games-border)] bg-[var(--games-surface-soft)] text-[var(--games-card-text-soft)]'
                         }`}
                       >

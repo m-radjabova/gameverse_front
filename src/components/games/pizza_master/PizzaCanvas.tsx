@@ -6,6 +6,10 @@ import { PIZZA_INGREDIENTS } from "./pizzaData";
 export default function PizzaCanvas({ unlocked, label, compact = false }: { unlocked: number; label?: string; compact?: boolean }) {
   const isComplete = unlocked >= PIZZA_INGREDIENTS.length;
   const layers = PIZZA_INGREDIENTS.slice(0, Math.min(unlocked, PIZZA_INGREDIENTS.length));
+  const currentPizza = layers[layers.length - 1];
+  const currentImage = isComplete ? pizzaComplete : currentPizza?.image ?? pizzaBase;
+  const currentKey = isComplete ? "pizza-complete" : currentPizza?.id ?? "pizza-base";
+  const currentLabel = isComplete ? "Tayyor pizza" : currentPizza ? `${currentPizza.name} bosqichi` : "Pizza asosi";
 
   return (
     <div
@@ -19,40 +23,15 @@ export default function PizzaCanvas({ unlocked, label, compact = false }: { unlo
           {label}
         </p>
       )}
-      {isComplete ? (
-        <motion.img
-          key="pizza-complete"
-          src={pizzaComplete}
-          alt="Pizza complete"
-          initial={{ opacity: 0, scale: 0.9, rotate: -6 }}
-          animate={{ opacity: 1, scale: 1, rotate: 0 }}
-          transition={{ duration: 0.7, type: "spring" }}
-          className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_22px_34px_rgba(251,146,60,0.45)]"
-        />
-      ) : (
-        <>
-          <motion.img
-            key="pizza-base"
-            src={pizzaBase}
-            alt="Pizza"
-            initial={{ opacity: 0.5, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_20px_30px_rgba(251,146,60,0.38)]"
-          />
-          {layers.map((ingredient, index) => (
-            <motion.img
-              key={ingredient.id}
-              src={ingredient.image}
-              alt=""
-              initial={{ scale: 0.72, opacity: 0, rotate: index % 2 === 0 ? -24 : 24 }}
-              animate={{ scale: 1, opacity: 1, rotate: 0 }}
-              transition={{ duration: 0.5, type: "spring" }}
-              className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_12px_20px_rgba(251,146,60,0.28)]"
-            />
-          ))}
-        </>
-      )}
+      <motion.img
+        key={currentKey}
+        src={currentImage}
+        alt={currentLabel}
+        initial={{ opacity: 0, scale: 0.86, rotate: -4 }}
+        animate={{ opacity: 1, scale: 1, rotate: 0 }}
+        transition={{ duration: 0.48, type: "spring", stiffness: 150, damping: 17 }}
+        className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_22px_34px_rgba(251,146,60,0.42)]"
+      />
       {isComplete && (
         <motion.div
           initial={{ opacity: 0, y: 12, scale: 0.9 }}

@@ -17,6 +17,8 @@ import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { useGameParticipantMode } from "../../../hooks/useGameParticipantMode";
 import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
 import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
+import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
+import { filterGameQuestionsByDifficulty } from "../../../utils/gameQuestionDifficulty";
 
 type Phase = "teacher" | "teams" | "play" | "finish";
 type Mini = "math" | "pattern" | "odd";
@@ -66,14 +68,19 @@ const buildPattern = (): PatternRound => {
   const decoys = new Set<string>(); while (decoys.size < 3) { const c = [...seq]; c[r(0, c.length - 1)] = SHAPES[r(0, SHAPES.length - 1)]; const d = c.join(" "); if (d !== answer) decoys.add(d); }
   return { prompt: seq, options: sh([answer, ...Array.from(decoys)]), answer, revealMs: 1100 };
 };
-const buildOdd = (teacher: OddRound[]): OddRound => (teacher.length ? [...teacher, ...BUILTIN_ODD] : BUILTIN_ODD)[r(0, (teacher.length ? teacher.length + BUILTIN_ODD.length : BUILTIN_ODD.length) - 1)];
+const buildOdd = (teacher: OddRound[]): OddRound => {
+  const source = teacher.length > 0
+    ? teacher
+    : filterGameQuestionsByDifficulty(BUILTIN_ODD, getGameQuestionDifficulty("classic-arcade"));
+  return source[r(0, source.length - 1)];
+};
 
 export default function ClassicArcade() {
   const {
     state: { user, isLoading: isUserLoading },
   } = useContextPro();
   const skipInitialRemoteSaveRef = useRef(true);
-  const [phase, setPhase] = useState<Phase>("teacher");
+  const [phase, setPhase] = useState<Phase>("teams");
   useFinishApplause(phase === "finish");
   const { isSinglePlayer, primaryName, secondaryName, modeLabel } = useGameParticipantMode({
     gameId: "classic-arcade",
@@ -125,7 +132,7 @@ export default function ClassicArcade() {
   const hasGeminiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY?.trim());
 
   useGameResultSubmission(
-    phase === "finish",
+    phase === "finish" && isSinglePlayer,
     "classic-arcade",
     isSinglePlayer
       ? [
@@ -176,7 +183,7 @@ export default function ClassicArcade() {
 
       const remoteRounds = await fetchGameQuestionsByTeacher<OddRound>(CLASSIC_ARCADE_GAME_KEY, user.id);
       if (!alive) return;
-      setTeacherRounds(remoteRounds ?? []);
+      setTeacherRounds(filterGameQuestionsByDifficulty(remoteRounds ?? [], getGameQuestionDifficulty("classic-arcade")));
       setRemoteLoaded(true);
     })();
     return () => {
@@ -620,7 +627,7 @@ export default function ClassicArcade() {
           
           <div className="relative mt-6 flex justify-center gap-4">
             <button
-              onClick={() => setPhase("teacher")}
+              onClick={() => setPhase("teams")}
               className="group relative overflow-hidden rounded-xl bg-white/10 px-6 py-3 font-bold text-white border border-white/20 transition-all hover:bg-white/20"
             >
               <span className="relative flex items-center gap-2">
@@ -930,7 +937,7 @@ export default function ClassicArcade() {
             </button>
             
             <button
-              onClick={() => setPhase("teacher")}
+              onClick={() => setPhase("teams")}
               className="group relative overflow-hidden rounded-xl bg-white/10 px-6 py-3 font-bold text-white border border-white/20 transition-all hover:bg-white/20"
             >
               <span className="relative flex items-center gap-2">

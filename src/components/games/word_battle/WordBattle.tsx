@@ -76,7 +76,7 @@ export default function WordBattle() {
   const {
     state: { user },
   } = useContextPro();
-  const { isSinglePlayer, primaryName, secondaryName, modeLabel } = useGameParticipantMode({
+  const { isSinglePlayer, primaryName, secondaryName, modeLabel, selectParticipantCount } = useGameParticipantMode({
     gameId: "word-battle",
     fallbackPrimaryName: "1-JAMOA",
     fallbackSecondaryName: "2-JAMOA",
@@ -140,7 +140,7 @@ export default function WordBattle() {
 
   useEffect(() => {
     setTeamNames((prev) => [
-      prev[0].trim() || primaryName,
+      isSinglePlayer ? primaryName : prev[0].trim() || primaryName,
       isSinglePlayer ? secondaryName : prev[1].trim() || secondaryName,
     ]);
   }, [isSinglePlayer, primaryName, secondaryName]);
@@ -389,6 +389,16 @@ export default function WordBattle() {
               </div>
 
               <div className="space-y-4">
+                <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                  <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-blue-300">O'yin rejimi</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {([1, 2] as const).map((count) => (
+                      <button key={count} type="button" onClick={() => selectParticipantCount(count)} className={`rounded-xl border px-4 py-3 text-left transition ${isSinglePlayer === (count === 1) ? "border-cyan-300 bg-gradient-to-r from-blue-600 to-cyan-500 text-white" : "border-white/10 bg-white/5 text-white/65 hover:bg-white/10"}`}>
+                        <b className="block">{count} kishilik</b><small>{count === 1 ? "Yakka o'yin" : "Ikki tomon dueli"}</small>
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div className={`grid gap-4 ${isSinglePlayer ? "" : "sm:grid-cols-2"}`}>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-blue-300">{isSinglePlayer ? "O'YINCHI" : "⚔️ 1-JAMOA"}</label>

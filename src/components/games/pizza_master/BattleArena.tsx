@@ -67,14 +67,13 @@ export default function BattleArena({
   }, [players]);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 p-2 sm:p-4 gap-3 relative" style={{background: "linear-gradient(180deg, #0f0c29, #302b63, #24243e)"}}>
-      {/* 3D Cartoon Background Decorations */}
+    <div className="relative flex min-h-0 flex-1 flex-col gap-3 p-2 sm:p-4" style={{background: "radial-gradient(circle at 50% 38%, rgba(255,133,42,.16), transparent 32%), linear-gradient(180deg, rgba(54,25,17,.72), rgba(22,10,8,.88))"}}>
+      {/* Warm kitchen background decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Floating cartoon clouds */}
-        <motion.div animate={{ x: [0, 20, 0] }} transition={{ repeat: Infinity, duration: 4 }} className="absolute top-[10%] left-[5%] text-5xl select-none opacity-20">☁️</motion.div>
-        <motion.div animate={{ x: [0, -20, 0] }} transition={{ repeat: Infinity, duration: 5, delay: 1 }} className="absolute top-[15%] right-[10%] text-4xl select-none opacity-20">☁️</motion.div>
-        <motion.div animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 3 }} className="absolute bottom-[25%] left-[8%] text-3xl select-none opacity-15">⭐</motion.div>
-        <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ repeat: Infinity, duration: 4 }} className="absolute bottom-[30%] right-[5%] text-3xl select-none opacity-15">✨</motion.div>
+        <motion.div animate={{ y: [0, -8, 0], opacity: [.08,.18,.08] }} transition={{ repeat: Infinity, duration: 4 }} className="absolute left-[7%] top-[8%] select-none text-5xl">♨️</motion.div>
+        <motion.div animate={{ y: [0, -10, 0], opacity: [.08,.18,.08] }} transition={{ repeat: Infinity, duration: 5, delay: 1 }} className="absolute right-[9%] top-[10%] select-none text-5xl">♨️</motion.div>
+        <motion.div animate={{ rotate: [0, -8, 8, 0] }} transition={{ repeat: Infinity, duration: 5 }} className="absolute bottom-[22%] left-[4%] select-none text-5xl opacity-10">🍅</motion.div>
+        <motion.div animate={{ rotate: [0, 8, -8, 0] }} transition={{ repeat: Infinity, duration: 5.5 }} className="absolute bottom-[24%] right-[4%] select-none text-5xl opacity-10">🌿</motion.div>
         
         {/* 3D floating pizza slices */}
         <motion.div
@@ -92,10 +91,10 @@ export default function BattleArena({
           🍕
         </motion.div>
 
-        {/* Colorful cartoon orbs */}
+        {/* Oven and countertop light */}
         <div className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full" style={{background: "radial-gradient(circle, rgba(251,146,60,0.15), transparent)", filter: "blur(60px)"}} />
-        <div className="absolute top-0 right-0 w-[300px] h-[300px] rounded-full" style={{background: "radial-gradient(circle, rgba(59,130,246,0.15), transparent)", filter: "blur(60px)"}} />
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] rounded-full" style={{background: "radial-gradient(circle, rgba(168,85,247,0.1), transparent)", filter: "blur(70px)"}} />
+        <div className="absolute top-0 right-0 w-[300px] h-[300px] rounded-full" style={{background: "radial-gradient(circle, rgba(239,68,68,0.13), transparent)", filter: "blur(60px)"}} />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[220px] rounded-full" style={{background: "radial-gradient(circle, rgba(255,174,75,0.13), transparent)", filter: "blur(70px)"}} />
       </div>
 
       {/* Top HUD - 3D Cartoon Card */}

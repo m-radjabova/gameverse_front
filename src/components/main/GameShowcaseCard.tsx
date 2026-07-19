@@ -5,11 +5,13 @@ import {
   FaLayerGroup,
   FaRegHeart,
   FaRocket,
-  FaUsers,
+  FaStar,
+  FaTrophy,
 } from "react-icons/fa";
 import { GiFlowerTwirl } from "react-icons/gi";
 
 import { gameCards } from "../../pages/games/data";
+import { supportsGameLeaderboard } from "../../hooks/gameSession";
 
 type GameCardItem = (typeof gameCards)[number];
 
@@ -33,6 +35,7 @@ export default function GameShowcaseCard({
   const Icon = game.mainIcon;
   const CategoryIcon = game.categoryIcon;
   const LevelIcon = game.levelIcon;
+  const hasLeaderboard = supportsGameLeaderboard(game.id, game.players);
   const openGame = () => {
     if ("externalUrl" in game && typeof game.externalUrl === "string") {
       window.location.href = game.externalUrl;
@@ -104,7 +107,7 @@ export default function GameShowcaseCard({
             {[
               { icon: FaLayerGroup, value: game.players },
               { icon: FaClock, value: game.time },
-              { icon: FaUsers, value: game.points },
+              { icon: FaStar, value: game.points },
             ].map((item) => (
               <span
                 key={`${game.id}-${item.value}`}
@@ -120,6 +123,12 @@ export default function GameShowcaseCard({
               <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-300/40 bg-sky-400/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-sky-600">
                 <FaHeart className="text-[9px]" />
                 {priorityLabel}
+              </span>
+            ) : null}
+            {hasLeaderboard ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/40 bg-amber-400/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-amber-500">
+                <FaTrophy className="text-[9px]" />
+                Leaderboard
               </span>
             ) : null}
           </div>

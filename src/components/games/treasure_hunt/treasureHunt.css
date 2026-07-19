@@ -1,0 +1,254 @@
+.treasure-expedition-map {
+  position: relative;
+  width: 100%;
+  min-width: 900px;
+  height: clamp(3200px, 390dvh, 4200px);
+  min-height: 3200px;
+  overflow: hidden;
+  background: #062d43;
+  contain: layout paint style;
+}
+
+.treasure-expedition-map--compact {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.treasure-world {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(24, 167, 196, .34), transparent 46%),
+    radial-gradient(ellipse at 15% 75%, rgba(14, 116, 144, .5), transparent 28%),
+    linear-gradient(155deg, #03131f 0%, #063e58 28%, #087b8e 55%, #052c43 100%);
+  isolation: isolate;
+  contain: layout paint style;
+}
+
+.treasure-sky-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 24% 15%, rgba(253, 230, 138, .16), transparent 23%),
+    radial-gradient(circle at 78% 8%, rgba(125, 211, 252, .2), transparent 24%),
+    linear-gradient(to bottom, rgba(2, 6, 23, .52), transparent 34%, rgba(2, 6, 23, .32));
+}
+
+.treasure-ocean-grid {
+  position: absolute;
+  inset: 0;
+  opacity: .32;
+  background-image:
+    radial-gradient(circle at 50% 50%, transparent 0 68%, rgba(2, 6, 23, .6) 100%),
+    repeating-radial-gradient(ellipse at 50% 120%, transparent 0 31px, rgba(186, 230, 253, .17) 33px, transparent 36px 58px);
+}
+
+.treasure-cloud {
+  position: absolute;
+  z-index: 18;
+  width: 430px;
+  height: 130px;
+  border-radius: 50%;
+  background: rgba(226, 232, 240, .1);
+  filter: blur(26px);
+  pointer-events: none;
+  animation: treasureCloud 16s ease-in-out infinite alternate;
+}
+
+.treasure-cloud--one { left: 27%; top: 5%; }
+.treasure-cloud--two { right: 8%; bottom: 4%; animation-delay: -7s; }
+
+.treasure-world-route {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.treasure-route-shadow,
+.treasure-route-empty,
+.treasure-route-progress {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.treasure-route-shadow { stroke: rgba(2, 6, 23, .72); stroke-width: 19; stroke-dasharray: 2 23; }
+.treasure-route-empty { stroke: rgba(254, 243, 199, .35); stroke-width: 5; stroke-dasharray: 10 15; }
+.treasure-route-progress {
+  stroke: #fcd34d;
+  stroke-width: 8;
+  filter: drop-shadow(0 0 7px #f59e0b) drop-shadow(0 0 15px rgba(245, 158, 11, .45));
+  transition: stroke-dasharray .8s ease;
+}
+
+.treasure-island {
+  position: absolute;
+  z-index: 7;
+  width: clamp(420px, 34vw, 570px);
+  height: clamp(300px, 23vw, 390px);
+  transform: translate(-50%, -50%);
+  transition: filter .65s ease, opacity .65s ease, transform .65s ease;
+  content-visibility: auto;
+  contain: layout paint style;
+  contain-intrinsic-size: 570px 390px;
+}
+
+.treasure-island-picture {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  filter: drop-shadow(0 24px 24px rgba(2, 6, 23, .78));
+  -webkit-mask-image: radial-gradient(ellipse 68% 70% at 50% 50%, #000 48%, rgba(0, 0, 0, .94) 63%, transparent 78%);
+  mask-image: radial-gradient(ellipse 68% 70% at 50% 50%, #000 48%, rgba(0, 0, 0, .94) 63%, transparent 78%);
+}
+
+.treasure-island-picture img { width: 100%; height: 100%; object-fit: cover; image-rendering: auto; }
+.treasure-island.is-locked { filter: saturate(.08) brightness(.38); opacity: .68; }
+.treasure-island.is-passed { filter: saturate(.86) brightness(.87); }
+.treasure-island.is-current { z-index: 11; transform: translate(-50%, -50%) scale(1.1); }
+.treasure-island.is-current .treasure-island-picture { filter: drop-shadow(0 25px 25px rgba(2, 6, 23, .75)) drop-shadow(0 0 21px rgba(250, 204, 21, .66)); }
+
+.treasure-island-aura {
+  position: absolute;
+  inset: 11% 8%;
+  border: 2px solid rgba(253, 224, 71, .65);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(251, 191, 36, .22), transparent 70%);
+  opacity: 0;
+}
+.treasure-island.is-current .treasure-island-aura { opacity: 1; animation: treasureAura 2.1s ease-in-out infinite; }
+
+.treasure-island-marker {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 205px;
+  padding: 9px 14px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(251, 191, 36, .52);
+  border-radius: 15px;
+  background: linear-gradient(135deg, rgba(12, 23, 33, .94), rgba(66, 32, 6, .9));
+  box-shadow: 0 12px 25px rgba(2, 6, 23, .68), inset 0 1px rgba(255, 255, 255, .12);
+  color: #fef3c7;
+  white-space: nowrap;
+}
+.treasure-island-marker > span { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 50%; background: #92400e; font-size: 14px; }
+.treasure-island-marker strong { display: block; font-size: 13px; letter-spacing: .04em; }
+.treasure-island-marker small { display: block; margin-top: 2px; color: #fbbf24; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
+.treasure-island.is-locked .treasure-island-marker { border-color: rgba(100, 116, 139, .55); background: rgba(2, 6, 23, .9); color: #94a3b8; }
+
+.treasure-map-ship {
+  position: absolute;
+  z-index: 16;
+  width: 155px;
+  height: 155px;
+  transform: translate(-50%, -78%);
+  pointer-events: none;
+  transition: left .8s ease, top .8s ease;
+  animation: treasureShip 2.7s ease-in-out infinite;
+}
+.treasure-map-ship img { position: relative; z-index: 2; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 18px 13px rgba(2, 6, 23, .8)); }
+.treasure-ship-wake { position: absolute; left: 2%; bottom: 2%; width: 95%; height: 30%; border-radius: 50%; background: rgba(224, 242, 254, .35); filter: blur(11px); }
+
+.treasure-decor { position: absolute; z-index: 4; object-fit: contain; filter: drop-shadow(0 18px 17px rgba(2, 6, 23, .65)); pointer-events: none; }
+.treasure-decor--palm-a { left: 3%; top: 1%; width: 210px; }
+.treasure-decor--palm-b { left: 76%; top: 89%; width: 210px; transform: scaleX(-1); }
+.treasure-decor--volcano { left: 37%; top: 46%; width: 270px; opacity: .48; }
+.treasure-decor--lighthouse { left: 48%; top: 76%; width: 170px; opacity: .62; }
+.treasure-decor--bridge-a { left: 37%; top: 29%; width: 260px; transform: rotate(72deg); }
+.treasure-decor--bridge-b { left: 37%; top: 59%; width: 255px; transform: rotate(105deg) scaleX(-1); }
+.treasure-decor--path { left: 7%; bottom: 4%; width: 230px; opacity: .58; }
+.treasure-decor--flag { left: 43%; top: 62%; width: 160px; }
+.treasure-decor--chest { left: 43%; bottom: .2%; width: 220px; animation: treasureChestGlow 2.2s ease-in-out infinite; }
+
+.treasure-compass { position: absolute; z-index: 9; left: 2%; top: .5%; width: 145px; opacity: .52; filter: drop-shadow(0 8px 12px rgba(2, 6, 23, .7)); }
+.treasure-map-legend { position: absolute; z-index: 15; right: 2%; top: .6%; display: grid; gap: 5px; min-width: 250px; padding: 13px 17px; border: 1px solid rgba(251, 191, 36, .48); border-radius: 18px; background: rgba(2, 15, 24, .86); box-shadow: 0 18px 35px rgba(2, 6, 23, .65); backdrop-filter: blur(10px); }
+.treasure-map-legend span { color: #7dd3fc; font-size: 9px; font-weight: 900; letter-spacing: .22em; }
+.treasure-map-legend strong { color: #fde68a; font-size: 17px; }
+.treasure-map-legend small { color: #cbd5e1; font-size: 11px; }
+.treasure-map-atmosphere { position: absolute; z-index: 6; left: 31%; top: 13%; color: #fef08a; font-size: 21px; text-shadow: 0 0 15px #fde047; animation: treasureFirefly 2.7s ease-in-out infinite; }
+.treasure-map-atmosphere--two { left: 73%; top: 78%; animation-delay: -1.1s; }
+.treasure-sea-creature { position: absolute; z-index: 2; opacity: .58; filter: drop-shadow(0 8px 8px rgba(2, 6, 23, .55)); }
+.treasure-sea-creature--whale { left: 46%; top: 31%; font-size: 64px; }
+.treasure-sea-creature--octopus { left: 11%; bottom: 17%; font-size: 58px; }
+
+.treasure-answer-in { animation: treasureAnswerIn .32s ease both; }
+
+.treasure-map-scroll {
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+.treasure-question-overlay {
+  scrollbar-width: thin;
+  scrollbar-color: #92400e transparent;
+  transition: transform .32s ease, opacity .25s ease;
+}
+.treasure-question-overlay.is-collapsed { transform: translateX(calc(100% + 38px)); opacity: 0; pointer-events: none; }
+.treasure-question-close { position: absolute; z-index: 8; top: 9px; right: 11px; display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px; border: 1px solid rgba(245,158,11,.34); border-radius: 999px; background: rgba(2,6,23,.72); color: #fcd34d; font-size: 14px; font-weight: 900; transition: .2s; }
+.treasure-question-close span { font-size: 9px; letter-spacing: .04em; }
+.treasure-question-close:hover { border-color: #f59e0b; background: rgba(120,53,15,.62); }
+.treasure-question-intro { padding-right: 88px; }
+.treasure-question-story { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.treasure-question-open { display: inline-flex; align-items: center; gap: 9px; padding: 11px 15px; border: 1px solid rgba(251,191,36,.55); border-radius: 16px; background: linear-gradient(135deg,rgba(120,53,15,.94),rgba(2,6,23,.94)); color: #fef3c7; font-size: 12px; font-weight: 900; box-shadow: 0 15px 35px rgba(2,6,23,.65),0 0 22px rgba(245,158,11,.18); backdrop-filter: blur(12px); transition: .22s; }
+.treasure-question-open:hover { transform: translateY(-2px); border-color: #fbbf24; box-shadow: 0 18px 38px rgba(2,6,23,.7),0 0 30px rgba(245,158,11,.32); }
+
+@media (min-width: 1180px) {
+  .treasure-options-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .treasure-question-title { font-size: clamp(20px,1.45vw,27px) !important; }
+  .treasure-option { min-height: 66px !important; }
+}
+
+.treasure-expedition-map--compact .treasure-island { width: 18%; height: 35%; }
+.treasure-expedition-map--compact .treasure-island-marker { bottom: -4px; min-width: 0; padding: 4px 7px; gap: 4px; border-radius: 8px; }
+.treasure-expedition-map--compact .treasure-island-marker > span { width: 18px; height: 18px; font-size: 8px; }
+.treasure-expedition-map--compact .treasure-island-marker strong { font-size: clamp(5px, .75vw, 10px); }
+.treasure-expedition-map--compact .treasure-map-ship { width: 7%; height: auto; aspect-ratio: 1; }
+.treasure-expedition-map--compact .treasure-decor { display: none; }
+
+@keyframes treasureCloud { to { transform: translateX(110px) scale(1.15); opacity: .5; } }
+@keyframes treasureShip { 0%,100% { margin-top: 0; rotate: -1.5deg; } 50% { margin-top: -10px; rotate: 2deg; } }
+@keyframes treasureAura { 0%,100% { transform: scale(.91); opacity: .42; } 50% { transform: scale(1.12); opacity: 1; } }
+@keyframes treasureChestGlow { 50% { filter: drop-shadow(0 0 24px rgba(250, 204, 21, .88)); transform: translateY(-5px); } }
+@keyframes treasureAnswerIn { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes treasureFirefly { 0%,100% { opacity: .25; transform: translateY(0) scale(.7); } 50% { opacity: 1; transform: translateY(-16px) scale(1.25); } }
+
+@media (max-width: 639px) {
+  .treasure-map-scroll .treasure-expedition-map { min-width: 760px; min-height: 3000px; height: 3000px; }
+  .treasure-map-scroll:after { content: "Pastga qarab sayohat qiling  ↓"; position: sticky; z-index: 40; left: 12px; bottom: 12px; display: inline-block; padding: 7px 11px; border: 1px solid #f59e0b66; border-radius: 999px; background: #020617e8; color: #fde68a; font-size: 11px; font-weight: 800; letter-spacing: .04em; }
+}
+
+@media (min-width: 640px) and (max-width: 1400px), (min-width: 640px) and (max-height: 850px) {
+  .treasure-expedition-map:not(.treasure-expedition-map--compact) { height: 3400px; min-height: 3400px; }
+  .treasure-cloud { animation: none; filter: blur(18px); }
+  .treasure-decor { filter: drop-shadow(0 10px 10px rgba(2, 6, 23, .5)); }
+  .treasure-island-picture { filter: drop-shadow(0 14px 15px rgba(2, 6, 23, .65)); }
+  .treasure-island.is-current .treasure-island-picture { filter: drop-shadow(0 16px 16px rgba(2, 6, 23, .68)) drop-shadow(0 0 12px rgba(250, 204, 21, .5)); }
+  .treasure-question-overlay { backdrop-filter: blur(7px) !important; }
+}
+
+@media (max-width: 900px) {
+  .treasure-question-overlay { top: auto !important; right: 8px !important; bottom: 8px; left: 8px; width: auto !important; max-height: 48dvh !important; border-radius: 22px !important; }
+  .treasure-end-button { top: 12px; bottom: auto !important; }
+  .treasure-question-close span { display: none; }
+  .treasure-question-intro { padding-right: 30px; }
+  .treasure-question-open { top: auto !important; right: 10px !important; bottom: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .treasure-ocean-grid, .treasure-cloud, .treasure-map-ship, .treasure-map-atmosphere, .treasure-decor--chest { animation: none !important; }
+  .treasure-route-progress, .treasure-map-ship { transition: none; }
+}

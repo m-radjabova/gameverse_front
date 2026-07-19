@@ -17,6 +17,7 @@ import {
 import {GiLevelFour } from "react-icons/gi";
 import { MdTimer } from "react-icons/md";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
+import useContextPro from "../../../hooks/useContextPro";
 import useGameLeaderboard, {
   submitGameResult,
 } from "../../../hooks/useGameLeaderboard";
@@ -85,8 +86,12 @@ function getRound(level: number): RoundState {
 }
 
 function FindDifferentColor() {
+  const {
+    state: { user },
+  } = useContextPro();
+  const registeredName = user?.username?.trim() || "";
   const submissionFingerprintRef = useRef<string | null>(null);
-  const [playerName, setPlayerName] = useState("");
+  const [playerName, setPlayerName] = useState(registeredName);
   const [hasStarted, setHasStarted] = useState(false);
   const [nameError, setNameError] = useState(false);
 
@@ -128,6 +133,12 @@ function FindDifferentColor() {
         : 0,
     [currentPlayerName, leaderboard],
   );
+
+  useEffect(() => {
+    if (!playerName && registeredName) {
+      setPlayerName(registeredName);
+    }
+  }, [playerName, registeredName]);
 
   useEffect(() => {
     if (isGameOver || !hasStarted) return;
@@ -687,4 +698,3 @@ function FindDifferentColor() {
 }
 
 export default FindDifferentColor;
-

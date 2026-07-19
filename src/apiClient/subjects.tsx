@@ -6,8 +6,6 @@ export const schoolSubjects = {
     "Atrof-muhit",
     "Tasviriy san’at",
     "Texnologiya",
-    "Musiqa",
-    "Jismoniy tarbiya",
     "Ingliz tili"
   ],
 
@@ -24,12 +22,9 @@ export const schoolSubjects = {
     "Geografiya",
     "O‘zbekiston tarixi",
     "Jahon tarixi",
-    "Davlat va huquq asoslari",
     "Ingliz tili",
     "Texnologiya",
     "Tasviriy san’at",
-    "Musiqa",
-    "Jismoniy tarbiya"
   ],
 
   "10-11": [
@@ -43,10 +38,7 @@ export const schoolSubjects = {
     "Geografiya",
     "O‘zbekiston tarixi",
     "Jahon tarixi",
-    "Huquq",
-    "Iqtisodiyot asoslari",
     "Informatika",
-    "Chet tili",
-    "Jismoniy tarbiya"
+    "Chet tili"
   ]
 };

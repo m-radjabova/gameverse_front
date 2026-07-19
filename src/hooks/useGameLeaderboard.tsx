@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "../apiClient/apiClient";
+import { getAccessToken } from "../utils/auth";
 import type {
   GameLeaderboardEntry,
   SubmitGameResultPayload,
@@ -162,6 +163,12 @@ export async function submitGameResult(
   gameKey: string,
   payload: SubmitGameResultPayload,
 ): Promise<boolean> {
+  // Ghost foydalanuvchilar o'ynashi mumkin, lekin ularning natijasi
+  // umumiy leaderboardga yuborilmaydi.
+  if (!getAccessToken()) {
+    return false;
+  }
+
   try {
     await apiClient.post(toSubmitPath(gameKey), normalizeSubmittedEntry(payload));
     clearLocalEntries(gameKey);

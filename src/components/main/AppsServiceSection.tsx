@@ -4,6 +4,7 @@ import {
   FaPlay,
   FaHeart,
   FaRegHeart,
+  FaTrophy,
 } from "react-icons/fa";
 import { GiCherry, GiTwirlyFlower } from "react-icons/gi";
 import { HiSparkles } from "react-icons/hi";
@@ -17,6 +18,7 @@ import "swiper/css/pagination";
 import "swiper/css/effect-coverflow";
 
 import { gameCards } from "../../pages/games/data";
+import { supportsGameLeaderboard } from "../../hooks/gameSession";
 import {
   getFavoriteGameIds,
   subscribeFavoriteGames,
@@ -256,6 +258,7 @@ function ModernGameCard({ game, isDark, isActive, isLiked, onLikeToggle, onOpen 
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const Icon = game.mainIcon;
+  const hasLeaderboard = supportsGameLeaderboard(game.id, game.players);
 
   return (
     <div
@@ -306,6 +309,13 @@ function ModernGameCard({ game, isDark, isActive, isLiked, onLikeToggle, onOpen 
           <div className={`absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${game.iconBg} shadow-lg`}>
             <Icon className="text-white" />
           </div>
+
+          {hasLeaderboard ? (
+            <div className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full border border-amber-200/45 bg-slate-950/65 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-amber-300 shadow-lg backdrop-blur-md">
+              <FaTrophy className="text-[10px]" />
+              Leaderboard
+            </div>
+          ) : null}
           
           {/* Play Button Overlay */}
           <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform transition-all duration-500 ${

@@ -190,8 +190,11 @@ function buildLevels(stageIndex: number, teacherQuestions: FrogPondTeacherQuesti
     levels[index % LEVEL_COUNT].push(question)
   })
 
-  basePool.forEach((question, index) => {
-    levels[index % LEVEL_COUNT].push(question)
+  // Teacher savollari mavjud bo'lsa default bank aralashtirilmaydi.
+  // Savollar soni leveldan kam bo'lsa ham har bir level teacher bankidan oladi.
+  levels.forEach((level, index) => {
+    const fallback = teacherPool[index % teacherPool.length]
+    if (level.length === 0 && fallback) level.push(fallback)
   })
 
   return levels.map((level) => shuffleLevel(level))

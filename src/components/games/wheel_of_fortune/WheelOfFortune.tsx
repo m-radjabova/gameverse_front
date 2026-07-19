@@ -40,6 +40,8 @@ import { RiHeart2Fill, RiHeart3Fill, RiStarSmileFill } from "react-icons/ri";
 import Confetti from "react-confetti-boom";
 
 import { fetchGameQuestionsByTeacher, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
+import { filterGameQuestionsByDifficulty } from "../../../utils/gameQuestionDifficulty";
 import useContextPro from "../../../hooks/useContextPro";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
@@ -89,7 +91,7 @@ export default function WheelOfFortune() {
   useFinishApplause(phase === "finish");
 
   const [students, setStudents] = useState<Student[]>([]);
-  const [questions, setQuestions] = useState<Question[]>(SAMPLE_QUESTIONS);
+  const [questions, setQuestions] = useState<Question[]>(() => filterGameQuestionsByDifficulty(SAMPLE_QUESTIONS, getGameQuestionDifficulty("wheel-of-fortune")));
 
   const [newStudent, setNewStudent] = useState("");
   const [studentError, setStudentError] = useState("");
@@ -158,7 +160,7 @@ export default function WheelOfFortune() {
     let alive = true;
     (async () => {
       if (!user?.id) {
-        setQuestions(SAMPLE_QUESTIONS);
+        setQuestions(filterGameQuestionsByDifficulty(SAMPLE_QUESTIONS, getGameQuestionDifficulty("wheel-of-fortune")));
         setRemoteLoaded(true);
         return;
       }
@@ -166,9 +168,9 @@ export default function WheelOfFortune() {
       const remoteQuestions = await fetchGameQuestionsByTeacher<Question>(WHEEL_OF_FORTUNE_GAME_KEY, user.id);
       if (!alive) return;
       if (remoteQuestions && remoteQuestions.length > 0) {
-        setQuestions(normalizeQuestions(remoteQuestions));
+        setQuestions(filterGameQuestionsByDifficulty(normalizeQuestions(remoteQuestions), getGameQuestionDifficulty("wheel-of-fortune")));
       } else {
-        setQuestions(SAMPLE_QUESTIONS);
+        setQuestions(filterGameQuestionsByDifficulty(SAMPLE_QUESTIONS, getGameQuestionDifficulty("wheel-of-fortune")));
       }
       setRemoteLoaded(true);
     })();
@@ -421,7 +423,7 @@ export default function WheelOfFortune() {
   const resetGame = () => {
     setPhase("setup");
     setStudents([]);
-    setQuestions(SAMPLE_QUESTIONS);
+    setQuestions(filterGameQuestionsByDifficulty(SAMPLE_QUESTIONS, getGameQuestionDifficulty("wheel-of-fortune")));
     setActiveQuestions([]);
     setCurrentQuestionIndex(0);
     setSelectedStudentId(null);
@@ -700,7 +702,7 @@ export default function WheelOfFortune() {
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="hidden space-y-4">
                 <h3 className="flex items-center gap-2 text-xl font-bold">
                   <MdQuiz className="text-pink-400" />
                   SAVOLLAR
@@ -765,7 +767,8 @@ export default function WheelOfFortune() {
                       <input
                         type="number"
                         value={points}
-                        onChange={(e) => setPoints(Number(e.target.value))}
+                        onKeyDown={(e) => { if (e.key === "-") e.preventDefault(); }}
+                        onChange={(e) => setPoints(Math.min(500, Math.max(50, Number(e.target.value) || 50)))}
                         min="50"
                         max="500"
                         step="10"

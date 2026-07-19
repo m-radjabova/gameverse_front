@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FaCheck, FaEye, FaEyeSlash, FaGamepad, FaRedo, FaRobot, FaSave, FaTimes, FaTrash, FaUsers } from "react-icons/fa";
+import { FaCheck, FaEye, FaEyeSlash, FaGamepad, FaRedo, FaRobot, FaSave, FaTimes, FaTrash } from "react-icons/fa";
 import { PiDetective } from "react-icons/pi";
 import { fetchGameQuestionsByTeacher, saveGameQuestions } from "../../../hooks/useGameQuestions";
 import useContextPro from "../../../hooks/useContextPro";
 import { hasAnyRole } from "../../../utils/roles";
 import { generateTruthDetectorPacks } from "./ai";
 import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
+import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
+import { filterGameQuestionsByDifficulty } from "../../../utils/gameQuestionDifficulty";
 
 type Difficulty = "easy" | "medium" | "hard";
 type FakeLetter = "A" | "B" | "C";
@@ -19,6 +21,7 @@ type RawClaim = { id?: unknown; text?: unknown; truth?: unknown };
 type RawPack = { id?: unknown; title?: unknown; difficulty?: unknown; claims?: unknown };
 
 const TRUTH_DETECTOR_GAME_KEY = "truth_detector";
+const SHOW_INLINE_QUESTION_EDITOR = false;
 
 function safeParsePacks(jsonText: string): { ok: true; packs: RoundPack[] } | { ok: false; error: string } {
   try {
@@ -43,12 +46,6 @@ function safeParsePacks(jsonText: string): { ok: true; packs: RoundPack[] } | { 
   } catch (error: unknown) {
     return { ok: false, error: error instanceof Error ? error.message : "JSON parse xato" };
   }
-}
-
-function difficultyForRound(round: number): Difficulty {
-  if (round <= 4) return "easy";
-  if (round <= 8) return "medium";
-  return "hard";
 }
 
 const DEMO_PACKS: RoundPack[] = [
@@ -114,8 +111,11 @@ function TruthDetector() {
   const [aiDifficulty, setAiDifficulty] = useState<"easy" | "medium" | "hard" | "mixed">("medium");
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
-  const allPacks = useMemo(() => [...DEMO_PACKS, ...teacherPacks], [teacherPacks]);
-  const desiredDiff = useMemo(() => difficultyForRound(round), [round]);
+  const allPacks = useMemo(
+    () => filterGameQuestionsByDifficulty(teacherPacks.length > 0 ? teacherPacks : DEMO_PACKS, getGameQuestionDifficulty("truth-detector")),
+    [teacherPacks],
+  );
+  const desiredDiff = getGameQuestionDifficulty("truth-detector");
   const allTeamsPicked = useMemo(() => teams.length === 2 && teams.every((t) => t.pickIndex !== null), [teams]);
   const hasGeminiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY?.trim());
 
@@ -181,7 +181,7 @@ function TruthDetector() {
     ];
 
     const used = new Set<string>();
-    const pack = pickPack("easy", used);
+    const pack = pickPack(getGameQuestionDifficulty("truth-detector"), used);
     used.add(pack.id);
 
     setTeams(initialTeams);
@@ -218,7 +218,7 @@ function TruthDetector() {
     if (phase !== "play" || !currentPack) return;
     const nextRoundNum = round + 1;
     const used = new Set(usedPackIds);
-    const pack = pickPack(difficultyForRound(nextRoundNum), used);
+    const pack = pickPack(getGameQuestionDifficulty("truth-detector"), used);
     used.add(pack.id);
     setUsedPackIds(used);
     setCurrentPack(pack);
@@ -347,7 +347,7 @@ function TruthDetector() {
           </div>
         </div>
 
-        {canManageQuestions && (
+        {canManageQuestions && SHOW_INLINE_QUESTION_EDITOR && (
           <div className="mb-6 bg-white dark:bg-slate-800 rounded-2xl border-2 border-indigo-300 dark:border-indigo-700 p-5 shadow-xl">
             <h3 className="text-lg font-bold text-indigo-800 dark:text-indigo-200 mb-1">O'qituvchi uchun fakt qo'shish</h3>
             <p className="text-sm text-indigo-600 dark:text-indigo-300 mb-3">1) 3 ta fakt yozing. 2) Qaysi biri yolg'onligini belgilang. 3) Saqlang.</p>
@@ -451,18 +451,45 @@ function TruthDetector() {
         )}
 
         {phase === "setup" && (
-          <div className="bg-white dark:bg-slate-800 rounded-3xl border-2 border-indigo-300 dark:border-indigo-700 p-6 shadow-xl">
-            <div className="flex items-center gap-3 mb-4 text-indigo-900 dark:text-indigo-100"><FaUsers /><h2 className="text-2xl font-black">2 TA JAMOA</h2></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input value={teamAInput} onChange={(e) => setTeamAInput(e.target.value)} placeholder="1-jamoa nomi" className="w-full px-4 py-3 rounded-xl border-2 border-indigo-200 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-900 dark:text-indigo-100 placeholder-indigo-400 dark:placeholder-indigo-300/70" />
-              <input value={teamBInput} onChange={(e) => setTeamBInput(e.target.value)} placeholder="2-jamoa nomi" className="w-full px-4 py-3 rounded-xl border-2 border-indigo-200 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-900 dark:text-indigo-100 placeholder-indigo-400 dark:placeholder-indigo-300/70" />
+          <div className="overflow-hidden rounded-3xl border-2 border-indigo-300 bg-white shadow-2xl dark:border-indigo-700 dark:bg-slate-800">
+            <div className="bg-gradient-to-r from-indigo-700 via-purple-700 to-fuchsia-700 px-6 py-7 text-white sm:px-8">
+              <div className="flex items-start gap-4">
+                <div className="rounded-2xl bg-white/15 p-4 ring-1 ring-white/25"><PiDetective className="text-4xl" /></div>
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-indigo-200">Detektor missiyasi</p>
+                  <h2 className="mt-1 text-3xl font-black sm:text-4xl">Yolg'onni toping</h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-indigo-100 sm:text-base">Har raundda 3 ta gap beriladi. Jamoalar yashirincha bitta FAKE gapni tanlaydi. To'g'ri topgan jamoa +1 ball oladi.</p>
+                </div>
+              </div>
             </div>
 
-            <div className="mt-4 flex gap-2 flex-wrap">
-              <button onClick={startGame} className="px-6 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold ml-auto"><FaGamepad className="inline mr-2" />BOSHLASH</button>
-            </div>
+            <div className="p-6 sm:p-8">
+              <div className="mb-6 grid gap-3 sm:grid-cols-3">
+                {["1. Jamoalarni nomlang", "2. A/B/C dan tanlang", "3. Natijani oching"].map((step, index) => (
+                  <div key={step} className="rounded-2xl border border-indigo-200 bg-indigo-50 p-4 dark:border-indigo-700 dark:bg-indigo-950/40">
+                    <p className="text-xs font-black uppercase tracking-wider text-indigo-500 dark:text-indigo-300">Qadam {index + 1}</p>
+                    <p className="mt-1 font-bold text-indigo-900 dark:text-indigo-100">{step.replace(/^\d+\. /, "")}</p>
+                  </div>
+                ))}
+              </div>
 
-            {msg && <div className="mt-3 p-3 rounded-xl bg-red-100 dark:bg-red-500/15 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 font-semibold">{msg}</div>}
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-800 dark:bg-emerald-950/30">
+                <div><p className="text-xs font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Savol bazasi tayyor</p><p className="font-semibold text-emerald-900 dark:text-emerald-100">{allPacks.length} ta faktlar to'plami · {getDifficultyText(desiredDiff)}</p></div>
+                <span className="rounded-full bg-emerald-500 px-3 py-1 text-xs font-black text-white">DEFAULT</span>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <label className="text-sm font-bold text-indigo-900 dark:text-indigo-100">1-jamoa nomi
+                  <input value={teamAInput} onChange={(e) => setTeamAInput(e.target.value)} placeholder="Masalan: Zukkolar" className="mt-2 w-full rounded-xl border-2 border-indigo-200 bg-indigo-50 px-4 py-3 text-indigo-900 outline-none transition focus:border-indigo-500 dark:border-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-100" />
+                </label>
+                <label className="text-sm font-bold text-indigo-900 dark:text-indigo-100">2-jamoa nomi
+                  <input value={teamBInput} onChange={(e) => setTeamBInput(e.target.value)} placeholder="Masalan: Bilimdonlar" className="mt-2 w-full rounded-xl border-2 border-indigo-200 bg-indigo-50 px-4 py-3 text-indigo-900 outline-none transition focus:border-indigo-500 dark:border-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-100" />
+                </label>
+              </div>
+
+              <button onClick={startGame} className="mt-6 flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 py-4 text-lg font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"><FaGamepad /> O'YINNI BOSHLASH</button>
+              {msg && <div className="mt-3 rounded-xl border border-red-200 bg-red-100 p-3 text-center font-semibold text-red-700 dark:border-red-700 dark:bg-red-500/15 dark:text-red-300">{msg}</div>}
+            </div>
           </div>
         )}
 

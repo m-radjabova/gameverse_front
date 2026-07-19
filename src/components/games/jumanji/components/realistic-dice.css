@@ -1,0 +1,107 @@
+.real-dice-scene {
+  --dice-size: 82px;
+  position: relative;
+  width: var(--dice-size);
+  height: var(--dice-size);
+  perspective: 620px;
+  transform-style: preserve-3d;
+}
+
+.real-dice-cube {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: rotateX(-18deg) rotateY(31deg) rotateZ(-2deg);
+  transition: transform 320ms cubic-bezier(.2,.75,.3,1);
+}
+
+.real-dice-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  overflow: hidden;
+  border: 1px solid #9a896e;
+  border-radius: 15px;
+  background:
+    radial-gradient(circle at 27% 20%, #fffef7 0 9%, transparent 34%),
+    linear-gradient(145deg, #fffdf2 0%, #e9dfc9 55%, #c9b99c 100%);
+  box-shadow:
+    inset 3px 3px 5px #fff,
+    inset -5px -6px 9px #897b6455,
+    0 0 1px #fff;
+  backface-visibility: hidden;
+}
+
+.real-dice-face-shine {
+  position: absolute;
+  inset: 3px;
+  border-radius: 12px;
+  background: linear-gradient(125deg, #ffffff99, transparent 35% 75%, #6e5f4722);
+  pointer-events: none;
+}
+
+.real-dice-front { transform: translateZ(calc(var(--dice-size) / 2)); }
+.real-dice-back { transform: rotateY(180deg) translateZ(calc(var(--dice-size) / 2)); }
+.real-dice-right { transform: rotateY(90deg) translateZ(calc(var(--dice-size) / 2)); filter: brightness(.82); }
+.real-dice-left { transform: rotateY(-90deg) translateZ(calc(var(--dice-size) / 2)); filter: brightness(.9); }
+.real-dice-top { transform: rotateX(90deg) translateZ(calc(var(--dice-size) / 2)); filter: brightness(1.08); }
+.real-dice-bottom { transform: rotateX(-90deg) translateZ(calc(var(--dice-size) / 2)); filter: brightness(.72); }
+
+.real-dice-pip {
+  position: relative;
+  z-index: 2;
+  align-self: center;
+  justify-self: center;
+  width: 13px;
+  height: 13px;
+  border: 1px solid #130f0b;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #716451 0 5%, #211a13 28%, #060504 72%);
+  box-shadow:
+    inset 2px 2px 4px #000,
+    inset -1px -1px 2px #9b8a6e77,
+    1px 2px 2px #fff9;
+}
+
+.pip-1 { grid-area: 1 / 1; }.pip-2 { grid-area: 1 / 2; }.pip-3 { grid-area: 1 / 3; }
+.pip-4 { grid-area: 2 / 1; }.pip-5 { grid-area: 2 / 2; }.pip-6 { grid-area: 2 / 3; }
+.pip-7 { grid-area: 3 / 1; }.pip-8 { grid-area: 3 / 2; }.pip-9 { grid-area: 3 / 3; }
+
+.real-dice-floor-shadow {
+  position: absolute;
+  left: 4px;
+  right: -15px;
+  bottom: -20px;
+  height: 28px;
+  border-radius: 50%;
+  background: #0009;
+  filter: blur(9px);
+  transform: rotate(-7deg);
+}
+
+.rolling .real-dice-cube {
+  animation: realisticDiceRoll .55s linear infinite;
+}
+
+.rolling .real-dice-floor-shadow {
+  animation: realisticDiceShadow .55s ease-in-out infinite;
+}
+
+@keyframes realisticDiceRoll {
+  0% { transform: rotateX(-18deg) rotateY(31deg) rotateZ(-2deg) translateY(0); }
+  25% { transform: rotateX(115deg) rotateY(154deg) rotateZ(38deg) translateY(-9px); }
+  50% { transform: rotateX(248deg) rotateY(281deg) rotateZ(91deg) translateY(-15px); }
+  75% { transform: rotateX(382deg) rotateY(407deg) rotateZ(145deg) translateY(-8px); }
+  100% { transform: rotateX(522deg) rotateY(541deg) rotateZ(178deg) translateY(0); }
+}
+
+@keyframes realisticDiceShadow {
+  50% { transform: rotate(-7deg) scale(.72); opacity: .48; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rolling .real-dice-cube,
+  .rolling .real-dice-floor-shadow { animation: none; }
+}

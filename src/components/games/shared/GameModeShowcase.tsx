@@ -1,7 +1,6 @@
 import { FaCheckCircle, FaLayerGroup, FaTrophy, FaUsers } from "react-icons/fa";
-import { getGameSessionConfig } from "../../../hooks/gameSession";
+import { getGameSessionConfig, supportsGameLeaderboard } from "../../../hooks/gameSession";
 import { gameCards } from "../../../pages/games/data";
-import { DIRECT_PLAY_GAME_PATHS } from "./directPlayGames";
 import GameLeaderboardPanel from "./GameLeaderboardPanel";
 
 type Props = {
@@ -22,16 +21,17 @@ export default function GameModeShowcase({
   }
 
   const session = getGameSessionConfig(game.id);
-  const shouldHideLeaderboard = DIRECT_PLAY_GAME_PATHS.has(game.path);
+  const showsLeaderboard = supportsGameLeaderboard(game.id, game.players);
 
   if (compact) {
     return (
       <div className="mt-4">
-        {!shouldHideLeaderboard ? (
+        {showsLeaderboard ? (
           <GameLeaderboardPanel
             gameKey={game.id}
-            title={`${game.title} Reytingi`}
+            title={`${game.title} reytingi`}
             limit={100}
+            singlePlayerOnly
           />
         ) : null}
       </div>
@@ -103,7 +103,7 @@ export default function GameModeShowcase({
             </p>
           </div>
 
-          {!shouldHideLeaderboard ? (
+          {showsLeaderboard ? (
             <div className="group relative overflow-hidden rounded-[1.6rem] border border-white/12 bg-black/20 p-4 backdrop-blur-sm transition-transform hover:-translate-y-0.5">
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-300/10 to-transparent opacity-70" />
               <div className="relative mb-4 flex items-center justify-between">
@@ -126,8 +126,8 @@ export default function GameModeShowcase({
         </div>
       </div>
 
-      {!shouldHideLeaderboard ? (
-        <GameLeaderboardPanel gameKey={game.id} title={`${game.title} Reytingi`} />
+      {showsLeaderboard ? (
+        <GameLeaderboardPanel gameKey={game.id} title={`${game.title} reytingi`} singlePlayerOnly />
       ) : null}
     </div>
   );

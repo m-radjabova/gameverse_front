@@ -40,7 +40,7 @@ function DiffButton({ active, onClick, label, color }: { active: boolean; onClic
 }
 
 export default function MemoryRush() {
-  const { isSinglePlayer, primaryName, secondaryName, modeLabel } = useGameParticipantMode({
+  const { isSinglePlayer, primaryName, secondaryName, modeLabel, selectParticipantCount } = useGameParticipantMode({
     gameId: "memory-rush",
     fallbackPrimaryName: "YULDUZ",
     fallbackSecondaryName: "SHAMS",
@@ -97,7 +97,7 @@ export default function MemoryRush() {
   const currentPlayer = playerNames[active];
   useEffect(() => {
     setPlayerNames((prev) => [
-      prev[0].trim() || primaryName,
+      isSinglePlayer ? primaryName : prev[0].trim() || primaryName,
       isSinglePlayer ? secondaryName : prev[1].trim() || secondaryName,
     ]);
     if (isSinglePlayer) {
@@ -350,7 +350,7 @@ export default function MemoryRush() {
   }, [pairs, streak, gameTimeLeft]);
 
   useGameResultSubmission(
-    phase === "finish",
+    phase === "finish" && isSinglePlayer,
     "memory-rush",
     isSinglePlayer
       ? [
@@ -420,6 +420,16 @@ export default function MemoryRush() {
               </h3>
 
               <div className="relative space-y-4">
+                <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                  <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-emerald-300">O'yin rejimi</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {([1, 2] as const).map((count) => (
+                      <button key={count} type="button" onClick={() => selectParticipantCount(count)} className={`rounded-xl border px-4 py-3 text-left transition ${isSinglePlayer === (count === 1) ? "border-emerald-300 bg-gradient-to-r from-emerald-600 to-teal-500 text-white" : "border-white/10 bg-white/5 text-white/65 hover:bg-white/10"}`}>
+                        <b className="block">{count} kishilik</b><small>{count === 1 ? "Yakka mashq" : "Navbat bilan o'ynash"}</small>
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 {/* Player Names */}
                 <div className={`grid gap-4 ${isSinglePlayer ? "" : "md:grid-cols-2"}`}>
                   <div className="space-y-2">
@@ -854,5 +864,3 @@ export default function MemoryRush() {
     </div>
   );
 }
-
-

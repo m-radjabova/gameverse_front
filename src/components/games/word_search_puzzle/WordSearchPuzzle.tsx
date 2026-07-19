@@ -7,6 +7,7 @@ import Confetti from "react-confetti-boom";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
+import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
 import { useGameParticipantMode } from "../../../hooks/useGameParticipantMode";
 import { generateWordSearchWords } from "./ai";
 import wordSearchGameSound from "../../../assets/sounds/word_search_game_sound.m4a";
@@ -110,7 +111,7 @@ export default function WordSearchPuzzle() {
   const {
     state: { user },
   } = useContextPro();
-  const { isSinglePlayer, primaryName, secondaryName } = useGameParticipantMode({
+  const { isSinglePlayer, primaryName, secondaryName, modeLabel, selectParticipantCount } = useGameParticipantMode({
     gameId: "word-search",
     fallbackPrimaryName: "1-O'YINCHI",
     fallbackSecondaryName: "2-O'YINCHI",
@@ -168,9 +169,20 @@ export default function WordSearchPuzzle() {
     return Math.round((found / Math.max(visibleWords.length, 1)) * 100);
   }, [isSinglePlayer, team1Found, team2Found, visibleWords.length]);
 
+  useGameResultSubmission(
+    phase === "finish" && isSinglePlayer,
+    "word-search",
+    [{
+      participant_name: teamNames[0],
+      participant_mode: modeLabel,
+      score: team1Found * 100 + timer,
+      metadata: { found_words: team1Found, difficulty, time_left: timer },
+    }],
+  );
+
   useEffect(() => {
     setTeamNames((prev) => [
-      prev[0].trim() || primaryName,
+      isSinglePlayer ? primaryName : prev[0].trim() || primaryName,
       isSinglePlayer ? secondaryName : prev[1].trim() || secondaryName,
     ]);
   }, [isSinglePlayer, primaryName, secondaryName]);
@@ -547,6 +559,17 @@ export default function WordSearchPuzzle() {
               </div>
             </div>
             <button onClick={resetToDefaults} className="rounded-xl border border-emerald-500/30 bg-emerald-500/20 px-4 py-2 text-sm font-bold text-emerald-300">Default so'zlar</button>
+          </div>
+
+          <div className="relative mb-6 rounded-2xl border border-emerald-500/30 bg-emerald-950/30 p-4">
+            <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-emerald-300">O'yin rejimi</p>
+            <div className="grid grid-cols-2 gap-3">
+              {([1, 2] as const).map((count) => (
+                <button key={count} type="button" onClick={() => selectParticipantCount(count)} className={`rounded-xl border px-4 py-3 text-left transition ${isSinglePlayer === (count === 1) ? "border-emerald-300 bg-gradient-to-r from-emerald-600 to-teal-500 text-white" : "border-emerald-500/20 bg-white/5 text-white/65 hover:bg-white/10"}`}>
+                  <b className="block">{count} kishilik</b><small>{count === 1 ? "Bitta board" : "Ikkita board"}</small>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="relative grid gap-6 lg:grid-cols-2">

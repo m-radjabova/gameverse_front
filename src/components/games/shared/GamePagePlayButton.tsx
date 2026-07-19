@@ -37,10 +37,14 @@ export default function GamePagePlayButton({
   );
   const gamePath = game?.path ?? to.replace(/\/play$/, "");
   const shouldBypassModeSelection = DIRECT_PLAY_GAME_PATHS.has(gamePath);
+  const usesQuestionBank = Boolean(game && QUESTION_BANK_GAME_IDS.has(game.id));
 
   const participantOptions = useMemo(
     () => (game ? buildParticipantOptions(game.players) : []),
     [game]
+  );
+  const showsParticipantOptions = Boolean(
+    modeSelectionEnabled && !shouldBypassModeSelection && participantOptions.length > 1,
   );
 
   const handleNavigate = (count?: number) => {
@@ -60,6 +64,7 @@ export default function GamePagePlayButton({
 
             return `${option.participantLabel.toUpperCase()} ${index + 1}`;
           }),
+          questionDifficulty: "easy",
           selectedAt: new Date().toISOString(),
         });
       }
@@ -70,11 +75,20 @@ export default function GamePagePlayButton({
   };
 
   const handleClick = () => {
+    if (game?.id === "memory-chain") {
+      navigate(`/games/${game.id}/mode-setup`);
+      return;
+    }
+    if (game && usesQuestionBank) {
+      navigate(`/games/${game.id}/setup`);
+      return;
+    }
+
     if (
-      shouldBypassModeSelection ||
-      !modeSelectionEnabled ||
+      (shouldBypassModeSelection && !usesQuestionBank) ||
+      (!modeSelectionEnabled && !usesQuestionBank) ||
       !game ||
-      participantOptions.length <= 1
+      (participantOptions.length <= 1 && !usesQuestionBank)
     ) {
       handleNavigate(participantOptions[0]?.count);
       return;
@@ -107,39 +121,39 @@ export default function GamePagePlayButton({
 
       {isSelectorOpen && game && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-md">
-          <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-slate-950/95 p-6 text-white shadow-2xl">
+          <div className="w-full max-w-xl rounded-3xl border border-white/15 bg-slate-950/95 p-6 text-white shadow-2xl sm:p-8">
             <div className="mb-6 flex items-start gap-4">
-              <div className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-r ${colorClassName}`}>
-                <FaUsers className="text-xl" />
-              </div>
+              <div className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-r ${colorClassName}`}><FaUsers className="text-xl" /></div>
               <div>
                 <p className="text-sm font-bold uppercase tracking-[0.25em] text-white/50">
                   Boshlashdan oldin
                 </p>
                 <h3 className="text-2xl font-black">{game.title}</h3>
-                <p className="mt-1 text-sm text-white/65">
-                  O'yin nechta {participantOptions[0]?.participantLabel ?? "ishtirokchi"} bilan boshlanishini tanlang.
-                </p>
+                <p className="mt-1 text-sm text-white/65">Rejimni tanlang va o'yinni boshlang.</p>
               </div>
             </div>
 
+            {showsParticipantOptions && <div className="mb-3 flex items-center justify-between"><p className="text-xs font-black uppercase tracking-[0.16em] text-white/55">O'yin rejimi</p><span className="text-xs text-white/40">1 qadam</span></div>}
             <div className="grid gap-3">
-              {participantOptions.map((option) => (
+              {showsParticipantOptions && participantOptions.map((option) => (
                 <button
                   key={option.label}
                   type="button"
                   onClick={() => handleNavigate(option.count)}
-                  className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left transition-all hover:scale-[1.01] hover:border-white/25 hover:bg-white/10"
+                  className={`group flex items-center justify-between rounded-2xl border px-4 py-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-lg ${option.count === 1 ? "border-sky-400/30 bg-sky-500/10 hover:border-sky-300/60 hover:bg-sky-500/20" : "border-violet-400/30 bg-violet-500/10 hover:border-violet-300/60 hover:bg-violet-500/20"}`}
                 >
-                  <div>
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-lg font-black text-white">{option.count}</span>
+                    <div>
                     <p className="text-lg font-black">{option.label}</p>
                     <p className="text-sm text-white/60">
                       {option.count === 1
                         ? "Yakka tartibda o'ynash"
                         : "Jamoaviy o'ynash"}
                     </p>
+                    </div>
                   </div>
-                  <FaArrowRight className="text-white/60" />
+                  <span className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-sm font-bold text-white/80 transition group-hover:bg-white/20 group-hover:text-white"><FaPlay className="text-[10px]" /> Boshlash <FaArrowRight className="text-xs" /></span>
                 </button>
               ))}
             </div>
@@ -157,3 +171,11 @@ export default function GamePagePlayButton({
     </>
   );
 }
+
+const QUESTION_BANK_GAME_IDS = new Set([
+  "quiz-battle", "classic-arcade", "wheel-of-fortune", "math-race",
+  "math-chick", "tug-of-war", "baamboozle", "jumanji", "millionaire",
+  "truth-detector", "treasure-hunt", "reverse-thinking",
+  "pizza-master", "mystery-egg",
+  "bingo",
+]);

@@ -42,4 +42,5 @@ export type CellInputRow = {
   optionB: string;
   optionC: string;
   correct: string;
+  difficulty?: Difficulty;
 };

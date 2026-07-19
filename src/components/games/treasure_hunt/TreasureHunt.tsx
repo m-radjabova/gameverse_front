@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaBolt,
@@ -28,10 +28,10 @@ import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
-import pirateShipSvg from "../../../assets/treasure-hunt/pirate-ship.svg";
-import palmIslandSvg from "../../../assets/treasure-hunt/palm-island.svg";
-import compassRoseSvg from "../../../assets/treasure-hunt/compass-rose.svg";
-import treasureChestSvg from "../../../assets/treasure-hunt/treasure-chest.svg";
+import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
+import { filterGameQuestionsByDifficulty } from "../../../utils/gameQuestionDifficulty";
+import ExpeditionMap from "./ExpeditionMap";
+import "./treasureHunt.css";
 
 type Phase = "intro" | "play" | "finish";
 type RiddleDraft = {
@@ -45,11 +45,11 @@ type RiddleDraft = {
 };
 
 const TREASURE_HUNT_GAME_KEY = "treasure_hunt";
+const SHOW_INLINE_QUESTION_EDITOR = false;
 const SECONDS_TOTAL = 12 * 60;
 const SECONDS_PER_QUESTION = 45;
 const HINT_PENALTY = 40;
 const WRONG_PENALTY = 25;
-const STEP_SCORE_REQUIREMENT = 95;
 const AI_GENERATE_OPTIONS = [1, 3, 5, 10, 20] as const;
 const AI_DIFFICULTY_OPTIONS = [
   { value: "easy", label: "Oson" },
@@ -81,255 +81,11 @@ const buildLocalFallbackRiddles = (count: number): Riddle[] =>
       reward: source.reward,
     };
   });
-const MAP_POINTS = [
-  [10, 77],
-  [18, 70],
-  [28, 73],
-  [40, 68],
-  [48, 58],
-  [57, 61],
-  [66, 55],
-  [73, 43],
-  [81, 39],
-  [89, 26],
-] as const;
-const MAP_ROUTE_D = "M 10,77 C 16,69 22,67 29,72 C 37,78 42,73 47,62 C 52,51 59,64 67,54 C 74,44 80,45 89,26";
-const MAP_ROUTE_TRAIL_D = "M 10,77 C 16,69 22,67 29,72 C 37,78 42,73 47,62 C 52,51 59,64 67,54 C 74,44 80,45 89,26";
 const formatTime = (seconds: number) => {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 };
-
-// -- Realistic SVG Treasure Map ----------------------------------------------
-const TreasureMapSVG = memo(function TreasureMapSVG({ progress }: { progress: number }) {
-  const t = progress / 100;
-  const idx = Math.min(Math.floor(t * (MAP_POINTS.length - 1)), MAP_POINTS.length - 2);
-  const frac = t * (MAP_POINTS.length - 1) - idx;
-  const sx = MAP_POINTS[idx][0] + (MAP_POINTS[idx + 1][0] - MAP_POINTS[idx][0]) * frac;
-  const sy = MAP_POINTS[idx][1] + (MAP_POINTS[idx + 1][1] - MAP_POINTS[idx][1]) * frac;
-  return (
-    <svg
-      viewBox="0 0 102 90"
-      className="h-full w-full"
-      style={{ fontFamily: "Georgia, serif" }}
-    >
-      <defs>
-        <linearGradient id="oceanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#173a52" />
-          <stop offset="45%" stopColor="#24556f" />
-          <stop offset="100%" stopColor="#091927" />
-        </linearGradient>
-        <radialGradient id="deepWaterGlow" cx="50%" cy="52%" r="68%">
-          <stop offset="0%" stopColor="#5ec2ff" stopOpacity="0.18" />
-          <stop offset="50%" stopColor="#3b82f6" stopOpacity="0.08" />
-          <stop offset="100%" stopColor="#020617" stopOpacity="0" />
-        </radialGradient>
-        <pattern id="waves" x="0" y="0" width="18" height="10" patternUnits="userSpaceOnUse">
-          <path d="M0,5 Q4,1 9,5 T18,5" stroke="#7dd3fc" strokeWidth="0.6" fill="none" opacity="0.18"/>
-          <path d="M0,8 Q3,6 6,8 T12,8 T18,8" stroke="#38bdf8" strokeWidth="0.35" fill="none" opacity="0.14"/>
-        </pattern>
-        <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
-          <stop offset="60%" stopColor="transparent"/>
-          <stop offset="100%" stopColor="rgba(5,20,40,0.7)"/>
-        </radialGradient>
-        <radialGradient id="treasureGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.6"/>
-          <stop offset="100%" stopColor="#fbbf24" stopOpacity="0"/>
-        </radialGradient>
-        <radialGradient id="shipWake" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#dbeafe" stopOpacity="0.45"/>
-          <stop offset="100%" stopColor="#dbeafe" stopOpacity="0"/>
-        </radialGradient>
-        <linearGradient id="shimmer" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.08" />
-          <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.18" />
-          <stop offset="100%" stopColor="#fbbf24" stopOpacity="0.04" />
-        </linearGradient>
-      </defs>
-
-      <rect x="0" y="0" width="102" height="90" fill="url(#oceanGrad)" />
-      <rect x="0" y="0" width="102" height="90" fill="url(#deepWaterGlow)" />
-      <rect x="0" y="0" width="102" height="90" fill="url(#waves)" opacity="0.6"/>
-
-      {[12, 24, 36, 48, 60, 72, 84].map((y) => (
-        <line key={y} x1="0" y1={y} x2="102" y2={y + 0.5} stroke="#93c5fd" strokeWidth="0.12" opacity="0.12"/>
-      ))}
-
-      {[8, 18, 30, 43, 56, 68, 80, 92].map((x) => (
-        <circle key={`bubble-${x}`} cx={x} cy={18 + ((x * 7) % 58)} r={(x % 3) * 0.55 + 0.65} fill="#e0f2fe" opacity="0.15" />
-      ))}
-
-      <image
-        href={compassRoseSvg}
-        x="80.5"
-        y="69.5"
-        width="16"
-        height="16"
-        opacity="0.22"
-        preserveAspectRatio="xMidYMid meet"
-      />
-
-      <g>
-        <image
-          href={palmIslandSvg}
-          x="1"
-          y="10"
-          width="42"
-          height="42"
-          opacity="0.97"
-          preserveAspectRatio="xMidYMid meet"
-        />
-        <image
-          href={palmIslandSvg}
-          x="35"
-          y="63"
-          width="28"
-          height="18"
-          opacity="0.92"
-          preserveAspectRatio="xMidYMid meet"
-        />
-        <image
-          href={palmIslandSvg}
-          x="67"
-          y="8"
-          width="34"
-          height="34"
-          opacity="0.98"
-          preserveAspectRatio="xMidYMid meet"
-        />
-      </g>
-
-      {[0, 1, 2, 3, 4].map((reef) => (
-        <ellipse
-          key={`reef-${reef}`}
-          cx={41 + reef * 4.2}
-          cy={44.5 + (reef % 2 === 0 ? 0.6 : -0.4)}
-          rx={reef % 2 === 0 ? 1.7 : 1.2}
-          ry={0.7}
-          fill="#d9f99d"
-          opacity="0.22"
-        />
-      ))}
-
-      {[0, 1, 2].map((rock) => (
-        <ellipse
-          key={`rock-${rock}`}
-          cx={68 + rock * 3}
-          cy={30 + rock * 1.7}
-          rx={1.1 + rock * 0.2}
-          ry={0.7}
-          fill="#64748b"
-          opacity="0.32"
-        />
-      ))}
-
-      <path
-        d={MAP_ROUTE_TRAIL_D}
-        stroke="#fff7d6"
-        strokeWidth="3.8"
-        fill="none"
-        opacity="0.12"
-        strokeLinecap="round"
-      />
-      <path
-        d={MAP_ROUTE_D}
-        stroke="#d6c08a"
-        strokeWidth="1.15"
-        fill="none"
-        strokeDasharray="2.8 2.6"
-        opacity="0.52"
-        strokeLinecap="round"
-      />
-      <path
-        d={MAP_ROUTE_D}
-        stroke="#fde68a"
-        strokeWidth="1.3"
-        fill="none"
-        strokeDasharray="3.2 2.2"
-        opacity="0.95"
-        strokeLinecap="round"
-        style={{
-          strokeDashoffset: `${(1 - progress / 100) * 200}`,
-          clipPath: `inset(0 ${100 - progress}% 0 0)`,
-        }}
-      />
-
-      {[0.14, 0.3, 0.48, 0.68, 0.84].map((frac, i) => {
-        const fi = Math.floor(frac * (MAP_POINTS.length - 1));
-        const ff = frac * (MAP_POINTS.length - 1) - fi;
-        const wx = MAP_POINTS[fi][0] + (MAP_POINTS[fi + 1]?.[0] - MAP_POINTS[fi][0]) * ff;
-        const wy = MAP_POINTS[fi][1] + (MAP_POINTS[fi + 1]?.[1] - MAP_POINTS[fi][1]) * ff;
-        const passed = progress >= frac * 100;
-        return (
-          <g key={i}>
-            <circle cx={wx} cy={wy} r="1.18" fill={passed ? "#fbbf24" : "#94a3b8"} opacity={passed ? 0.96 : 0.5}/>
-            <circle cx={wx} cy={wy} r="2.5" fill={passed ? "#f59e0b" : "#cbd5e1"} opacity={passed ? 0.12 : 0.05}/>
-          </g>
-        );
-      })}
-
-      <circle cx="89" cy="25.5" r="8" fill="url(#treasureGlow)" opacity="0.68" />
-      <image
-        href={treasureChestSvg}
-        x="85.5"
-        y="19.8"
-        width="9"
-        height="9"
-        preserveAspectRatio="xMidYMid meet"
-      />
-      <g transform="translate(86.4,33.5)" opacity="0.95">
-        <line x1="0" y1="0" x2="4.1" y2="4.1" stroke="#ef4444" strokeWidth="1.1" strokeLinecap="round"/>
-        <line x1="4.1" y1="0" x2="0" y2="4.1" stroke="#ef4444" strokeWidth="1.1" strokeLinecap="round"/>
-      </g>
-
-      <g transform={`translate(${sx - 5.2}, ${sy - 7.8})`}>
-        <ellipse cx="-0.6" cy="9.2" rx="7.8" ry="2.2" fill="url(#shipWake)" opacity="0.55"/>
-        <ellipse cx="-5.8" cy="9.45" rx="3.2" ry="0.9" fill="#e0f2fe" opacity="0.4"/>
-        <image
-          href={pirateShipSvg}
-          x="-5.5"
-          y="-2.8"
-          width="12"
-          height="12"
-          preserveAspectRatio="xMidYMid meet"
-        />
-      </g>
-
-      <rect x="0" y="0" width="102" height="90" fill="url(#vignette)"/>
-
-      <g transform="translate(10,77)">
-        <circle cx="0" cy="0" r="4.5" fill="#082f49" opacity="0.82" />
-        <circle cx="0" cy="0" r="3.25" fill="#16a34a" opacity="0.95" />
-        <text x="0" y="0.9" textAnchor="middle" fontSize="2.15" fill="white" fontWeight="bold">START</text>
-      </g>
-
-      {[20,40,60,80].map(x => (
-        <line key={`vg${x}`} x1={x} y1="0" x2={x} y2="90" stroke="#7dd3fc" strokeWidth="0.1" opacity="0.1"/>
-      ))}
-      {[20,40,60,80].map(y => (
-        <line key={`hg${y}`} x1="0" y1={y} x2="102" y2={y} stroke="#7dd3fc" strokeWidth="0.1" opacity="0.1"/>
-      ))}
-
-      <rect x="0.5" y="0.5" width="101" height="89" rx="2"
-        fill="none" stroke="#d6c08a" strokeWidth="1" opacity="0.48"/>
-      <rect x="1.5" y="1.5" width="99" height="87" rx="1.5"
-        fill="none" stroke="#8b6914" strokeWidth="0.28" opacity="0.4"/>
-
-      <g transform="translate(70,63)" opacity="0.28">
-        <path d="M0,0 C1.8,-2.2 3.7,-2.1 5.4,0 C7.2,2.1 9.1,2.2 10.8,0" stroke="#0f3b53" strokeWidth="0.8" fill="none"/>
-        <path d="M3.6,0.3 C4.4,2.5 4.5,4.3 3.8,5.8" stroke="#0f3b53" strokeWidth="0.62" fill="none"/>
-      </g>
-
-      <rect x="0" y="0" width="102" height="90" fill="url(#shimmer)" opacity="0.5"/>
-    </svg>
-  );
-});
-
-// pts for ship position calculation - needs to be accessible in component
-// const pts: [number,number][] = [
-//   [9,72],[18,58],[26,78],[35,65],[44,52],[52,70],[62,55],[70,43],[80,48],[93,30]
-// ];
 
 export default function TreasureHunt() {
   const navigate = useNavigate();
@@ -337,7 +93,9 @@ export default function TreasureHunt() {
     state: { user, isLoading: isUserLoading },
   } = useContextPro();
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const mapScrollRef = useRef<HTMLDivElement | null>(null);
   const skipInitialRemoteSaveRef = useRef(true);
+  const answerHandlerRef = useRef<(index: number) => void>(() => undefined);
 
   const [phase, setPhase] = useState<Phase>("intro");
   useFinishApplause(phase === "finish");
@@ -355,6 +113,9 @@ export default function TreasureHunt() {
 
   const [questionIndex, setQuestionIndex] = useState(0);
   const [pathIndex, setPathIndex] = useState(0);
+  const [keysFound, setKeysFound] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [bestStreak, setBestStreak] = useState(0);
   const [score, setScore] = useState(0);
   const [secondsLeft, setSecondsLeft] = useState(SECONDS_TOTAL);
   const [questionSeconds, setQuestionSeconds] = useState(SECONDS_PER_QUESTION);
@@ -365,16 +126,25 @@ export default function TreasureHunt() {
   const [toast, setToast] = useState<string | null>(null);
   const [showAnswerEffect, setShowAnswerEffect] = useState(false);
   const [answerResult, setAnswerResult] = useState<"correct" | "wrong" | null>(null);
+  const [answerMessage, setAnswerMessage] = useState("");
+  const [questionPanelOpen, setQuestionPanelOpen] = useState(true);
   const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
 
   const canManageQuestions = hasAnyRole(user, ["teacher", "admin"]);
   const hasGeminiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY?.trim());
   const current = riddles[questionIndex];
-  const targetPath = Math.max(1, riddles.length - 1);
-  const minScoreToWin = Math.max(900, riddles.length * STEP_SCORE_REQUIREMENT);
-  const won = pathIndex >= targetPath && score >= minScoreToWin;
+  const targetPath = Math.max(1, riddles.length);
+  const keysNeeded = Math.max(1, Math.ceil(riddles.length * 0.6));
+  const won = keysFound >= keysNeeded;
   // const progressPct = riddles.length > 0 ? Math.round(((questionIndex + 1) / riddles.length) * 100) : 0;
   const pathProgressPct = targetPath > 0 ? Math.round((pathIndex / targetPath) * 100) : 0;
+
+  useEffect(() => {
+    const map = mapScrollRef.current;
+    if (phase !== "play" || !map) return;
+    const maxScroll = Math.max(0, map.scrollHeight - map.clientHeight);
+    map.scrollTo({ top: maxScroll * (pathProgressPct / 100), behavior: "smooth" });
+  }, [phase, pathProgressPct]);
 
   useEffect(() => {
     if (!toast) return;
@@ -388,8 +158,9 @@ export default function TreasureHunt() {
     let alive = true;
     (async () => {
       if (!user?.id) {
-        setQuestionBank(TREASURE_RIDDLES);
-        setRiddles(randomizeRiddles(TREASURE_RIDDLES));
+        const defaults = filterGameQuestionsByDifficulty(TREASURE_RIDDLES, getGameQuestionDifficulty("treasure-hunt"));
+        setQuestionBank(defaults);
+        setRiddles(randomizeRiddles(defaults));
         setRemoteLoaded(true);
         return;
       }
@@ -397,11 +168,13 @@ export default function TreasureHunt() {
       const remote = await fetchGameQuestionsByTeacher<Riddle>(TREASURE_HUNT_GAME_KEY, user.id);
       if (!alive) return;
       if (remote && remote.length > 0) {
-        setQuestionBank(remote);
-        setRiddles(randomizeRiddles(remote));
+        const selected = filterGameQuestionsByDifficulty(remote, getGameQuestionDifficulty("treasure-hunt"));
+        setQuestionBank(selected);
+        setRiddles(randomizeRiddles(selected));
       } else {
-        setQuestionBank(TREASURE_RIDDLES);
-        setRiddles(randomizeRiddles(TREASURE_RIDDLES));
+        const defaults = filterGameQuestionsByDifficulty(TREASURE_RIDDLES, getGameQuestionDifficulty("treasure-hunt"));
+        setQuestionBank(defaults);
+        setRiddles(randomizeRiddles(defaults));
       }
       setRemoteLoaded(true);
     })();
@@ -420,6 +193,7 @@ export default function TreasureHunt() {
 
   useEffect(() => {
     const audio = new Audio(pirateOrchestra);
+    audio.preload = "none";
     audio.loop = true; audio.volume = 0.35;
     audioRef.current = audio;
     return () => { audio.pause(); audio.currentTime = 0; audioRef.current = null; };
@@ -439,14 +213,9 @@ export default function TreasureHunt() {
   }, [phase, secondsLeft]);
 
   useEffect(() => {
-    if (phase !== "play" || locked || questionSeconds <= 0) return;
-    const t = window.setTimeout(() => setQuestionSeconds((s) => s - 1), 1000);
-    return () => window.clearTimeout(t);
-  }, [phase, questionSeconds, locked]);
-
-  useEffect(() => {
     if (phase !== "play") return;
     setLocked(false); setSelected(null); setShowHint(false);
+    setQuestionPanelOpen(true);
     setQuestionSeconds(SECONDS_PER_QUESTION);
     setDoubleReward(Math.random() < 0.25);
   }, [phase, questionIndex]);
@@ -537,7 +306,8 @@ export default function TreasureHunt() {
     setRiddles(randomizeRiddles(questionBank));
     setQuestionError("");
     setPhase("play");
-    setQuestionIndex(0); setPathIndex(0); setScore(0);
+    setQuestionIndex(0); setPathIndex(0); setScore(0); setKeysFound(0);
+    setStreak(0); setBestStreak(0); setAnswerMessage("");
     setSecondsLeft(SECONDS_TOTAL); setQuestionSeconds(SECONDS_PER_QUESTION);
     setLocked(false); setSelected(null); setShowHint(false);
     setDoubleReward(Math.random() < 0.25);
@@ -558,16 +328,54 @@ export default function TreasureHunt() {
     setShowAnswerEffect(true);
     if (correct) {
       const speedBonus = Math.round(clamp(questionSeconds, 0, SECONDS_PER_QUESTION) * 1.5);
-      const gain = (current.reward + speedBonus) * (doubleReward ? 2 : 1);
+      const nextStreak = streak + 1;
+      const streakBonus = Math.min(100, Math.max(0, nextStreak - 1) * 20);
+      const gain = (current.reward + speedBonus + streakBonus) * (doubleReward ? 2 : 1);
       const nextScore = score + gain;
       setScore(nextScore);
-      setPathIndex((prev) => (nextScore >= (prev + 1) * STEP_SCORE_REQUIREMENT ? Math.min(targetPath, prev + 1) : prev));
+      setKeysFound((value) => value + 1);
+      setStreak(nextStreak);
+      setBestStreak((value) => Math.max(value, nextStreak));
+      setAnswerMessage(`To'g'ri! ${current.options[current.answerIndex]}. +${gain} ball${streakBonus ? `, seriya bonusi +${streakBonus}` : ""}`);
     } else {
       setScore((s) => Math.max(0, s - WRONG_PENALTY));
-      setPathIndex((p) => Math.max(0, p - 1));
+      setStreak(0);
+      setAnswerMessage(idx < 0
+        ? `Vaqt tugadi. To'g'ri javob: ${current.options[current.answerIndex]}`
+        : `To'g'ri javob: ${current.options[current.answerIndex]}. ${current.hint}`);
     }
-    setTimeout(() => { setShowAnswerEffect(false); setAnswerResult(null); goNext(); }, 1200);
+    setPathIndex((value) => Math.min(targetPath, value + 1));
+    setTimeout(() => { setShowAnswerEffect(false); setAnswerResult(null); setAnswerMessage(""); goNext(); }, 1900);
   };
+  answerHandlerRef.current = onAnswer;
+
+  useEffect(() => {
+    if (phase !== "play") return;
+    const handleKeyboard = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setQuestionPanelOpen((value) => !value);
+        return;
+      }
+      if (locked || !questionPanelOpen || event.repeat) return;
+      const shortcuts: Record<string, number> = { "1": 0, "2": 1, "3": 2, "4": 3, a: 0, b: 1, c: 2, d: 3 };
+      const answerIndex = shortcuts[event.key.toLowerCase()];
+      if (answerIndex === undefined) return;
+      event.preventDefault();
+      answerHandlerRef.current(answerIndex);
+    };
+    window.addEventListener("keydown", handleKeyboard);
+    return () => window.removeEventListener("keydown", handleKeyboard);
+  }, [locked, phase, questionPanelOpen]);
+
+  useEffect(() => {
+    if (phase !== "play" || locked) return;
+    if (questionSeconds <= 0) {
+      answerHandlerRef.current(-1);
+      return;
+    }
+    const timer = window.setTimeout(() => setQuestionSeconds((value) => value - 1), 1000);
+    return () => window.clearTimeout(timer);
+  }, [phase, questionSeconds, locked]);
 
   const grade = useMemo(() => {
     if (score >= 1300) return { name: "Afsonaviy Pirat", color: "from-amber-400 to-yellow-600", icon: FaCrown };
@@ -641,13 +449,13 @@ export default function TreasureHunt() {
             <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-yellow-600/10 blur-3xl" />
             <div className="relative z-10 grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_360px] xl:items-start">
               <div className="space-y-6">
-                <div className="relative overflow-hidden rounded-3xl border-2 border-amber-600/50 shadow-2xl shadow-amber-900/40" style={{ height: "420px" }}>
-                  <TreasureMapSVG progress={8} />
+                <div className="relative aspect-[16/9] overflow-hidden rounded-3xl border-2 border-amber-500/50 shadow-2xl shadow-cyan-950/60">
+                  <ExpeditionMap progress={5} keysFound={0} totalKeys={keysNeeded} compact />
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent px-6 pb-5 pt-12 text-center">
                     <p className="text-2xl font-black tracking-[0.18em] text-amber-300 drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]">
-                      🏴‍☠️ XAZINA OVCHILARI 🏴‍☠️
+                      🏴‍☠️ BUYUK XAZINA EKSPEDITSIYASI
                     </p>
-                    <p className="mt-1 text-xs tracking-widest text-amber-500/80">Xazinani top!</p>
+                    <p className="mt-1 text-xs tracking-widest text-amber-300/80">10 bekat • 4 sirli hudud • bitta afsonaviy sandiq</p>
                   </div>
                   <div className="absolute left-4 top-4 rounded-full border border-amber-600/40 bg-black/60 px-3 py-1.5 text-lg backdrop-blur-sm">🏴‍☠️</div>
                   <div className="absolute right-4 top-4 rounded-full border border-amber-600/40 bg-black/60 px-3 py-1.5 text-lg backdrop-blur-sm">🗺️</div>
@@ -655,9 +463,9 @@ export default function TreasureHunt() {
 
                 <div className="grid gap-4 sm:grid-cols-3">
               {[
-                { icon: "🧭", title: "Qanday o'ynaladi?", text: "Har to'g'ri javob kemangizni xazinaga yaqinlashtiradi. Xato javob orqaga qaytaradi." },
-                { icon: "💰", title: "Ballar", text: `To'g'ri: +ball+vaqt bonusi\nXato: -${WRONG_PENALTY} ball\nHint: -${HINT_PENALTY} ball` },
-                { icon: "🏆", title: "G'alaba", text: `${minScoreToWin}+ ball yig'ib, xazinaga yeting!` },
+                { icon: "🧭", title: "Katta ekspeditsiya", text: "Har savoldan keyin yangi bekat, orol yoki dengiz siri ochiladi." },
+                { icon: "🔑", title: "Bilim kalitlari", text: `To'g'ri javob kalit beradi. ${keysNeeded} ta kalit sandiqni ochadi. Ketma-ket javoblar bonus beradi.` },
+                { icon: "🌍", title: "Foydali bilim", text: "Geografiya, tabiat, tarix, matematika va fazo bo'yicha qiziqarli savollar." },
               ].map(({ icon, title, text }) => (
                 <div key={title} className="rounded-2xl border border-amber-700/20 bg-black/30 p-4 backdrop-blur-sm">
                   <div className="mb-2 text-2xl">{icon}</div>
@@ -672,10 +480,10 @@ export default function TreasureHunt() {
                 <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/50 to-transparent" />
                 <p className="text-[11px] font-black uppercase tracking-[0.28em] text-amber-500/75">Sarguzashtga tayyor</p>
                 <h3 className="mt-3 text-3xl font-black leading-tight text-amber-100">
-                  Xaritani oching va xazinaga birinchi bo'lib yetib boring
+                  Dengizlarni kesib o'ting, bilim kalitlarini yig'ing
                 </h3>
                 <p className="mt-3 text-sm leading-7 text-amber-100/70">
-                  Start tugmasi endi shu yerda. O'yinni darhol boshlaysiz, savollarni boshqarish esa pastdagi panelda qoladi.
+                  Har bir to'g'ri javob yangi hududni ochadi. Tez va ketma-ket javob bersangiz, ko'proq ball hamda kapitan unvonlarini qo'lga kiritasiz.
                 </p>
                 <div className="mt-5 grid grid-cols-2 gap-3">
                   <div className="rounded-2xl border border-amber-700/25 bg-amber-950/30 p-3">
@@ -683,8 +491,8 @@ export default function TreasureHunt() {
                     <p className="mt-2 text-2xl font-black text-amber-200">{questionBank.length}</p>
                   </div>
                   <div className="rounded-2xl border border-amber-700/25 bg-amber-950/30 p-3">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-amber-500/75">Maqsad</p>
-                    <p className="mt-2 text-2xl font-black text-amber-200">{minScoreToWin}+</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-amber-500/75">Kerakli kalit</p>
+                    <p className="mt-2 text-2xl font-black text-amber-200">🔑 {keysNeeded}</p>
                   </div>
                 </div>
 
@@ -701,7 +509,7 @@ export default function TreasureHunt() {
             </div>
           </div>
 
-          {canManageQuestions && (
+          {canManageQuestions && SHOW_INLINE_QUESTION_EDITOR && (
             <div className="relative overflow-hidden rounded-3xl border border-amber-600/30 bg-gradient-to-br from-amber-950/60 to-stone-900/60 p-6 shadow-2xl backdrop-blur-sm">
               <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-amber-500/10 blur-3xl" />
               <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -873,6 +681,16 @@ export default function TreasureHunt() {
                 <p className="text-base font-black text-emerald-300">{score}</p>
               </div>
 
+              <div className="rounded-xl border border-yellow-500/35 bg-yellow-950/35 px-3 py-1.5 text-center shrink-0">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-yellow-500">Kalitlar</p>
+                <p className="text-base font-black text-yellow-200">🔑 {keysFound}/{keysNeeded}</p>
+              </div>
+
+              <div className="hidden rounded-xl border border-orange-500/35 bg-orange-950/30 px-3 py-1.5 text-center sm:block shrink-0">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-orange-400">Seriya</p>
+                <p className="text-base font-black text-orange-200">🔥 {streak}</p>
+              </div>
+
               {/* Total timer */}
               <div className={`rounded-xl border px-3 py-1.5 text-center shrink-0 ${secondsLeft < 60 ? "border-red-700/50 bg-red-950/40" : "border-amber-700/30 bg-black/50"}`}>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-amber-600">Vaqt</p>
@@ -893,22 +711,19 @@ export default function TreasureHunt() {
             </div>
           </div>
 
-          <div className="flex-1 px-2 py-3 sm:px-3 sm:py-4 xl:px-4">
-            <div className="mx-auto grid max-w-[1800px] gap-4 xl:grid-cols-[minmax(0,1.85fr)_minmax(420px,0.9fr)] xl:items-start 2xl:grid-cols-[minmax(0,2.05fr)_minmax(440px,0.82fr)]">
-              <div className="space-y-4">
+          <div className="treasure-play-canvas relative flex-1 overflow-hidden">
+            <div className="relative h-full">
+              <div className="h-full">
                 {/* -- TREASURE MAP -- */}
-                <div className="relative overflow-hidden rounded-[32px] border-2 border-amber-700/50 bg-gradient-to-br from-slate-950/70 via-sky-950/40 to-amber-950/20 p-3 shadow-2xl shadow-amber-900/30">
+                <div className="relative h-full overflow-hidden border-y border-amber-700/40 bg-slate-950 shadow-2xl shadow-amber-900/30">
                   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.16),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(14,165,233,0.12),transparent_30%)]" />
-                  <div
-                    className="relative overflow-hidden rounded-[26px] border border-amber-500/30"
-                    style={{ height: typeof window !== "undefined" && window.innerWidth < 640 ? "430px" : "min(82vh, 920px)" }}
-                  >
-                    <TreasureMapSVG progress={pathProgressPct} />
+                  <div ref={mapScrollRef} className="treasure-map-scroll relative h-[calc(100dvh-76px)] w-full overflow-auto scroll-smooth">
+                    <ExpeditionMap progress={pathProgressPct} keysFound={keysFound} totalKeys={keysNeeded} />
 
                     <div className="absolute left-4 top-4">
                       <div className="rounded-2xl border border-amber-600/50 bg-black/55 px-5 py-3 shadow-lg backdrop-blur-md sm:px-6 sm:py-4">
-                        <p className="text-[11px] font-bold tracking-[0.28em] text-amber-500/80">TREASURE HUNT</p>
-                        <p className="text-lg font-black tracking-[0.16em] text-amber-300 sm:text-2xl">🗺️ XAZINA XARITASI 🗺️</p>
+                        <p className="text-[11px] font-bold tracking-[0.28em] text-cyan-300/80">BUYUK EKSPEDITSIYA</p>
+                        <p className="text-lg font-black tracking-[0.12em] text-amber-200 sm:text-2xl">🗺️ KAPITAN XARITASI</p>
                       </div>
                     </div>
 
@@ -921,11 +736,13 @@ export default function TreasureHunt() {
                       </div>
                     </div>
 
-                    <div className="absolute bottom-4 left-4 right-4 flex flex-wrap items-end justify-between gap-3">
+                    <div className="absolute bottom-4 left-4 flex max-w-xl flex-wrap items-end justify-between gap-3">
                       <div className="max-w-xl rounded-2xl border border-sky-400/20 bg-slate-950/55 px-4 py-3 backdrop-blur-md sm:px-5 sm:py-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-sky-300/80">Yo'nalish</p>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-sky-300/80">Joriy missiya • {current.title}</p>
                         <p className="mt-1 text-sm text-slate-100/90 sm:text-base">
-                          Kema xazinaga yaqinlashmoqda. Har to'g'ri javob sayohatni oldinga suradi.
+                          {keysFound >= keysNeeded
+                            ? "Sandiq uchun yetarli kalit yig'ildi — endi xazina oroliga yetib boring!"
+                            : `Sandiqni ochish uchun yana ${keysNeeded - keysFound} ta bilim kaliti kerak.`}
                         </p>
                       </div>
 
@@ -940,7 +757,7 @@ export default function TreasureHunt() {
 
                 <button
                   onClick={() => setPhase("finish")}
-                  className="w-full rounded-2xl border border-red-800/40 bg-red-950/40 py-3 text-sm font-bold text-red-400 backdrop-blur-sm transition-all hover:bg-red-900/50"
+                  className="treasure-end-button fixed bottom-5 left-5 z-40 rounded-2xl border border-red-800/50 bg-red-950/80 px-5 py-3 text-xs font-bold text-red-300 shadow-xl backdrop-blur-md transition-all hover:bg-red-900/90"
                 >
                   <IoMdNuclear className="mr-2 inline text-base" />
                   Sarguzashtni yakunlash
@@ -948,11 +765,19 @@ export default function TreasureHunt() {
               </div>
 
               {/* -- Question card -- */}
-              <div className="relative overflow-hidden rounded-[32px] border border-amber-700/30 bg-gradient-to-br from-amber-950/70 via-stone-950/80 to-black/80 p-4 shadow-xl backdrop-blur-sm sm:p-5 xl:sticky xl:top-20 xl:max-h-[82vh] xl:overflow-y-auto">
+              <div className={`treasure-question-overlay fixed right-5 top-[86px] z-40 max-h-[calc(100dvh-110px)] w-[min(520px,calc(100vw-40px))] overflow-y-auto rounded-[28px] border border-amber-500/40 bg-gradient-to-br from-amber-950/90 via-stone-950/95 to-black/95 p-4 shadow-2xl shadow-black/70 backdrop-blur-xl sm:p-5 ${questionPanelOpen ? "" : "is-collapsed"}`}>
                 <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-amber-500/10 blur-3xl" />
                 <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-amber-500/10 to-transparent" />
+                <button
+                  type="button"
+                  onClick={() => setQuestionPanelOpen(false)}
+                  className="treasure-question-close"
+                  aria-label="Savol panelini yopish"
+                >
+                  × <span>Xaritani ko'rish</span>
+                </button>
 
-                <div className="relative mb-4 flex flex-col gap-3 border-b border-amber-700/20 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="treasure-question-intro relative mb-3 flex flex-col gap-2 border-b border-amber-700/20 pb-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-amber-500/80">Joriy vazifa</p>
                     <p className="mt-1 text-lg font-black text-amber-200">Savolga javob bering va kemani oldinga suring</p>
@@ -963,12 +788,12 @@ export default function TreasureHunt() {
                   </div>
                 </div>
 
-                <div className="relative mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="relative mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <span className="inline-flex rounded-full border border-amber-700/40 bg-amber-900/50 px-3 py-1 text-sm font-bold text-amber-300">
                       {current.title}
                     </span>
-                    <p className="mt-3 text-sm italic leading-relaxed text-amber-200/70">{current.story}</p>
+                    <p className="treasure-question-story mt-2 text-sm italic leading-relaxed text-amber-200/70">{current.story}</p>
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <button
@@ -984,7 +809,7 @@ export default function TreasureHunt() {
                   </div>
                 </div>
 
-                <h3 className="relative mb-5 text-xl font-black leading-tight text-white sm:text-2xl md:text-3xl">
+                <h3 className="treasure-question-title relative mb-4 text-xl font-black leading-tight text-white sm:text-2xl">
                   {current.question}
                 </h3>
 
@@ -994,17 +819,17 @@ export default function TreasureHunt() {
                   </div>
                 )}
 
-                <div className="grid gap-3">
+                <div className="treasure-options-grid grid gap-2.5">
                   {current.options.map((opt, i) => {
                     const isSelected = selected === i;
                     const isCorrect = i === current.answerIndex;
-                    const showResult = locked && selected !== null;
+                    const showResult = locked;
                     return (
                       <button
                         key={i}
                         onClick={() => onAnswer(i)}
                         disabled={locked}
-                        className={`group relative overflow-hidden rounded-2xl border-2 p-4 text-left font-bold transition-all min-h-[78px] ${
+                        className={`treasure-option group relative min-h-[68px] overflow-hidden rounded-2xl border-2 p-3 text-left font-bold transition-all ${
                           showResult && isCorrect
                             ? "border-emerald-400 bg-emerald-500/20 shadow-lg shadow-emerald-500/20 scale-[1.02]"
                           : showResult && isSelected && !isCorrect
@@ -1022,7 +847,7 @@ export default function TreasureHunt() {
                                   ? "bg-rose-500 border-rose-400 text-white"
                                   : "border-amber-600/40 bg-amber-900/40 text-amber-300"
                             }`}>{String.fromCharCode(65 + i)}</span>
-                            <span className="text-base md:text-lg">{opt}</span>
+                            <span className="text-base">{opt}</span>
                           </span>
                           {showResult && isCorrect && <FaCheckCircle className="shrink-0 text-xl text-emerald-400" />}
                           {showResult && isSelected && !isCorrect && <FaTimesCircle className="shrink-0 text-xl text-rose-400" />}
@@ -1031,7 +856,24 @@ export default function TreasureHunt() {
                     );
                   })}
                 </div>
+
+                {locked && answerMessage && (
+                  <div className={`treasure-answer-in mt-4 rounded-2xl border px-4 py-3 ${answerResult === "correct" ? "border-emerald-400/50 bg-emerald-500/15 text-emerald-100" : "border-rose-400/50 bg-rose-500/15 text-rose-100"}`}>
+                    <p className="font-black">{answerResult === "correct" ? "🔑 Bilim kaliti topildi!" : "📖 Yodda saqlang"}</p>
+                    <p className="mt-1 text-sm leading-relaxed opacity-90">{answerMessage}</p>
+                  </div>
+                )}
               </div>
+              {!questionPanelOpen && (
+                <button
+                  type="button"
+                  onClick={() => setQuestionPanelOpen(true)}
+                  className="treasure-question-open fixed right-5 top-[98px] z-40"
+                >
+                  <span>❓</span>
+                  Savolni ochish
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -1059,23 +901,33 @@ export default function TreasureHunt() {
             <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-yellow-600/10 blur-3xl" />
 
             <div className="mb-5 text-8xl drop-shadow-2xl">
-              {won ? "🏆" : "💀"}
+              {won ? "🏆" : "🧭"}
             </div>
 
             {/* Mini map preview on finish */}
             <div className="mb-5 mx-auto h-32 w-full max-w-sm overflow-hidden rounded-2xl border border-amber-700/40 shadow-xl">
-              <TreasureMapSVG progress={pathProgressPct} />
+              <ExpeditionMap progress={100} keysFound={keysFound} totalKeys={keysNeeded} compact />
             </div>
 
             <h2 className="mb-4 text-3xl font-black tracking-wide text-amber-300">
-              {won ? "🏆 XAZINA TOPILDI! 🏆" : "💀 MAG'LUB BO'LDINGIZ 💀"}
+              {won ? "🏆 XAZINA TOPILDI!" : "🧭 EKSPEDITSIYA YAKUNLANDI"}
             </h2>
 
             <div className="mb-6 space-y-3">
               <p className="text-2xl font-bold">
                 Ball: <span className="text-amber-400">{score}</span>
-                <span className="ml-2 text-sm text-amber-700">/ {minScoreToWin} kerak</span>
               </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-2xl border border-yellow-500/25 bg-yellow-950/30 p-3">
+                  <p className="text-xs uppercase tracking-widest text-yellow-500">Kalitlar</p>
+                  <p className="mt-1 text-xl font-black text-yellow-200">🔑 {keysFound}/{keysNeeded}</p>
+                </div>
+                <div className="rounded-2xl border border-orange-500/25 bg-orange-950/30 p-3">
+                  <p className="text-xs uppercase tracking-widest text-orange-400">Eng yaxshi seriya</p>
+                  <p className="mt-1 text-xl font-black text-orange-200">🔥 {bestStreak}</p>
+                </div>
+              </div>
+              {!won && <p className="text-sm leading-relaxed text-amber-100/70">Xazinani ochish uchun {keysNeeded - keysFound} ta kalit yetmadi. Yana urinib, yangi bilimlarni mustahkamlang!</p>}
               <div className={`inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r ${grade.color} px-5 py-3 shadow-xl`}>
                 <grade.icon className="text-3xl text-white" />
                 <span className="text-xl font-black text-white">{grade.name}</span>
@@ -1085,7 +937,7 @@ export default function TreasureHunt() {
             <div className="flex flex-col justify-center gap-3 sm:flex-row">
               <button onClick={handleStart}
                 className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-500 px-8 py-3.5 font-black text-amber-950 shadow-xl transition-all hover:scale-[1.03] hover:shadow-amber-500/40">
-                <FaRedo /> Yana o'yna
+                <FaRedo /> Yana o'ynash
               </button>
               <button onClick={() => navigate("/games")}
                 className="flex items-center justify-center gap-2 rounded-2xl border border-amber-600/40 bg-black/30 px-8 py-3.5 font-bold text-amber-300 backdrop-blur-sm transition-all hover:bg-amber-900/30">
