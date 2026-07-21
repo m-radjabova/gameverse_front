@@ -97,8 +97,6 @@ export default function GamePlayView({ colorClassName, children }: GamePlayViewP
         ) : null}
 
         <section className="relative">
-          <div className={`pointer-events-none absolute -left-1 -top-1 h-9 w-9 border-l-2 border-t-2 ${colorClassName.includes("yellow") || colorClassName.includes("orange") ? "border-amber-300" : "border-cyan-300"} opacity-70`} />
-          <div className="pointer-events-none absolute -bottom-1 -right-1 h-9 w-9 border-b-2 border-r-2 border-white/30" />
           <div className="relative py-2 sm:py-3">{children}</div>
         </section>
       </ReactBitsPageEnter>
