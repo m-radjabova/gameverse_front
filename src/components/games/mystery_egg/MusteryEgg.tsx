@@ -189,9 +189,9 @@ function SoloGame({ level, questions: suppliedQuestions, onFinish, onWrong, onCr
   );
 }
 
-function Finish({ level, winner, summary, onLevels, onRestart, onReveal, onApplause }: { level: EggLevel; winner?: string | null; summary: RunSummary; onLevels: () => void; onRestart: () => void; onReveal: () => void; onApplause: () => void }) {
+function Finish({ level, winner, summary, onLevels, onRestart, onReveal, onApplause, onStopApplause }: { level: EggLevel; winner?: string | null; summary: RunSummary; onLevels: () => void; onRestart: () => void; onReveal: () => void; onApplause: () => void; onStopApplause: () => void }) {
   const [phase, setPhase] = useState(0);
-  useEffect(() => { const timers = [window.setTimeout(() => setPhase(1), 450), window.setTimeout(() => { setPhase(2); onReveal(); }, 1250), window.setTimeout(() => { setPhase(3); onApplause(); }, 2200)]; return () => timers.forEach(clearTimeout); }, [onApplause,onReveal]);
+  useEffect(() => { const timers = [window.setTimeout(() => setPhase(1), 450), window.setTimeout(() => { setPhase(2); onReveal(); }, 1250), window.setTimeout(() => { setPhase(3); onApplause(); }, 2200)]; return () => { timers.forEach(clearTimeout); onStopApplause(); }; }, [onApplause,onReveal,onStopApplause]);
   return <main className={`me-screen me-finish phase-${phase}`}><div className="me-stars" />{phase >= 3 && <ReactConfetti recycle={false} numberOfPieces={420} gravity={.18} />}
     <div className="me-finish-light" /><motion.img src={phase >= 3 ? level.images.hatched : level.images.crack4} alt="Tuxum ochildi" className="me-finish-egg" animate={phase < 3 ? { rotate: [0, -3, 3, -5, 5, 0], scale: phase === 2 ? [1, 1.08, 1] : 1 } : { scale: [0.5, 1.15, 1], y: [30, -12, 0] }} transition={{ repeat: phase === 1 ? Infinity : 0, duration: phase === 1 ? .38 : .9 }} />
     <AnimatePresence>{phase >= 3 && <motion.section className="me-finish-card" style={{ "--egg-color": level.color } as React.CSSProperties} initial={{ opacity: 0, y: 35 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .5 }}><div className="me-unlocked"><FaCrown /> {winner === null ? "BATTLE YAKUNLANDI" : winner ? "BATTLE G'OLIBI" : summary.perfect ? "PERFECT HATCH!" : "YANGI JONZOT OCHILDI"}</div><h1>{winner === null ? "DURRANG!" : winner ? `${winner.toUpperCase()} G'OLIB!` : `${level.name.toUpperCase()} OCHILDI!`}</h1><p>{winner === null ? "Hisoblar teng. Yana bir jangda g'olibni aniqlang!" : summary.perfect && !winner ? "Birorta ham xatosiz — noyob mukammal ochilish!" : `${level.subtitle} qo'riqchisi sizning bilimingiz tufayli uyg'ondi.`}</p><div className="me-finish-stars" aria-label={`${summary.stars} ta yulduz`}>{[1,2,3].map((star)=><motion.span key={star} className={star <= summary.stars ? "earned" : ""} initial={{ opacity: 0, scale: 0, rotate: -25 }} animate={{ opacity: 1, scale: 1, rotate: 0 }} transition={{ delay: .65 + star * .18, type: "spring" }}><FaStar/></motion.span>)}</div><div className="me-finish-rewards"><RewardPill type="coin" value={summary.coins}/><RewardPill type="star" value={summary.stars}/><RewardPill type="crystal" value={1}/></div>{summary.comboBonus > 0 && <div className="me-reward-breakdown"><span>Asosiy mukofot +{summary.baseCoins}</span><b><FaBolt/> Combo bonusi +{summary.comboBonus} coin</b></div>}<div className="me-result-row"><span><FaCheck /> {summary.correct}/{summary.attempts} javob</span><span><FaStar /> {summary.accuracy}% aniqlik</span><span><FaTrophy /> {summary.bestCombo > 1 ? `${summary.bestCombo}x combo` : `Level ${level.id}`}</span></div><div className="me-finish-actions"><button className="secondary" onClick={onRestart}><FaRotateRight /> QAYTA O'YNASH</button><button onClick={onLevels}>{level.id < 9 ? "KEYINGI LEVEL" : "TUXUMLAR SAHIFASI"} <FaPlay /></button></div></motion.section>}</AnimatePresence>
@@ -201,7 +201,7 @@ function Finish({ level, winner, summary, onLevels, onRestart, onReveal, onAppla
 export default function MusteryEgg() {
   const { state: { user } } = useContextPro();
   const { loadQuestions } = useGameQuestions<TeacherEggQuestion>({ teacherId: user?.id });
-  const { prepare, playMusic, stopMusic, playWrong, playCrack, playReveal, playApplause } = useMysteryEggAudio();
+  const { prepare, playMusic, stopMusic, playWrong, playCrack, playReveal, playApplause, stopApplause } = useMysteryEggAudio();
   const [screen, setScreen] = useState<Screen>("mode");
   const [mode, setMode] = useState<EggMode>("solo");
   const [level, setLevel] = useState(eggLevels[0]);
@@ -231,7 +231,7 @@ export default function MusteryEgg() {
   if (screen === "collection") return <MysteryHub/>;
   if (screen === "levels") return <LevelSelect onChoose={startLevel} />;
   if (screen === "countdown") return <Countdown level={level} onDone={countdownDone} />;
-  if (screen === "finish" && runSummary) return <Finish level={level} winner={winner} summary={runSummary} onLevels={() => setScreen("levels")} onRestart={() => {setResult(null);setRunSummary(null);setScreen("countdown")}} onReveal={playReveal} onApplause={playApplause} />;
+  if (screen === "finish" && runSummary) return <Finish level={level} winner={winner} summary={runSummary} onLevels={() => { stopApplause(); setScreen("levels"); }} onRestart={() => { stopApplause(); setResult(null);setRunSummary(null);setScreen("countdown")}} onReveal={playReveal} onApplause={playApplause} onStopApplause={stopApplause} />;
   if (screen === "battle") return <BattleArena level={level} names={names} questions={questions} onWin={battleWin} onWrong={playWrong} onCrack={playCrack}/>;
   return <SoloGame level={level} questions={questions} onFinish={finish} onWrong={playWrong} onCrack={playCrack} />;
 }

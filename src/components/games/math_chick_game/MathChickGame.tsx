@@ -1312,7 +1312,7 @@ export default function MathChickGame() {
   };
 
   return (
-    <div className={`w-full overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(253,224,71,0.24),_transparent_32%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.28),_transparent_34%),linear-gradient(145deg,_#064e3b,_#075985_48%,_#4c1d95)] p-3 text-white sm:p-4 ${phase === "setup" ? "min-h-screen" : "lg:h-[calc(100dvh-140px)] lg:min-h-0"}`}>
+    <div className={`w-full overflow-visible bg-[radial-gradient(circle_at_top_left,_rgba(253,224,71,0.24),_transparent_32%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.28),_transparent_34%),linear-gradient(145deg,_#064e3b,_#075985_48%,_#4c1d95)] p-3 text-white sm:p-4 ${phase === "setup" ? "min-h-screen" : "lg:min-h-[calc(100dvh-140px)]"}`}>
       {showConfetti && (
         <div className="pointer-events-none fixed inset-0 z-50">
           <Confetti
@@ -1326,7 +1326,7 @@ export default function MathChickGame() {
         </div>
       )}
 
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+      <div className="pointer-events-none fixed inset-0">
         <div className="absolute left-[-80px] top-24 h-80 w-80 rounded-full bg-amber-300/20 blur-3xl" />
         <div className="absolute bottom-0 right-[-40px] h-96 w-96 rounded-full bg-cyan-300/20 blur-3xl" />
         <div className="absolute left-[7%] top-[18%] text-6xl opacity-25">🌻</div>
@@ -1394,7 +1394,7 @@ export default function MathChickGame() {
                   </label>
                 </div>
 
-                <div className="hidden grid gap-4">
+                <div className="grid gap-4">
                   <div className="rounded-3xl border border-cyan-400/15 bg-cyan-500/5 p-4">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                       <div>
@@ -1669,7 +1669,7 @@ export default function MathChickGame() {
             <div className="relative flex min-h-0 flex-1 flex-col rounded-[28px] border border-yellow-300/25 bg-white/10 p-3 shadow-2xl shadow-black/30 backdrop-blur-md">
               <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2">
                 <div>
-                  <div className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">
+                  <div className="text-xs uppercase tracking-[0.35em] ">
                     🐥 Jo'jalar poygasi
                   </div>
                 </div>

@@ -48,11 +48,97 @@ export const defaultEggQuestions: EggQuestion[] = [
   { id: 22, subject: "Matematika", question: "3² + 4² nechaga teng?", options: ["12", "18", "25", "49"], answerIndex: 2 },
   { id: 23, subject: "Ona tili", question: "Qaysi gapda undalma bor?", options: ["Men maktabga bordim.", "Do'stim, bu yoqqa kel!", "Havo bugun iliq.", "Kitob stol ustida."], answerIndex: 1 },
   { id: 24, subject: "Biologiya", question: "DNKning asosiy vazifasi nima?", options: ["Energiya ishlab chiqarish", "Irsiy axborotni saqlash", "Qonni aylantirish", "Ovqatni hazm qilish"], answerIndex: 1 },
+  { id: 25, subject: "Matematika", question: "50 ning yarmining yarmi nechaga teng?", options: ["10", "12.5", "25", "15"], answerIndex: 1 },
+  { id: 26, subject: "Fizika", question: "Suv necha gradusda qaynaydi (normal bosimda)?", options: ["0 °C", "50 °C", "100 °C", "150 °C"], answerIndex: 2 },
+  { id: 27, subject: "Tarix", question: "Alisher Navoiy tavallud topgan yil qaysi?", options: ["1441", "1336", "1483", "1500"], answerIndex: 0 },
+  { id: 28, subject: "Geografiya", question: "Dunyodagi eng baland cho'qqi qaysi?", options: ["Kilimanjaro", "Elbrus", "Everest (Chomolungma)", "Mont-Blank"], answerIndex: 2 },
+  { id: 29, subject: "Kimyo", question: "Havo tarkibida eng ko'p mavjud bo'lgan gaz qaysi?", options: ["Kislorod", "Azot", "Uglerod dioksid", "Vodorod"], answerIndex: 1 },
+  { id: 30, subject: "Biologiya", question: "Inson tanasida nechta suyak bor (kattalarda)?", options: ["206", "180", "240", "300"], answerIndex: 0 },
+  { id: 31, subject: "Informatika", question: "Qaysi biri operatsion tizim hisoblanadi?", options: ["Microsoft Word", "Google Chrome", "Linux", "Adobe Photoshop"], answerIndex: 2 },
+  { id: 32, subject: "Astronomiya", question: "Qizil sayyora deb nomlanuvchi sayyora qaysi?", options: ["Venera", "Mars", "Saturn", "Merkuriy"], answerIndex: 1 },
+  { id: 33, subject: "Ona tili", question: "O'zbek alifbosida nechta harf bor?", options: ["26", "28", "29", "33"], answerIndex: 2 },
+  { id: 34, subject: "Mantiq", question: "Uchta olma bor edi, ikkitasini oldingiz. Sizda nechta olma bor?", options: ["1 ta", "2 ta", "3 ta", "Hech qancha"], answerIndex: 1 },
+  { id: 35, subject: "Matematika", question: "To'g'ri burchak necha gradusga teng?", options: ["45°", "90°", "180°", "360°"], answerIndex: 1 },
+  { id: 36, subject: "Fizika", question: "Tovush havodagiga qaraganda qaysi muhitda tezroq tarqaladi?", options: ["Suvda", "Vakuumda", "Fazoda", "G'ovak moddada"], answerIndex: 0 },
+  { id: 37, subject: "Tarix", question: "Ikkinchi jahon urushi qaysi yillarda bo'lib o'tgan?", options: ["1914–1918", "1939–1945", "1941–1945", "1935–1940"], answerIndex: 1 },
+  { id: 38, subject: "Geografiya", question: "Afrikadagi eng uzun daryo qaysi?", options: ["Amazonka", "Nil", "Missisipi", "Yangtse"], answerIndex: 1 },
+  { id: 39, subject: "Kimyo", question: "Oltin elementining kimyoviy belgisi qaysi?", options: ["Ag", "Au", "Cu", "Fe"], answerIndex: 1 },
+  { id: 40, subject: "Biologiya", question: "Vitamin C yetishmasligidan kelib chiqadigan kasallik nima?", options: ["Raxit", "Singa (skorbut)", "Kamqonlik", "Gripp"], answerIndex: 1 },
+  { id: 41, subject: "Informatika", question: "1 Bayt necha Bitdan iborat?", options: ["4", "8", "16", "32"], answerIndex: 1 },
+  { id: 42, subject: "Astronomiya", question: "Quyoshga eng yaqin turuvchi sayyora qaysi?", options: ["Venera", "Yer", "Merkuriy", "Mars"], answerIndex: 2 },
+  { id: 43, subject: "Ona tili", question: "Qaysi so'z imlosi to'g'ri yozilgan?", options: ["Maktab", "Maktap", "Magtab", "Magtap"], answerIndex: 0 },
+  { id: 44, subject: "Matematika", question: "Doiraning yuzini topish formulasi qaysi?", options: ["S = πr²", "S = 4πr", "S = a × b", "S = 2πr"], answerIndex: 0 },
+  { id: 45, subject: "Mantiq", question: "Bir kishi shimolga 5 km, g'arbga 5 km yurdi. U qaysi tomonga qarab yurgan bo'lishi mumkin edi?", options: ["Faqat shimolga", "Har xil tomonga", "Boshlang'ich nuqtaga", "Aylana bo'ylab"], answerIndex: 1 },
+  { id: 46, subject: "Tarix", question: "Qadimgi Misr piramidalari asosan nima uchun qurilgan?", options: ["Saroy sifatida", "Omborxona sifatida", "Fironlarning maqbarasi sifatida", "Rasadxona sifatida"], answerIndex: 2 },
+  { id: 47, subject: "Geografiya", question: "Yevropadagi eng uzun daryo qaysi?", options: ["Dunay", "Volga", "Reyn", "Temza"], answerIndex: 1 },
+  { id: 48, subject: "Fizika", question: "Oq rang nechta asosiy rangdan tashkil topgan (kamalak ranglari)?", options: ["5", "6", "7", "8"], answerIndex: 2 },
+  { id: 49, subject: "Biologiya", question: "Qonning qizil rangda bo'lishini ta'minlovchi modda nima?", options: ["Plazma", "Gemoglobin", "Leykotsit", "Trombotsit"], answerIndex: 1 },
+  { id: 50, subject: "Informatika", question: "Qaysi qurilma ma'lumotni qog'ozga chiqarish (chop etish) uchun ishlatiladi?", options: ["Skaner", "Printer", "Proyektor", "Karnay"], answerIndex: 1 },
+  { id: 51, subject: "Matematika", question: "30 ning uchdan biri nechaga teng?", options: ["5", "10", "15", "20"], answerIndex: 1 },
+  { id: 52, subject: "Fizika", question: "Tok kuchi qaysi birlikda o'lchanadi?", options: ["Volt", "Amper", "Ohm", "Vatt"], answerIndex: 1 },
+  { id: 53, subject: "Kimyo", question: "Osh tuzining kimyoviy formulasi qaysi?", options: ["NaCl", "H₂SO₄", "NaOH", "HCl"], answerIndex: 0 },
+  { id: 54, subject: "Biologiya", question: "Inson tanasidagi eng uzun suyak qaysi?", options: ["Yelka suyagi", "Son suyagi", "Boldir suyagi", "Bilak suyagi"], answerIndex: 1 },
+  { id: 55, subject: "Tarix", question: "Temuriylar davrida yashagan buyuk astronom kim?", options: ["Al-Xorazmiy", "Mirzo Ulug'bek", "Abu Rayhon Beruniy", "Ibn Sino"], answerIndex: 1 },
+  { id: 56, subject: "Geografiya", question: "Maydoni bo'yicha eng katta davlat qaysi?", options: ["Xitoy", "AQSh", "Rossiya", "Kanada"], answerIndex: 2 },
+  { id: 57, subject: "Astronomiya", question: "Saturn sayyorasining asosi nimasi bilan mashhur?", options: ["Halqalari bilan", "Eng issiqligi bilan", "Yo'qotilganligi bilan", "Kichikligi bilan"], answerIndex: 0 },
+  { id: 58, subject: "Informatika", question: "Internet tarmog'ining asosiy protokoli qaysi?", options: ["FTP", "HTTP / IP", "USB", "PDF"], answerIndex: 1 },
+  { id: 59, subject: "Ona tili", question: "Fe'l turkumidagi so'zni toping?", options: ["Baland", "Yugurdi", "Qalam", "Oppoq"], answerIndex: 1 },
+  { id: 60, subject: "Mantiq", question: "Moshinada 4 kishi ketayotgandi, yana 2 kishi chiqdi. Hammasi bo'lib nechta kishi bo'ldi?", options: ["4 kishi", "6 kishi", "8 kishi", "2 kishi"], answerIndex: 1 },
+  { id: 61, subject: "Matematika", question: "1 dan 10 gacha bo'lgan sonlar yig'indisi nechaga teng?", options: ["45", "50", "55", "60"], answerIndex: 2 },
+  { id: 62, subject: "Fizika", question: "Energiyaning o'lchov birligi nima?", options: ["Joul", "Nyuton", "Vatt", "Paskal"], answerIndex: 0 },
+  { id: 63, subject: "Tarix", question: "Jaloliddin Manguberdi kimga qarshi kurashgan?", options: ["Mo'g'ullarga", "Arab xalifaligiga", "Rus knyazliklariga", "Rim imperiyasiga"], answerIndex: 0 },
+  { id: 64, subject: "Geografiya", question: "Janubiy Amerikaning eng uzun daryosi?", options: ["Nil", "Amazonka", "Missisipi", "Dunay"], answerIndex: 1 },
+  { id: 65, subject: "Kimyo", question: "Kislorodning kimyoviy belgisi nima?", options: ["C", "O", "N", "H"], answerIndex: 1 },
+  { id: 66, subject: "Biologiya", question: "Asalari qaysi oilaga mansub hasharot?", options: ["Qanotlilar", "Ijtimoiy hasharotlar", "Zararkunandalar", "Parazitlar"], answerIndex: 1 },
+  { id: 67, subject: "Astronomiya", question: "Yulduzlar nurlanishining asosiy manbai nima?", options: ["Yadro reaksiyalari", "Elektr toki", "Quyosh nuri qaytishi", "Issiqlik tarqalishi"], answerIndex: 0 },
+  { id: 68, subject: "Informatika", question: "Fayl hajmini kichraytirish jarayoni qanday ataladi?", options: ["Arxivlash (siqish)", "Nusxalash", "O'chirish", "Formatlash"], answerIndex: 0 },
+  { id: 69, subject: "Ona tili", question: "Antonim so'zlarni toping:", options: ["Issiq - Sovuq", "Katta - Katta", "Kitob - Daftar", "Tez - Tez"], answerIndex: 0 },
+  { id: 70, subject: "Mantiq", question: "Bitta sham yonib turgandi, 2 tasi o'chdi. Qanchasi qoldi?", options: ["3 ta", "1 ta", "2 ta", "Hech qancha"], answerIndex: 1 },
+  { id: 71, subject: "Matematika", question: "Kvadratning perimetri 20 sm bo'lsa, uning tomoni nechaga teng?", options: ["4 sm", "5 sm", "10 sm", "20 sm"], answerIndex: 1 },
+  { id: 72, subject: "Fizika", question: "Bosimning o'lchov birligi nima?", options: ["Paskal", "Nyuton", "Vatt", "Joul"], answerIndex: 0 },
+  { id: 73, subject: "Tarix", question: "Qadimgi Rim asos solingan shahar?", options: ["Afina", "Rim", "Parij", "Kohna Urganch"], answerIndex: 1 },
+  { id: 74, subject: "Geografiya", question: "Osiyo va Yevropani ajratib turuvchi tog' tizmasi?", options: ["Alp tog'lari", "Ural tog'lari", " Himolay", "Kavkaz"], answerIndex: 1 },
+  { id: 75, subject: "Kimyo", question: "Uglerod dioksid formulasi qaysi?", options: ["CO", "CO₂", "H₂O", "CH₄"], answerIndex: 1 },
+  { id: 76, subject: "Biologiya", question: "Fotosintez jarayonida o'simlik qaysi gazni yutadi?", options: ["Kislorod", "Uglerod dioksid", "Azot", "Vodorod"], answerIndex: 1 },
+  { id: 77, subject: "Astronomiya", question: "Yer o'z o'qi atrofida bir marta aylanishi uchun qancha vaqt ketadi?", options: ["1 yil", "1 oy", "24 soat", "1 hafta"], answerIndex: 2 },
+  { id: 78, subject: "Informatika", question: "Keyboard (klaviatura) qanday qurilma?", options: ["Kiritish qurilmasi", "Chiqarish qurilmasi", "Saqlash qurilmasi", "Hisoblash qurilmasi"], answerIndex: 0 },
+  { id: 79, subject: "Ona tili", question: "Sinonim so'zlarni toping:", options: ["Chiroyli - Go'zal", "Tez - Sekin", "Oq - Qora", "Katta - Kichik"], answerIndex: 0 },
+  { id: 80, subject: "Mantiq", question: "Qaysi idishga suv quyib bo'lmaydi?", options: ["Stakanga", "Kosaga", "Chizilgan rasmga", "Chelakka"], answerIndex: 2 },
+  { id: 81, subject: "Matematika", question: "8 ning kubi (8³) nechaga teng?", options: ["24", "64", "512", "128"], answerIndex: 2 },
+  { id: 82, subject: "Fizika", question: "Mexanik ishning formulasi qaysi?", options: ["A = F × s", "F = m × g", "v = s / t", "p = F / S"], answerIndex: 0 },
+  { id: 83, subject: "Tarix", question: "Qadimgi Xitoyda ixtiro qilingan to'rt buyuk kashfiyotga nima kirmaydi?", options: ["Kompas", "Qog'oz", "Telefon", "Porox"], answerIndex: 2 },
+  { id: 84, subject: "Geografiya", question: "Avstraliya qit'asi qaysi yarimsharda joylashgan?", options: ["Shimoliy yarimsharda", "Janubiy yarimsharda", "Faqat g'arbiy yarimsharda", "Shimoliy va sharqiy"], answerIndex: 1 },
+  { id: 85, subject: "Kimyo", question: "Eng yengil kimyoviy element qaysi?", options: ["Geliy", "Vodorod", "Kislorod", "Azot"], answerIndex: 1 },
+  { id: 86, subject: "Biologiya", question: "Viruslar hujayrali tuzilishga egami?", options: ["Ha, ega", "Yo'q, huceyrasiz shakllar", "Faqat o'simlik viruslari ega", "Faqat hayvon viruslari ega"], answerIndex: 1 },
+  { id: 87, subject: "Astronomiya", question: "Koinotga uchgan ilk kosmonavt kim?", options: ["Neil Armstrong", "Yuri Gagarin", "Valter Shirra", "Vladimir Jonibekov"], answerIndex: 1 },
+  { id: 88, subject: "Informatika", question: "Qaysi fayl formati matnli hujjatga tegishli?", options: [".mp3", ".jpg", ".docx", ".mp4"], answerIndex: 2 },
+  { id: 89, subject: "Ona tili", question: "Ega va kesim birgalikda nima deb ataladi?", options: ["Gap bo'laklari", "So'z birikmasi", "Grammatik asos", "Uyushiq bo'lak"], answerIndex: 2 },
+  { id: 90, subject: "Mantiq", question: "Daraxtda 5 ta qush o'tirgandi, ovchi bittasini otib tushirdi. Daraxtda nechta qush qoldi?", options: ["4 ta", "1 ta", "Hech qancha", "2 ta"], answerIndex: 2 },
+  { id: 91, subject: "Matematika", question: "Uchburchak burchaklari yig'indisi nechaga teng?", options: ["90°", "180°", "270°", "360°"], answerIndex: 1 },
+  { id: 92, subject: "Fizika", question: "Jismning massasi qanday asbobda o'lchanadi?", options: ["Termometr", "Tarozi", "Dinamometr", "Barometr"], answerIndex: 1 },
+  { id: 93, subject: "Tarix", question: "Zahiriddin Muhammad Bobur asos solgan sulola?", options: ["Temuriylar", "Boburiylar", "Shayboniylar", "Safaviylar"], answerIndex: 1 },
+  { id: 94, subject: "Geografiya", question: "Dunyo bo'yicha eng yirik cho'l qaysi?", options: ["Qoraqum", "Sahara", "Gobi", "Kalaaxari"], answerIndex: 1 },
+  { id: 95, subject: "Kimyo", question: "Simob (Hg) oddiy sharoitda qaysi holatda bo'ladi?", options: ["Qattiq", "Suyuq", "Gazsimon", "Plazma"], answerIndex: 1 },
+  { id: 96, subject: "Biologiya", question: "Odam organizmida qon aylanish sistemasi nechta doiradan iborat?", options: ["1 ta", "2 ta", "3 ta", "4 ta"], answerIndex: 1 },
+  { id: 97, subject: "Astronomiya", question: "Oydagi birinchi bo'lib qadam qo'ygan inson kim?", options: ["Yuri Gagarin", "Neil Armstrong", "Buzz Aldrin", "Alexey Leonov"], answerIndex: 1 },
+  { id: 98, subject: "Informatika", question: "Monitor qanday qurilma turi hisoblanadi?", options: ["Kiritish", "Chiqarish", "Saqlash", "Boshqarish"], answerIndex: 1 },
+  { id: 99, subject: "Ona tili", question: "Qaysi so'z ot turkumiga kiradi?", options: ["Yugurmoq", "Chiroyli", "Maktab", "Tez"], answerIndex: 2 },
+  { id: 100, subject: "Mantiq", question: "Bir haftada nechta kun bor va ulardan nechta kun 'S' harfi bilan boshlanadi?", options: ["7 kun, 1 ta", "7 kun, 2 ta", "7 kun, 3 ta", "5 kun, 2 ta"], answerIndex: 2 }
 ];
 
 export function getQuestionsForLevel(levelId: number) {
-  const offset = ((levelId - 1) * 3) % defaultEggQuestions.length;
-  return [...defaultEggQuestions.slice(offset), ...defaultEggQuestions.slice(0, offset)];
+  // Har bir daraja uchun savollarni o'ziga xos tarzda siljitish va aralashtirish
+  const questions = [...defaultEggQuestions];
+  // levelId ga qarab elementlarni aylantiramiz (rotate)
+  const shift = (levelId * 17) % questions.length;
+  const rotated = [...questions.slice(shift), ...questions.slice(0, shift)];
+  
+  // Qo'shimcha ravishda levelId ga bog'liq holda deterministik tarzda tartibni biroz o'zgartiramiz
+  return rotated.sort((a, b) => {
+    const hashA = (a.id * levelId * 31) % 100;
+    const hashB = (b.id * levelId * 31) % 100;
+    return hashA - hashB;
+  });
 }
 
 export function getEggImage(level: EggLevel, progress: number) {

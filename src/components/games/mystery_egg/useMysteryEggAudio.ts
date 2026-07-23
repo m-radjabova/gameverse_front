@@ -71,6 +71,13 @@ export function useMysteryEggAudio() {
     void audio.play().catch(() => undefined);
   }, []);
 
+  const stop = useCallback((name: SoundName) => {
+    const audio = soundsRef.current?.[name];
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+  }, []);
+
   return {
     prepare,
     playMusic,
@@ -79,5 +86,6 @@ export function useMysteryEggAudio() {
     playCrack: useCallback(() => play("crack"), [play]),
     playReveal: useCallback(() => play("reveal"), [play]),
     playApplause: useCallback(() => play("applause"), [play]),
+    stopApplause: useCallback(() => stop("applause"), [stop]),
   };
 }
