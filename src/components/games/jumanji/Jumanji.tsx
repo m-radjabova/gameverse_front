@@ -26,8 +26,6 @@ import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { DEFAULT_QUESTIONS } from "./constants/questions";
-import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
-import { filterGameQuestionsByDifficulty } from "../../../utils/gameQuestionDifficulty";
 import RealisticDice from "./components/RealisticDice";
 import type { Question } from "./types";
 import "./jumanji.css";
@@ -229,7 +227,7 @@ function Jumanji() {
   const { state: { user, isLoading: isUserLoading } } = useContextPro();
   const [phase, setPhase] = useState<"setup" | "game" | "finish">("setup");
   const [players, setPlayers] = useState<Player[]>(DEFAULT_PLAYERS);
-  const [questions, setQuestions] = useState<Question[]>(() => filterGameQuestionsByDifficulty(DEFAULT_QUESTIONS, getGameQuestionDifficulty("jumanji")));
+  const [questions, setQuestions] = useState<Question[]>(() => DEFAULT_QUESTIONS);
   const [currentPlayer, setCurrentPlayer] = useState(0);
   const [stage, setStage] = useState<Stage>("question");
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -251,8 +249,12 @@ function Jumanji() {
   const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
   useFinishApplause(phase === "finish");
 
-  const question = questions[questionIndex % questions.length] ?? DEFAULT_QUESTIONS[0];
   const activePlayer = players[currentPlayer];
+  const zoneDifficulty = activePlayer.position < 12 ? "easy" : activePlayer.position < 24 ? "medium" : "hard";
+  const zoneQuestions = questions.filter((q) => q.difficulty === zoneDifficulty);
+  const currentQuestions = zoneQuestions.length > 0 ? zoneQuestions : questions;
+  const question = currentQuestions[questionIndex % currentQuestions.length] ?? DEFAULT_QUESTIONS[0];
+  const zoneName = activePlayer.position < 12 ? "🌿 Jungle" : activePlayer.position < 24 ? "🌋 Volcano" : "🏛 Temple";
   const winner = players.find((player) => player.id === winnerId) ?? null;
 
   const later = useCallback((fn: () => void, delay: number) => {
@@ -294,7 +296,7 @@ function Jumanji() {
     void (async () => {
       if (!user?.id) return;
       const remote = await fetchGameQuestionsByTeacher<Question>("jumanji", user.id);
-      if (alive && remote?.length) setQuestions(filterGameQuestionsByDifficulty(remote, getGameQuestionDifficulty("jumanji")));
+      if (alive && remote?.length) setQuestions(remote);
     })();
     return () => { alive = false; };
   }, [isUserLoading, user?.id]);
@@ -612,7 +614,7 @@ function Jumanji() {
             <div className={`action-guide ${stage}`} aria-live="polite"><b>{stageGuide.step}</b><div><strong>{stageGuide.title}</strong><span>{stageGuide.detail}</span></div></div>
             <div className="question-panel">
               <h2>SAVOL</h2>
-              <div className="question-subject">{question.subject} · {activePlayer.name} navbati</div>
+              <div className="question-subject">{zoneName} · {question.subject} · {activePlayer.name} navbati</div>
               <h3>{question.question}</h3>
               <div className="answers">
                 {question.options.map((option, index) => {
