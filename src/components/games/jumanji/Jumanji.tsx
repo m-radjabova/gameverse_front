@@ -95,6 +95,21 @@ const TILE_TYPES: TileType[] = [
 
 const BOARD_TILES: Tile[] = TILE_TYPES.map((type, id) => ({ id, type }));
 
+// Teacher kiritgan matn va variantdagi matn ko'rinishda bir xil bo'lsa,
+// ortiqcha bo'sh joy, apostrof turi yoki katta-kichik harf sabab xato chiqmasin.
+const normalizeAnswer = (value: unknown) => String(value ?? "")
+  .normalize("NFKC")
+  .replace(/[\u2018\u2019\u201B\u2032\u02BC]/g, "'")
+  .replace(/\u00A0/g, " ")
+  .replace(/\s+/g, " ")
+  .trim()
+  .toLocaleLowerCase("uz");
+
+const answersMatch = (first: unknown, second: unknown) => {
+  const normalizedFirst = normalizeAnswer(first);
+  return Boolean(normalizedFirst) && normalizedFirst === normalizeAnswer(second);
+};
+
 const TILE_META: Record<TileType, { symbol: string; short: string; className: string; title: string }> = {
   start: { symbol: "⚑", short: "START", className: "start", title: "Boshlanish" },
   question: { symbol: "★", short: "", className: "question", title: "Oddiy katak" },
@@ -464,7 +479,7 @@ function Jumanji() {
 
   const handleAnswer = (answer: string) => {
     if (stage !== "question") return;
-    const correct = answer === question.correctAnswer;
+    const correct = answersMatch(answer, question.correctAnswer);
     setSelectedAnswer(answer); setAnswerCorrect(correct); setStage("answer"); play(correct ? "correct" : "wrong");
     if (correct) {
       updatePlayer(activePlayer.id, (player) => ({ score: player.score + 100, correct: player.correct + 1 }));
@@ -618,7 +633,7 @@ function Jumanji() {
               <h3>{question.question}</h3>
               <div className="answers">
                 {question.options.map((option, index) => {
-                  const status = answerCorrect !== null && option === question.correctAnswer ? "correct" : answerCorrect === false && option === selectedAnswer ? "wrong" : "";
+                  const status = answerCorrect !== null && answersMatch(option, question.correctAnswer) ? "correct" : answerCorrect === false && answersMatch(option, selectedAnswer) ? "wrong" : "";
                   return <button key={option} disabled={stage !== "question"} className={status} onClick={() => handleAnswer(option)}><b>{String.fromCharCode(65 + index)}</b><span>{option}</span></button>;
                 })}
               </div>
