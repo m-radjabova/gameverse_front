@@ -37,12 +37,15 @@ export default function GamePlayView({ colorClassName, children }: GamePlayViewP
     location.pathname === "/games/pizza-master" || location.pathname === "/games/pizza-master/play";
   const isMysteryEggRoute =
     location.pathname === "/games/mystery-egg" || location.pathname === "/games/mystery-egg/play";
+  const isWheelOfFortuneRoute =
+    location.pathname === "/games/wheel-of-fortune" || location.pathname === "/games/wheel-of-fortune/play";
   const isFullBleedGameRoute =
     isPlantVrRoute ||
     isVirtualZooRoute ||
     isWorldExplorerRoute ||
     isPizzaMasterRoute ||
     isMysteryEggRoute ||
+    isWheelOfFortuneRoute ||
     location.pathname === "/games/vr-solar-system/play" ||
     location.pathname === "/games/quyosh-tizimi-vr/play";
   const game = gameCards.find(
@@ -51,7 +54,13 @@ export default function GamePlayView({ colorClassName, children }: GamePlayViewP
   const session = game ? getGameSessionConfig(game.id) : null;
   const usesInternalParticipantSetup = Boolean(game && DIRECT_PLAY_GAME_PATHS.has(game.path));
 
-  if (isFullBleedGameRoute) return <>{children}</>;
+  // Full-bleed games own their visual language, but must still occupy the
+  // complete viewport.  This avoids the page background appearing below a
+  // game on taller screens without imposing a fixed height (and clipping
+  // content) on any game.
+  if (isFullBleedGameRoute) {
+    return <div className="game-fullbleed">{children}</div>;
+  }
 
   const goBack = () => requestGameExit(() => navigate(game?.path || "/games"));
 

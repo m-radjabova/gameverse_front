@@ -47,20 +47,20 @@ export default function StudentWheel({
   }, [students]);
 
   return (
-    <div className="relative flex flex-col items-center">
-      <div className="absolute inset-0 rounded-full bg-purple-500/20 blur-3xl" />
-      <div className="relative rounded-full border border-white/10 bg-white/5 p-4 backdrop-blur-xl shadow-2xl">
+    <div className="wheel-student-wheel relative flex flex-col items-center">
+      <div className="absolute inset-0 rounded-full bg-violet-500/20 blur-3xl" />
+      <div className="relative rounded-full bg-white p-3 shadow-[0_22px_55px_rgba(82,54,190,.25)] ring-[10px] ring-violet-700/90">
         <Wheel
           mustStartSpinning={mustSpin}
           prizeNumber={prizeNumber}
           data={data}
           backgroundColors={SEGMENT_COLORS}
           textColors={["#ffffff"]}
-          outerBorderColor="#ffffff22"
+          outerBorderColor="#f8f7ff"
           outerBorderWidth={8}
-          innerBorderColor="#ffffff22"
+          innerBorderColor="#ffffffaa"
           innerBorderWidth={4}
-          radiusLineColor="#ffffff33"
+          radiusLineColor="#ffffff88"
           radiusLineWidth={2}
           fontSize={fontSize}
           perpendicularText={true}
@@ -70,13 +70,13 @@ export default function StudentWheel({
         />
       </div>
 
-      <div className="absolute -top-3 left-1/2 z-20 -translate-x-1/2">
+      <div className="absolute -top-5 left-1/2 z-20 -translate-x-1/2">
         <div className="relative">
-          <div className="absolute inset-0 blur-md bg-yellow-400 rounded-full opacity-70" />
+          <div className="absolute inset-0 blur-md bg-violet-500 rounded-full opacity-70" />
           <div
             className="relative w-0 h-0
             border-l-[22px] border-r-[22px] border-t-[42px]
-            border-l-transparent border-r-transparent border-t-yellow-400"
+            border-l-transparent border-r-transparent border-t-violet-600"
           />
         </div>
       </div>

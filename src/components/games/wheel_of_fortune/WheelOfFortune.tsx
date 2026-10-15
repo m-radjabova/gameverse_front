@@ -46,6 +46,10 @@ import useContextPro from "../../../hooks/useContextPro";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
+import wheelMusic from "../../../assets/sounds/Magical_Fantasy_Extended_Version_of_Magical_Music_by_Dmitriy_S.m4a";
+import spinSound from "../../../assets/sounds/roll_dice.mp3";
+import correctSound from "../../../assets/sounds/correct.m4a";
+import wrongSound from "../../../assets/sounds/wrong.mp3";
 
 import {
   EMPTY_OPTIONS,
@@ -88,7 +92,6 @@ export default function WheelOfFortune() {
   const skipInitialRemoteSaveRef = useRef(true);
 
   const [phase, setPhase] = useState<Phase>("setup");
-  useFinishApplause(phase === "finish");
 
   const [students, setStudents] = useState<Student[]>([]);
   const [questions, setQuestions] = useState<Question[]>(() => filterGameQuestionsByDifficulty(SAMPLE_QUESTIONS, getGameQuestionDifficulty("wheel-of-fortune")));
@@ -123,14 +126,66 @@ export default function WheelOfFortune() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showQuestionModal, setShowQuestionModal] = useState(false);
 
+  useFinishApplause(phase === "finish", soundEnabled);
+
   const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
 
   const countdownRef = useRef<number | null>(null);
   const nextRef = useRef<number | null>(null);
+  const musicRef = useRef<HTMLAudioElement | null>(null);
+  const spinSoundRef = useRef<HTMLAudioElement | null>(null);
+  const correctSoundRef = useRef<HTMLAudioElement | null>(null);
+  const wrongSoundRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const music = new Audio(wheelMusic);
+    music.loop = true;
+    music.volume = 0.28;
+    music.preload = "auto";
+    musicRef.current = music;
+
+    const spin = new Audio(spinSound);
+    spin.volume = 0.55;
+    spinSoundRef.current = spin;
+
+    const correct = new Audio(correctSound);
+    correct.volume = 0.7;
+    correctSoundRef.current = correct;
+
+    const wrong = new Audio(wrongSound);
+    wrong.volume = 0.65;
+    wrongSoundRef.current = wrong;
+
+    return () => {
+      [music, spin, correct, wrong].forEach((audio) => {
+        audio.pause();
+        audio.currentTime = 0;
+      });
+      musicRef.current = null;
+      spinSoundRef.current = null;
+      correctSoundRef.current = null;
+      wrongSoundRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    [musicRef.current, spinSoundRef.current, correctSoundRef.current, wrongSoundRef.current].forEach((audio) => {
+      if (audio) audio.muted = !soundEnabled;
+    });
+  }, [soundEnabled]);
+
+  useEffect(() => {
+    if (phase !== "finish") return;
+    musicRef.current?.pause();
+  }, [phase]);
+
+  const playSound = (audio: HTMLAudioElement | null, restart = true) => {
+    if (!audio || !soundEnabled) return;
+    if (restart) audio.currentTime = 0;
+    void audio.play().catch(() => undefined);
+  };
 
   const currentQuestion = activeQuestions[currentQuestionIndex];
-  const totalQuestions = activeQuestions.length || questions.length;
-  const progressPct = Math.round(((currentQuestionIndex + 1) / Math.max(totalQuestions, 1)) * 100);
   const sortedStudents = useMemo(() => [...students].sort((a, b) => b.score - a.score), [students]);
   const selectedStudent = students.find((s) => s.id === selectedStudentId);
 
@@ -203,7 +258,7 @@ export default function WheelOfFortune() {
   }, []);
 
   useEffect(() => {
-    if (phase !== "question" || !currentQuestion || questionLocked || !showQuestionModal) return;
+    if (phase !== "question" || !currentQuestion || questionLocked) return;
 
     if (timeLeft <= 0) {
       submitAnswer(undefined, true);
@@ -366,7 +421,15 @@ export default function WheelOfFortune() {
     setToast("🎮 O'yin boshlandi!");
   };
 
-  const handleStartGame = () => runStartCountdown(startGame);
+  const handleStartGame = () => {
+    if (students.length < 2) return setStudentError("Kamida 2 ta o'quvchi kerak");
+    if (questions.length < 1) return setQuestionError("Kamida 1 ta savol kerak");
+
+    // This happens inside the teacher's click, so browsers permit the music
+    // immediately instead of rejecting it as autoplay after the countdown.
+    playSound(musicRef.current, true);
+    runStartCountdown(startGame);
+  };
 
   const spinWheel = () => {
     if (spinning || students.length === 0 || !currentQuestion) return;
@@ -375,6 +438,7 @@ export default function WheelOfFortune() {
     setPrizeNumber(randomIndex);
     setMustSpin(true);
     setSpinning(true);
+    playSound(spinSoundRef.current);
   };
 
   const handleWheelStop = () => {
@@ -388,7 +452,7 @@ export default function WheelOfFortune() {
     setToast(`🎯 Baraban to'xtadi: ${winner.name}`);
 
     window.setTimeout(() => {
-      setShowQuestionModal(true);
+      setShowQuestionModal(false);
       setPhase("question");
       setTimeLeft(currentQuestion.timeLimit);
     }, 700);
@@ -402,6 +466,7 @@ export default function WheelOfFortune() {
     const ok = !timeout && selectedOptionIndex === currentQuestion.answerIndex;
 
     if (ok) {
+      playSound(correctSoundRef.current);
       setStudents((prev) =>
         prev.map((s) =>
           s.id === selectedStudentId
@@ -411,6 +476,7 @@ export default function WheelOfFortune() {
       );
       setResult({ correct: true, message: `✅ To'g'ri! +${currentQuestion.points} ball` });
     } else {
+      playSound(wrongSoundRef.current);
       setResult({
         correct: false,
         message: `❌ Xato! To'g'ri javob: ${currentQuestion.options[currentQuestion.answerIndex]}`,
@@ -421,6 +487,8 @@ export default function WheelOfFortune() {
   };
 
   const resetGame = () => {
+    musicRef.current?.pause();
+    if (musicRef.current) musicRef.current.currentTime = 0;
     setPhase("setup");
     setStudents([]);
     setQuestions(filterGameQuestionsByDifficulty(SAMPLE_QUESTIONS, getGameQuestionDifficulty("wheel-of-fortune")));
@@ -459,7 +527,7 @@ export default function WheelOfFortune() {
   };
 
   return (
-    <div className="relative min-h-screen text-white">
+    <div className="relative min-h-[100dvh] text-white">
       <button
         onClick={() => setSoundEnabled(!soundEnabled)}
         className="fixed right-3 top-3 z-50 rounded-full border border-purple-500/30 bg-purple-900/50 p-2.5 backdrop-blur-sm transition-all hover:bg-purple-800/50 sm:right-4 sm:top-4 sm:p-3"
@@ -601,7 +669,7 @@ export default function WheelOfFortune() {
       )}
 
       {phase === "setup" && (
-        <div className="relative transform-gpu overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-br from-purple-900/40 via-purple-800/40 to-pink-900/40 p-4 shadow-2xl backdrop-blur-xl sm:p-8">
+        <div className="relative min-h-[100dvh] transform-gpu overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-br from-purple-900/40 via-purple-800/40 to-pink-900/40 p-4 shadow-2xl backdrop-blur-xl sm:p-8">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,40,200,0.2),transparent_50%)]" />
           <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%239C92AC%22%20fill-opacity%3D%220.05%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20" />
 
@@ -878,7 +946,64 @@ export default function WheelOfFortune() {
         </div>
       )}
 
-      {phase === "spinning" && currentQuestion && (
+      {(phase === "spinning" || phase === "question") && currentQuestion && (
+        <div className="wheel-board h-[100dvh] overflow-hidden bg-[radial-gradient(circle_at_50%_42%,rgba(121,76,255,0.26),transparent_28%),radial-gradient(circle_at_90%_10%,rgba(25,194,255,0.14),transparent_24%),linear-gradient(135deg,#081126,#11133a_48%,#1b1040)] p-3 text-white sm:p-5">
+          <div className="mx-auto grid h-full max-w-[1900px] gap-4 xl:grid-cols-[280px_minmax(500px,1fr)_360px] xl:items-stretch">
+            <aside className="wheel-board-card min-h-0 p-4 sm:p-5">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-xl font-black tracking-tight">O'quvchilar <span className="text-slate-400">({students.length})</span></h2>
+                <button type="button" onClick={() => setPhase("setup")} className="rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-3 py-2 text-xs font-bold text-white shadow-md transition hover:brightness-110"><FaPlus className="mr-1 inline" />Qo'shish</button>
+              </div>
+              <div className="wheel-board-scroll mt-4 max-h-[calc(100vh-155px)] space-y-1.5 overflow-auto pr-1">
+                {sortedStudents.map((student, rank) => {
+                  const index = students.findIndex((item) => item.id === student.id);
+                  const emoji = STUDENT_EMOJIS[index % STUDENT_EMOJIS.length];
+                  const Icon = emoji.icon;
+                  const selected = student.id === selectedStudentId;
+                  return <div key={student.id} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition ${selected ? "bg-violet-500/20 ring-1 ring-violet-300" : "hover:bg-white/5"}`}>
+                    <span className={`grid h-8 w-8 place-items-center rounded-full text-sm font-black ${rank < 3 ? "bg-amber-400/20 text-amber-200" : "bg-violet-500/20 text-violet-200"}`}>{rank + 1}</span>
+                    <Icon className={`text-lg ${emoji.color}`} />
+                    <span className="min-w-0 flex-1 truncate text-sm font-bold">{student.name}</span>
+                    <strong className="text-sm">{student.score}</strong>
+                  </div>;
+                })}
+              </div>
+            </aside>
+
+            <main className="flex min-h-0 flex-col items-center justify-center rounded-[34px] bg-slate-950/15 px-3 py-5 sm:px-5">
+              <div className="mb-2 flex items-center gap-2 rounded-full border border-violet-300/15 bg-slate-900/55 px-4 py-2 text-xs font-bold text-violet-200 shadow-sm"><GiSpinningWheel /> O'quvchini tanlash uchun aylantiring</div>
+              <div className="relative w-full max-w-[min(780px,76vh)]">
+                <StudentWheel students={students} mustSpin={mustSpin} prizeNumber={prizeNumber} onStopSpinning={handleWheelStop} />
+                <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+                  <button type="button" onClick={spinWheel} disabled={spinning || phase === "question"} className="pointer-events-auto grid h-28 w-28 place-items-center rounded-full border-[7px] border-white bg-gradient-to-br from-violet-500 via-indigo-600 to-violet-700 text-center text-base font-black text-white shadow-[0_14px_32px_rgba(109,66,235,.38)] transition hover:scale-105 disabled:cursor-default disabled:opacity-70 sm:h-36 sm:w-36">
+                    {spinning ? <FaSpinner className="animate-spin text-3xl" /> : <><span>AYLANTIRISH</span><GiSpinningWheel className="mt-1 text-2xl" /></>}
+                  </button>
+                </div>
+                {showWinnerOverlay && selectedStudent && <div className="pointer-events-none absolute inset-0 z-20 grid place-items-center"><div className="rounded-2xl border border-violet-300/30 bg-slate-950/95 px-7 py-5 text-center shadow-2xl ring-2 ring-violet-400"><p className="text-xs font-bold uppercase tracking-widest text-violet-300">Tanlandi</p><b className="mt-2 block text-3xl">{selectedStudent.name}</b></div></div>}
+              </div>
+            </main>
+
+            <aside className="space-y-5">
+              <section className="wheel-board-card p-5">
+                <div className="grid grid-cols-[1fr_auto] gap-5">
+                  <div><p className="text-sm font-bold text-slate-300">Joriy o'quvchi</p><div className="mt-3 rounded-xl bg-violet-500/20 px-4 py-5 text-center text-3xl font-black text-white">{selectedStudent?.name ?? "—"}</div></div>
+                  <div className="text-center"><p className="text-sm font-bold text-slate-300">Vaqt</p><div className="mt-2 grid h-28 w-28 place-items-center rounded-full border-[11px] border-violet-500 border-r-slate-800 border-b-slate-800 text-3xl font-black">{String(timeLeft || currentQuestion.timeLimit).padStart(2, "0")}</div></div>
+                </div>
+              </section>
+              <section className="wheel-board-card p-5">
+                <div className="flex items-center justify-between"><span className="rounded-lg bg-slate-800 px-3 py-2 text-sm font-bold text-slate-200">Savol {currentQuestionIndex + 1} / {activeQuestions.length}</span><span className="rounded-lg bg-amber-400/20 px-3 py-2 text-sm font-black text-amber-200">+{currentQuestion.points} ball</span></div>
+                <h2 className="mt-5 text-xl font-black leading-snug">{currentQuestion.question}</h2>
+                <div className="mt-5 space-y-3">
+                  {currentQuestion.options.map((option, idx) => <button key={idx} type="button" onClick={() => submitAnswer(idx)} disabled={phase !== "question" || questionLocked} className={`flex w-full items-center gap-4 rounded-xl border-2 px-4 py-3.5 text-left text-base font-bold transition ${questionLocked && idx === currentQuestion.answerIndex ? "border-emerald-400 bg-emerald-500/15" : "border-white/10 bg-slate-950/45 hover:border-violet-400 hover:bg-violet-500/15 disabled:opacity-65"}`}><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-violet-500/25 text-violet-200">{String.fromCharCode(65 + idx)}</span>{option}</button>)}
+                </div>
+                {result && <div className={`mt-4 rounded-xl p-3 text-center text-sm font-black ${result.correct ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}`}>{result.message}</div>}
+              </section>
+              <section className="wheel-board-card max-h-[31vh] overflow-hidden p-5"><div className="mb-3 flex items-center justify-between"><h3 className="text-lg font-black">Natijalar</h3><button type="button" onClick={resetGame} className="text-xs font-bold text-violet-300"><FaTrash className="mr-1 inline" />Tozalash</button></div><div className="wheel-board-scroll max-h-[22vh] space-y-2 overflow-auto">{sortedStudents.slice(0, 5).map((student, rank) => <div key={student.id} className="flex items-center gap-3 border-b border-white/10 pb-2"><span className="grid h-7 w-7 place-items-center rounded-full bg-violet-500/20 text-xs font-black">{rank + 1}</span><span className="flex-1 text-sm font-bold">{student.name}</span><b>{student.score}</b></div>)}</div></section>
+            </aside>
+          </div>
+        </div>
+      )}
+        {/*
         <div className="relative transform-gpu overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-br from-purple-900/40 via-purple-800/40 to-pink-900/40 p-4 shadow-2xl backdrop-blur-xl sm:p-8">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_10%,rgba(34,211,238,0.12),transparent_30%),radial-gradient(circle_at_75%_50%,rgba(236,72,153,0.16),transparent_35%),radial-gradient(circle_at_50%_100%,rgba(168,85,247,0.14),transparent_45%)]" />
 
@@ -1030,6 +1155,7 @@ export default function WheelOfFortune() {
         </div>
       )}
 
+        */}
       {phase === "finish" && (
         <div className="relative transform-gpu overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-br from-purple-900/40 via-pink-900/40 to-rose-900/40 p-4 text-center shadow-2xl backdrop-blur-xl sm:p-8">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(236,72,153,0.1),transparent_70%)]" />

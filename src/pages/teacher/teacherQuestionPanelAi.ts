@@ -1,5 +1,6 @@
 import { generateGeminiJson, type GameDifficulty } from "../../apiClient/gemini";
 import { getGradeRangeInstruction, getGradeRangeLabel, type GradeRange } from "../../utils/aiGeneration";
+import { getAiQuestionLanguageInstruction, getAiTopicInstruction } from "../../utils/aiQuestionLanguage";
 
 export type SupportedTeacherGameKey =
   | "quiz_battle"
@@ -52,7 +53,8 @@ function buildPrompt(gameKey: SupportedTeacherGameKey, topic: string, subject: s
     `Qiyinlik: ${difficulty}.`,
     `- ${difficultyInstruction(difficulty)}`,
     "Javob faqat JSON array bo'lsin, boshqa matn yozmang.",
-    "Matn Uzbek (Latin) tilida bo'lsin.",
+    getAiQuestionLanguageInstruction(safeSubject),
+    getAiTopicInstruction(safeTopic),
     "Savollar o'quvchilar uchun tushunarli, xavfsiz va maktab muhiti uchun mos bo'lsin.",
     "Takror savollar bo'lmasin.",
   ];
@@ -413,6 +415,9 @@ export async function generateTeacherPanelQuestions({
   gradeRange?: GradeRange;
 }) {
   const safeCount = Math.max(1, Math.min(20, Math.floor(count)));
+  if (!topic?.trim()) {
+    throw new Error("AI savollar aynan mos bo'lishi uchun mavzuni kiriting.");
+  }
   const safeDifficulty = difficulty ?? "medium";
   const safeGradeRange = gradeRange ?? "none";
   const prompt = buildPrompt(gameKey, topic ?? "", subject ?? "", safeCount, safeDifficulty, safeGradeRange);

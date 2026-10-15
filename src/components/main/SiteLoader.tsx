@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Lottie from "lottie-react";
-import starRatingAnimation from "../Star rating.json";
+import fiveStarsAnimation from "../Star rating.json";
 
 function SiteLoader() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -37,13 +37,19 @@ function SiteLoader() {
   return (
     <div className={`fixed inset-0 z-[100] overflow-hidden ${theme.pageBg}`}>
       <div className="relative z-10 flex h-full items-center justify-center px-4">
-        <Lottie
-          animationData={starRatingAnimation}
-          loop
-          autoplay
-          className="h-[280px] w-[280px] drop-shadow-[0_18px_36px_rgba(245,158,11,0.28)] sm:h-[360px] sm:w-[360px]"
-          aria-label="Gameverse star rating loading animation"
-        />
+        <div className="flex flex-col items-center gap-5" aria-label="Yuklanmoqda" role="status">
+          <Lottie
+            animationData={fiveStarsAnimation}
+            loop
+            autoplay
+            className="h-36 w-36 sm:h-44 sm:w-44"
+            aria-label="Besh yulduzli yuklanish animatsiyasi"
+          />
+          <div className="text-center">
+            <p className="text-sm font-black tracking-[0.18em] text-slate-800 dark:text-white">GAMEVERSE</p>
+            <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-300">Yuklanmoqda</p>
+          </div>
+        </div>
       </div>
     </div>
   );

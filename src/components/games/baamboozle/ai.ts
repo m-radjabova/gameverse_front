@@ -1,5 +1,6 @@
 import { generateGeminiJson, type GameDifficulty } from "../../../apiClient/gemini";
 import { getGradeRangeInstruction, getGradeRangeLabel, type GradeRange } from "../../../utils/aiGeneration";
+import { getAiQuestionLanguageInstruction, getAiTopicInstruction } from "../../../utils/aiQuestionLanguage";
 
 export type BaamboozleGeneratedQuestion = {
   question: string;
@@ -17,7 +18,7 @@ function buildBaamboozlePrompt(subject: string, topic: string, count: number, di
           : "Savollar oson, o'rta va qiyin darajada aralash bo'lsin.";
 
   return [
-    `Baamboozle o'yini uchun Uzbek (Latin) tilida ${count} ta savol-javob yarating.`,
+    `Baamboozle o'yini uchun ${count} ta savol-javob yarating.`,
     "Javob faqat JSON array bo'lsin, boshqa matn yozmang.",
     'JSON formati: [{"question":"...","answer":"..."}]',
     "Talablar:",
@@ -27,6 +28,8 @@ function buildBaamboozlePrompt(subject: string, topic: string, count: number, di
     "- Javoblar iloji boricha 1-6 so'z oralig'ida bo'lsin.",
     `- Mavzu: ${topic}.`,
     `- Fan/mavzu: ${subject}.`,
+    `- ${getAiQuestionLanguageInstruction(subject)}`,
+    `- ${getAiTopicInstruction(topic)}`,
     `- Sinf oralig'i: ${getGradeRangeLabel(gradeRange)}.`,
     `- ${getGradeRangeInstruction(gradeRange)}`,
     `- Qiyinlik: ${difficulty}.`,
@@ -77,7 +80,10 @@ export async function generateBaamboozleQuestions({
 }): Promise<BaamboozleGeneratedQuestion[]> {
   const safeCount = Math.max(4, Math.min(24, Math.floor(count)));
   const safeSubject = subject?.trim() || "Umumiy fan";
-  const safeTopic = topic?.trim() || "umumiy mavzu";
+  const safeTopic = topic?.trim();
+  if (!safeTopic) {
+    throw new Error("AI savollar aynan mos bo'lishi uchun mavzuni kiriting.");
+  }
   const safeDifficulty = difficulty ?? "medium";
   const safeGradeRange = gradeRange ?? "none";
   const prompt = buildBaamboozlePrompt(safeSubject, safeTopic, safeCount, safeDifficulty, safeGradeRange);

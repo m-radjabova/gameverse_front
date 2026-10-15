@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   FaArrowRight,
   FaCheck,
@@ -44,7 +44,13 @@ type GameRegistryItem = {
 };
 
 type EditorMode = "manual" | "ai";
-type WorkspaceView = "questions" | "create";
+type WorkspaceView = "dashboard" | "questions" | "create";
+
+type QuestionActivity = {
+  gameKey: string;
+  addedCount: number;
+  updatedAt: string;
+};
 
 const GAME_TEMPLATES: Record<string, unknown> = {
   quiz_battle: { question: "", options: ["", "", "", ""], answerIndex: 0, difficulty: "easy" },
@@ -156,6 +162,27 @@ function createId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function teacherActivityStorageKey(teacherId?: string) {
+  return `gameverse.teacher-question-activity.${teacherId ?? "anonymous"}`;
+}
+
+function readQuestionActivity(teacherId?: string): QuestionActivity[] {
+  try {
+    const value = localStorage.getItem(teacherActivityStorageKey(teacherId));
+    const parsed = value ? JSON.parse(value) : [];
+    return Array.isArray(parsed) ? parsed.filter((item): item is QuestionActivity =>
+      item && typeof item.gameKey === "string" && Number.isFinite(item.addedCount) && typeof item.updatedAt === "string",
+    ) : [];
+  } catch {
+    return [];
+  }
+}
+
+function formatActivityDate(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "Hozirgina" : date.toLocaleString("uz-UZ", { dateStyle: "medium", timeStyle: "short" });
+}
+
 const LABELS_UZ: Record<string, string> = {
   id: "ID",
   question: "Savol",
@@ -202,6 +229,7 @@ const DIFFICULTY_COLORS: Record<string, string> = {
 const SUBJECT_OPTIONS = [
   "Matematika",
   "Ingliz tili",
+  "Rus tili",
   "Ona tili",
   "Tarix",
   "Geografiya",
@@ -1113,7 +1141,7 @@ export default function TeacherQuestionPanel() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [showExtraFields, setShowExtraFields] = useState(false);
   const [editorMode, setEditorMode] = useState<EditorMode>("manual");
-  const [workspaceView, setWorkspaceView] = useState<WorkspaceView>("questions");
+  const [workspaceView, setWorkspaceView] = useState<WorkspaceView>("dashboard");
   const [deleteTargetIndex, setDeleteTargetIndex] = useState<number | null>(null);
   const [aiTopic, setAiTopic] = useState("");
   const [aiSubject, setAiSubject] = useState("Matematika");
@@ -1121,6 +1149,8 @@ export default function TeacherQuestionPanel() {
   const [aiCount, setAiCount] = useState<(typeof AI_COUNT_OPTIONS)[number]>(5);
   const [aiDifficulty, setAiDifficulty] = useState<GameDifficulty>("mixed");
   const [aiMysteryLevel, setAiMysteryLevel] = useState(1);
+  const [questionActivity, setQuestionActivity] = useState<QuestionActivity[]>([]);
+  const dashboardLoadedForRef = useRef<string | null>(null);
   const {
     questionsByGame,
     getQuestions,
@@ -1140,6 +1170,53 @@ export default function TeacherQuestionPanel() {
   const aiPanelContent = useMemo(() => getAiPanelContent(activeGame?.gameKey ?? ""), [activeGame?.gameKey]);
   const loading = activeGame ? Boolean(loadingByGame[activeGame.gameKey]) : false;
   const saving = activeGame ? Boolean(savingByGame[activeGame.gameKey]) : anySaving;
+
+  const totalQuestionCount = useMemo(
+    () => Object.values(questionsByGame).reduce((total, questions) => total + questions.length, 0),
+    [questionsByGame],
+  );
+  const activeGamesCount = useMemo(
+    () => GAME_REGISTRY.filter((game) => (questionsByGame[game.gameKey]?.length ?? 0) > 0).length,
+    [questionsByGame],
+  );
+  const recentActivity = useMemo(
+    () => [...questionActivity].sort((first, second) => Date.parse(second.updatedAt) - Date.parse(first.updatedAt)).slice(0, 6),
+    [questionActivity],
+  );
+
+  useEffect(() => {
+    setQuestionActivity(readQuestionActivity(user?.id));
+    dashboardLoadedForRef.current = null;
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (workspaceView !== "dashboard" || !user?.id || dashboardLoadedForRef.current === user.id) return;
+    dashboardLoadedForRef.current = user.id;
+    void (async () => {
+      // A dashboard can contain many games. Small batches keep the API and the
+      // browser responsive instead of opening every request at the same time.
+      const batchSize = 3;
+      for (let start = 0; start < GAME_REGISTRY.length; start += batchSize) {
+        await Promise.all(GAME_REGISTRY.slice(start, start + batchSize).map((game) => loadQuestions(game.gameKey, {
+          teacherScoped: true,
+          filterBySessionDifficulty: false,
+        })));
+      }
+    })();
+  }, [loadQuestions, user?.id, workspaceView]);
+
+  function recordQuestionAddition(gameKey: string, addedCount: number) {
+    const activity: QuestionActivity = { gameKey, addedCount, updatedAt: new Date().toISOString() };
+    setQuestionActivity((previous) => {
+      const next = [activity, ...previous.filter((item) => item.gameKey !== gameKey)].slice(0, 12);
+      try {
+        localStorage.setItem(teacherActivityStorageKey(user?.id), JSON.stringify(next));
+      } catch {
+        // The dashboard remains usable if browser storage is unavailable.
+      }
+      return next;
+    });
+  }
 
   useEffect(() => {
     if (!activeGame) {
@@ -1204,6 +1281,7 @@ export default function TeacherQuestionPanel() {
     if (!ok) return;
 
     if (isNewQuestion) {
+      recordQuestionAddition(activeGame.gameKey, 1);
       setSelectedIndex(null);
       setDraftValue(activeGame.template);
       toast.success("Savol qo‘shildi.");
@@ -1229,6 +1307,10 @@ export default function TeacherQuestionPanel() {
 
   async function handleGenerateAi() {
     if (!activeGame) return;
+    if (!aiTopic.trim()) {
+      setEditorError("Savollar aynan mos bo'lishi uchun mavzuni kiriting.");
+      return;
+    }
 
     try {
       setIsGeneratingAi(true);
@@ -1259,6 +1341,8 @@ export default function TeacherQuestionPanel() {
       const ok = await persistGameItems(activeGame.gameKey, nextItems);
       if (!ok) return;
 
+      recordQuestionAddition(activeGame.gameKey, levelAdjusted.length);
+
       setSelectedIndex(0);
       setDraftValue(withIdFallback(levelAdjusted[0] ?? activeGame.template));
       setEditorMode("manual");
@@ -1282,7 +1366,7 @@ export default function TeacherQuestionPanel() {
   return (
     <div
       data-home-theme={isDarkMode ? "dark" : "light"}
-      className="teacher-theme min-h-screen bg-[image:var(--panel-page-bg)] bg-[var(--panel-page-base)] px-3 py-3 sm:px-5 sm:py-5"
+      className="teacher-theme teacher-workspace min-h-screen bg-[image:var(--panel-page-bg)] bg-[var(--panel-page-base)] px-4 py-4 sm:px-6 sm:py-6"
     >
       {/* Decorative Background Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -1299,10 +1383,28 @@ export default function TeacherQuestionPanel() {
         <section className="overflow-hidden rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-surface)] p-3 shadow-lg shadow-[var(--panel-accent)]/5 backdrop-blur-xl xl:sticky xl:top-[84px] xl:h-[calc(100vh-96px)] xl:self-start">
           <div className="mb-3 flex items-center justify-between gap-3 px-2">
             <div>
-              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[var(--panel-muted)]">O'yinlar</p>
-              <h2 className="mt-1 text-base font-bold text-[var(--panel-text)]">O'yinlar</h2>
+              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[var(--panel-muted)]">Teacher panel</p>
+              <h2 className="mt-1 text-base font-bold text-[var(--panel-text)]">Ish maydoni</h2>
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setWorkspaceView("dashboard")}
+            className={`mb-3 flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-all ${
+              workspaceView === "dashboard"
+                ? "border-[var(--panel-accent)] bg-[image:var(--panel-accent-gradient)] text-white shadow-lg shadow-[var(--panel-accent)]/25"
+                : "border-[var(--panel-border)] bg-[var(--panel-surface-strong)] text-[var(--panel-text)] hover:border-[var(--panel-accent)]/50"
+            }`}
+          >
+            <span className={`inline-flex h-10 w-10 items-center justify-center rounded-xl text-lg ${workspaceView === "dashboard" ? "bg-white/15" : "bg-[image:var(--panel-accent-gradient-soft)]"}`}><FaLayerGroup /></span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-bold">Dashboard</span>
+              <span className={`mt-0.5 block text-[10px] ${workspaceView === "dashboard" ? "text-white/75" : "text-[var(--panel-text-soft)]"}`}>Savollar va so'nggi qo'shishlar</span>
+            </span>
+          </button>
+
+          <p className="mb-2 px-2 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--panel-muted)]">O'yinlar</p>
 
           <div className="teacher-games-scroll -mx-1 max-h-[calc(100vh-125px)] overflow-y-auto px-1 pb-2 xl:max-h-[calc(100vh-180px)]">
             <div className="flex flex-col gap-2">
@@ -1343,7 +1445,19 @@ export default function TeacherQuestionPanel() {
         </section>
 
         <div className="min-w-0">
-          <div className="mb-4 grid grid-cols-2 gap-2 rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-surface)] p-1.5 shadow-sm">
+          <div className="mb-4 grid grid-cols-3 gap-2 rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-surface)] p-1.5 shadow-sm">
+            <button
+              type="button"
+              onClick={() => setWorkspaceView("dashboard")}
+              className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-bold transition-all ${
+                workspaceView === "dashboard"
+                  ? "bg-[image:var(--panel-accent-gradient)] text-white shadow-md shadow-[var(--panel-accent)]/25"
+                  : "text-[var(--panel-text-soft)] hover:bg-[var(--panel-surface-strong)] hover:text-[var(--panel-text)]"
+              }`}
+            >
+              <FaLayerGroup className="h-4 w-4" />
+              <span className="hidden sm:inline">Dashboard</span>
+            </button>
             <button
               type="button"
               onClick={() => setWorkspaceView("questions")}
@@ -1374,6 +1488,72 @@ export default function TeacherQuestionPanel() {
               Savol qo'shish
             </button>
           </div>
+
+        {workspaceView === "dashboard" && (
+          <section className="space-y-5 rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-surface)] p-4 shadow-lg shadow-[var(--panel-accent)]/5 backdrop-blur-xl sm:p-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--panel-accent)]">Teacher dashboard</p>
+                <h1 className="mt-2 text-2xl font-black tracking-tight text-[var(--panel-text)] sm:text-3xl">Savollar markazi</h1>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--panel-text-soft)]">O'yinlardagi savollarni kuzating, oxirgi qo'shganlaringizni ko'ring va kerakli o'yinga bir bosishda o'ting.</p>
+              </div>
+              <div className="inline-flex items-center gap-2 self-start rounded-xl border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] px-3 py-2 text-[10px] font-bold text-[var(--panel-text-soft)]">
+                <FaClock className="text-[var(--panel-accent)]" /> Ma'lumotlar yangilanmoqda
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-[var(--panel-border)] bg-[image:var(--panel-accent-gradient-soft)] p-4">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--panel-text-soft)]">Jami savollar</p>
+                <p className="mt-2 text-3xl font-black text-[var(--panel-text)]">{totalQuestionCount}</p>
+              </div>
+              <div className="rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] p-4">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--panel-text-soft)]">Faol o'yinlar</p>
+                <p className="mt-2 text-3xl font-black text-[var(--panel-text)]">{activeGamesCount}<span className="ml-1 text-sm font-bold text-[var(--panel-muted)]">/ {GAME_REGISTRY.length}</span></p>
+              </div>
+              <div className="rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] p-4">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--panel-text-soft)]">So'nggi qo'shishlar</p>
+                <p className="mt-2 text-3xl font-black text-[var(--panel-text)]">{questionActivity.reduce((total, item) => total + item.addedCount, 0)}</p>
+              </div>
+            </div>
+
+            <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(290px,.65fr)]">
+              <div className="overflow-hidden rounded-2xl border border-[var(--panel-border)]">
+                <div className="flex items-center justify-between border-b border-[var(--panel-border)] bg-[var(--panel-surface-strong)] px-4 py-3">
+                  <h2 className="text-sm font-black text-[var(--panel-text)]">O'yinlar bo'yicha savollar</h2>
+                  <span className="text-[10px] font-medium text-[var(--panel-muted)]">O'yinni tanlang</span>
+                </div>
+                <div className="divide-y divide-[var(--panel-border)]">
+                  {GAME_REGISTRY.map((game) => {
+                    const count = questionsByGame[game.gameKey]?.length ?? 0;
+                    return <button key={game.gameKey} type="button" onClick={() => handleSelectGame(game.gameKey)} className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-[image:var(--panel-accent-gradient-soft)]">
+                      <span className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${game.accent} text-base text-white`}>{game.emoji}</span>
+                      <span className="min-w-0 flex-1"><span className="block truncate text-xs font-bold text-[var(--panel-text)]">{game.title}</span><span className="mt-0.5 block truncate text-[10px] text-[var(--panel-muted)]">{loadedByGame[game.gameKey] ? `${count} ta savol` : "Yuklanmoqda..."}</span></span>
+                      <FaChevronRight className="h-3 w-3 text-[var(--panel-muted)]" />
+                    </button>;
+                  })}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] p-4">
+                <h2 className="text-sm font-black text-[var(--panel-text)]">Oxirgi qo'shilganlar</h2>
+                <p className="mt-1 text-[10px] leading-4 text-[var(--panel-text-soft)]">AI yoki qo'lda qo'shilgan so'nggi savollar.</p>
+                <div className="mt-4 space-y-3">
+                  {recentActivity.map((activity) => {
+                    const game = GAME_REGISTRY.find((item) => item.gameKey === activity.gameKey);
+                    if (!game) return null;
+                    return <button key={`${activity.gameKey}-${activity.updatedAt}`} type="button" onClick={() => handleSelectGame(activity.gameKey)} className="flex w-full items-center gap-3 rounded-xl border border-[var(--panel-border)] bg-[var(--panel-surface)] p-3 text-left transition hover:border-[var(--panel-accent)]">
+                      <span className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${game.accent} text-base text-white`}>{game.emoji}</span>
+                      <span className="min-w-0 flex-1"><span className="block truncate text-xs font-bold text-[var(--panel-text)]">{game.title}</span><span className="mt-0.5 block text-[10px] text-[var(--panel-text-soft)]">{activity.addedCount} ta savol qo'shildi</span></span>
+                      <span className="max-w-20 text-right text-[9px] leading-3 text-[var(--panel-muted)]">{formatActivityDate(activity.updatedAt)}</span>
+                    </button>;
+                  })}
+                  {recentActivity.length === 0 && <div className="rounded-xl border border-dashed border-[var(--panel-border)] px-4 py-8 text-center text-xs text-[var(--panel-muted)]">Hali savol qo'shilmagan.</div>}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         <div className="grid gap-4">
           {/* Left Panel - Question List */}

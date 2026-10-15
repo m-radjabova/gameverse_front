@@ -1,5 +1,6 @@
 import { generateGeminiJson, type GameDifficulty } from "../../../apiClient/gemini";
 import { getGradeRangeInstruction, getGradeRangeLabel, type GradeRange } from "../../../utils/aiGeneration";
+import { getAiQuestionLanguageInstruction, getAiTopicInstruction } from "../../../utils/aiQuestionLanguage";
 import type { Question } from "./types";
 
 type GeneratedJumanjiQuestion = Omit<Question, "id">;
@@ -20,7 +21,7 @@ function buildJumanjiPrompt(subject: string, topic: string, count: number, diffi
           : "Savollar aralash bo'lsin: easy, medium va hard darajalari balansli taqsimlansin.";
 
   return [
-    `Jumanji o'yini uchun Uzbek (Latin) tilida ${count} ta test savol yarating.`,
+    `Jumanji o'yini uchun ${count} ta test savol yarating.`,
     "Javob faqat JSON array bo'lsin, boshqa matn yozmang.",
     'JSON formati: [{"subject":"Matematika","question":"...","options":["...","...","...","..."],"correctAnswer":"...","difficulty":"easy","timeLimit":30}]',
     "Talablar:",
@@ -33,6 +34,8 @@ function buildJumanjiPrompt(subject: string, topic: string, count: number, diffi
     "- Matnlar o'quvchilar uchun tushunarli bo'lsin.",
     `- Mavzu: ${topic}.`,
     `- Fan talabi: ${subject}.`,
+    `- ${getAiQuestionLanguageInstruction(subject)}`,
+    `- ${getAiTopicInstruction(topic)}`,
     `- ${subjectInstruction}`,
     `- Sinf oralig'i: ${getGradeRangeLabel(gradeRange)}.`,
     `- ${getGradeRangeInstruction(gradeRange)}`,
@@ -112,7 +115,10 @@ export async function generateJumanjiQuestions({
 }): Promise<GeneratedJumanjiQuestion[]> {
   const safeCount = Math.max(4, Math.min(24, Math.floor(count)));
   const safeSubject = subject?.trim() || "Aralash fanlar";
-  const safeTopic = topic?.trim() || "umumiy mavzu";
+  const safeTopic = topic?.trim();
+  if (!safeTopic) {
+    throw new Error("AI savollar aynan mos bo'lishi uchun mavzuni kiriting.");
+  }
   const safeDifficulty = difficulty ?? "medium";
   const safeGradeRange = gradeRange ?? "none";
   const prompt = buildJumanjiPrompt(safeSubject, safeTopic, safeCount, safeDifficulty, safeGradeRange);

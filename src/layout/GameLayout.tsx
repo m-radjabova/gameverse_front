@@ -195,7 +195,7 @@ export default function GameLayout() {
   };
 
   return (
-    <div className={`game-layout relative min-h-screen ${isPizzaMasterRoute ? "bg-[#fff7df]" : "bg-[#04111f]"}`}>
+    <div className={`game-layout relative ${isActiveGameplay ? "h-[100dvh] overflow-hidden" : "min-h-[100dvh]"} ${isPizzaMasterRoute ? "bg-[#fff7df]" : "bg-[#04111f]"}`}>
       {showGameControls && (
         <>
           <div
@@ -246,7 +246,7 @@ export default function GameLayout() {
       )}
 
       {/* Main Content */}
-      <main className={`min-h-[100dvh] pb-20 md:pb-0 ${isPizzaMasterRoute ? "bg-[#fff7df]" : "bg-[#04111f]"}`}>
+      <main className={`${isActiveGameplay ? "h-[100dvh] overflow-y-auto" : "min-h-[100dvh]"} pb-20 md:pb-0 ${isPizzaMasterRoute ? "bg-[#fff7df]" : "bg-[#04111f]"}`}>
         <Outlet context={{ requestGameExit }} />
       </main>
 

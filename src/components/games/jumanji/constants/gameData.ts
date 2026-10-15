@@ -123,6 +123,7 @@ export const createTiles = (questionCount: number): Tile[] => {
 export const SUBJECTS = [
   "Matematika",
   "Ingliz tili",
+  "Rus tili",
   "Ona tili",
   "Tarix",
   "Geografiya",

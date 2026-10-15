@@ -102,7 +102,7 @@ function Hero({
       />
 
       <div className="relative z-20 mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4 pb-14 pt-26 sm:px-6 sm:pt-30 lg:justify-start">
-        <div className="w-full max-w-4xl text-center lg:-translate-y-20 lg:ml-40 lg:max-w-[50rem] lg:text-left xl:-translate-y-24">
+        <div className="w-full max-w-4xl text-center lg:ml-40 lg:max-w-[54rem] lg:translate-y-4 lg:text-left xl:translate-y-2">
           <div
             className={`mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-2 backdrop-blur-md animate-hero-scale-in animate-hero-pulse-soft ${
               isDark
@@ -129,18 +129,18 @@ function Hero({
           </div>
 
           <h1
-            className="animate-hero-fade-in-up mx-auto max-w-4xl text-4xl font-black leading-[0.96] tracking-tight sm:text-5xl md:text-6xl lg:mx-0 lg:max-w-[46rem] lg:text-[5.25rem]"
+            className="animate-hero-fade-in-up mx-auto max-w-4xl text-4xl font-black leading-[1.03] tracking-tight sm:text-5xl md:text-6xl lg:mx-0 lg:max-w-[54rem] lg:text-[clamp(4rem,4.25vw,5rem)]"
             style={{ animationDelay: "0.15s", animationFillMode: "both" }}
           >
             Ta'lim jarayonini
             <span
-              className="mt-1 block bg-clip-text text-transparent"
+              className="mt-2 block bg-clip-text text-transparent"
               style={{ backgroundImage: "var(--home-accent-gradient)" }}
             >
               yanada qiziqarli
             </span>
             <span
-              className={`mt-1 block ${
+              className={`mt-2 block ${
                 isDark ? "text-[var(--home-heading)]" : "text-[var(--home-heading)]"
               }`}
             >
@@ -149,7 +149,7 @@ function Hero({
           </h1>
 
           <p
-            className="animate-hero-fade-in-up mx-auto mt-5 max-w-2xl text-sm leading-7 sm:text-base sm:leading-8 md:text-lg lg:mx-0 lg:max-w-[44rem]"
+            className="animate-hero-fade-in-up mx-auto mt-6 max-w-2xl text-sm leading-7 sm:text-base sm:leading-8 md:text-lg lg:mx-0 lg:max-w-[44rem]"
             style={{ animationDelay: "0.3s", animationFillMode: "both" }}
           >
             Interaktiv topshiriqlar, oson boshqaruv va natijalarni qulay

@@ -409,7 +409,6 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
       setQuestionError("Iltimos, avval ro'yxatdan o'ting. Keyin savol qo'shishingiz mumkin.");
       return;
     }
-
     const question = draft.question.trim();
     const answer = draft.answer.trim();
 
@@ -437,6 +436,10 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
     if (isGeneratingAi) return;
     if (!user?.id) {
       setQuestionError("Iltimos, avval ro'yxatdan o'ting. Keyin AI bilan savol qo'shishingiz mumkin.");
+      return;
+    }
+    if (!aiTopic.trim()) {
+      setQuestionError("Savollar aynan mos bo'lishi uchun mavzuni kiriting.");
       return;
     }
 
