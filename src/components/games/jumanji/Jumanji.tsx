@@ -78,10 +78,10 @@ const STATUES: Record<PlayerColor, string> = {
 };
 
 const DEFAULT_PLAYERS: Player[] = [
-  { id: 1, name: "Ali", color: "red", position: 0, score: 0, skipTurns: 0, shield: false, doubleDice: false, correct: 0, bonuses: 0, lucky: 0 },
-  { id: 2, name: "Kamol", color: "blue", position: 0, score: 0, skipTurns: 0, shield: false, doubleDice: false, correct: 0, bonuses: 0, lucky: 0 },
-  { id: 3, name: "Mirfayz", color: "green", position: 0, score: 0, skipTurns: 0, shield: false, doubleDice: false, correct: 0, bonuses: 0, lucky: 0 },
-  { id: 4, name: "Malika", color: "yellow", position: 0, score: 0, skipTurns: 0, shield: false, doubleDice: false, correct: 0, bonuses: 0, lucky: 0 },
+  { id: 1, name: "Jane", color: "red", position: 0, score: 0, skipTurns: 0, shield: false, doubleDice: false, correct: 0, bonuses: 0, lucky: 0 },
+  { id: 2, name: "Jonh", color: "blue", position: 0, score: 0, skipTurns: 0, shield: false, doubleDice: false, correct: 0, bonuses: 0, lucky: 0 },
+  { id: 3, name: "Zara", color: "green", position: 0, score: 0, skipTurns: 0, shield: false, doubleDice: false, correct: 0, bonuses: 0, lucky: 0 },
+  { id: 4, name: "Jake", color: "yellow", position: 0, score: 0, skipTurns: 0, shield: false, doubleDice: false, correct: 0, bonuses: 0, lucky: 0 },
 ];
 
 const TILE_TYPES: TileType[] = [

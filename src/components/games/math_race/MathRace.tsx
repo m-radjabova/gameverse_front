@@ -52,6 +52,7 @@ import { clamp, createDefaultStats, nitroBonusFromStreak, shuffleArray, wrongPen
 import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
 import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
 import { filterGameQuestionsByDifficulty } from "../../../utils/gameQuestionDifficulty";
+import { filterBuiltInGameQuestions } from "../../../utils/defaultGameQuestions";
 
 const AI_QUESTION_COUNT_OPTIONS = [2, 4, 6, 8, 10, 15, 20] as const;
 const AI_DIFFICULTY_OPTIONS = [
@@ -157,7 +158,11 @@ export default function MathRace() {
 
     const timer = window.setTimeout(() => {
       if (!user?.id) return;
-      void saveGameQuestions<MathQuestion>(MATH_RACE_GAME_KEY, questions, user.id);
+      void saveGameQuestions<MathQuestion>(
+        MATH_RACE_GAME_KEY,
+        filterBuiltInGameQuestions("math_race", questions),
+        user.id,
+      );
     }, 500);
 
     return () => window.clearTimeout(timer);

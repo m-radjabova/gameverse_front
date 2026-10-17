@@ -189,7 +189,7 @@ export async function generateGeminiJson(prompt: string): Promise<unknown> {
 
   const text = data.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("").trim();
   if (!text) {
-    throw new Error("AI'dan javob kelmadi.");
+    throw new Error("AI bo'sh javob qaytardi. Yana bir marta urinib ko'ring.");
   }
 
   const jsonText = extractJsonBlock(text);
@@ -206,6 +206,6 @@ export async function generateGeminiJson(prompt: string): Promise<unknown> {
       }
     }
 
-    throw new Error("AI javobi JSON emas. Qayta urinib ko'ring.");
+    throw new Error("AI javobini o'qib bo'lmadi. Yana bir marta urinib ko'ring.");
   }
 }

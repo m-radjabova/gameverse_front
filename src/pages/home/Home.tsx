@@ -40,7 +40,7 @@ function Home() {
 
     const timer = window.setTimeout(() => {
       setIsLoading(false);
-    }, 3000);
+    }, 1000);
 
     return () => {
       window.clearTimeout(timer);

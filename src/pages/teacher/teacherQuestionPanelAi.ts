@@ -34,11 +34,114 @@ function normalizeDifficulty(value: unknown): "easy" | "medium" | "hard" | null 
 }
 
 function toStringArray(value: unknown, expected = 4): string[] | null {
-  if (!Array.isArray(value)) return null;
-  const items = value.slice(0, expected).map((item) => String(item ?? "").trim());
+  const rawItems = Array.isArray(value)
+    ? value
+    : value && typeof value === "object"
+      ? ["A", "B", "C", "D"].map((key) => (value as Record<string, unknown>)[key])
+      : [];
+  const items = rawItems.slice(0, expected).map((item) => {
+    if (item && typeof item === "object") {
+      const option = item as Record<string, unknown>;
+      return String(option.text ?? option.value ?? option.label ?? "").trim();
+    }
+    return String(item ?? "").trim();
+  });
   if (items.length !== expected || items.some((item) => !item)) return null;
   if (new Set(items.map((item) => item.toLowerCase())).size !== expected) return null;
   return items;
+}
+
+function getAnswerIndex(body: Record<string, unknown>, options: string[]): number {
+  const candidates = [
+    body.answerIndex,
+    body.correctIndex,
+    body.correctOptionIndex,
+    body.correctAnswer,
+    body.correct,
+    body.answer,
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === "number" && Number.isInteger(candidate) && candidate >= 0 && candidate < options.length) {
+      return candidate;
+    }
+
+    const value = String(candidate ?? "").trim();
+    const letter = value.match(/^(?:option\s*)?([a-d])$/i)?.[1]?.toUpperCase();
+    if (letter) return letter.charCodeAt(0) - 65;
+
+    const optionIndex = options.findIndex((option) => option.toLocaleLowerCase() === value.toLocaleLowerCase());
+    if (value && optionIndex >= 0) return optionIndex;
+  }
+
+  return Number(body.answerIndex);
+}
+
+function isMathSubject(subject: string) {
+  return /\b(math|matemat|алгебр|математ)\w*/iu.test(subject);
+}
+
+function isLanguageSubject(subject: string) {
+  return /\b(ingliz|english|rus|russian|ona tili|language)\b/iu.test(subject);
+}
+
+function isRussianSubject(subject: string) {
+  return /\b(rus|russian)\b/iu.test(subject);
+}
+
+function getQuestionText(gameKey: SupportedTeacherGameKey, item: unknown): string {
+  if (!item || typeof item !== "object") return "";
+  const body = item as Record<string, unknown>;
+  const value =
+    gameKey === "bingo" || gameKey === "classic_arcade" || gameKey === "tug_of_war" ? body.prompt :
+    gameKey === "millionaire" ? body.text :
+    gameKey === "truth_detector" ? body.claims :
+    body.question;
+
+  if (Array.isArray(value)) {
+    return value
+      .map((claim) => (claim && typeof claim === "object" ? String((claim as Record<string, unknown>).text ?? "") : ""))
+      .join(" ");
+  }
+
+  return String(value ?? "");
+}
+
+function getAnswerOptions(gameKey: SupportedTeacherGameKey, item: unknown): string[] {
+  if (!item || typeof item !== "object") return [];
+  const body = item as Record<string, unknown>;
+  if (Array.isArray(body.options)) return body.options.map((option) => String(option ?? "").trim());
+  if (gameKey === "bingo") return ["optionA", "optionB", "optionC"].map((key) => String(body[key] ?? "").trim());
+  if (gameKey === "millionaire" && body.options && typeof body.options === "object") {
+    const options = body.options as Record<string, unknown>;
+    return ["A", "B", "C", "D"].map((key) => String(options[key] ?? "").trim());
+  }
+  return [];
+}
+
+function isQuestionAskingForNumber(question: string) {
+  return /\b(how many|how much|what year|which year|nechta|qancha|necha|qaysi yilda|сколько|какого года|в каком году|какое число)\b/iu.test(question);
+}
+
+function getMathQuestionText(gameKey: SupportedTeacherGameKey, item: unknown): string {
+  return getQuestionText(gameKey, item);
+}
+
+function getQuestionItems(payload: unknown, expectedCount: number, depth = 0): unknown[] | null {
+  if (Array.isArray(payload)) return payload;
+  if (!payload || typeof payload !== "object" || depth >= 3) return null;
+
+  const body = payload as Record<string, unknown>;
+  for (const key of ["questions", "items", "results", "data", "result", "output"]) {
+    const nestedItems = getQuestionItems(body[key], expectedCount, depth + 1);
+    if (nestedItems) return nestedItems;
+  }
+
+  if (expectedCount === 1 && ["question", "prompt", "text", "claims"].some((key) => key in body)) {
+    return [payload];
+  }
+
+  return null;
 }
 
 function buildPrompt(gameKey: SupportedTeacherGameKey, topic: string, subject: string, count: number, difficulty: GameDifficulty, gradeRange: GradeRange) {
@@ -52,9 +155,26 @@ function buildPrompt(gameKey: SupportedTeacherGameKey, topic: string, subject: s
     `Soni: ${count}.`,
     `Qiyinlik: ${difficulty}.`,
     `- ${difficultyInstruction(difficulty)}`,
-    "Javob faqat JSON array bo'lsin, boshqa matn yozmang.",
+    `Faqat ${count} ta elementdan iborat JSON array qaytaring. Markdown, izoh yoki qo'shimcha matn yozmang; arrayni obyekt ichiga joylamang.`,
     getAiQuestionLanguageInstruction(safeSubject),
     getAiTopicInstruction(safeTopic),
+    `Tanlangan fan aynan ${safeSubject}; mavzu va savollar boshqa fanga o'tib ketmasin.`,
+    "TEST VARIANTLARI: barcha variantlar savolga bevosita javob bersin, bir xil turdagi va aniq bo'lsin. To'g'ri javob ham variantlardan aynan bittasiga mos kelsin.",
+    "Variantlarni to'liq va tushunarli yozing; mavhum, aloqasiz yoki faqat raqamdan iborat variant bermang. Raqamli variantni faqat savol son, miqdor yoki yilni so'raganda ishlating.",
+    ...(isLanguageSubject(safeSubject)
+      ? ["Til va grammatika savollarida variantlar grammatik atama yoki so'zning to'liq shakli bo'lsin; raqamli variant ishlatmang, agar savol sonni aniq so'ramasa."]
+      : []),
+    ...(isRussianSubject(safeSubject)
+      ? ['Rus tili grammatikasida kelishik so\'ralsa, javob variantlarini "Именительный падеж", "Родительный падеж", "Дательный падеж" kabi to\'liq atamalar bilan yozing.']
+      : []),
+    ...(isMathSubject(safeSubject)
+      ? [
+          "MATEMATIKA FORMATI: barcha sonlarni so'z bilan emas, raqamlar bilan yozing.",
+          "Arifmetik amallarda faqat raqamlar va belgilarni ishlating: masalan, \"12 + 8 = ?\"; \"o'n ikki qo'shuv sakkiz\" kabi yozmang.",
+          "Har bir savol matnida kamida bitta raqam bo'lsin. Hisoblash savollarida sonlar va amallar aniq, yechimi to'g'ri bo'lsin.",
+          "Hisoblashga oid javob va variantlar son ko'rinishida bo'lsin; sonlarni so'z bilan yozmang.",
+        ]
+      : []),
     "Savollar o'quvchilar uchun tushunarli, xavfsiz va maktab muhiti uchun mos bo'lsin.",
     "Takror savollar bo'lmasin.",
   ];
@@ -212,12 +332,26 @@ function buildPrompt(gameKey: SupportedTeacherGameKey, topic: string, subject: s
   }
 }
 
-function validateItems(gameKey: SupportedTeacherGameKey, payload: unknown, expectedCount: number) {
-  if (!Array.isArray(payload)) {
-    throw new Error("AI javobi ro'yxat formatida kelmadi. Qayta urinib ko'ring.");
+function validateItems(gameKey: SupportedTeacherGameKey, payload: unknown, expectedCount: number, subject: string) {
+  const questionItems = getQuestionItems(payload, expectedCount);
+  if (!questionItems) throw new Error("AI savollarni kerakli formatda qaytarmadi. Yana bir marta urinib ko'ring.");
+
+  if (
+    isLanguageSubject(subject) &&
+    questionItems.slice(0, expectedCount).some((item) => {
+      const options = getAnswerOptions(gameKey, item);
+      const question = getQuestionText(gameKey, item);
+      return options.length > 0 && options.every((option) => /^\d+(?:[.,]\d+)?$/u.test(option)) && !isQuestionAskingForNumber(question);
+    })
+  ) {
+    throw new Error("Til savoli variantlari raqam bo'lib qoldi. Savolni aniqroq yozib, qayta generatsiya qiling.");
   }
 
-  const items = payload
+  if (isMathSubject(subject) && questionItems.slice(0, expectedCount).some((item) => !/\d/u.test(getMathQuestionText(gameKey, item)))) {
+    throw new Error("Matematika savollari raqamlar bilan yozilmadi. Qayta urinib ko'ring.");
+  }
+
+  const items = questionItems
     .map((item) => {
       if (!item || typeof item !== "object") return null;
       const body = item as Record<string, unknown>;
@@ -237,14 +371,14 @@ function validateItems(gameKey: SupportedTeacherGameKey, payload: unknown, expec
         case "quiz_battle": {
           const question = String(body.question ?? "").trim();
           const options = toStringArray(body.options);
-          const answerIndex = Number(body.answerIndex);
+          const answerIndex = options ? getAnswerIndex(body, options) : Number(body.answerIndex);
           if (!question || !options || !Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex > 3) return null;
           return { question, options, answerIndex };
         }
         case "pizza_master": {
           const question = String(body.question ?? "").trim();
           const options = toStringArray(body.options);
-          const answerIndex = Number(body.answerIndex);
+          const answerIndex = options ? getAnswerIndex(body, options) : Number(body.answerIndex);
           if (!question || !options || !Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex > 3) return null;
           return { question, options, answerIndex };
         }
@@ -252,7 +386,7 @@ function validateItems(gameKey: SupportedTeacherGameKey, payload: unknown, expec
           const subject = String(body.subject ?? "").trim() || "Aralash fanlar";
           const question = String(body.question ?? "").trim();
           const options = toStringArray(body.options);
-          const answerIndex = Number(body.answerIndex);
+          const answerIndex = options ? getAnswerIndex(body, options) : Number(body.answerIndex);
           const levelRaw = Number(body.level);
           const level = Number.isFinite(levelRaw) ? Math.max(1, Math.min(9, Math.round(levelRaw))) : 1;
           if (!question || !options || !Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex > 3) return null;
@@ -261,7 +395,7 @@ function validateItems(gameKey: SupportedTeacherGameKey, payload: unknown, expec
         case "classic_arcade": {
           const prompt = String(body.prompt ?? "").trim();
           const options = toStringArray(body.options);
-          const correctIndex = Number(body.correctIndex);
+          const correctIndex = options ? getAnswerIndex(body, options) : Number(body.correctIndex);
           const reason = String(body.reason ?? "").trim();
           if (!prompt || !options || !Number.isInteger(correctIndex) || correctIndex < 0 || correctIndex > 3 || !reason) return null;
           return { prompt, options, correctIndex, reason };
@@ -269,7 +403,7 @@ function validateItems(gameKey: SupportedTeacherGameKey, payload: unknown, expec
         case "wheel_of_fortune": {
           const question = String(body.question ?? "").trim();
           const options = toStringArray(body.options);
-          const answerIndex = Number(body.answerIndex);
+          const answerIndex = options ? getAnswerIndex(body, options) : Number(body.answerIndex);
           const category = String(body.category ?? "").trim() || "AI";
           const pointsRaw = Number(body.points);
           const points = [100, 200, 300, 500].includes(pointsRaw) ? pointsRaw : 100;
@@ -314,7 +448,7 @@ function validateItems(gameKey: SupportedTeacherGameKey, payload: unknown, expec
           const subject = String(body.subject ?? "").trim() || "AI savol";
           const question = String(body.question ?? "").trim();
           const options = toStringArray(body.options);
-          const answerIndex = Number(body.answerIndex);
+          const answerIndex = options ? getAnswerIndex(body, options) : Number(body.answerIndex);
           const stageRaw = Number(body.stage);
           const stage = Number.isFinite(stageRaw) ? Math.max(1, Math.min(3, Math.round(stageRaw))) : 1;
           if (!question || !options || !Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex > 3) return null;
@@ -367,7 +501,7 @@ function validateItems(gameKey: SupportedTeacherGameKey, payload: unknown, expec
           const story = String(body.story ?? "").trim();
           const question = String(body.question ?? "").trim();
           const options = toStringArray(body.options);
-          const answerIndex = Number(body.answerIndex);
+          const answerIndex = options ? getAnswerIndex(body, options) : Number(body.answerIndex);
           const hint = String(body.hint ?? "").trim();
           const rewardRaw = Number(body.reward);
           const reward = Number.isFinite(rewardRaw) ? Math.max(50, Math.min(300, Math.round(rewardRaw))) : 120;
@@ -389,11 +523,11 @@ function validateItems(gameKey: SupportedTeacherGameKey, payload: unknown, expec
     .filter(Boolean);
 
   if (items.length === 0) {
-    throw new Error("AI mos savollar qaytarmadi.");
+    throw new Error("AI savollarni to'g'ri tuza olmadi. Mavzu yoki fanni tekshirib, yana urinib ko'ring.");
   }
 
   if (items.length < expectedCount) {
-    throw new Error(`AI ${expectedCount} ta emas, ${items.length} ta element qaytardi.`);
+    throw new Error(`AI ${expectedCount} ta savoldan ${items.length} tasinigina tayyorladi. Kamroq savol tanlab, qayta urinib ko'ring.`);
   }
 
   return items.slice(0, expectedCount);
@@ -420,7 +554,25 @@ export async function generateTeacherPanelQuestions({
   }
   const safeDifficulty = difficulty ?? "medium";
   const safeGradeRange = gradeRange ?? "none";
-  const prompt = buildPrompt(gameKey, topic ?? "", subject ?? "", safeCount, safeDifficulty, safeGradeRange);
+  const safeSubject = subject?.trim() || "Matematika";
+  const prompt = buildPrompt(gameKey, topic ?? "", safeSubject, safeCount, safeDifficulty, safeGradeRange);
   const parsed = await generateGeminiJson(prompt);
-  return validateItems(gameKey, parsed, safeCount);
+
+  try {
+    return validateItems(gameKey, parsed, safeCount, safeSubject);
+  } catch {
+    const retryPrompt = [
+      prompt,
+      "Oldingi javob kerakli formatga mos kelmadi. Qaytadan tuzing.",
+      `Aynan ${safeCount} ta savol qaytaring. Har bir savolda yuqoridagi JSON namunasidagi barcha majburiy maydonlarni kiriting.`,
+      "Test javobini raqamli indeks, A/B/C/D harfi yoki variant matni orqali bersangiz ham, u variantlardan aynan bittasiga mos bo'lsin.",
+      "JSON arraydan boshqa hech qanday matn chiqarmang.",
+    ].join("\n");
+    const retried = await generateGeminiJson(retryPrompt);
+    try {
+      return validateItems(gameKey, retried, safeCount, safeSubject);
+    } catch {
+      throw new Error("AI savollarni to'g'ri formatda tayyorlay olmadi. Mavzuni tekshirib yoki savollar sonini kamaytirib, yana urinib ko'ring.");
+    }
+  }
 }

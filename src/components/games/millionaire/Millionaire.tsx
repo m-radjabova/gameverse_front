@@ -28,6 +28,7 @@ import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission"
 import { QUESTION_BANK } from "./data";
 import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
 import { filterGameQuestionsByDifficulty } from "../../../utils/gameQuestionDifficulty";
+import { filterBuiltInGameQuestions } from "../../../utils/defaultGameQuestions";
 
 type OptionKey = "A" | "B" | "C" | "D";
 type Difficulty = "easy" | "medium" | "hard" | "expert";
@@ -242,7 +243,11 @@ function Millionaire() {
     }
     const t = window.setTimeout(() => {
       if (!user?.id) return;
-      void saveGameQuestions<Question>(MILLIONAIRE_GAME_KEY, questionBank, user.id);
+      void saveGameQuestions<Question>(
+        MILLIONAIRE_GAME_KEY,
+        filterBuiltInGameQuestions("millionaire", questionBank),
+        user.id,
+      );
     }, 500);
     return () => window.clearTimeout(t);
   }, [questionBank, remoteLoaded, user?.id]);

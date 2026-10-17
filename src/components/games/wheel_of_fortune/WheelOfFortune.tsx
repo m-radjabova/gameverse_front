@@ -42,6 +42,7 @@ import Confetti from "react-confetti-boom";
 import { fetchGameQuestionsByTeacher, saveGameQuestions } from "../../../hooks/useGameQuestions";
 import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
 import { filterGameQuestionsByDifficulty } from "../../../utils/gameQuestionDifficulty";
+import { filterBuiltInGameQuestions } from "../../../utils/defaultGameQuestions";
 import useContextPro from "../../../hooks/useContextPro";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
@@ -244,7 +245,11 @@ export default function WheelOfFortune() {
 
     const t = window.setTimeout(() => {
       if (!user?.id) return;
-      void saveGameQuestions<Question>(WHEEL_OF_FORTUNE_GAME_KEY, questions, user.id);
+      void saveGameQuestions<Question>(
+        WHEEL_OF_FORTUNE_GAME_KEY,
+        filterBuiltInGameQuestions("wheel_of_fortune", questions),
+        user.id,
+      );
     }, 500);
 
     return () => window.clearTimeout(t);

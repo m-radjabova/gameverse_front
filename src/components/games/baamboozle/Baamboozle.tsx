@@ -33,12 +33,9 @@ import {
 import { GiSwapBag, GiPodiumWinner, GiPodiumSecond, GiPodiumThird } from "react-icons/gi";
 import { motion, AnimatePresence } from "framer-motion";
 import Confetti from "react-confetti-boom";
-import { fetchGameQuestionsByTeacher, saveGameQuestions } from "../../../hooks/useGameQuestions";
+import { fetchGameQuestionsByTeacher } from "../../../hooks/useGameQuestions";
 import useContextPro from "../../../hooks/useContextPro";
 import { generateBaamboozleQuestions } from "./ai";
-import { DEFAULT_QUESTION_BANK } from "./data";
-import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
-import { filterGameQuestionsByDifficulty } from "../../../utils/gameQuestionDifficulty";
 import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
 
 export type QuestionBankItem = {
@@ -97,14 +94,11 @@ const getGridCols = (boardSize: 16 | 24) => (boardSize === 16 ? 4 : 6);
 const getSpecialCount = (boardSize: 16 | 24) => (boardSize === 16 ? 4 : 6);
 
 const buildTiles = (questionBank: QuestionBankItem[], boardSize: 16 | 24): Tile[] => {
-  const source = questionBank.length > 0
-    ? questionBank
-    : filterGameQuestionsByDifficulty(DEFAULT_QUESTION_BANK, getGameQuestionDifficulty("baamboozle"));
   const cols = getGridCols(boardSize);
   const indexes = Array.from({ length: boardSize }, (_, i) => i);
   const specialIndexes = new Set(shuffle(indexes).slice(0, getSpecialCount(boardSize)));
   const specialPool: TileType[] = ["burn", "swap", "steal", "double"];
-  const shuffledQuestions = shuffle(source);
+  const shuffledQuestions = shuffle(questionBank);
 
   return Array.from({ length: boardSize }, (_, idx) => {
     const number = idx + 1;
@@ -292,11 +286,8 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
   const {
     state: { user, isLoading: isUserLoading },
   } = useContextPro();
-  const skipInitialRemoteSaveRef = useRef(true);
   const initialQuestionsRef = useRef<QuestionBankItem[]>(
-    initialQuestions?.length
-      ? initialQuestions
-      : filterGameQuestionsByDifficulty(DEFAULT_QUESTION_BANK, getGameQuestionDifficulty("baamboozle")),
+    initialQuestions ?? [],
   );
   const [phase, setPhase] = useState<Phase>("setup");
   const [boardSize, setBoardSize] = useState<16 | 24>(16);
@@ -375,7 +366,7 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
       const remoteQuestions = await fetchGameQuestionsByTeacher<QuestionBankItem>(BAAMBOOZLE_GAME_KEY, user.id);
       if (!alive) return;
       if (remoteQuestions && remoteQuestions.length > 0) {
-        setQuestionBank(filterGameQuestionsByDifficulty(remoteQuestions, getGameQuestionDifficulty("baamboozle")));
+        setQuestionBank(remoteQuestions);
       } else if (initialQuestionsRef.current.length > 0) {
         setQuestionBank(initialQuestionsRef.current);
       } else {
@@ -388,21 +379,6 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
       alive = false;
     };
   }, [isUserLoading, user?.id]);
-
-  useEffect(() => {
-    if (!remoteLoaded) return;
-    if (skipInitialRemoteSaveRef.current) {
-      skipInitialRemoteSaveRef.current = false;
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      if (!user?.id) return;
-      void saveGameQuestions<QuestionBankItem>(BAAMBOOZLE_GAME_KEY, questionBank, user.id);
-    }, 500);
-
-    return () => window.clearTimeout(timer);
-  }, [questionBank, remoteLoaded, user?.id]);
 
   const addQuestion = () => {
     if (!user?.id) {
@@ -486,8 +462,12 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
   };
 
   const openGame = () => {
+    if (!remoteLoaded) {
+      setQuestionError("Savollar yuklanmoqda. Iltimos, biroz kuting.");
+      return;
+    }
     if (questionBank.length < 4) {
-      setQuestionError("Kamida 4 ta savol kiriting.");
+      setQuestionError("O'yinni boshlash uchun kamida 4 ta savol kerak. Teacher panelda savol qo'shing.");
       return;
     }
 
@@ -555,7 +535,7 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
         prev.map((t, idx) => (idx === currentTeamIndex ? { ...t, score: t.score + points } : t))
       );
       setScoreAnimations((prev) => [...prev, { teamId: currentTeam.id, points, type: "plus" }]);
-      finishAction(`✅ ${currentTeam.name} +${points} ball oldi!`);
+      finishAction(`✅ ${currentTeam.name} to'g'ri javob berdi, ball qo'shildi!`);
     } else {
       finishAction(`❌ ${currentTeam.name} javobni topa olmadi.`);
     }
@@ -576,7 +556,7 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
     markOpened(selectedTile.id);
     setTeams((prev) => prev.map((t, idx) => (idx === currentTeamIndex ? { ...t, score: t.score + bonus } : t)));
     setScoreAnimations((prev) => [...prev, { teamId: currentTeam.id, points: bonus, type: "plus" }]);
-    finishAction(`⚡ ${currentTeam.name} DOUBLE! +${bonus} ball!`);
+    finishAction(`⚡ ${currentTeam.name} DOUBLE bonus oldi!`);
   };
 
   const runSwap = () => {
@@ -622,7 +602,7 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
       { teamId: targetTeam.id, points: transfer, type: "minus" },
     ]);
 
-    finishAction(`💰 ${currentTeam.name} ${targetTeam.name} dan ${transfer} ball o'g'irladi!`);
+    finishAction(`💰 ${currentTeam.name} ${targetTeam.name} jamoasidan ball oldi!`);
   };
 
   const resetGame = () => {
@@ -683,9 +663,9 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
             </div>
           </div>
 
-          <div className="grid gap-6">
+          <div className="grid gap-5">
             {/* ── LEFT COLUMN: Settings + Teams ── */}
-            <div className="mx-auto w-full max-w-4xl space-y-6">
+            <div className="w-full space-y-5">
               {/* Game Settings */}
               <div className="rounded-2xl border border-yellow-500/20 bg-gradient-to-br from-yellow-950/40 to-amber-950/40 p-6 shadow-xl">
                 <div className="flex items-center gap-2 mb-5">
@@ -774,25 +754,33 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
               <div className="rounded-2xl border border-emerald-400/25 bg-emerald-950/25 p-4 shadow-xl sm:p-5">
                 <div className="mb-4 flex items-center justify-between gap-4 px-1">
                   <div>
-                    <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-300/70">Hammasi tayyor</p>
-                    <p className="mt-1 text-sm text-white/60">{questionBank.length} ta savol bilan o'yinni boshlang</p>
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-300/70">O'yin uchun tayyor</p>
+                    <p className="mt-1 text-sm text-white/70">
+                      {remoteLoaded ? `${questionBank.length} ta savol mavjud · kamida 4 ta kerak` : "Savollar yuklanmoqda..."}
+                    </p>
                   </div>
                   <span className="rounded-xl border border-emerald-300/15 bg-emerald-400/10 px-3 py-2 text-xs font-bold text-emerald-200">{teamCount} jamoa · {boardSize} katak</span>
                 </div>
                 <button
                   type="button"
                   onClick={openGame}
+                  disabled={!remoteLoaded}
                   className="game-btn flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 py-4 text-lg font-black text-white shadow-xl shadow-green-500/25 transition-all hover:from-green-400 hover:via-emerald-400 hover:to-teal-400"
                 >
                   <FaRocket className="text-xl" />
-                  O'YINNI BOSHLASH
+                  {remoteLoaded ? "O'YINNI BOSHLASH" : "SAVOLLAR YUKLANMOQDA"}
                   <FaArrowRight className="text-xl" />
                 </button>
+                {questionError && (
+                  <p role="alert" aria-live="polite" className="mt-3 rounded-xl border border-red-400/25 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-200">
+                    {questionError}
+                  </p>
+                )}
               </div>
             </div>
 
             {/* ── RIGHT COLUMN: Questions ── */}
-            <div className="hidden rounded-2xl border border-yellow-500/20 bg-gradient-to-br from-yellow-950/40 to-amber-950/40 p-6 shadow-xl">
+            <div className="hidden">
               <div className="flex items-center gap-2 mb-5">
                 <div className="p-2 rounded-lg bg-yellow-500/20">
                   <FaQuestionCircle className="text-yellow-400" />
@@ -980,7 +968,7 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
 
   // ─── PLAY PHASE ──────────────────────────────────────────────────────────
   return (
-    <div className="relative h-[calc(100dvh-5.5rem)] min-h-[560px] overflow-hidden rounded-3xl border border-yellow-500/30 bg-gradient-to-br from-slate-900 via-amber-950/80 to-slate-900 p-3 shadow-2xl md:p-4">
+    <div className="relative flex min-h-[calc(100dvh-7rem)] flex-col overflow-hidden rounded-3xl border border-amber-400/25 bg-[#11131b] p-3 shadow-2xl sm:p-4 lg:p-5">
       <ParticleStyles />
       <FloatingParticles />
 
@@ -1001,24 +989,23 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
         />
       </div>
 
-      <div className="relative z-10">
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col">
         {/* ── Header ── */}
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3">
           <div className="flex items-center gap-3">
             <div className="relative">
               <div className="absolute -inset-1 pulse-ring rounded-full bg-yellow-500/20" />
-                <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 shadow-lg shadow-yellow-500/30"
-                style={{ animation: "dice-rotate 4s ease-in-out infinite" }}>
+                <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-500/20">
                 <FaDice className="text-xl text-white" />
               </div>
             </div>
             <div>
-                <h2 className="text-xl font-black text-transparent bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text">
+                <h2 className="text-xl font-black text-white sm:text-2xl">
                 Baamboozle
               </h2>
-              <p className="text-xs text-yellow-300/60 flex items-center gap-1">
-                <FaHandPointer className="text-yellow-400" size={10} />
-                Katak ochildi: {openedCount}/{boardSize}
+              <p className="flex items-center gap-1.5 text-xs text-white/55">
+                <FaHandPointer className="text-amber-300" size={10} />
+                {openedCount}/{boardSize} katak ochildi
               </p>
             </div>
           </div>
@@ -1026,13 +1013,13 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
           <div className="flex gap-2">
             <button
               onClick={() => setPhase("setup")}
-              className="game-btn px-4 py-2.5 rounded-xl bg-yellow-950/50 border border-yellow-500/20 text-yellow-300 hover:bg-yellow-900/50 transition-all flex items-center gap-2 text-sm"
+              className="game-btn flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white/75 transition hover:bg-white/[0.09] sm:px-4"
             >
               <FaCog size={14} /> Sozlama
             </button>
             <button
               onClick={resetGame}
-              className="game-btn px-4 py-2.5 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold hover:from-yellow-400 hover:to-orange-400 transition-all flex items-center gap-2 text-sm shadow-lg shadow-yellow-500/20"
+              className="game-btn flex items-center gap-2 rounded-xl bg-amber-400 px-3 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-amber-300 sm:px-4"
             >
               <FaRedo /> Qayta
             </button>
@@ -1040,12 +1027,13 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
         </div>
 
         {/* ── Status Bar ── */}
-        <div className="mb-2 rounded-xl bg-gradient-to-r from-yellow-950/40 to-amber-950/40 px-3 py-2 text-center border border-yellow-500/20">
-          <p className="text-xs font-semibold text-yellow-300" key={statusText}>{statusText}</p>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-300/15 bg-amber-300/[0.06] px-3 py-2.5 sm:px-4">
+          <p className="text-sm font-semibold text-amber-100" key={statusText}>{statusText}</p>
+          {!gameFinished && <p className="text-xs font-bold text-white/50">Navbat: <span className="text-white">{currentTeam.name}</span></p>}
         </div>
 
         {/* ── Teams ── */}
-        <div className={`grid gap-2 mb-2 ${teams.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
+        <div className={`mb-3 grid grid-cols-2 gap-2.5 ${teams.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
           {teams.map((team, idx) => {
             const active = idx === currentTeamIndex && !gameFinished;
             const leader = leaders.some((l) => l.id === team.id);
@@ -1054,10 +1042,11 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
               <div
                 key={team.id}
                 className={`
-                  relative overflow-hidden rounded-xl border-2 p-2.5 transition-all duration-300
+                  relative overflow-hidden rounded-2xl border p-3 transition-all duration-300 sm:p-4
+                  ${teams.length === 3 && idx === 2 ? "col-span-2 md:col-span-1" : ""}
                   ${active
-                    ? `bg-gradient-to-br ${team.color} border-yellow-400 shadow-2xl ${TEAM_COLORS[idx].glow}`
-                    : 'border-yellow-500/20 bg-yellow-950/30'}
+                    ? `bg-gradient-to-br ${team.color} border-amber-200 shadow-lg ${TEAM_COLORS[idx].glow}`
+                    : 'border-white/10 bg-white/[0.035]'}
                 `}
               >
                 {/* Active glow - CSS only */}
@@ -1068,19 +1057,19 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
 
                 <div className="relative">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xl">{team.avatar}</span>
+                    <span className="text-xl sm:text-2xl">{team.avatar}</span>
                     <div>
-                      <p className="text-sm font-bold text-white">{team.name}</p>
-                      <p className="text-[10px] text-yellow-300/60">
+                      <p className="max-w-[12rem] truncate text-sm font-bold text-white sm:text-base">{team.name}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-white/55">
                         {idx === 0 ? "1-JAMOA" : idx === 1 ? "2-JAMOA" : "3-JAMOA"}
                         {active && " · Hozirgi navbat"}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-yellow-300/60">Ball</span>
+                    <span className="text-xs text-white/55">Ball</span>
                     <div className="relative">
-                      <span className="text-xl font-bold text-white">
+                      <span className="text-2xl font-black text-white sm:text-3xl">
                         <AnimatedScore value={team.score} />
                       </span>
                       {scoreAnim && (
@@ -1090,8 +1079,8 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
                             scoreAnim.type === "minus" ? "text-red-400" : "text-orange-400"
                           }`}
                         >
-                          {scoreAnim.type === "plus" ? `+${scoreAnim.points}` :
-                           scoreAnim.type === "minus" ? `-${scoreAnim.points}` : "↺ 0"}
+                          {scoreAnim.type === "plus" ? "Ball +" :
+                           scoreAnim.type === "minus" ? "Ball −" : "Ball ↺"}
                         </span>
                       )}
                     </div>
@@ -1108,11 +1097,8 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
         </div>
 
         {/* ── Game Board ── */}
-        <div
-          className="mx-auto w-full max-w-6xl rounded-2xl border border-yellow-500/20 bg-gradient-to-br from-yellow-950/30 to-amber-950/30 p-2 shadow-xl"
-          style={{ aspectRatio: boardSize === 16 ? "16 / 9" : "3 / 1" }}
-        >
-          <div className={`grid h-full gap-1.5 sm:gap-2 ${boardSize === 16 ? "grid-cols-4" : "grid-cols-6"}`}>
+        <div className={`mx-auto flex w-full max-w-[1500px] flex-1 flex-col rounded-2xl border border-white/10 bg-[#191c27] p-2 shadow-xl sm:p-3 ${boardSize === 16 ? "min-h-[360px]" : "min-h-[560px] sm:min-h-[460px] lg:min-h-[320px]"}`}>
+          <div className={`grid min-h-0 flex-1 gap-2 sm:gap-3 ${boardSize === 16 ? "grid-cols-4 grid-rows-4" : "grid-cols-3 grid-rows-8 sm:grid-cols-4 sm:grid-rows-6 lg:grid-cols-6 lg:grid-rows-4"}`}>
             {tiles.map((tile, index) => {
               const isLastOpened = tile.id === lastOpenedTileId;
               return (
@@ -1121,7 +1107,7 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
                   disabled={tile.opened || Boolean(selectedTile) || gameFinished}
                   onClick={() => openTile(tile)}
                   className={`
-                    tile-btn relative min-h-0 rounded-lg border p-1 text-center
+                    tile-btn relative min-h-0 rounded-xl border p-1.5 text-center sm:rounded-2xl sm:p-2
                     ${getTileGradient(tile, index)}
                     ${!tile.opened && !selectedTile ? 'cursor-pointer' : 'cursor-default'}
                     ${isLastOpened ? 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-slate-900' : ''}
@@ -1136,11 +1122,8 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
                       </div>
                     ) : (
                       <>
-                        <span className="text-2xl sm:text-3xl font-black drop-shadow-lg">
+                        <span className="text-2xl font-black drop-shadow-lg sm:text-4xl">
                           {tile.number}
-                        </span>
-                        <span className="text-[9px] sm:text-[10px] font-bold text-white/60 mt-0.5">
-                          {tile.points} ball
                         </span>
                       </>
                     )}
@@ -1167,14 +1150,14 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-3 backdrop-blur-sm sm:p-6"
             >
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.8, opacity: 0 }}
                 transition={{ duration: 0.25 }}
-                className="relative max-w-lg w-full bg-gradient-to-br from-slate-900 via-amber-950 to-slate-900 rounded-3xl border-2 border-yellow-500/30 p-8 shadow-2xl text-center overflow-hidden"
+                className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-amber-300/25 bg-[#171923] p-6 text-center shadow-2xl sm:p-8"
               >
                 <div className="absolute inset-0 overflow-hidden" aria-hidden>
                   <div className="absolute -top-20 -left-20 h-40 w-40 rounded-full bg-yellow-500/20 blur-3xl"
@@ -1223,7 +1206,7 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
 
                   <button
                     onClick={resetGame}
-                    className="game-btn w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold text-lg hover:from-yellow-400 hover:to-orange-400 transition-all shadow-xl shadow-yellow-500/30 flex items-center justify-center gap-2"
+                    className="game-btn w-full py-4 rounded-xl bg-amber-400 text-slate-950 font-bold text-lg hover:bg-amber-300 transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2"
                   >
                     <FaRedo /> YANA O'YNASh
                   </button>
@@ -1241,14 +1224,14 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-3 backdrop-blur-sm sm:p-6"
             >
               <motion.div
                 initial={{ scale: 0.85, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.85, opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="relative max-w-2xl w-full bg-gradient-to-br from-slate-900 via-amber-950 to-slate-900 rounded-3xl border-2 border-yellow-500/30 p-6 shadow-2xl md:p-8 overflow-hidden"
+                className="relative max-h-[92dvh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-amber-300/25 bg-[#171923] p-5 shadow-2xl sm:p-7"
               >
                 <div className="absolute inset-0 overflow-hidden" aria-hidden>
                   <div className="absolute -top-20 -left-20 h-40 w-40 rounded-full bg-yellow-500/20 blur-3xl"
@@ -1259,27 +1242,29 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
 
                 <div className="relative">
                   {/* Modal Header */}
-                  <div className="flex items-center justify-between mb-5">
+                  <div className="mb-5 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className={`p-3 rounded-xl ${getTileColor(selectedTile.type).bg}`}>
+                      <div className={`rounded-2xl p-3 ${getTileColor(selectedTile.type).bg}`}>
                         <div className={`text-2xl ${getTileColor(selectedTile.type).text}`}>
                           {getTileIcon(selectedTile.type)}
                         </div>
                       </div>
                       <div>
-                        <p className="text-xl font-black text-white">Katak #{selectedTile.number}</p>
-                        <p className={`text-xs ${getTileColor(selectedTile.type).text}`}>
+                        <p className="text-lg font-black text-white sm:text-xl">Katak #{selectedTile.number}</p>
+                        <p className="mt-0.5 text-xs text-white/55">{currentTeam.avatar} {currentTeam.name} jamoasi navbati</p>
+                        <p className={`mt-1 text-xs font-bold ${getTileColor(selectedTile.type).text}`}>
                           {selectedTile.type === "question" ? "Oddiy savol" :
                            selectedTile.type === "burn" ? "🔥 BAAMBOOZLE!" :
                            selectedTile.type === "double" ? "⚡ DOUBLE!" :
                            selectedTile.type === "swap" ? "🔄 ALMAShTIRISh" :
-                           "⚡ O'G'IRLASh"} · {selectedTile.points} ball
+                           "⚡ O'G'IRLASh"}
                         </p>
                       </div>
                     </div>
                     <button
                       onClick={closeTileModal}
-                      className="game-btn p-2 rounded-lg bg-yellow-950/50 border border-yellow-500/20 text-yellow-300 hover:bg-yellow-900/50 transition-all"
+                      aria-label="Katakni yopish"
+                      className="game-btn rounded-xl border border-white/10 bg-white/[0.04] p-2.5 text-white/70 transition hover:bg-white/10 hover:text-white"
                     >
                       <FaTimes />
                     </button>
@@ -1288,39 +1273,39 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
                   {/* Question Tile */}
                   {selectedTile.type === "question" && (
                     <div className="space-y-4">
-                      <div className="rounded-xl border border-yellow-500/20 bg-gradient-to-br from-yellow-950/30 to-amber-950/30 p-5">
-                        <p className="text-xs text-yellow-300/60 mb-2 flex items-center gap-1">
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-5 sm:p-7">
+                        <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-200/70">
                           <FaQuestionCircle /> Savol
                         </p>
-                        <p className="text-lg md:text-xl font-bold text-white leading-relaxed">{selectedTile.question}</p>
+                        <p className="text-xl font-bold leading-relaxed text-white sm:text-2xl">{selectedTile.question}</p>
                       </div>
 
                       {!showAnswer ? (
                         <button
                           onClick={() => setShowAnswer(true)}
-                          className="game-btn w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold hover:from-yellow-400 hover:to-orange-400 transition-all shadow-lg shadow-yellow-500/20 flex items-center justify-center gap-2"
+                          className="game-btn w-full py-4 rounded-xl bg-amber-400 text-slate-950 font-bold hover:bg-amber-300 transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
                         >
                           <FaEye /> Javobni ko'rsatish
                         </button>
                       ) : (
                         <div className="space-y-4">
-                          <div className="rounded-xl border border-green-500/20 bg-gradient-to-br from-green-950/30 to-emerald-950/30 p-5">
-                            <p className="text-xs text-green-300/60 mb-2 flex items-center gap-1">
+                          <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.07] p-5">
+                            <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-200/70">
                               <FaCheckDouble /> Javob
                             </p>
-                            <p className="text-lg md:text-xl font-bold text-green-400">{selectedTile.answer}</p>
+                            <p className="text-xl font-bold text-emerald-200 sm:text-2xl">{selectedTile.answer}</p>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <button
                               onClick={() => handleQuestionResult(true)}
-                              className="game-btn py-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold hover:from-green-400 hover:to-emerald-400 transition-all shadow-lg shadow-green-500/20 flex items-center justify-center gap-2"
+                              className="game-btn py-4 rounded-xl bg-emerald-400 text-slate-950 font-bold hover:bg-emerald-300 transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
                             >
                               <FaCheck /> To'g'ri
                             </button>
                             <button
                               onClick={() => handleQuestionResult(false)}
-                              className="game-btn py-4 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 text-white font-bold hover:from-red-400 hover:to-rose-400 transition-all shadow-lg shadow-red-500/20 flex items-center justify-center gap-2"
+                              className="game-btn py-4 rounded-xl bg-rose-500 text-white font-bold hover:bg-rose-400 transition-all shadow-lg shadow-rose-500/20 flex items-center justify-center gap-2"
                             >
                               <FaTimes /> Noto'g'ri
                             </button>
@@ -1339,11 +1324,6 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
                         <p className="text-white/80 text-lg">
                           {currentTeam.name} ning barcha ballari kuyib ketadi!
                         </p>
-                        {currentTeam.score > 0 && (
-                          <p className="text-red-300 font-bold text-xl mt-2">
-                            -{currentTeam.score} ball
-                          </p>
-                        )}
                       </div>
                       <button
                         onClick={runBurn}
@@ -1361,10 +1341,7 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
                         <FaGem className="text-6xl text-blue-400 mx-auto mb-4" />
                         <p className="text-2xl font-black text-blue-400 mb-2">⚡ DOUBLE BONUS!</p>
                         <p className="text-white/80 text-lg">
-                          {currentTeam.name} <span className="text-blue-400 font-bold">+{selectedTile.points * 2}</span> ball oladi!
-                        </p>
-                        <p className="text-blue-300/60 text-sm mt-2">
-                          ({selectedTile.points} × 2 = {selectedTile.points * 2})
+                          {currentTeam.name} jamoasi oladigan ballar ikki barobar oshadi.
                         </p>
                       </div>
                       <button

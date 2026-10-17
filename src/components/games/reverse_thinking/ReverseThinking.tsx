@@ -25,6 +25,7 @@ import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { MORE_QUESTIONS } from "./data";
 import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
 import { filterGameQuestionsByDifficulty } from "../../../utils/gameQuestionDifficulty";
+import { filterBuiltInGameQuestions } from "../../../utils/defaultGameQuestions";
 
 import { REVERSE_THINKING_GAME_KEY, TEAM_AVATARS, TEAM_COLORS } from "./constants";
 import type { Phase, Question, Team } from "./types";
@@ -162,7 +163,11 @@ function ReverseThinking() {
 
     const timer = window.setTimeout(() => {
       if (!user?.id) return;
-      void saveGameQuestions<Question>(REVERSE_THINKING_GAME_KEY, questions, user.id);
+      void saveGameQuestions<Question>(
+        REVERSE_THINKING_GAME_KEY,
+        filterBuiltInGameQuestions("reverse_thinking", questions),
+        user.id,
+      );
     }, 500);
 
     return () => window.clearTimeout(timer);

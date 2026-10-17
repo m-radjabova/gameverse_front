@@ -30,6 +30,7 @@ import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";
 import { getGameQuestionDifficulty } from "../../../hooks/gameSession";
 import { filterGameQuestionsByDifficulty } from "../../../utils/gameQuestionDifficulty";
+import { filterBuiltInGameQuestions } from "../../../utils/defaultGameQuestions";
 import ExpeditionMap from "./ExpeditionMap";
 import "./treasureHunt.css";
 
@@ -186,7 +187,11 @@ export default function TreasureHunt() {
     if (skipInitialRemoteSaveRef.current) { skipInitialRemoteSaveRef.current = false; return; }
     const t = window.setTimeout(() => {
       if (!user?.id) return;
-      void saveGameQuestions<Riddle>(TREASURE_HUNT_GAME_KEY, questionBank, user.id);
+      void saveGameQuestions<Riddle>(
+        TREASURE_HUNT_GAME_KEY,
+        filterBuiltInGameQuestions("treasure_hunt", questionBank),
+        user.id,
+      );
     }, 500);
     return () => window.clearTimeout(t);
   }, [questionBank, remoteLoaded, user?.id]);
