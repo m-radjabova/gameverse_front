@@ -36,7 +36,6 @@ import useGameQuestions from "../../hooks/useGameQuestions";
 import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../utils/aiGeneration";
 import { gameCards } from "../games/data";
 import useHomeTheme from "../../hooks/useHomeTheme";
-import { filterBuiltInGameQuestions } from "../../utils/defaultGameQuestions";
 
 /* ════════════════════════════════════════════
    Types
@@ -701,10 +700,7 @@ function OptionListEditor({
           return (
             <div
               key={index}
-              onClick={() => {
-                if (canSelect) onCorrectIndexChange?.(index);
-              }}
-              className={`rounded-xl border p-3 transition ${canSelect ? "cursor-pointer" : ""} ${
+              className={`rounded-xl border p-3 transition ${
                 correct
                   ? "border-emerald-500/60 bg-emerald-500/10"
                   : "border-[var(--panel-border)] bg-[var(--panel-surface-strong)] hover:border-[var(--panel-accent)]/60"
@@ -1328,13 +1324,13 @@ export default function TeacherQuestionPanel() {
     state: { user },
   } = useContextPro();
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [aiFailed, setAiFailed] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [search, setSearch] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState<"all" | "easy" | "medium" | "hard">("all");
   const [visibleCount, setVisibleCount] = useState(LIST_PAGE_SIZE);
   const [gameSearch, setGameSearch] = useState("");
   const [gameFilter, setGameFilter] = useState<GameFilter>("all");
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activeGameKey, setActiveGameKey] = useState("");
   const [draftValue, setDraftValue] = useState<unknown>({});
   const [editorError, setEditorError] = useState("");
@@ -1343,7 +1339,6 @@ export default function TeacherQuestionPanel() {
   const [editorMode, setEditorMode] = useState<EditorMode>("manual");
   const [workspaceView, setWorkspaceView] = useState<WorkspaceView>("dashboard");
   const [deleteTargetIndex, setDeleteTargetIndex] = useState<number | null>(null);
-  const [deleteAllOpen, setDeleteAllOpen] = useState(false);
   const [aiTopic, setAiTopic] = useState("");
   const [aiSubject, setAiSubject] = useState("Matematika");
   const [aiGradeRange, setAiGradeRange] = useState<GradeRange>("none");
@@ -1354,6 +1349,7 @@ export default function TeacherQuestionPanel() {
   const dashboardLoadedForRef = useRef<string | null>(null);
   const {
     questionsByGame,
+    getQuestions,
     loadQuestions,
     saveQuestionsForGame,
     loadingByGame,
@@ -1364,36 +1360,26 @@ export default function TeacherQuestionPanel() {
 
   const activeGame = GAME_REGISTRY.find((game) => game.gameKey === activeGameKey) ?? null;
   const view: WorkspaceView = activeGame ? workspaceView : "dashboard";
-  const teacherQuestionsByGame = useMemo(
-    () =>
-      Object.fromEntries(
-        Object.entries(questionsByGame).map(([gameKey, questions]) => [
-          gameKey,
-          filterBuiltInGameQuestions(gameKey, questions),
-        ]),
-      ),
-    [questionsByGame],
-  );
   const activeItems = useMemo(
-    () => (activeGameKey ? teacherQuestionsByGame[activeGameKey] ?? [] : []),
-    [activeGameKey, teacherQuestionsByGame],
+    () => (activeGameKey ? getQuestions(activeGameKey) : []),
+    [activeGameKey, getQuestions],
   );
   const aiPanelContent = useMemo(() => getAiPanelContent(activeGame?.gameKey ?? ""), [activeGame?.gameKey]);
   const loading = activeGame ? Boolean(loadingByGame[activeGame.gameKey]) : false;
   const saving = activeGame ? Boolean(savingByGame[activeGame.gameKey]) : anySaving;
 
   const totalQuestionCount = useMemo(
-    () => Object.values(teacherQuestionsByGame).reduce((total, questions) => total + questions.length, 0),
-    [teacherQuestionsByGame],
+    () => Object.values(questionsByGame).reduce((total, questions) => total + questions.length, 0),
+    [questionsByGame],
   );
   const activeGamesCount = useMemo(
-    () => GAME_REGISTRY.filter((game) => (teacherQuestionsByGame[game.gameKey]?.length ?? 0) > 0).length,
-    [teacherQuestionsByGame],
+    () => GAME_REGISTRY.filter((game) => (questionsByGame[game.gameKey]?.length ?? 0) > 0).length,
+    [questionsByGame],
   );
   const loadedGamesCount = GAME_REGISTRY.filter((game) => loadedByGame[game.gameKey]).length;
   const allLoaded = loadedGamesCount === GAME_REGISTRY.length;
   const emptyGames = GAME_REGISTRY.filter(
-    (game) => loadedByGame[game.gameKey] && (teacherQuestionsByGame[game.gameKey]?.length ?? 0) === 0,
+    (game) => loadedByGame[game.gameKey] && (questionsByGame[game.gameKey]?.length ?? 0) === 0,
   );
   const recentAddedTotal = questionActivity.reduce((total, item) => total + item.addedCount, 0);
   const recentActivity = useMemo(
@@ -1404,12 +1390,12 @@ export default function TeacherQuestionPanel() {
   const filteredGames = useMemo(() => {
     const term = gameSearch.trim().toLowerCase();
     return GAME_REGISTRY.filter((game) => {
-      const count = teacherQuestionsByGame[game.gameKey]?.length ?? 0;
+      const count = questionsByGame[game.gameKey]?.length ?? 0;
       if (gameFilter === "filled" && count === 0) return false;
       if (gameFilter === "empty" && count > 0) return false;
       return !term || game.title.toLowerCase().includes(term);
     });
-  }, [gameFilter, gameSearch, teacherQuestionsByGame]);
+  }, [gameFilter, gameSearch, questionsByGame]);
 
   const loadAllGames = useCallback(async () => {
     // Ko'p o'yin bo'lgani uchun so'rovlarni kichik guruhlarda yuboramiz.
@@ -1566,19 +1552,6 @@ export default function TeacherQuestionPanel() {
     }
   }
 
-  async function handleDeleteAll() {
-    if (!activeGame || activeItems.length === 0) return;
-    const deletedCount = activeItems.length;
-    const ok = await persistGameItems(activeGame.gameKey, []);
-    if (!ok) return;
-
-    setDeleteAllOpen(false);
-    setDeleteTargetIndex(null);
-    setSelectedIndex(null);
-    setDraftValue(activeGame.template);
-    toast.success(`${deletedCount} ta savol o‘chirildi.`);
-  }
-
   async function handleGenerateAi() {
     if (!activeGame) return;
     if (!aiTopic.trim()) {
@@ -1588,6 +1561,7 @@ export default function TeacherQuestionPanel() {
 
     try {
       setIsGeneratingAi(true);
+      setAiFailed(false);
       setEditorError("");
       const generated = await generateTeacherPanelQuestions({
         gameKey: activeGame.gameKey as SupportedTeacherGameKey,
@@ -1596,6 +1570,7 @@ export default function TeacherQuestionPanel() {
         count: aiCount,
         difficulty: aiDifficulty,
         gradeRange: aiGradeRange,
+        existingQuestions: activeItems.slice(0, 60).map((item) => summarizeQuestion(item)),
       });
 
       const difficultyCycle = ["easy", "medium", "hard"] as const;
@@ -1625,13 +1600,15 @@ export default function TeacherQuestionPanel() {
       setDraftValue(withIdFallback(levelAdjusted[0] ?? activeGame.template));
       setEditorMode("manual");
     } catch (error) {
-      setEditorError(error instanceof Error ? error.message : "AI savol yaratishda xato bo'ldi.");
+      setAiFailed(true);
+      setEditorError(error instanceof Error ? error.message : "AI savol yaratishda xato bo'ldi. Qayta urinib ko'ring.");
     } finally {
       setIsGeneratingAi(false);
     }
   }
 
   function handleSelectGame(gameKey: string) {
+    setAiFailed(false);
     setActiveGameKey(gameKey);
     setSelectedIndex(null);
     setSearch("");
@@ -1639,7 +1616,6 @@ export default function TeacherQuestionPanel() {
     setEditorMode("manual");
     setWorkspaceView("questions");
     setDeleteTargetIndex(null);
-    setDeleteAllOpen(false);
     void loadQuestions(gameKey, { teacherScoped: true, filterBySessionDifficulty: false });
   }
 
@@ -1660,7 +1636,7 @@ export default function TeacherQuestionPanel() {
   const saveRef = useRef<() => void>(() => {});
   keyStateRef.current = {
     canSaveNow: Boolean(activeGame) && view !== "dashboard" && editorMode === "manual" && deleteTargetIndex === null && canSave,
-    deleteOpen: deleteTargetIndex !== null || deleteAllOpen,
+    deleteOpen: deleteTargetIndex !== null,
   };
   saveRef.current = () => void handleSaveEditor();
 
@@ -1673,7 +1649,6 @@ export default function TeacherQuestionPanel() {
         }
       } else if (event.key === "Escape" && keyStateRef.current.deleteOpen) {
         setDeleteTargetIndex(null);
-        setDeleteAllOpen(false);
       }
     };
     window.addEventListener("keydown", onKeyDown);
@@ -1692,42 +1667,40 @@ export default function TeacherQuestionPanel() {
       data-home-theme={isDarkMode ? "dark" : "light"}
       className="teacher-theme teacher-workspace min-h-screen bg-[image:var(--panel-page-bg)] bg-[var(--panel-page-base)]"
     >
-      <div className={`mx-auto grid max-w-[1760px] gap-3 px-3 py-3 sm:gap-4 sm:px-4 xl:items-start xl:px-5 ${isSidebarCollapsed ? "xl:grid-cols-[72px_minmax(0,1fr)]" : "xl:grid-cols-[248px_minmax(0,1fr)]"}`}>
+      <div className="mx-auto grid max-w-[1760px] gap-5 px-4 py-5 sm:px-6 xl:grid-cols-[272px_minmax(0,1fr)] xl:items-start xl:px-8">
         {/* ═══════════ Yon panel (katta ekranlar) ═══════════ */}
-        <aside className={`${CARD_CLS} sticky top-3 hidden self-start p-2 xl:block`} aria-label="O'yinlar ro'yxati">
-          <div className={`flex items-center pb-3 pt-1 ${isSidebarCollapsed ? "flex-col gap-2" : "justify-between gap-3 px-2"}`}>
-            
-            <button
-              type="button"
-              onClick={() => setIsSidebarCollapsed((collapsed) => !collapsed)}
-              aria-label={isSidebarCollapsed ? "Yon panelni ochish" : "Yon panelni yopish"}
-              aria-expanded={!isSidebarCollapsed}
-              title={isSidebarCollapsed ? "Yon panelni ochish" : "Yon panelni yopish"}
-              className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[var(--panel-text-soft)] transition hover:bg-[var(--panel-surface-strong)] hover:text-[var(--panel-accent)] ${FOCUS_CLS}`}
-            >
-              <FaChevronRight className={`h-3.5 w-3.5 transition-transform ${isSidebarCollapsed ? "" : "rotate-180"}`} />
-            </button>
+        <aside
+          className={`${CARD_CLS} hidden p-3 xl:sticky xl:top-[84px] xl:block xl:max-h-[calc(100svh-100px)] xl:self-start xl:overflow-y-auto xl:overscroll-contain [scrollbar-width:thin]`}
+          aria-label="O'yinlar ro'yxati"
+        >
+          <div className="flex items-center gap-3 px-2 pb-3 pt-1">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[image:var(--panel-accent-gradient)] text-lg text-white shadow-md shadow-[var(--panel-accent)]/25">
+              <FaGraduationCap />
+            </span>
+            <div>
+              <p className="text-xs font-medium text-[var(--panel-muted)]">O'qituvchi paneli</p>
+              <h2 className="text-base font-bold text-[var(--panel-text)]">Ish maydoni</h2>
+            </div>
           </div>
 
           <button
             type="button"
             onClick={() => setWorkspaceView("dashboard")}
             aria-current={view === "dashboard" ? "page" : undefined}
-            title={isSidebarCollapsed ? "Dashboard" : undefined}
-            className={`flex w-full items-center rounded-xl py-2 text-sm font-bold transition ${isSidebarCollapsed ? "justify-center px-0" : "gap-2.5 px-2.5 text-left"} ${FOCUS_CLS} ${
+            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold transition ${FOCUS_CLS} ${
               view === "dashboard"
                 ? "bg-[image:var(--panel-accent-gradient)] text-white shadow-md shadow-[var(--panel-accent)]/25"
                 : "text-[var(--panel-text)] hover:bg-[var(--panel-surface-strong)]"
             }`}
           >
             <FaThLarge className="h-4 w-4" />
-            <span className={isSidebarCollapsed ? "sr-only" : ""}>Dashboard</span>
+            Dashboard
           </button>
 
-          <p className={`pb-1 pt-3 text-xs font-semibold text-[var(--panel-muted)] ${isSidebarCollapsed ? "sr-only" : "px-2.5"}`}>O'yinlar ({GAME_REGISTRY.length})</p>
-          <nav className="flex flex-col gap-px">
+          <p className="px-3 pb-1.5 pt-4 text-xs font-semibold text-[var(--panel-muted)]">O'yinlar ({GAME_REGISTRY.length})</p>
+          <nav className="flex flex-col gap-0.5">
             {GAME_REGISTRY.map((game) => {
-              const count = teacherQuestionsByGame[game.gameKey]?.length ?? 0;
+              const count = questionsByGame[game.gameKey]?.length ?? 0;
               const active = view !== "dashboard" && game.gameKey === activeGameKey;
               const isEmpty = loadedByGame[game.gameKey] && count === 0;
               return (
@@ -1736,28 +1709,24 @@ export default function TeacherQuestionPanel() {
                   type="button"
                   onClick={() => handleSelectGame(game.gameKey)}
                   aria-current={active ? "page" : undefined}
-                  aria-label={`${game.title}, ${loadedByGame[game.gameKey] ? `${count} ta savol` : "savollar yuklanmoqda"}`}
-                  title={isSidebarCollapsed ? `${game.title} (${loadedByGame[game.gameKey] ? count : "–"})` : undefined}
-                  className={`flex w-full items-center rounded-xl py-1.5 transition ${isSidebarCollapsed ? "justify-center px-0" : "gap-2.5 px-2.5 text-left"} ${FOCUS_CLS} ${
+                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition ${FOCUS_CLS} ${
                     active
                       ? "bg-[image:var(--panel-accent-gradient-soft)] ring-1 ring-[var(--panel-accent)]"
                       : "hover:bg-[var(--panel-surface-strong)]"
                   }`}
                 >
-                  <span className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${game.accent} text-sm text-white`}>
+                  <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${game.accent} text-base text-white`}>
                     {game.emoji}
                   </span>
-                  <span className={`min-w-0 flex-1 truncate text-sm font-semibold text-[var(--panel-text)] ${isSidebarCollapsed ? "sr-only" : ""}`}>{game.title}</span>
-                  {!isSidebarCollapsed && (
-                    <span
-                      className={`min-w-[1.75rem] rounded-full px-2 py-0.5 text-center text-xs font-bold ${
-                        isEmpty ? "bg-amber-500/15 text-amber-500" : "bg-[var(--panel-surface-strong)] text-[var(--panel-text-soft)]"
-                      }`}
-                      title={isEmpty ? "Bu o'yinda hali savol yo'q" : undefined}
-                    >
-                      {loadedByGame[game.gameKey] ? count : "–"}
-                    </span>
-                  )}
+                  <span className="min-w-0 flex-1 truncate text-sm font-semibold text-[var(--panel-text)]">{game.title}</span>
+                  <span
+                    className={`min-w-[1.75rem] rounded-full px-2 py-0.5 text-center text-xs font-bold ${
+                      isEmpty ? "bg-amber-500/15 text-amber-500" : "bg-[var(--panel-surface-strong)] text-[var(--panel-text-soft)]"
+                    }`}
+                    title={isEmpty ? "Bu o'yinda hali savol yo'q" : undefined}
+                  >
+                    {loadedByGame[game.gameKey] ? count : "–"}
+                  </span>
                 </button>
               );
             })}
@@ -1765,7 +1734,7 @@ export default function TeacherQuestionPanel() {
         </aside>
 
         {/* ═══════════ Asosiy qism ═══════════ */}
-        <main className="min-w-0 space-y-4">
+        <main className="min-w-0 space-y-5">
           {/* O'yin tanlash (kichik ekranlar) */}
           <div className={`${CARD_CLS} p-3 xl:hidden`}>
             <SelectField
@@ -1775,7 +1744,7 @@ export default function TeacherQuestionPanel() {
                 { value: "", label: "Dashboard" },
                 ...GAME_REGISTRY.map((game) => ({
                   value: game.gameKey,
-                  label: `${game.emoji} ${game.title} (${loadedByGame[game.gameKey] ? (teacherQuestionsByGame[game.gameKey]?.length ?? 0) : "–"})`,
+                  label: `${game.emoji} ${game.title} (${loadedByGame[game.gameKey] ? (questionsByGame[game.gameKey]?.length ?? 0) : "–"})`,
                 })),
               ]}
               onChange={(next) => (next ? handleSelectGame(next) : setWorkspaceView("dashboard"))}
@@ -1785,7 +1754,7 @@ export default function TeacherQuestionPanel() {
 
           {/* ───────────── DASHBOARD ───────────── */}
           {view === "dashboard" && (
-            <div className="space-y-4">
+            <div className="space-y-5">
               <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <h1 className="text-2xl font-black tracking-tight text-[var(--panel-text)] sm:text-3xl">Savollar markazi</h1>
@@ -1858,9 +1827,9 @@ export default function TeacherQuestionPanel() {
                 </div>
               )}
 
-              <div className="grid gap-3 2xl:grid-cols-[minmax(0,1fr)_340px] 2xl:items-start">
+              <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_340px] 2xl:items-start">
                 {/* O'yinlar */}
-                <section className={`${CARD_CLS} p-3 sm:p-4`} aria-labelledby="games-heading">
+                <section className={`${CARD_CLS} p-4 sm:p-5`} aria-labelledby="games-heading">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <h2 id="games-heading" className="text-lg font-bold text-[var(--panel-text)]">
                       O'yinlar
@@ -1904,12 +1873,12 @@ export default function TeacherQuestionPanel() {
                   </div>
 
                   {filteredGames.length > 0 ? (
-                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <div className="mt-4 grid gap-4 sm:grid-cols-2">
                       {filteredGames.map((game) => (
                         <GameCard
                           key={game.gameKey}
                           game={game}
-                          count={teacherQuestionsByGame[game.gameKey]?.length ?? 0}
+                          count={questionsByGame[game.gameKey]?.length ?? 0}
                           loaded={Boolean(loadedByGame[game.gameKey])}
                           onOpen={() => handleSelectGame(game.gameKey)}
                           onAdd={() => handleQuickAdd(game.gameKey)}
@@ -1935,12 +1904,12 @@ export default function TeacherQuestionPanel() {
                 </section>
 
                 {/* So'nggi faollik */}
-                <section className={`${CARD_CLS} p-3 sm:p-4`} aria-labelledby="activity-heading">
+                <section className={`${CARD_CLS} p-4 sm:p-5`} aria-labelledby="activity-heading">
                   <h2 id="activity-heading" className="flex items-center gap-2 text-lg font-bold text-[var(--panel-text)]">
                     <FaHistory className="h-4 w-4 text-[var(--panel-accent)]" />
                     So'nggi qo'shilganlar
                   </h2>
-                  <ul className="mt-3 space-y-1.5">
+                  <ul className="mt-4 space-y-2">
                     {recentActivity.map((activity) => {
                       const game = GAME_REGISTRY.find((item) => item.gameKey === activity.gameKey);
                       if (!game) return null;
@@ -1949,7 +1918,7 @@ export default function TeacherQuestionPanel() {
                           <button
                             type="button"
                             onClick={() => handleSelectGame(activity.gameKey)}
-                            className={`flex w-full items-center gap-2.5 rounded-xl border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] p-2.5 text-left transition hover:border-[var(--panel-accent)] ${FOCUS_CLS}`}
+                            className={`flex w-full items-center gap-3 rounded-xl border border-[var(--panel-border)] bg-[var(--panel-surface-strong)] p-3 text-left transition hover:border-[var(--panel-accent)] ${FOCUS_CLS}`}
                           >
                             <span className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${game.accent} text-base text-white`}>
                               {game.emoji}
@@ -1977,9 +1946,9 @@ export default function TeacherQuestionPanel() {
 
           {/* ───────────── O'YIN SAHIFASI ───────────── */}
           {view !== "dashboard" && activeGame && (
-            <div className="space-y-4">
+            <div className="space-y-5">
               {/* Sarlavha */}
-              <header className={`${CARD_CLS} p-3 sm:p-4`}>
+              <header className={`${CARD_CLS} p-4 sm:p-5`}>
                 <button
                   type="button"
                   onClick={() => setWorkspaceView("dashboard")}
@@ -2029,9 +1998,9 @@ export default function TeacherQuestionPanel() {
                 </button>
               </div>
 
-              <div className="grid gap-3 2xl:grid-cols-[minmax(0,1fr)_minmax(480px,580px)] 2xl:items-start">
+              <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_minmax(480px,580px)] 2xl:items-start">
                 {/* ───── Savollar ro'yxati ───── */}
-                <section className={`${CARD_CLS} min-w-0 p-3 sm:p-4 ${view === "questions" ? "" : "hidden 2xl:block"}`} aria-labelledby="questions-heading">
+                <section className={`${CARD_CLS} min-w-0 p-4 sm:p-5 ${view === "questions" ? "" : "hidden 2xl:block"}`} aria-labelledby="questions-heading">
                   <h2 id="questions-heading" className="sr-only">
                     Savollar ro'yxati
                   </h2>
@@ -2080,25 +2049,11 @@ export default function TeacherQuestionPanel() {
                   </div>
 
                   {!loading && activeItems.length > 0 && (
-                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-sm text-[var(--panel-text-soft)]" aria-live="polite">
-                        {filteredItems.length === activeItems.length
-                          ? `${activeItems.length} ta savol`
-                          : `${filteredItems.length} ta topildi (jami ${activeItems.length} ta)`}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditorError("");
-                          setDeleteAllOpen(true);
-                        }}
-                        disabled={saving}
-                        className={`inline-flex items-center gap-2 rounded-lg border border-rose-500/25 px-3 py-2 text-xs font-bold text-rose-600 transition hover:bg-rose-500/10 disabled:cursor-not-allowed disabled:opacity-50 ${FOCUS_CLS}`}
-                      >
-                        <FaTrash className="h-3 w-3" />
-                        Barchasini o‘chirish
-                      </button>
-                    </div>
+                    <p className="mt-3 text-sm text-[var(--panel-text-soft)]" aria-live="polite">
+                      {filteredItems.length === activeItems.length
+                        ? `${activeItems.length} ta savol`
+                        : `${filteredItems.length} ta topildi (jami ${activeItems.length} ta)`}
+                    </p>
                   )}
 
                   <div className="mt-4">
@@ -2221,7 +2176,7 @@ export default function TeacherQuestionPanel() {
                 </section>
 
                 {/* ───── Muharrir ───── */}
-                <section className={`${CARD_CLS} min-w-0 p-3 sm:p-4 ${view === "create" ? "" : "hidden 2xl:block"}`} aria-labelledby="editor-heading">
+                <section className={`${CARD_CLS} min-w-0 p-4 sm:p-5 ${view === "create" ? "" : "hidden 2xl:block"}`} aria-labelledby="editor-heading">
                   {loading ? (
                     <EditorSkeleton />
                   ) : (
@@ -2317,7 +2272,7 @@ export default function TeacherQuestionPanel() {
                             columns="grid-cols-2 sm:grid-cols-4"
                           />
 
-                          <p className="text-xs leading-5 text-[var(--panel-muted)]">{aiPanelContent.footnote}</p>
+                          <p className="text-xs leading-5 text-[var(--panel-muted)]">{isGeneratingAi ? "AI savollarni tayyorlamoqda, odatda 5–20 soniya ketadi. Sahifani yopmang." : aiPanelContent.footnote}</p>
                         </div>
                       ) : (
                         <div className="space-y-5">
@@ -2369,9 +2324,25 @@ export default function TeacherQuestionPanel() {
                       )}
 
                       {editorError && (
-                        <div role="alert" className="mt-5 flex items-start gap-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm font-medium text-rose-500">
-                          <FaExclamationCircle className="mt-0.5 shrink-0" />
-                          {editorError}
+                        <div role="alert" className="mt-5 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3">
+                          <div className="flex items-start gap-2.5 text-sm font-medium text-rose-500">
+                            <FaExclamationCircle className="mt-0.5 shrink-0" />
+                            <span>{editorError}</span>
+                          </div>
+                          {aiFailed && editorMode === "ai" && (
+                            <div className="mt-3 flex flex-wrap items-center gap-3 pl-6">
+                              <button
+                                type="button"
+                                onClick={() => void handleGenerateAi()}
+                                disabled={isGeneratingAi || saving}
+                                className={`${SECONDARY_BTN} !py-2 ${FOCUS_CLS}`}
+                              >
+                                <FaSyncAlt className={`h-3.5 w-3.5 ${isGeneratingAi ? "animate-spin" : ""}`} />
+                                {isGeneratingAi ? "Urinilmoqda…" : "Qayta urinish"}
+                              </button>
+                              <span className="text-xs text-[var(--panel-text-soft)]">Mavzu va sozlamalar saqlanib turibdi.</span>
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -2467,65 +2438,6 @@ export default function TeacherQuestionPanel() {
               >
                 <FaTrash className="h-3.5 w-3.5" />
                 {saving ? "O‘chirilmoqda…" : "O‘chirish"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {deleteAllOpen && activeGame && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete-all-questions-title"
-          onClick={() => !saving && setDeleteAllOpen(false)}
-        >
-          <div
-            className="w-full max-w-md rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-surface)] p-6 shadow-2xl"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-500/10 text-rose-500">
-                <FaTrash className="h-4 w-4" />
-              </span>
-              <button
-                type="button"
-                onClick={() => setDeleteAllOpen(false)}
-                disabled={saving}
-                aria-label="Yopish"
-                className={`inline-flex h-8 w-8 items-center justify-center rounded-lg text-[var(--panel-muted)] hover:bg-[var(--panel-border)] ${FOCUS_CLS}`}
-              >
-                <FaTimes className="h-3.5 w-3.5" />
-              </button>
-            </div>
-            <h2 id="delete-all-questions-title" className="mt-4 text-lg font-bold text-[var(--panel-text)]">
-              Barcha savollarni o‘chirmoqchimisiz?
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-[var(--panel-text-soft)]">
-              <b>{activeGame.title}</b> o‘yinidagi {activeItems.length} ta savolning hammasi o‘chiriladi. Bu amalni ortga qaytarib bo‘lmaydi.
-            </p>
-            {editorError && (
-              <p role="alert" className="mt-3 rounded-lg bg-rose-500/10 px-3 py-2 text-sm text-rose-600">
-                {editorError}
-              </p>
-            )}
-            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <button
-                type="button"
-                onClick={() => setDeleteAllOpen(false)}
-                disabled={saving}
-                className={`${SECONDARY_BTN} ${FOCUS_CLS}`}
-              >
-                Bekor qilish
-              </button>
-              <button
-                type="button"
-                onClick={() => void handleDeleteAll()}
-                disabled={saving || activeItems.length === 0}
-                className={`inline-flex items-center justify-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-rose-500/25 transition hover:bg-rose-700 disabled:opacity-50 ${FOCUS_CLS}`}
-              >
-                <FaTrash className="h-3.5 w-3.5" />
-                {saving ? "O‘chirilmoqda…" : "Ha, barchasini o‘chirish"}
               </button>
             </div>
           </div>
