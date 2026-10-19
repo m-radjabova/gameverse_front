@@ -4,7 +4,7 @@ import { gameCards } from "../../pages/games/data";
 
 const SITE_URL = "https://gameverse-front.vercel.app";
 const SITE_NAME = "GAMEVERSE";
-const DEFAULT_IMAGE = `${SITE_URL}/og-cover-share.png`;
+const DEFAULT_IMAGE = `${SITE_URL}/website.jpg`;
 const DEFAULT_TITLE = "GAMEVERSE | Interaktiv ta'lim o'yinlari va VR platforma";
 const DEFAULT_DESCRIPTION =
   "GAMEVERSE - o'quvchilar va o'qituvchilar uchun interaktiv ta'lim o'yinlari, quizlar, 3D va VR simulyatorlar platformasi. O'rganing, o'ynang va rivojlaning.";
@@ -77,6 +77,7 @@ export default function Seo() {
   const description = game?.description ?? routeSeo?.description ?? DEFAULT_DESCRIPTION;
   const canonical = toAbsoluteUrl(pathname);
   const image = getImageUrl(typeof game?.image === "string" ? game.image : routeSeo?.image);
+  const imageType = image.endsWith(".webp") ? "image/webp" : "image/jpeg";
   const robots = shouldNoIndex
     ? "noindex, nofollow"
     : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
@@ -116,7 +117,7 @@ export default function Seo() {
       <meta property="og:description" content={description} />
       <meta property="og:image" content={image} />
       <meta property="og:image:secure_url" content={image} />
-      <meta property="og:image:type" content="image/png" />
+      <meta property="og:image:type" content={imageType} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
       <meta property="og:image:alt" content={`${SITE_NAME} - ${game?.title ?? "ta'lim o'yinlari"}`} />

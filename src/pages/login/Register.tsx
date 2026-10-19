@@ -23,7 +23,7 @@ import apiClient from "../../apiClient/apiClient";
 import { isAxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 import { getErrorMessage } from "../../utils/error";
-import loginImg from "../../assets/register_img.png";
+import loginImg from "../../assets/register_img.webp";
 import useHomeTheme from "../../hooks/useHomeTheme";
 
 type RegisterFormInputs = {

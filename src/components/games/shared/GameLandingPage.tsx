@@ -118,6 +118,7 @@ export default function GameLandingPage({ config }: Props) {
   const game = gameCards.find((item) => item.id === config.gameKey || item.path === gamePath);
   const hasLeaderboard = Boolean(game && supportsGameLeaderboard(game.id, game.players));
   const [imageReady, setImageReady] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
 
   return (
     <main
@@ -133,16 +134,27 @@ export default function GameLandingPage({ config }: Props) {
         />
 
         {/* Butun ekranni egallovchi rasm */}
-        <img
-          src={config.image}
-          alt={config.imageAlt}
-          decoding="async"
-          fetchPriority="high"
-          onLoad={() => setImageReady(true)}
-          className={`absolute inset-0 -z-20 h-full w-full object-cover object-center transition-[opacity,transform] duration-[1600ms] ease-out motion-reduce:transition-none ${
-            imageReady ? "scale-100 opacity-100" : "scale-[1.08] opacity-0"
-          }`}
-        />
+        {imageFailed ? (
+          <div
+            role="img"
+            aria-label={`${config.imageAlt} rasmi yuklanmadi`}
+            className="pointer-events-none absolute inset-0 -z-20 flex items-center justify-center bg-slate-950/50 px-5 text-center text-white/70"
+          >
+            {config.imageAlt}
+          </div>
+        ) : (
+          <img
+            src={config.image}
+            alt={config.imageAlt}
+            decoding="async"
+            fetchPriority="high"
+            onLoad={() => setImageReady(true)}
+            onError={() => setImageFailed(true)}
+            className={`absolute inset-0 -z-20 h-full w-full object-cover object-center transition-[opacity,transform] duration-[1600ms] ease-out motion-reduce:transition-none ${
+              imageReady ? "scale-100 opacity-100" : "scale-[1.08] opacity-0"
+            }`}
+          />
+        )}
 
         {/* Matnni o'qiladigan qilish uchun qatlamlar */}
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(2,6,23,0.7)_0%,rgba(2,6,23,0)_26%,rgba(2,6,23,0.1)_45%,rgba(2,6,23,0.94)_100%)]" />

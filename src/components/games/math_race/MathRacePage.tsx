@@ -13,7 +13,7 @@ import { MdNumbers, MdSpeed, MdTimer } from "react-icons/md";
 import GameLandingPage, {
   type GameLandingPageConfig,
 } from "../shared/GameLandingPage";
-import raceImg from "../../../assets/math_race-image.png";
+import raceImg from "../../../assets/math_race-image.webp";
 
 const mathRaceConfig: GameLandingPageConfig = {
   badge: "Math Race",

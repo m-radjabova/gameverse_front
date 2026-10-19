@@ -16,7 +16,7 @@ import {
 } from "react-icons/fa";
 import { MdStars } from "react-icons/md";
 import { NavLink, useNavigate } from "react-router-dom";
-import bunnyLogo from "../../assets/bunny.png";
+import bunnyLogo from "../../assets/bunny.webp";
 import useContextPro from "../../hooks/useContextPro";
 import { toMediaUrl } from "../../utils";
 import { getFavoriteGameIds, subscribeFavoriteGames } from "../../utils/gameFavorites";

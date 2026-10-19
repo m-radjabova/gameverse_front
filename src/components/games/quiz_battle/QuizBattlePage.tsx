@@ -4,7 +4,7 @@ import { MdQuiz, MdTimer } from "react-icons/md";
 import GameLandingPage, {
   type GameLandingPageConfig,
 } from "../shared/GameLandingPage";
-import QuizBattleImg from "../../../assets/quiz_battle_image.png";
+import QuizBattleImg from "../../../assets/quiz_battle_image.webp";
 
 const quizBattleConfig: GameLandingPageConfig = {
   badge: "Quiz Battle Arena",

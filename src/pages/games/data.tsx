@@ -50,39 +50,71 @@ import {
 } from "react-icons/gi";
 import { MdQuiz, MdMemory, MdGames, MdNumbers } from "react-icons/md";
 import { RiBubbleChartFill } from "react-icons/ri";
-import millionaire from "../../assets/millionare_hero.png";
-import memoryChain from "../../assets/memory_chain_image.png";
-import reverseThinking from "../../assets/reverse_thinking.png";
-import baamboozle from "../../assets/Baamboozle_img.png";
-import truthImg from "../../assets/truth_detector_img.png";
-import jumanjiImg from "../../assets/jumanji_img.png";
-import treasureHuntimg from "../../assets/treasure_hunt_img.png";
-import mathChickImg from "../../assets/math_chick_img.png";
+import millionaire from "../../assets/millionare_hero.webp";
+import millionaireCard from "../../assets/millionare_hero-card.webp";
+import memoryChain from "../../assets/memory_chain_image.webp";
+import memoryChainCard from "../../assets/memory_chain_image-card.webp";
+import reverseThinking from "../../assets/reverse_thinking.webp";
+import reverseThinkingCard from "../../assets/reverse_thinking-card.webp";
+import baamboozle from "../../assets/Baamboozle_img.webp";
+import baamboozleCard from "../../assets/Baamboozle_img-card.webp";
+import truthImg from "../../assets/truth_detector_img.webp";
+import truthImgCard from "../../assets/truth_detector_img-card.webp";
+import jumanjiImg from "../../assets/jumanji_img.webp";
+import jumanjiImgCard from "../../assets/jumanji_img-card.webp";
+import treasureHuntimg from "../../assets/treasure_hunt_img.webp";
+import treasureHuntimgCard from "../../assets/treasure_hunt_img-card.webp";
+import mathChickImg from "../../assets/math_chick_img.webp";
+import mathChickImgCard from "../../assets/math_chick_img-card.webp";
 import { PiDetective } from "react-icons/pi";
-import QuizBattleImg from "../../assets/quiz_battle_image.png";
-import memoryRushImg from "../../assets/reminder_image.png";
-import wordBattleImg from "../../assets/word_battle_image.png";
-import classicArcadeImg from "../../assets/classic_arcade_image.png";
-import iqTestImg from "../../assets/iq_test_image.png";
-import flagBattleImg from "../../assets/flag_battle_image.png";
-import wheelFortuneImg from "../../assets/wheel_of_fortune_image.png";
-import wordSearchImg from "../../assets/word_search_image.png";
-import wordFishImg from "../../assets/word_fish_image.png";
-import mathRaceImg from "../../assets/math_race-image.png";
-import tugOfWarImg from "../../assets/tug_of_war_img.png";
-import findColorImg from "../../assets/color_find_image.png";
-import quizChallengeImg from "../../assets/quiz_challenge_image.png";
-import wordChainImg from "../../assets/word_chain_image.png";
-import miniPuzzleImg from "../../assets/mini_puzzle_image.png"
-import hangmanImg from "../../assets/hangman_image.png";
-import worldExplorerImg from "../../assets/WorldExplorerImg.png";
-import plantImg from "../../assets/plant_vr_image.png";
-import solarSystemImg from "../../assets/solar_system_image.png";
-import virtualZooVrImg from "../../assets/virtual_zoo.png";
-import frogPondImg from "../../assets/frog_pond_image.png";
-import physicsImg from "../../assets/fizika_simulyatisya_image.png";
-import pizzaBaseImg from "../../assets/pizza_master_img.png";
-import mysteryEggImg from "../../assets/mystery-egg-img.png";
+import QuizBattleImg from "../../assets/quiz_battle_image.webp";
+import QuizBattleImgCard from "../../assets/quiz_battle_image-card.webp";
+import memoryRushImg from "../../assets/reminder_image.webp";
+import memoryRushImgCard from "../../assets/reminder_image-card.webp";
+import wordBattleImg from "../../assets/word_battle_image.webp";
+import wordBattleImgCard from "../../assets/word_battle_image-card.webp";
+import classicArcadeImg from "../../assets/classic_arcade_image.webp";
+import classicArcadeImgCard from "../../assets/classic_arcade_image-card.webp";
+import iqTestImg from "../../assets/iq_test_image.webp";
+import iqTestImgCard from "../../assets/iq_test_image-card.webp";
+import flagBattleImg from "../../assets/flag_battle_image.webp";
+import flagBattleImgCard from "../../assets/flag_battle_image-card.webp";
+import wheelFortuneImg from "../../assets/wheel_of_fortune_image.webp";
+import wheelFortuneImgCard from "../../assets/wheel_of_fortune_image-card.webp";
+import wordSearchImg from "../../assets/word_search_image.webp";
+import wordSearchImgCard from "../../assets/word_search_image-card.webp";
+import wordFishImg from "../../assets/word_fish_image.webp";
+import wordFishImgCard from "../../assets/word_fish_image-card.webp";
+import mathRaceImg from "../../assets/math_race-image.webp";
+import mathRaceImgCard from "../../assets/math_race-image-card.webp";
+import tugOfWarImg from "../../assets/tug_of_war_img.webp";
+import tugOfWarImgCard from "../../assets/tug_of_war_img-card.webp";
+import findColorImg from "../../assets/color_find_image.webp";
+import findColorImgCard from "../../assets/color_find_image-card.webp";
+import quizChallengeImg from "../../assets/quiz_challenge_image.webp";
+import quizChallengeImgCard from "../../assets/quiz_challenge_image-card.webp";
+import wordChainImg from "../../assets/word_chain_image.webp";
+import wordChainImgCard from "../../assets/word_chain_image-card.webp";
+import miniPuzzleImg from "../../assets/mini_puzzle_image.webp"
+import miniPuzzleImgCard from "../../assets/mini_puzzle_image-card.webp";
+import hangmanImg from "../../assets/hangman_image.webp";
+import hangmanImgCard from "../../assets/hangman_image-card.webp";
+import worldExplorerImg from "../../assets/WorldExplorerImg.webp";
+import worldExplorerImgCard from "../../assets/WorldExplorerImg-card.webp";
+import plantImg from "../../assets/plant_vr_image.webp";
+import plantImgCard from "../../assets/plant_vr_image-card.webp";
+import solarSystemImg from "../../assets/solar_system_image.webp";
+import solarSystemImgCard from "../../assets/solar_system_image-card.webp";
+import virtualZooVrImg from "../../assets/virtual_zoo.webp";
+import virtualZooVrImgCard from "../../assets/virtual_zoo-card.webp";
+import frogPondImg from "../../assets/frog_pond_image.webp";
+import frogPondImgCard from "../../assets/frog_pond_image-card.webp";
+import physicsImg from "../../assets/fizika_simulyatisya_image.webp";
+import physicsImgCard from "../../assets/fizika_simulyatisya_image-card.webp";
+import pizzaBaseImg from "../../assets/pizza_master_img.webp";
+import pizzaBaseImgCard from "../../assets/pizza_master_img-card.webp";
+import mysteryEggImg from "../../assets/mystery-egg-img.webp";
+import mysteryEggImgCard from "../../assets/mystery-egg-img-card.webp";
 
 export const gameCards = [
   {
@@ -98,6 +130,7 @@ export const gameCards = [
     path: "/games/mystery-egg",
     bgPattern: "bg-gradient-to-br from-indigo-950 via-violet-700 to-lime-500",
     image: mysteryEggImg,
+    thumbnail: mysteryEggImgCard,
     players: "1-2 o'yinchi",
     level: "9 sirli dunyo",
     levelIcon: FaStar,
@@ -123,6 +156,7 @@ export const gameCards = [
     path: "/games/pizza-master",
     bgPattern: "bg-gradient-to-br from-red-600 via-orange-500 to-yellow-400",
     image: pizzaBaseImg,
+    thumbnail: pizzaBaseImgCard,
     players: "1-2 o'yinchi",
     level: "Pizza Battle",
     levelIcon: FaUsers,
@@ -149,6 +183,7 @@ export const gameCards = [
     path: "/games/plant-vr",
     bgPattern: "bg-gradient-to-br from-emerald-700 via-lime-700 to-amber-600",
     image: plantImg,
+    thumbnail: plantImgCard,
     players: "Jamoaviy o'yin",
     level: "VR Interaktiv",
     levelIcon: FaCompass,
@@ -174,6 +209,7 @@ export const gameCards = [
     path: "/games/world-explorer",
     bgPattern: "bg-gradient-to-br from-sky-700 via-blue-700 to-emerald-700",
     image: worldExplorerImg,
+    thumbnail: worldExplorerImgCard,
     players: "Jamoaviy o'yin",
     level: "Interactive 3D",
     levelIcon: FaCompass,
@@ -200,6 +236,7 @@ export const gameCards = [
     path: "/games/virtual-zoo-vr",
     bgPattern: "bg-gradient-to-br from-emerald-700 via-lime-700 to-sky-700",
     image: virtualZooVrImg,
+    thumbnail: virtualZooVrImgCard,
     players: "Jamoaviy o'yin",
     level: "VR Immersive",
     levelIcon: FaCompass,
@@ -228,6 +265,7 @@ export const gameCards = [
   route: "/games/quyosh-tizimi-vr",
   cover: solarSystemImg,
   image: solarSystemImg,
+    thumbnail: solarSystemImgCard,
   players: "Jamoaviy o'yin",
   level: "VR + 3D",
   levelIcon: FaCompass,
@@ -258,6 +296,7 @@ export const gameCards = [
   externalUrl: "https://vr-vode.vercel.app/",
   bgPattern: "bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-800",
   image: physicsImg,
+    thumbnail: physicsImgCard,
   players: "Jamoaviy o'yin",
   level: "VR Interaktiv",
   levelIcon: FaCompass,
@@ -284,6 +323,7 @@ export const gameCards = [
     path: "/games/jumanji",
     bgPattern: "bg-gradient-to-br from-amber-900 via-amber-800 to-amber-700",
     image: jumanjiImg,
+    thumbnail: jumanjiImgCard,
     players: "1-4 o'yinchi",
     level: "BARCHA DARAJALAR",
     levelIcon: FaStar,
@@ -310,6 +350,7 @@ export const gameCards = [
     path: "/games/frog-pond",
     bgPattern: "bg-gradient-to-br from-emerald-600 via-sky-600 to-cyan-600",
     image: frogPondImg,
+    thumbnail: frogPondImgCard,
     players: "1-2 o'yinchi",
     level: "3 bosqich",
     levelIcon: FaStar,
@@ -335,6 +376,7 @@ export const gameCards = [
     path: "/games/treasure-hunt",
     bgPattern: "bg-gradient-to-br from-amber-700 via-orange-700 to-yellow-700",
     image: treasureHuntimg,
+    thumbnail: treasureHuntimgCard,
     players: "1-2 o'yinchi",
     level: "Kreativ",
     levelIcon: GiCrystalShine,
@@ -361,6 +403,7 @@ export const gameCards = [
     path: "/games/math-race",
     bgPattern: "bg-gradient-to-br from-yellow-600 via-orange-600 to-red-600",
     image: mathRaceImg,
+    thumbnail: mathRaceImgCard,
     players: "2 o'yinchi",
     level: "Boshlang'ich - Professional",
     levelIcon: FaStar,
@@ -387,6 +430,7 @@ export const gameCards = [
     path: "/games/tug-of-war",
     bgPattern: "bg-gradient-to-br from-blue-600 via-slate-700 to-orange-500",
     image: tugOfWarImg,
+    thumbnail: tugOfWarImgCard,
     players: "2 jamoa",
     level: "Oson - Qiyin",
     levelIcon: FaStar,
@@ -413,6 +457,7 @@ export const gameCards = [
     path: "/games/baamboozle",
     bgPattern: "bg-gradient-to-br from-yellow-500 via-orange-500 to-red-500",
     image: baamboozle,
+    thumbnail: baamboozleCard,
     players: "1-3 jamoa",
     level: "Oson - Qiyin",
     levelIcon: FaStar,
@@ -438,6 +483,7 @@ export const gameCards = [
     path: "/games/quiz-battle",
     bgPattern: "bg-gradient-to-br from-yellow-600 via-orange-600 to-red-600",
     image: QuizBattleImg,
+    thumbnail: QuizBattleImgCard,
     players: "1-2 o'yinchi",
     level: "Boshlang'ich",
     levelIcon: FaStar,
@@ -463,6 +509,7 @@ export const gameCards = [
     path: "/games/memory-rush",
     bgPattern: "bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600",
     image: memoryRushImg,
+    thumbnail: memoryRushImgCard,
     players: "1-2 o'yinchi",
     level: "Osson - O'rtacha - Qiyin",
     levelIcon: FaMedal,
@@ -488,6 +535,7 @@ export const gameCards = [
     path: "/games/word-battle",
     bgPattern: "bg-gradient-to-br from-blue-600 via-cyan-600 to-sky-600",
     image: wordBattleImg,
+    thumbnail: wordBattleImgCard,
     players: "1-2 o'yinchi",
     level: "Boshlang'ich",
     levelIcon: FaStar,
@@ -513,6 +561,7 @@ export const gameCards = [
     path: "/games/classic-arcade",
     bgPattern: "bg-gradient-to-br from-purple-600 via-pink-600 to-rose-600",
     image: classicArcadeImg,
+    thumbnail: classicArcadeImgCard,
     players: "1-2 o'yinchi",
     level: "Professional",
     levelIcon: FaTrophy,
@@ -540,6 +589,7 @@ export const gameCards = [
     bgPattern: "bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600",
     players: "1-2 o'yinchi",
     image: flagBattleImg,
+    thumbnail: flagBattleImgCard,
     level: "Boshlang'ich - Professional",
     levelIcon: FaStar,
     badge: "YANGI",
@@ -565,6 +615,7 @@ export const gameCards = [
     path: "/games/wheel-of-fortune",
     bgPattern: "bg-gradient-to-br from-purple-600 via-pink-600 to-rose-600",
     image: wheelFortuneImg,
+    thumbnail: wheelFortuneImgCard,
     players: "2-20 o'yinchi",
     level: "Boshlang'ich - Professional",
     levelIcon: FaStar,
@@ -591,6 +642,7 @@ export const gameCards = [
     path: "/games/word-search",
     bgPattern: "bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600",
     image: wordSearchImg,
+    thumbnail: wordSearchImgCard,
     players: "1-2 o'yinchi",
     level: "Boshlang'ich - Professional",
     levelIcon: FaStar,
@@ -617,6 +669,7 @@ export const gameCards = [
     path: "/games/ocean-word-fishing",
     bgPattern: "bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600",
     image: wordFishImg,
+    thumbnail: wordFishImgCard,
     players: "1 o'yinchi",
     level: "Boshlang'ich - Professional",
     levelIcon: FaStar,
@@ -643,6 +696,7 @@ export const gameCards = [
     path: "/games/find-color",
     bgPattern: "bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600",
     image: findColorImg,
+    thumbnail: findColorImgCard,
     players: "1 o'yinchi",
     level: "Boshlang'ich - Afsonaviy",
     levelIcon: FaStar,
@@ -669,6 +723,7 @@ export const gameCards = [
     path: "/games/bingo",
     bgPattern: "bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500",
     image: quizChallengeImg,
+    thumbnail: quizChallengeImgCard,
     players: "1-3 guruh",
     level: "3 xil qiyinlik",
     levelIcon: FaStar,
@@ -695,6 +750,7 @@ export const gameCards = [
     path: "/games/word-chain",
     bgPattern: "bg-gradient-to-br from-purple-500 via-pink-500 to-rose-500",
     image: wordChainImg,
+    thumbnail: wordChainImgCard,
     players: "2 o'yinchi",
     level: "Boshlang'ich - Professional",
     levelIcon: FaStar,
@@ -721,6 +777,7 @@ export const gameCards = [
     path: "/games/memory-chain",
     bgPattern: "bg-gradient-to-br from-cyan-500 via-blue-500 to-indigo-500",
     image: memoryChain,
+    thumbnail: memoryChainCard,
     players: "1-2 o'yinchi",
     level: "Oson - Qiyin",
     levelIcon: FaStar,
@@ -747,6 +804,7 @@ export const gameCards = [
     path: "/games/mini-puzzle",
     bgPattern: "bg-gradient-to-br from-pink-500 via-rose-500 to-pink-500",
     image: miniPuzzleImg,
+    thumbnail: miniPuzzleImgCard,
     players: "2 jamoa",
     level: "Oson - Qiyin",
     levelIcon: FaStar,
@@ -773,6 +831,7 @@ export const gameCards = [
     path: "/games/reverse-thinking",
     bgPattern: "bg-gradient-to-br from-green-500 via-emerald-500 to-green-500",
     image: reverseThinking,
+    thumbnail: reverseThinkingCard,
     players: "1-2 jamoa",
     level: "1-4 daraja",
     levelIcon: FaStar,
@@ -799,6 +858,7 @@ export const gameCards = [
     path: "/games/hangman",
     bgPattern: "bg-gradient-to-br from-amber-500 via-red-500 to-rose-500",
     image: hangmanImg,
+    thumbnail: hangmanImgCard,
     players: "1-2 jamoa",
     level: "Oson - Qiyin",
     levelIcon: FaStar,
@@ -825,6 +885,7 @@ export const gameCards = [
     path: "/games/millionaire",
     bgPattern: "bg-gradient-to-br from-yellow-600 via-amber-600 to-orange-600",
     image: millionaire,
+    thumbnail: millionaireCard,
     players: "1-5 o'yinchi",
     level: "4 daraja",
     levelIcon: FaStar,
@@ -851,6 +912,7 @@ export const gameCards = [
     path: "/games/truth-detector",
     bgPattern: "bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500",
     image: truthImg,
+    thumbnail: truthImgCard,
     players: "2 jamoa",
     level: "3 daraja",
     levelIcon: FaStar,
@@ -877,6 +939,7 @@ export const gameCards = [
     path: "/games/math-chick",
     bgPattern: "bg-gradient-to-br from-[#243a86] via-[#402a93] to-[#1a245f]",
     image: mathChickImg,
+    thumbnail: mathChickImgCard,
     players: "2 o'yinchi",
     level: "Osson - O'rtacha - Qiyin",
     levelIcon: FaStar,
@@ -902,6 +965,7 @@ export const gameCards = [
   path: "/games/iq-game",
   bgPattern: "bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600",
   image: iqTestImg,
+    thumbnail: iqTestImgCard,
   players: "1-2 o'yinchi",
   level: "Easy - Genius",
   levelIcon: FaStar,

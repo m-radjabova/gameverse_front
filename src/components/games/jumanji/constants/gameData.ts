@@ -1,7 +1,7 @@
-import fireMedallion from "../../../../assets/fire_medallion_transparent-Photoroom.png";
-import leafMedallion from "../../../../assets/leaf_medallion_transparent-Photoroom.png";
-import maskMedallion from "../../../../assets/mask_medallion_transparent-Photoroom.png";
-import snakeMedallion from "../../../../assets/snake_medallion_transparent-Photoroom.png";
+import fireMedallion from "../../../../assets/fire_medallion_transparent-Photoroom.webp";
+import leafMedallion from "../../../../assets/leaf_medallion_transparent-Photoroom.webp";
+import maskMedallion from "../../../../assets/mask_medallion_transparent-Photoroom.webp";
+import snakeMedallion from "../../../../assets/snake_medallion_transparent-Photoroom.webp";
 import type { Tile, TileType } from "../types";
 
 export const TEAM_AVATARS = ["🦁", "🐅", "🐘", "🦊"];

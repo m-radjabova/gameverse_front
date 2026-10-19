@@ -28,7 +28,7 @@ import type { User } from "../../types/types";
 import { getErrorMessage } from "../../utils/error";
 import { setTokens } from "../../utils/auth";
 
-import loginImg from "../../assets/loginImg.png";
+import loginImg from "../../assets/loginImg.webp";
 
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../firebase";

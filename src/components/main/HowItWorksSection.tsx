@@ -9,10 +9,10 @@ import {
 } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
-import register from "../../assets/register.png";
-import start from "../../assets/start_game.png";
-import play from "../../assets/play_game.png";
-import feedback from "../../assets/reviews.png";
+import register from "../../assets/register.webp";
+import start from "../../assets/start_game.webp";
+import play from "../../assets/play_game.webp";
+import feedback from "../../assets/reviews.webp";
 
 type Step = {
   id: string;

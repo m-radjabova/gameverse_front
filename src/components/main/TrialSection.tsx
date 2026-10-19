@@ -3,7 +3,7 @@ import { HiSparkles } from "react-icons/hi";
 import { PiStudentFill } from "react-icons/pi";
 import { TbDeviceDesktopAnalytics, TbSchool } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
-import trialImg from "../../assets/trial_image.png";
+import trialImg from "../../assets/trial_image.webp";
 
 const highlights = [
   "7 kunlik bepul sinov",

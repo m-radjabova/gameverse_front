@@ -6,6 +6,7 @@ import MainLayout from "./layout/MainLayout";
 import AdminLayout from "./layout/AdminLayout";
 import SiteLoader from "./components/main/SiteLoader";
 import GameLayout from "./layout/GameLayout";
+import GameRouteErrorBoundary from "./components/games/shared/GameRouteErrorBoundary";
 import GamePlayView from "./components/games/shared/GamePlayView";
 import { gamePlayRoutes } from "./components/games/shared/gamePlayRoutes";
 import TeacherLayout from "./layout/TeacherLayout";
@@ -107,7 +108,11 @@ function App() {
       </Route>
 
       <Route
-        element={<GameLayout />}
+        element={
+          <GameRouteErrorBoundary>
+            <GameLayout />
+          </GameRouteErrorBoundary>
+        }
       >
         <Route path="/games" element={<Games />} />
         <Route path="/games/:gameId/setup" element={<GameQuestionSetupPage />} />

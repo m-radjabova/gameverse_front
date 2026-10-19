@@ -20,7 +20,7 @@ import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
-import tugOfWarArenaImage from "../../../assets/tug_of_war.png";
+import tugOfWarArenaImage from "../../../assets/tug_of_war.webp";
 import tugOfWarBgImage from "./tug_of_war_bg.png";
 import tugOfWarMusic from "./tug_of_war_music.m4a";
 import { GRADE_RANGE_OPTIONS, type GradeRange } from "../../../utils/aiGeneration";

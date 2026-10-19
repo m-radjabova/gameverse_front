@@ -2,8 +2,8 @@ import { FaArrowRight, FaGraduationCap } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 
-import darkHeroImg from "../../assets/dark_hero_img.png";
-import heroImg from "../../assets/hero_img_new.png";
+import darkHeroImg from "../../assets/dark_hero_img.webp";
+import heroImg from "../../assets/hero_img_new.webp";
 import Header from "../header/Header";
 
 type HeroProps = {
@@ -29,6 +29,8 @@ function Hero({
         <img
           src={isDark ? darkHeroImg : heroImg}
           alt="Hero background"
+          fetchPriority="high"
+          decoding="async"
           className="h-full w-full object-cover animate-hero-ken-burns"
         />
 

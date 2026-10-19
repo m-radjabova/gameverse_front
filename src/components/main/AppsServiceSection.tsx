@@ -24,6 +24,7 @@ import {
   subscribeFavoriteGames,
   toggleFavoriteGame,
 } from "../../utils/gameFavorites";
+import GameCardImage from "../games/shared/GameCardImage";
 
 function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
   const navigate = useNavigate();
@@ -290,10 +291,11 @@ function ModernGameCard({ game, isDark, isActive, isLiked, onLikeToggle, onOpen 
         {/* Image Container */}
         <div className="relative overflow-hidden">
           <div className="aspect-[16/10] w-full overflow-hidden rounded-t-2xl">
-            <img
-              src={game.image}
+            <GameCardImage
+              src={game.thumbnail}
               alt={game.title}
-              className={`h-full w-full object-cover object-center transition-all duration-700 ${
+              loading="lazy"
+              className={`relative object-center transition-all duration-700 ${
                 isHovered && isActive ? "scale-110" : "scale-100"
               }`}
             />

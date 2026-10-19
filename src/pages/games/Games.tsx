@@ -31,6 +31,7 @@ import {
 import useHomeTheme from "../../hooks/useHomeTheme";
 import { readLastPlayedGame } from "../../utils/gameHistory";
 import { supportsGameLeaderboard } from "../../hooks/gameSession";
+import GameCardImage from "../../components/games/shared/GameCardImage";
 
 type Game = typeof gameCards[number];
 
@@ -40,9 +41,9 @@ function Games() {
   const [activeCategory, setActiveCategory] = useState("Barchasi");
   const [likedGames, setLikedGames] = useState<string[]>([]);
   const [lastPlayedGameId, setLastPlayedGameId] = useState<string | null>(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
   const mouseFrameRef = useRef<number | null>(null);
+  const pageBackgroundRef = useRef<HTMLDivElement | null>(null);
   const showAmbientEffects = typeof window !== "undefined" && window.innerWidth >= 768;
 
   useEffect(() => {
@@ -66,10 +67,14 @@ function Games() {
     const handleMouseMove = (event: MouseEvent) => {
       if (mouseFrameRef.current !== null) return;
       mouseFrameRef.current = window.requestAnimationFrame(() => {
-        setMousePosition({
-          x: (event.clientX / window.innerWidth) * 100,
-          y: (event.clientY / window.innerHeight) * 100,
-        });
+        pageBackgroundRef.current?.style.setProperty(
+          "--games-mouse-x",
+          `${(event.clientX / window.innerWidth) * 100}%`,
+        );
+        pageBackgroundRef.current?.style.setProperty(
+          "--games-mouse-y",
+          `${(event.clientY / window.innerHeight) * 100}%`,
+        );
         mouseFrameRef.current = null;
       });
     };
@@ -118,11 +123,11 @@ function Games() {
   };
 
   const pageBackground = isDarkMode
-    ? `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(89, 185, 230, 0.14) 0%, rgba(0, 0, 0, 0) 48%),
+    ? `radial-gradient(circle at var(--games-mouse-x, 50%) var(--games-mouse-y, 50%), rgba(89, 185, 230, 0.14) 0%, rgba(0, 0, 0, 0) 48%),
        radial-gradient(circle at 82% 18%, rgba(255, 209, 93, 0.10) 0%, transparent 38%),
        radial-gradient(circle at 18% 82%, rgba(89, 185, 230, 0.10) 0%, transparent 38%),
        linear-gradient(135deg, #0f172a 0%, #111827 50%, #131a2d 100%)`
-    : `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(120, 207, 238, 0.20) 0%, rgba(255, 255, 255, 0) 46%),
+    : `radial-gradient(circle at var(--games-mouse-x, 50%) var(--games-mouse-y, 50%), rgba(120, 207, 238, 0.20) 0%, rgba(255, 255, 255, 0) 46%),
        radial-gradient(circle at 82% 18%, rgba(255, 209, 93, 0.18) 0%, transparent 36%),
        radial-gradient(circle at 18% 82%, rgba(89, 185, 230, 0.12) 0%, transparent 36%),
        linear-gradient(135deg, #fffef9 0%, #f8fcff 48%, #fff8ef 100%)`;
@@ -158,6 +163,7 @@ function Games() {
     >
       {/* Murakkab gradient fon */}
       <div 
+        ref={pageBackgroundRef}
         className="fixed inset-0 transition-opacity duration-1000"
         style={{
           background: pageBackground,
@@ -322,12 +328,12 @@ function Games() {
                 >
                   <div className={`relative aspect-[16/10] w-full overflow-hidden ${game.bgPattern}`}>
                     <div className="absolute inset-0 bg-black/10" />
-                    <img
-                      src={game.image}
+                    <GameCardImage
+                      src={game.thumbnail}
                       alt={game.title}
-                      loading="lazy"
-                      decoding="async"
-                      className="relative h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.055]"
+                      loading={index < 3 ? "eager" : "lazy"}
+                      fetchPriority={index === 0 ? "high" : "auto"}
+                      className="relative transition-transform duration-700 ease-out group-hover:scale-[1.055]"
                     />
                     <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.08)_18%,rgba(2,6,23,0.22)_55%,rgba(2,6,23,0.92)_100%)]" />
                     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent opacity-60" />

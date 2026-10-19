@@ -1,4 +1,4 @@
-import jumanjiBoardImage from "../../../../assets/jumanji_board.png";
+import jumanjiBoardImage from "../../../../assets/jumanji_board.webp";
 
 export const JUMANJI_MAP_IMAGE = jumanjiBoardImage;
 

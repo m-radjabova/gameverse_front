@@ -4,7 +4,7 @@ import { MdTimer } from "react-icons/md";
 import GameLandingPage, {
   type GameLandingPageConfig,
 } from "../shared/GameLandingPage";
-import miniPuzzleImg from "../../../assets/mini_puzzle_image.png";
+import miniPuzzleImg from "../../../assets/mini_puzzle_image.webp";
 
 const miniPuzzleConfig: GameLandingPageConfig = {
   badge: "Rasmni yig'",

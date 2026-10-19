@@ -36,9 +36,9 @@ import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
 import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 
-import trackImg from "../../../assets/new_road.png";
-import carBlue from "../../../assets/car_blue.png";
-import carBlack from "../../../assets/dark_car.png";
+import trackImg from "../../../assets/new_road.webp";
+import carBlue from "../../../assets/car_blue.webp";
+import carBlack from "../../../assets/dark_car.webp";
 import carSound from "../../../assets/sounds/car_sound.mp3";
 
 import sfxCorrect from "../../../assets/sounds/ding.m4a";

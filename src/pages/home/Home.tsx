@@ -5,12 +5,10 @@ import TrialSection from "../../components/main/TrialSection";
 import AppsServiceSection from "../../components/main/AppsServiceSection";
 import HowItWorksSection from "../../components/main/HowItWorksSection";
 import Footer from "../../components/footer/Footer";
-import SiteLoader from "../../components/main/SiteLoader";
 import CommentsSection from "../../components/main/CommentsSection";
 import HomeFloatingActions from "../../components/main/HomeFloatingActions";
 
 function Home() {
-  const [isLoading, setIsLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [activeNav, setActiveNav] = useState<
     "O'yinlar" | "Haqida" | "Izohlar" | "Bog'lanish" | undefined
@@ -38,24 +36,9 @@ function Home() {
       offset: 80,
     });
 
-    const timer = window.setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
   }, []);
 
   useEffect(() => {
-    if (!isLoading) {
-      AOS.refresh();
-    }
-  }, [isLoading]);
-
-  useEffect(() => {
-    if (isLoading) return;
-
     const syncAos = window.setTimeout(() => {
       AOS.refreshHard();
     }, 220);
@@ -63,16 +46,12 @@ function Home() {
     return () => {
       window.clearTimeout(syncAos);
     };
-  }, [isDarkMode, isLoading]);
+  }, [isDarkMode]);
 
   useEffect(() => {
     window.localStorage.setItem("home-theme", isDarkMode ? "dark" : "light");
     window.dispatchEvent(new Event("home-theme-change"));
   }, [isDarkMode]);
-
-  if (isLoading) {
-    return <SiteLoader />;
-  }
 
   const handleNavClick = (section: string) => {
     const targetId = sectionByNav[section];
