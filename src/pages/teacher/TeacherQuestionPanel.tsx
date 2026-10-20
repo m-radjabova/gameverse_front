@@ -1973,7 +1973,7 @@ export default function TeacherQuestionPanel() {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <Link to={activeGame.path} className={`${SECONDARY_BTN} ${FOCUS_CLS}`}>
+                    <Link to={activeGame.path} className={`${PRIMARY_BTN} ${FOCUS_CLS}`}>
                       O'yinni ochish
                       <FaArrowRight className="h-3 w-3" />
                     </Link>

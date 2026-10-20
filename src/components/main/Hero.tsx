@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+
 import { FaArrowRight, FaGraduationCap } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
@@ -14,14 +14,6 @@ type HeroProps = {
   onThemeToggle?: () => void;
 };
 
-/**
- * Rasm faqat sichqoncha (yoki barmoq) atrofida ochiladi.
- * --hx / --hy / --hr CSS o'zgaruvchilari JS tomonidan har kadrda yangilanadi
- * (React state ishlatilmaydi, shuning uchun qayta render bo'lmaydi).
- */
-const REVEAL_MASK =
-  "radial-gradient(circle var(--hr) at var(--hx) var(--hy), #000 0%, rgba(0,0,0,0.94) 36%, rgba(0,0,0,0.5) 66%, transparent 100%)";
-
 function Hero({
   activeNav,
   isDark = false,
@@ -29,221 +21,31 @@ function Hero({
   onThemeToggle,
 }: HeroProps) {
   const navigate = useNavigate();
-  const sectionRef = useRef<HTMLElement>(null);
-  const [hintVisible, setHintVisible] = useState(true);
-  const hintHiddenRef = useRef(false);
-
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let width = section.clientWidth;
-    let height = section.clientHeight;
-
-    const baseRadius = () => Math.max(150, Math.min(320, width * 0.21));
-    const idlePoint = (time: number) => ({
-      x: width * 0.64 + Math.sin(time * 0.00035) * width * 0.22,
-      y: height * 0.46 + Math.sin(time * 0.00052 + 1.2) * height * 0.17,
-    });
-
-    const state = {
-      x: width * 0.64,
-      y: height * 0.46,
-      r: reduceMotion ? baseRadius() * 0.9 : 1,
-      targetX: width * 0.64,
-      targetY: height * 0.46,
-      targetR: baseRadius() * 0.9,
-      pointerActive: false,
-      isTouch: false,
-      lastMove: 0,
-      boost: 1,
-      pressed: false,
-    };
-
-    const apply = () => {
-      section.style.setProperty("--hx", `${state.x.toFixed(1)}px`);
-      section.style.setProperty("--hy", `${state.y.toFixed(1)}px`);
-      section.style.setProperty("--hr", `${Math.max(1, state.r).toFixed(1)}px`);
-    };
-
-    const updateTargetRadius = () => {
-      state.targetR = baseRadius() * state.boost * (state.pressed ? 1.35 : 1);
-    };
-
-    const onPointerMove = (event: PointerEvent) => {
-      const rect = section.getBoundingClientRect();
-      state.targetX = event.clientX - rect.left;
-      state.targetY = event.clientY - rect.top;
-      state.pointerActive = true;
-      state.isTouch = event.pointerType === "touch";
-      state.lastMove = performance.now();
-
-      const target = event.target as HTMLElement | null;
-      state.boost = target?.closest("button, a, [data-hero-interactive]") ? 1.3 : 1;
-      updateTargetRadius();
-
-      if (!hintHiddenRef.current) {
-        hintHiddenRef.current = true;
-        setHintVisible(false);
-      }
-      if (reduceMotion) {
-        state.x = state.targetX;
-        state.y = state.targetY;
-        state.r = state.targetR;
-        apply();
-      }
-    };
-    const onPointerLeave = () => {
-      state.pointerActive = false;
-      state.boost = 1;
-      updateTargetRadius();
-    };
-    const onPointerDown = () => {
-      state.pressed = true;
-      updateTargetRadius();
-    };
-    const onPointerUp = () => {
-      state.pressed = false;
-      updateTargetRadius();
-    };
-
-    section.addEventListener("pointermove", onPointerMove, { passive: true });
-    section.addEventListener("pointerleave", onPointerLeave);
-    section.addEventListener("pointerdown", onPointerDown, { passive: true });
-    window.addEventListener("pointerup", onPointerUp, { passive: true });
-    window.addEventListener("pointercancel", onPointerUp, { passive: true });
-
-    const resizeObserver = new ResizeObserver(() => {
-      width = section.clientWidth;
-      height = section.clientHeight;
-      updateTargetRadius();
-      if (reduceMotion) apply();
-    });
-    resizeObserver.observe(section);
-
-    apply();
-
-    let frame = 0;
-    let last = performance.now();
-    let running = false;
-
-    const tick = (now: number) => {
-      const dt = Math.min(64, now - last);
-      last = now;
-
-      // Sichqoncha ekranda bo'lmasa (yoki barmoq qo'yilganiga biroz bo'lsa) — o'zi sekin suzib yuradi.
-      const idle = !state.pointerActive || (state.isTouch && now - state.lastMove > 1400);
-      if (idle) {
-        const point = idlePoint(now);
-        state.targetX = point.x;
-        state.targetY = point.y;
-        state.targetR = baseRadius() * 0.62;
-      }
-
-      const positionEase = 1 - Math.exp(-dt / 120);
-      const radiusEase = 1 - Math.exp(-dt / 220);
-      state.x += (state.targetX - state.x) * positionEase;
-      state.y += (state.targetY - state.y) * positionEase;
-      state.r += (state.targetR - state.r) * radiusEase;
-      apply();
-
-      frame = requestAnimationFrame(tick);
-    };
-
-    const start = () => {
-      if (running || reduceMotion) return;
-      running = true;
-      last = performance.now();
-      frame = requestAnimationFrame(tick);
-    };
-    const stop = () => {
-      running = false;
-      cancelAnimationFrame(frame);
-    };
-
-    // Hero ko'rinmay qolganda animatsiya to'xtaydi (batareya va CPU tejaladi).
-    const visibilityObserver = new IntersectionObserver(([entry]) => (entry.isIntersecting ? start() : stop()), {
-      threshold: 0.01,
-    });
-    visibilityObserver.observe(section);
-
-    return () => {
-      stop();
-      visibilityObserver.disconnect();
-      resizeObserver.disconnect();
-      section.removeEventListener("pointermove", onPointerMove);
-      section.removeEventListener("pointerleave", onPointerLeave);
-      section.removeEventListener("pointerdown", onPointerDown);
-      window.removeEventListener("pointerup", onPointerUp);
-      window.removeEventListener("pointercancel", onPointerUp);
-    };
-  }, []);
-
   const currentImage = isDark ? darkHeroImg : heroImg;
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative min-h-screen overflow-hidden bg-[var(--home-section-hero-bg)] transition-colors duration-500"
-      style={{ "--hx": "64%", "--hy": "46%", "--hr": "1px" } as CSSProperties}
-    >
+    <section className="relative min-h-screen overflow-hidden bg-[var(--home-section-hero-bg)] transition-colors duration-500">
       {/* ───── Orqa fon ───── */}
       <div className="absolute inset-0" aria-hidden="true">
-        {/* 1) Xira, "tuman" ichidagi rasm */}
+        {/* Asosiy rasm (aniqroq va xiraligi minimal) */}
         <div className="absolute inset-0 overflow-hidden">
           <img
             src={currentImage}
             alt=""
             fetchPriority="high"
             decoding="async"
-            className="h-full w-full object-cover blur-[3px] saturate-[0.3] animate-hero-ken-burns"
+            className="h-full w-full object-cover blur-[0.5px] saturate-[0.95] opacity-85 animate-hero-ken-burns"
           />
-          <div className={`absolute inset-0 ${isDark ? "bg-[#070b18]/80" : "bg-white/78"}`} />
+          {/* Yengil ustki qoplama (matn yaxshi o'qilishi uchun) */}
+          <div className={`absolute inset-0 ${isDark ? "bg-[#070b18]/60" : "bg-white/50"}`} />
         </div>
 
-        {/* 2) Kursor atrofida ochiladigan, to'liq rangli rasm */}
-        <div
-          className="absolute inset-0 overflow-hidden"
-          style={{
-            WebkitMaskImage: REVEAL_MASK,
-            maskImage: REVEAL_MASK,
-            WebkitMaskRepeat: "no-repeat",
-            maskRepeat: "no-repeat",
-          }}
-        >
-          <img
-            src={currentImage}
-            alt=""
-            fetchPriority="high"
-            decoding="async"
-            className="h-full w-full object-cover animate-hero-ken-burns"
-          />
-        </div>
-
-        {/* 3) Ochilgan joy atrofidagi yumshoq nur */}
-        <div
-          className="absolute inset-0 mix-blend-screen"
-          style={{
-            background: `radial-gradient(circle calc(var(--hr) * 1.15) at var(--hx) var(--hy), ${
-              isDark ? "rgba(89,185,230,0.22)" : "rgba(126,201,232,0.28)"
-            }, transparent 70%)`,
-          }}
-        />
-
-        {/* 4) Matn o'qilishi uchun chap tomondagi yengil qoplama va yuqori/past silliqlash */}
+        {/* Matn o'qilishi uchun chap tomondagi yumshoq gradient */}
         <div
           className={`absolute inset-0 ${
             isDark
-              ? "bg-[linear-gradient(90deg,rgba(8,14,28,0.66)_0%,rgba(10,18,34,0.36)_36%,transparent_70%)]"
-              : "bg-[linear-gradient(90deg,rgba(255,248,248,0.62)_0%,rgba(255,248,248,0.32)_36%,transparent_70%)]"
-          }`}
-        />
-        <div
-          className={`absolute inset-x-0 top-0 h-40 ${
-            isDark
-              ? "bg-[linear-gradient(180deg,rgba(7,11,24,0.55),transparent)]"
-              : "bg-[linear-gradient(180deg,rgba(255,255,255,0.55),transparent)]"
+              ? "bg-[linear-gradient(90deg,rgba(8,14,28,0.75)_0%,rgba(10,18,34,0.4)_50%,transparent_100%)]"
+              : "bg-[linear-gradient(90deg,rgba(255,255,255,0.8)_0%,rgba(255,255,255,0.45)_50%,transparent_100%)]"
           }`}
         />
       </div>
@@ -257,7 +59,7 @@ function Hero({
 
       {/* ───── Mazmun ───── */}
       <div className="relative z-20 mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4 pb-14 pt-26 sm:px-6 sm:pt-30 lg:justify-start">
-        <div className="w-full max-w-4xl text-center lg:ml-40 lg:max-w-[54rem] lg:translate-y-4 lg:text-left xl:translate-y-2">
+        <div className="w-full max-w-4xl text-center lg:ml-20 lg:max-w-[54rem] lg:translate-y-4 lg:text-left xl:translate-y-2">
           <div
             className={`mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-2 backdrop-blur-md animate-hero-scale-in animate-hero-pulse-soft ${
               isDark
@@ -317,24 +119,6 @@ function Hero({
               </span>
             </button>
           </div>
-        </div>
-      </div>
-
-      {/* Kichik ko'rsatma: birinchi harakatdan keyin yo'qoladi */}
-      <div
-        aria-hidden="true"
-        className={`pointer-events-none absolute bottom-8 left-1/2 z-20 -translate-x-1/2 transition-opacity duration-700 ${
-          hintVisible ? "opacity-100" : "opacity-0"
-        }`}
-      >
-        <div
-          className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold backdrop-blur-md ${
-            isDark
-              ? "border-white/15 bg-[#121c2d]/70 text-white/80"
-              : "border-[var(--home-surface-border)] bg-[var(--home-surface-bg)] text-[var(--home-muted)]"
-          }`}
-        >
-          <HiSparkles className="text-sm text-[var(--home-accent)]" />
         </div>
       </div>
     </section>
