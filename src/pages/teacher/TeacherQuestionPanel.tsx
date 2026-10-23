@@ -72,7 +72,7 @@ const LIST_PAGE_SIZE = 30;
 const GAME_TEMPLATES: Record<string, unknown> = {
   quiz_battle: { question: "", options: ["", "", "", ""], answerIndex: 0, difficulty: "easy" },
   classic_arcade: { prompt: "", options: ["", "", "", ""], correctIndex: 0, reason: "", difficulty: "easy" },
-  wheel_of_fortune: { question: "", options: ["", "", "", ""], answerIndex: 0, category: "", points: 100, difficulty: "easy" },
+  wheel_of_fortune: { question: "", options: ["", "", "", ""], answerIndex: 0, category: "", difficulty: "easy" },
   math_race: { question: "", answer: 0, difficulty: "easy", points: 10 },
   math_chick: { question: "", answer: 0, options: ["", "", "", ""], difficulty: "easy" },
   tug_of_war: { prompt: "", answer: 0, level: "easy" },
@@ -416,7 +416,7 @@ function summarizeQuestion(item: unknown) {
   return JSON.stringify(item).slice(0, 100);
 }
 
-function extractMeta(item: unknown) {
+function extractMeta(item: unknown, gameKey?: string) {
   if (!item || typeof item !== "object") return [];
   const value = item as Record<string, unknown>;
   const level = typeof value.level === "string" && DIFFICULTY_LABELS[value.level] ? value.level : null;
@@ -426,7 +426,7 @@ function extractMeta(item: unknown) {
     typeof value.level === "number" ? `${value.level}-daraja` : null,
     typeof value.subject === "string" ? value.subject : null,
     typeof value.category === "string" && value.category ? value.category : null,
-    typeof value.points === "number" ? `${value.points} ball` : null,
+    gameKey !== "wheel_of_fortune" && typeof value.points === "number" ? `${value.points} ball` : null,
   ].filter((meta): meta is string => Boolean(meta));
 }
 
@@ -440,6 +440,12 @@ function getItemDifficulty(item: unknown): string | null {
 function normalizeDraftForGame(gameKey: string, draftValue: unknown) {
   if (!draftValue || typeof draftValue !== "object") return draftValue;
   const value = draftValue as Record<string, unknown>;
+
+  if (gameKey === "wheel_of_fortune") {
+    const normalized = { ...value };
+    delete normalized.points;
+    return normalized;
+  }
 
   if (gameKey === "math_chick") {
     return {
@@ -1092,7 +1098,7 @@ function SpecializedEditor({
             ))}
           {F("stage")}
           {F("reward")}
-          {F("points")}
+          {gameKey !== "wheel_of_fortune" && F("points")}
           {F("timeLimit")}
         </div>
       </div>
@@ -2063,7 +2069,7 @@ export default function TeacherQuestionPanel() {
                       <>
                         <ul className="space-y-2">
                           {filteredItems.slice(0, visibleCount).map(({ item, index: realIndex }) => {
-                            const meta = extractMeta(item);
+                            const meta = extractMeta(item, activeGame.gameKey);
                             const selected = selectedIndex === realIndex;
                             const itemId = (item as { id?: unknown })?.id;
                             return (

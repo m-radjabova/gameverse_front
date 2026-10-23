@@ -33,7 +33,6 @@ export const normalizeQuestions = (items: unknown[]): Question[] =>
         question: q,
         options,
         answerIndex,
-        points: Number(row.points) || 100,
         category: (row.category || "Umumiy").toString(),
         timeLimit: Number(row.timeLimit) || 30,
         difficulty: row.difficulty === "easy" || row.difficulty === "medium" || row.difficulty === "hard" ? row.difficulty : undefined,

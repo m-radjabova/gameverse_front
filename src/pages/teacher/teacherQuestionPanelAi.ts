@@ -578,10 +578,8 @@ function buildItem(ctx: Ctx, rawItem: unknown, index: number): Built {
     case "wheel_of_fortune": {
       const choice = buildChoice(ctx, body, ["question"], ["correctAnswer"], ["answerIndex", "correctIndex"], [firstText(body, ["category"])]);
       if (isReason(choice)) return fail(choice);
-      const pointsRaw = Number(body.points);
-      const points = [100, 200, 300, 500].includes(pointsRaw) ? pointsRaw : level === "easy" ? 100 : level === "medium" ? 200 : 300;
       const category = firstText(body, ["category"]) || cleanText(ctx.topic).slice(0, 40);
-      return ok({ question: choice.question, options: choice.options, answerIndex: choice.index, category, points }, choice.question);
+      return ok({ question: choice.question, options: choice.options, answerIndex: choice.index, category }, choice.question);
     }
 
     case "jumanji": {
@@ -769,8 +767,8 @@ const GAME_SPECS: Record<SupportedTeacherGameKey, { title: string; schema: strin
   },
   wheel_of_fortune: {
     title: "Wheel Of Fortune",
-    schema: '[{"question":"...","options":["...","...","...","..."],"answerIndex":0,"category":"...","points":100}]',
-    rules: ["options: exactly 4 strings.", "answerIndex: integer 0-3.", "category: short label for the topic.", "points: 100, 200, 300 or 500 (harder = more)."],
+    schema: '[{"question":"...","options":["...","...","...","..."],"answerIndex":0,"category":"..."}]',
+    rules: ["options: exactly 4 strings.", "answerIndex: integer 0-3.", "category: short label for the topic."],
   },
   jumanji: {
     title: "Jumanji",

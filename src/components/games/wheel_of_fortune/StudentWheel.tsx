@@ -1,10 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-type Student = {
-  id: string;
-  name: string;
-  score: number;
-};
+type Student = { id: string; name: string };
 
 type Props = {
   students: Student[];
@@ -18,6 +14,7 @@ const SEGMENT_COLORS = ["#E11D48", "#F59E0B", "#0EA5E9", "#10B981", "#8B5CF6", "
 const SPIN_SECONDS = 5.5;
 const C = 200; // svg centre
 const R = 192; // wheel radius (viewBox units)
+const fullCircle = `M${C},${C - R} A${R},${R} 0 1 1 ${C},${C + R} A${R},${R} 0 1 1 ${C},${C - R} Z`;
 
 const polar = (deg: number, r: number) => {
   const rad = (deg * Math.PI) / 180; // 0deg = 12 o'clock, clockwise
@@ -88,7 +85,10 @@ export default function StudentWheel({ students, mustSpin, prizeNumber, onStopSp
         const isOddLast = n > 1 && n % SEGMENT_COLORS.length === 1 && i === n - 1;
         return {
           id: s.id,
-          path: `M${C},${C} L${p0.x},${p0.y} A${R},${R} 0 ${large} 1 ${p1.x},${p1.y} Z`,
+          path:
+            n === 1
+              ? fullCircle
+              : `M${C},${C} L${p0.x},${p0.y} A${R},${R} 0 ${large} 1 ${p1.x},${p1.y} Z`,
           color: isOddLast ? "#64748B" : SEGMENT_COLORS[i % SEGMENT_COLORS.length],
           mid: (i + 0.5) * seg,
           label: s.name.length > maxChars ? `${s.name.slice(0, maxChars - 1)}…` : s.name,
