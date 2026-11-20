@@ -9,6 +9,7 @@ export type SupportedTeacherGameKey =
   | "math_chick"
   | "tug_of_war"
   | "baamboozle"
+  | "box_battle"
   | "jumanji"
   | "millionaire"
   | "truth_detector"
@@ -689,7 +690,8 @@ function buildItem(ctx: Ctx, rawItem: unknown, index: number): Built {
       );
     }
 
-    case "baamboozle": {
+    case "baamboozle":
+    case "box_battle": {
       const question = firstText(body, ["question", "prompt"]);
       let answer = firstText(body, ["answer", "correctAnswer"]);
       if (!question || !answer || answer.length > 160) return fail("fields");
@@ -797,6 +799,11 @@ const GAME_SPECS: Record<SupportedTeacherGameKey, { title: string; schema: strin
   },
   baamboozle: {
     title: "Baamboozle",
+    schema: '[{"question":"...","answer":"..."}]',
+    rules: ["answer: short and unambiguous (a word, a number or a short phrase), easy for a teacher to check."],
+  },
+  box_battle: {
+    title: "Box Battle Arena",
     schema: '[{"question":"...","answer":"..."}]',
     rules: ["answer: short and unambiguous (a word, a number or a short phrase), easy for a teacher to check."],
   },

@@ -153,6 +153,7 @@ const themeKeyByGameId: Record<string, keyof typeof themes> = {
   "iq-game": "blue",
   "pizza-master": "pizza",
   "mystery-egg": "mystery",
+  "box-battle": "blue",
 };
 
 const playAccentByGameId: Record<string, string> = {
@@ -180,6 +181,7 @@ const playAccentByGameId: Record<string, string> = {
   "iq-game": "from-sky-500 via-cyan-500 to-violet-500",
   "pizza-master": "from-red-500 via-orange-500 to-yellow-400",
   "mystery-egg": "from-violet-600 via-fuchsia-500 to-lime-400",
+  "box-battle": "from-cyan-500 via-blue-600 to-fuchsia-600",
 };
 
 function splitTitle(title: string): [string, string] {

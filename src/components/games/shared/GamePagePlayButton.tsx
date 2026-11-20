@@ -177,5 +177,6 @@ const QUESTION_BANK_GAME_IDS = new Set([
   "math-chick", "tug-of-war", "baamboozle", "jumanji", "millionaire",
   "truth-detector", "treasure-hunt", "reverse-thinking",
   "pizza-master", "mystery-egg",
+  "box-battle",
   "bingo",
 ]);

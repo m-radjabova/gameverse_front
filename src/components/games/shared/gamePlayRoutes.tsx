@@ -29,6 +29,7 @@ const VirtualZoo = lazy(() => import("../virtual_zoo"));
 const FrogPondPage = lazy(() => import("../frog-pond/FrogPondPage"));
 const PizzaMaster = lazy(() => import("../pizza_master/PizzaMaster"));
 const MysteryEgg = lazy(() => import("../mystery_egg/MusteryEgg"));
+const BoxBattleArenaPage = lazy(() => import("../box_battle/BoxBattleArenaPage"));
 
 type GamePlayRoute = {
   path: string;
@@ -37,6 +38,11 @@ type GamePlayRoute = {
 };
 
 export const gamePlayRoutes: GamePlayRoute[] = [
+  {
+    path: "/games/box-battle/play",
+    colorClassName: "from-cyan-500 via-blue-600 to-fuchsia-600",
+    element: <BoxBattleArenaPage />,
+  },
   {
     path: "/games/mystery-egg/play",
     colorClassName: "from-violet-600 via-indigo-600 to-lime-400",

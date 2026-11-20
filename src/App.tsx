@@ -52,6 +52,7 @@ const IQGamePage = lazy(() => import("./components/games/iq_game/IQGamePage"));
 const FrogPondLandingPage = lazy(() => import("./components/games/frog-pond/FrogPondLandingPage"));
 const PizzaMasterPage = lazy(() => import("./components/games/pizza_master/PizzaMasterPage"));
 const MysteryEggPage = lazy(() => import("./components/games/mystery_egg/MysteryEggPage"));
+const BoxBattlePage = lazy(() => import("./components/games/box_battle/BoxBattlePage"));
 const VrGameBriefingPage = lazy(() => import("./components/games/shared/VrGameBriefingPage"));
 const GameQuestionSetupPage = lazy(() => import("./components/games/shared/GameQuestionSetupPage"));
 const GameModeSetupPage = lazy(() => import("./components/games/shared/GameModeSetupPage"));
@@ -147,6 +148,7 @@ function App() {
         <Route path="/games/frog-pond" element={<FrogPondLandingPage />} />
         <Route path="/games/pizza-master" element={<PizzaMasterPage />} />
         <Route path="/games/mystery-egg" element={<MysteryEggPage />} />
+        <Route path="/games/box-battle" element={<BoxBattlePage />} />
         <Route
           path="/games/world-explorer"
           element={<VrGameBriefingPage gameId="world-explorer" playPath="/games/world-explorer/play" />}

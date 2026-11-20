@@ -394,6 +394,7 @@ function Games() {
                     <p className="line-clamp-2 min-h-[44px] text-sm leading-6 text-[var(--games-card-text-soft)]">
                       {game.description}
                     </p>
+                    {"author" in game && <p className="mt-2 text-xs font-bold text-[var(--games-card-text-soft)]">BY {game.author}</p>}
 
                     <div className="mt-5 grid grid-cols-3 overflow-hidden rounded-2xl border border-[var(--games-border)] bg-[var(--games-surface-soft)] text-[var(--games-card-text-soft)]">
                       <span className="flex min-w-0 flex-col items-center gap-1.5 px-2 py-3 text-center text-[10px] font-bold"><FaUsers className="text-sm text-[var(--games-card-text)]"/><b className="max-w-full truncate">{game.players}</b></span>
@@ -416,7 +417,7 @@ function Games() {
                       >
                         {game.available ? (
                           <>
-                            <span className="flex items-center gap-2"><game.mainIcon /> O'ynash</span>
+                            <span className="flex items-center gap-2"><game.mainIcon /> {game.id === "neontype" ? "Boshlash" : "O'ynash"}</span>
                             <FaArrowRight className="transition-transform duration-300 group-hover/btn:translate-x-1" />
                           </>
                         ) : (

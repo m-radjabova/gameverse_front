@@ -77,6 +77,7 @@ const GAME_TEMPLATES: Record<string, unknown> = {
   math_chick: { question: "", answer: 0, options: ["", "", "", ""], difficulty: "easy" },
   tug_of_war: { prompt: "", answer: 0, level: "easy" },
   baamboozle: { question: "", answer: "", difficulty: "easy" },
+  box_battle: { question: "", answer: "", difficulty: "easy" },
   jumanji: { subject: "Matematika", question: "", options: ["", "", "", ""], correctAnswer: "", difficulty: "easy", timeLimit: 30 },
   millionaire: { text: "", options: { A: "", B: "", C: "", D: "" }, correct: "A", difficulty: "easy", category: "" },
   truth_detector: {
@@ -104,6 +105,7 @@ const GAME_EMOJIS: Record<string, string> = {
   math_chick: "🐥",
   tug_of_war: "🪢",
   baamboozle: "🎲",
+  box_battle: "🥊",
   jumanji: "🌿",
   millionaire: "💰",
   truth_detector: "🕵️",
@@ -259,10 +261,10 @@ const HANDLED_KEYS = new Set([
 const aiCountPlaceholder = "__COUNT__";
 
 function getAiPanelContent(gameKey: string) {
-  if (gameKey === "baamboozle") {
+  if (gameKey === "baamboozle" || gameKey === "box_battle") {
     return {
       heading: "Savol-javoblarni avtomatik yaratish",
-      description: "Mavzu, savollar soni va qiyinlikni tanlang. AI Baamboozle uchun qisqa savol va aniq javoblar qo'shadi.",
+      description: `Mavzu, savollar soni va qiyinlikni tanlang. AI ${gameKey === "box_battle" ? "Box Battle Arena" : "Baamboozle"} uchun qisqa savol va aniq javoblar qo'shadi.`,
       topicLabel: "Mavzu yoki fan",
       topicPlaceholder: "Masalan: hayvonlar, tarixiy sanalar, ingliz tili so'zlari...",
       buttonLabel: `AI bilan ${aiCountPlaceholder} ta savol-javob qo'shish`,
@@ -342,11 +344,12 @@ function validateDraftItem(gameKey: string, draftValue: unknown) {
     return "";
   }
 
-  if (gameKey === "baamboozle") {
+  if (gameKey === "baamboozle" || gameKey === "box_battle") {
     const question = String(value.question ?? "").trim();
     const answer = String(value.answer ?? "").trim();
-    if (!question) return "Baamboozle uchun savol matnini kiriting.";
-    if (!answer) return "Baamboozle uchun javobni kiriting.";
+    const gameName = gameKey === "box_battle" ? "Box Battle Arena" : "Baamboozle";
+    if (!question) return `${gameName} uchun savol matnini kiriting.`;
+    if (!answer) return `${gameName} uchun javobni kiriting.`;
     return "";
   }
 
